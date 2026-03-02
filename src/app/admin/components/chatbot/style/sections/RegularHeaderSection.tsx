@@ -1,14 +1,19 @@
 'use client'
 
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { X } from 'lucide-react'
 import { ColorInput } from '@/components/studio/layout-config/ColorInput'
+import * as Icons from 'lucide-react'
+import { ChevronsUpDown } from 'lucide-react'
 import type { Chatbot } from '../../types'
+import { extractNumericValue, ensurePx } from '../styleUtils'
+import { MultiSideInput } from '../components/MultiSideInput'
 import { SectionGroup } from '../components/SectionGroup'
 import { FormRow, FormSection } from '../components/FormRow'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Button } from '@/components/ui/button'
+import { IconPicker } from '@/components/ui/icon-picker'
 
 interface RegularHeaderSectionProps {
   formData: Partial<Chatbot>
@@ -16,322 +21,270 @@ interface RegularHeaderSectionProps {
   chatkitOptions?: any
 }
 
-export function RegularHeaderSection({ formData, setFormData, chatkitOptions }: RegularHeaderSectionProps) {
+export function RegularHeaderSection({ formData, setFormData }: RegularHeaderSectionProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium">Header</h3>
       </div>
       <div className="pt-2">
-        <SectionGroup title="Header Styling" isFirst>
+        <SectionGroup title="Title & Description" isFirst>
           <FormSection>
-            <FormRow label="Show Header" description="Show header in chat widget and full page">
+            <FormRow label="Show Title" description="Display the title in the header">
               <Switch
-                checked={formData.headerEnabled !== false}
-                onCheckedChange={(checked) => {
-                  setFormData({
-                    ...formData,
-                    headerEnabled: checked
-                  })
-                }}
+                checked={formData.headerShowTitle !== false}
+                onCheckedChange={(checked) => setFormData({ ...formData, headerShowTitle: checked })}
               />
             </FormRow>
-          </FormSection>
-        </SectionGroup>
-
-        <SectionGroup title="Header Action Buttons">
-          <FormSection>
-            <FormRow label="Clear Button" description="Show clear session button">
-              <Switch
-                checked={formData.headerShowClearSession !== false}
-                onCheckedChange={(checked) => {
-                  setFormData({
-                    ...formData,
-                    headerShowClearSession: checked
-                  })
-                }}
-              />
-            </FormRow>
-            <FormRow label="Close Button" description="Show close chat button">
-              <Switch
-                checked={formData.headerShowCloseButton !== false}
-                onCheckedChange={(checked) => {
-                  setFormData({
-                    ...formData,
-                    headerShowCloseButton: checked
-                  })
-                }}
-              />
-            </FormRow>
-          </FormSection>
-        </SectionGroup>
-
-        {/* Close Button Styling */}
-        {formData.headerShowCloseButton !== false && (
-          <SectionGroup title="Close Button Styling">
-            <FormSection>
-              <FormRow label="Background Color" description="Background color for the close button (leave empty for transparent)">
-                <ColorInput
-                  value={formData.headerCloseButtonBackgroundColor || ''}
-                  onChange={(color) => {
-                    setFormData({
-                      ...formData,
-                      headerCloseButtonBackgroundColor: color
-                    })
-                  }}
-                  allowImageVideo={false}
-                  className="relative"
-                  placeholder="transparent"
-                  inputClassName="h-7 text-xs pl-7 w-full"
+            {formData.headerShowTitle !== false && (
+              <FormRow label="Title" description="Text displayed in the header">
+                <Input
+                  value={formData.headerTitle || ''}
+                  onChange={(e) => setFormData({ ...formData, headerTitle: e.target.value })}
+                  placeholder="Chat Assistant"
                 />
               </FormRow>
-              <FormRow label="Icon Color" description="Color of the X icon (defaults to header font color)">
-                <ColorInput
-                  value={formData.headerCloseButtonIconColor || ''}
-                  onChange={(color) => {
-                    setFormData({
-                      ...formData,
-                      headerCloseButtonIconColor: color
-                    })
-                  }}
-                  allowImageVideo={false}
-                  className="relative"
-                  placeholder="white"
-                  inputClassName="h-7 text-xs pl-7 w-full"
-                />
-              </FormRow>
-              <FormRow label="Hover Background" description="Background color on hover">
-                <ColorInput
-                  value={formData.headerCloseButtonHoverBackgroundColor || ''}
-                  onChange={(color) => {
-                    setFormData({
-                      ...formData,
-                      headerCloseButtonHoverBackgroundColor: color
-                    })
-                  }}
-                  allowImageVideo={false}
-                  className="relative"
-                  placeholder="rgba(255, 255, 255, 0.1)"
-                  inputClassName="h-7 text-xs pl-7 w-full"
-                />
-              </FormRow>
-            </FormSection>
-          </SectionGroup>
-        )}
-
-        <SectionGroup title="Header Title & Description">
-          <FormSection>
-            <FormRow label="Header Title" description="Title displayed in the header">
+            )}
+            <FormRow label="Description" description="Subtitle text below the title">
               <Input
-                value={chatkitOptions?.header?.title
-                  ? (typeof chatkitOptions.header.title === 'string'
-                    ? chatkitOptions.header.title
-                    : (chatkitOptions.header.title as any)?.text || formData.headerTitle || '')
-                  : formData.headerTitle || ''}
-                onChange={(e) => {
-                  const titleValue = e.target.value
-                  setFormData({
-                    ...formData,
-                    headerTitle: titleValue,
-                    chatkitOptions: {
-                      ...chatkitOptions,
-                      header: {
-                        ...chatkitOptions?.header,
-                        title: titleValue || undefined
-                      }
-                    }
-                  } as any)
-                }}
-                placeholder="Chat Assistant"
-              />
-            </FormRow>
-            <FormRow label="Header Description" description="Description/subtitle displayed in the header">
-              <Input
-                value={chatkitOptions?.header?.description
-                  ? (typeof chatkitOptions.header.description === 'string'
-                    ? chatkitOptions.header.description
-                    : (chatkitOptions.header.description as any)?.text || formData.headerDescription || '')
-                  : formData.headerDescription || ''}
-                onChange={(e) => {
-                  const descValue = e.target.value
-                  setFormData({
-                    ...formData,
-                    headerDescription: descValue,
-                    chatkitOptions: {
-                      ...chatkitOptions,
-                      header: {
-                        ...chatkitOptions?.header,
-                        description: descValue || undefined
-                      }
-                    }
-                  } as any)
-                }}
+                value={formData.headerDescription || ''}
+                onChange={(e) => setFormData({ ...formData, headerDescription: e.target.value })}
                 placeholder="How can I help you?"
               />
             </FormRow>
           </FormSection>
         </SectionGroup>
 
-        <SectionGroup title="Header Logo">
+        <SectionGroup title="Logo & Avatar">
           <FormSection>
-            <FormRow label="Logo URL" description="URL to the header logo image">
-              <Input
-                value={formData.headerLogo || chatkitOptions?.header?.logo || ''}
-                onChange={(e) => {
-                  const logoValue = e.target.value
-                  setFormData({
-                    ...formData,
-                    headerLogo: logoValue,
-                    chatkitOptions: {
-                      ...chatkitOptions,
-                      header: {
-                        ...chatkitOptions?.header,
-                        logo: logoValue
-                      }
-                    }
-                  } as any)
-                }}
-                placeholder="https://example.com/logo.png"
+            <FormRow label="Show Logo" description="Display a logo in the header">
+              <Switch
+                checked={formData.headerShowLogo || false}
+                onCheckedChange={(checked) => setFormData({ ...formData, headerShowLogo: checked })}
               />
             </FormRow>
-            <FormRow label="Upload Logo" description="Or upload a logo file">
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (!file) return
-                  const reader = new FileReader()
-                  reader.onload = (ev) => {
-                    const url = ev.target?.result as string
-                    setFormData({
-                      ...formData,
-                      headerLogo: url,
-                      chatkitOptions: {
-                        ...chatkitOptions,
-                        header: {
-                          ...chatkitOptions?.header,
-                          logo: url
-                        }
-                      }
-                    } as any)
-                  }
-                  reader.readAsDataURL(file)
-                }}
+            {formData.headerShowLogo && (
+              <FormRow label="Logo URL" description="URL of the header logo image">
+                <Input
+                  value={formData.headerLogo || ''}
+                  onChange={(e) => setFormData({ ...formData, headerLogo: e.target.value })}
+                  placeholder="https://example.com/logo.png"
+                />
+              </FormRow>
+            )}
+            <FormRow label="Show Avatar" description="Display an avatar in the header">
+              <Switch
+                checked={formData.headerShowAvatar || false}
+                onCheckedChange={(checked) => setFormData({ ...formData, headerShowAvatar: checked })}
               />
             </FormRow>
-            {(formData.headerLogo || chatkitOptions?.header?.logo) && (
-              <FormRow label="Preview" description="Current logo preview">
-                <div className="border rounded-lg p-4 flex items-center justify-center bg-muted/50">
-                  <img
-                    src={formData.headerLogo || chatkitOptions?.header?.logo || undefined}
-                    alt="Header logo preview"
-                    className="max-w-full max-h-32 object-contain"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none'
-                    }}
-                  />
-                </div>
+            {formData.headerShowAvatar && (
+              <>
+                <FormRow label="Avatar Type" description="Icon or custom image">
+                  <Select
+                    value={formData.headerAvatarType || 'icon'}
+                    onValueChange={(v: any) => setFormData({ ...formData, headerAvatarType: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="icon">Icon</SelectItem>
+                      <SelectItem value="image">Image</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormRow>
+                {formData.headerAvatarType === 'image' ? (
+                  <FormRow label="Avatar Image" description="URL for header avatar image">
+                    <Input
+                      value={formData.headerAvatarImageUrl || ''}
+                      onChange={(e) => setFormData({ ...formData, headerAvatarImageUrl: e.target.value })}
+                      placeholder="https://example.com/avatar.png"
+                    />
+                  </FormRow>
+                ) : (
+                  <>
+                    <FormRow label="Avatar Icon" description="Icon for the header avatar">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="w-full justify-between h-8 text-xs">
+                            <div className="flex items-center gap-2">
+                              {(() => {
+                                const iconName = formData.headerAvatarIcon || 'Bot'
+                                const Icon = (Icons as any)[iconName] || Icons.Bot
+                                return <Icon className="h-4 w-4" />
+                              })()}
+                              <span>{formData.headerAvatarIcon || 'Bot'}</span>
+                            </div>
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[500px] p-4" align="start">
+                          <IconPicker
+                            value={formData.headerAvatarIcon || 'Bot'}
+                            onChange={(v) => setFormData({ ...formData, headerAvatarIcon: v })}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </FormRow>
+                    <FormRow label="Icon Color" description="Color of the avatar icon">
+                      <ColorInput
+                        value={formData.headerAvatarIconColor || '#ffffff'}
+                        onChange={(color) => setFormData({ ...formData, headerAvatarIconColor: color })}
+                        allowImageVideo={false}
+                        className="relative"
+                        placeholder="#ffffff"
+                        inputClassName="h-7 text-xs pl-7 w-full"
+                      />
+                    </FormRow>
+                    <FormRow label="Avatar Background" description="Background color of the avatar">
+                      <ColorInput
+                        value={formData.headerAvatarBackgroundColor || '#3b82f6'}
+                        onChange={(color) => setFormData({ ...formData, headerAvatarBackgroundColor: color })}
+                        allowImageVideo={false}
+                        className="relative"
+                        placeholder="#3b82f6"
+                        inputClassName="h-7 text-xs pl-7 w-full"
+                      />
+                    </FormRow>
+                  </>
+                )}
+              </>
+            )}
+          </FormSection>
+        </SectionGroup>
+
+        <SectionGroup title="Colors & Font">
+          <FormSection>
+            <FormRow label="Background Color" description="Background color of the header">
+              <ColorInput
+                value={formData.headerBgColor || '#3b82f6'}
+                onChange={(color) => setFormData({ ...formData, headerBgColor: color })}
+                allowImageVideo={false}
+                className="relative"
+                placeholder="#3b82f6"
+                inputClassName="h-7 text-xs pl-7 w-full"
+              />
+            </FormRow>
+            <FormRow label="Font Color" description="Text color in the header">
+              <ColorInput
+                value={formData.headerFontColor || '#ffffff'}
+                onChange={(color) => setFormData({ ...formData, headerFontColor: color })}
+                allowImageVideo={false}
+                className="relative"
+                placeholder="#ffffff"
+                inputClassName="h-7 text-xs pl-7 w-full"
+              />
+            </FormRow>
+            <FormRow label="Font Family" description="Font family for header text">
+              <Select
+                value={formData.headerFontFamily || 'inherit'}
+                onValueChange={(v) => setFormData({ ...formData, headerFontFamily: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="inherit">Inherit (Default)</SelectItem>
+                  <SelectItem value="Inter">Inter</SelectItem>
+                  <SelectItem value="Roboto">Roboto</SelectItem>
+                  <SelectItem value="Arial">Arial</SelectItem>
+                  <SelectItem value="Helvetica">Helvetica</SelectItem>
+                  <SelectItem value="Georgia">Georgia</SelectItem>
+                  <SelectItem value="monospace">Monospace</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormRow>
+          </FormSection>
+        </SectionGroup>
+
+        <SectionGroup title="Border">
+          <FormSection>
+            <FormRow label="Show Border" description="Display bottom border on header">
+              <Switch
+                checked={formData.headerBorderEnabled || false}
+                onCheckedChange={(checked) => setFormData({ ...formData, headerBorderEnabled: checked })}
+              />
+            </FormRow>
+            {formData.headerBorderEnabled && (
+              <FormRow label="Border Color" description="Color of the header border">
+                <ColorInput
+                  value={formData.headerBorderColor || '#e5e7eb'}
+                  onChange={(color) => setFormData({ ...formData, headerBorderColor: color })}
+                  allowImageVideo={false}
+                  className="relative"
+                  placeholder="#e5e7eb"
+                  inputClassName="h-7 text-xs pl-7 w-full"
+                />
               </FormRow>
             )}
           </FormSection>
         </SectionGroup>
 
-        <SectionGroup title="Header Custom Buttons">
-          <p className="text-xs text-muted-foreground mb-2">
-            Add custom buttons to the header. These buttons will appear in the header area.
-          </p>
-          <div className="space-y-2">
-            {(chatkitOptions?.header?.customButtonLeft || []).map((button: { icon?: string; label?: string }, index: number) => (
-              <div key={index} className="border rounded-lg p-3 space-y-2">
-                <div className="flex gap-2 items-start">
-                  <div className="flex-1 grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <Label className="text-xs">Button Label</Label>
-                      <Input
-                        value={button.label || ''}
-                        onChange={(e) => {
-                          const buttons = [...(chatkitOptions?.header?.customButtonLeft || [])]
-                          buttons[index] = { ...buttons[index], label: e.target.value }
-                          setFormData({
-                            ...formData,
-                            chatkitOptions: {
-                              ...chatkitOptions,
-                              header: {
-                                ...chatkitOptions?.header,
-                                customButtonLeft: buttons
-                              }
-                            }
-                          } as any)
-                        }}
-                        placeholder="Button Label"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">Icon Name</Label>
-                      <Input
-                        value={button.icon || ''}
-                        onChange={(e) => {
-                          const buttons = [...(chatkitOptions?.header?.customButtonLeft || [])]
-                          buttons[index] = { ...buttons[index], icon: e.target.value }
-                          setFormData({
-                            ...formData,
-                            chatkitOptions: {
-                              ...chatkitOptions,
-                              header: {
-                                ...chatkitOptions?.header,
-                                customButtonLeft: buttons
-                              }
-                            }
-                          } as any)
-                        }}
-                        placeholder="e.g., Settings, Menu"
-                      />
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      const buttons = [...(chatkitOptions?.header?.customButtonLeft || [])]
-                      buttons.splice(index, 1)
-                      setFormData({
-                        ...formData,
-                        chatkitOptions: {
-                          ...chatkitOptions,
-                          header: {
-                            ...chatkitOptions?.header,
-                            customButtonLeft: buttons
-                          }
-                        }
-                      } as any)
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const buttons = [...(chatkitOptions?.header?.customButtonLeft || []), { icon: '', label: '' }]
-                setFormData({
-                  ...formData,
-                  chatkitOptions: {
-                    ...chatkitOptions,
-                    header: {
-                      ...chatkitOptions?.header,
-                      customButtonLeft: buttons
-                    }
-                  }
-                } as any)
-              }}
-            >
-              + Add Header Button
-            </Button>
-          </div>
+        <SectionGroup title="Padding">
+          <FormSection>
+            <FormRow label="Header Padding" description="Internal spacing of the header">
+              <MultiSideInput
+                formData={formData}
+                setFormData={setFormData}
+                label=""
+                baseKey="headerPadding"
+                defaultValue="16px"
+                type="sides"
+              />
+            </FormRow>
+          </FormSection>
+        </SectionGroup>
+
+        <SectionGroup title="Buttons">
+          <FormSection>
+            <FormRow label="Show Close Button" description="Display close button in header">
+              <Switch
+                checked={formData.headerShowCloseButton !== false}
+                onCheckedChange={(checked) => setFormData({ ...formData, headerShowCloseButton: checked })}
+              />
+            </FormRow>
+            <FormRow label="Show Clear Session" description="Display clear session button">
+              <Switch
+                checked={formData.headerShowClearSession || false}
+                onCheckedChange={(checked) => setFormData({ ...formData, headerShowClearSession: checked })}
+              />
+            </FormRow>
+            {formData.headerShowCloseButton !== false && (
+              <>
+                <FormRow label="Close Button Background" description="Background color of close button">
+                  <ColorInput
+                    value={formData.headerCloseButtonBackgroundColor || 'transparent'}
+                    onChange={(color) => setFormData({ ...formData, headerCloseButtonBackgroundColor: color })}
+                    allowImageVideo={false}
+                    className="relative"
+                    placeholder="transparent"
+                    inputClassName="h-7 text-xs pl-7 w-full"
+                  />
+                </FormRow>
+                <FormRow label="Close Button Icon Color" description="Icon color of close button">
+                  <ColorInput
+                    value={formData.headerCloseButtonIconColor || '#ffffff'}
+                    onChange={(color) => setFormData({ ...formData, headerCloseButtonIconColor: color })}
+                    allowImageVideo={false}
+                    className="relative"
+                    placeholder="#ffffff"
+                    inputClassName="h-7 text-xs pl-7 w-full"
+                  />
+                </FormRow>
+                <FormRow label="Close Button Hover Background" description="Hover background color">
+                  <ColorInput
+                    value={formData.headerCloseButtonHoverBackgroundColor || 'rgba(255,255,255,0.2)'}
+                    onChange={(color) => setFormData({ ...formData, headerCloseButtonHoverBackgroundColor: color })}
+                    allowImageVideo={false}
+                    className="relative"
+                    placeholder="rgba(255,255,255,0.2)"
+                    inputClassName="h-7 text-xs pl-7 w-full"
+                  />
+                </FormRow>
+              </>
+            )}
+          </FormSection>
         </SectionGroup>
       </div>
     </div>

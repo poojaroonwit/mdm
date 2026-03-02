@@ -11,7 +11,6 @@ import { ChatKitRenderer } from './components/ChatKitRenderer'
 import { ChatSidebar } from './components/ChatSidebar'
 import { ChatContent } from './components/ChatContent'
 import { ChatHeader } from './components/ChatHeader'
-import { GetStartedScreen } from './components/GetStartedScreen'
 import { ThreadSelector } from './components/ThreadSelector'
 import { AnimatePresence } from 'framer-motion'
 import { useChatMessages } from './hooks/useChatMessages'
@@ -31,6 +30,7 @@ import {
 } from './utils/chatStyling'
 import { Z_INDEX } from '@/lib/z-index'
 import { ChatWidgetButton } from './components/ChatWidgetButton'
+import { GetStartedPopover } from './components/GetStartedPopover'
 import { WidgetChatContainer } from './components/WidgetChatContainer'
 import { FullPageChatLayout } from './components/FullPageChatLayout'
 import { PWAInstallBanner } from './components/PWAInstallBanner'
@@ -61,18 +61,19 @@ export default function ChatPage() {
   )
   const [isOpen, setIsOpen] = useState<boolean>(urlDeploymentType === 'fullpage' || (!urlDeploymentType && !isEmbed))
   const [isInIframe, setIsInIframe] = useState(false)
+  
+  // Track if viewport is mobile
+  const [isMobile, setIsMobile] = useState(false)
+  // Use ref to track isMobile for resize effect without causing re-runs
+  const isMobileRef = useRef(false)
+
+  const [showGetStarted, setShowGetStarted] = useState(urlDeploymentType === 'popover' && !isMobile)
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [getStartedDismissed, setGetStartedDismissed] = useState(false)
   const [messageFeedback, setMessageFeedback] = useState<Record<string, 'liked' | 'disliked' | null>>({})
   const [input, setInput] = useState('')
   const [currentTranscript, setCurrentTranscript] = useState('') // Separate state for voice transcript display
   // Track if ChatKit is unavailable (for fallback to regular chat)
   const [chatKitUnavailable, setChatKitUnavailable] = useState(false)
-  // Track if viewport is mobile
-  const [isMobile, setIsMobile] = useState(false)
-  // Use ref to track isMobile for resize effect without causing re-runs
-  // This prevents loops where: iframe resize → isMobile change → resize effect → iframe resize
-  const isMobileRef = useRef(false)
 
   // Detect mobile viewport
   useEffect(() => {
@@ -87,11 +88,8 @@ export default function ChatPage() {
       }
 
       // In embed mode (NOT preview/emulator), use screen width
-      // This prevents the small initial iframe size (e.g. 120px) from triggering mobile view
-      // unless the actual device screen is small
       const useScreen = isEmbed && !isPreview
       const width = useScreen ? window.screen.width : window.innerWidth
-      // Use 1024 to cover tablets but still exclude desktop monitors
       const mobile = width < 1024
       setIsMobile(mobile)
       isMobileRef.current = mobile
@@ -100,6 +98,13 @@ export default function ChatPage() {
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [isEmbed, isPreview])
+
+  // Auto-hide Get Started on mobile
+  useEffect(() => {
+    if (isMobile && showGetStarted) {
+      setShowGetStarted(false)
+    }
+  }, [isMobile, showGetStarted])
 
   // Check if page is loaded in an iframe
   useEffect(() => {
@@ -497,10 +502,11 @@ export default function ChatPage() {
         }
         // Handle external control commands from parent window (embed script)
         if (data.type === 'open-chat') {
-          setIsOpen(true)
+          handleOpenChat()
         }
         if (data.type === 'close-chat') {
           setIsOpen(false)
+          setShowGetStarted(false)
         }
       } catch (err) {
         console.error('[ChatPage] Error processing message:', err)
@@ -516,6 +522,47 @@ export default function ChatPage() {
       window.parent.postMessage({ type: 'close-chat' }, '*')
     }
     setIsOpen(false)
+    setShowGetStarted(false)
+  }
+
+  const handleOpenChat = () => {
+    // Check if Get Started is enabled
+    // strict check for desktop only
+    const isMobile = isMobileRef.current
+    const getStarted = (chatbot as any)?.chatkitOptions?.getStarted
+    
+    if (getStarted?.enabled && !isOpen && !isMobile) {
+      // Check session storage
+      const hasShown = sessionStorage.getItem(`chatkit_get_started_shown_${chatbotId}`)
+      if (!hasShown) {
+          setShowGetStarted(true)
+          // We don't set isOpen=true yet, we wait for user to click "Start"
+      } else {
+          setIsOpen(true)
+      }
+    } else {
+      setIsOpen(true)
+    }
+  }
+
+  const handleStartChat = () => {
+    setShowGetStarted(false)
+    setIsOpen(true)
+    // Mark as shown for this session
+    sessionStorage.setItem(`chatkit_get_started_shown_${chatbotId}`, 'true')
+  }
+
+  const toggleChat = () => {
+    if (isOpen) {
+      handleClose()
+    } else {
+      if (showGetStarted) {
+        // If get started is already showing, clicking widget button again should probably close it
+        setShowGetStarted(false)
+      } else {
+        handleOpenChat()
+      }
+    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -725,18 +772,6 @@ export default function ChatPage() {
     )
   }
 
-  const renderContent = () => {
-    if (chatbot.getStartedEnabled && !getStartedDismissed && !messages.length) {
-      return (
-        <GetStartedScreen 
-          chatbot={chatbot} 
-          onStart={() => setGetStartedDismissed(true)} 
-        />
-      )
-    }
-    return renderChatContent()
-  }
-
   // isPreview is now defined earlier in the component (around line 336)
   // This is used by the layout routing logic below
   if (effectiveDeploymentType === 'fullpage' && !isInIframe && !isPreview) {
@@ -769,7 +804,7 @@ export default function ChatPage() {
         shouldRenderChatKit={!!shouldRenderChatKit}
         handleClose={handleClose}
       >
-        {renderContent()}
+        {renderChatContent()}
       </FullPageChatLayout>
     )
   }
@@ -802,6 +837,16 @@ export default function ChatPage() {
     shouldShowWidgetButton
   })
 
+  // Debug: Get Started Popover
+  const getStartedConfig = (chatbot as any)?.chatkitOptions?.getStarted
+  console.log('Get Started Debug:', {
+    enabled: getStartedConfig?.enabled,
+    showGetStarted,
+    isOpen,
+    shouldShowWidgetButton,
+    chatbotId
+  })
+
   // Define the main chat UI content part to be wrapped in the device frame if needed
   const chatUI = (
     <>
@@ -813,22 +858,37 @@ export default function ChatPage() {
       {isNativeChatKit && (
         <>
           {/* PWA Banner for native popover mode (Only if NOT host website mode, which has its own fixed banner) */}
-            {((chatbot as any).pwaInstallScope !== 'website') && (
-              <PWAInstallBanner chatbot={chatbot} isMobile={isMobile} isPreview={isPreview} />
-            )}
-            {renderContent()}
-          </>
-        )}
+          {((chatbot as any).pwaInstallScope !== 'website') && (
+            <PWAInstallBanner chatbot={chatbot} isMobile={isMobile} isPreview={isPreview} />
+          )}
+          {renderChatContent()}
+        </>
+      )}
 
       {/* Widget launcher button - Ensure it is clickable */}
       {shouldShowWidgetButton && (
         <div style={{ pointerEvents: 'auto', position: 'absolute', bottom: 0, right: 0, zIndex: Z_INDEX.chatWidget }}>
+           {/* Get Started Popover - Renders above widget button when active */}
+           {chatbot && (
+            <GetStartedPopover 
+              chatbot={chatbot}
+              isOpen={showGetStarted && !isOpen} // Only show if chat is NOT open
+              onStart={handleStartChat}
+              onClose={() => setShowGetStarted(false)}
+              theme={(chatbot as any).chatkitOptions?.theme}
+            />
+           )}
+          
           <ChatWidgetButton
             chatbot={chatbot}
             isOpen={isOpen}
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={toggleChat}
             widgetButtonStyle={widgetButtonStyle}
             popoverPositionStyle={popoverPositionStyle}
+            onDebugToggle={() => {
+              console.log('Force toggling Get Started');
+              setShowGetStarted(prev => !prev);
+            }}
           />
         </div>
       )}
@@ -851,7 +911,7 @@ export default function ChatPage() {
             handleClose={handleClose}
             onClearSession={() => setMessages([])}
           >
-            {renderContent()}
+            {renderChatContent()}
           </WidgetChatContainer>
         )}
       </AnimatePresence>

@@ -141,6 +141,19 @@ export interface ChatKitOptions {
   threadItemActions?: ChatKitThreadItemActions
   modelPicker?: ChatKitModelPicker
   personaPicker?: ChatKitPersonaPicker
+  getStarted?: ChatKitGetStarted
+  [key: string]: any
+}
+
+export interface ChatKitGetStarted {
+  enabled?: boolean
+  icon?: string
+  image?: string
+  title?: string
+  subTitle?: string
+  description?: string
+  buttonText?: string
+  marginBottom?: string
   [key: string]: any
 }
 
@@ -292,13 +305,6 @@ export interface Chatbot {
   // Config
   conversationOpener: string
   showStartConversation?: boolean // Show/hide the start conversation message
-  // Get Started Screen
-  getStartedEnabled?: boolean
-  getStartedIcon?: string
-  getStartedTitle?: string
-  getStartedSubtitle?: string
-  getStartedDescription?: string
-  getStartedButtonText?: string
   // Start Screen Prompts (for Agent SDK and other engines)
   startScreenPrompts?: Array<{ label?: string; prompt: string; icon?: string }> // Quick prompt buttons shown when chat starts
   // Start Screen Prompts Styling
@@ -355,11 +361,8 @@ export interface Chatbot {
   widgetLabelShowIcon?: boolean // Show icon next to label
   widgetLabelIconPosition?: 'left' | 'right' // Icon position relative to label
   // Widget behavior
-  widgetAnimation?: 'none' | 'fade' | 'slide' | 'bounce'
+  widgetAnimation: 'none' | 'fade' | 'slide' | 'bounce'
   widgetAnimationEntry?: 'fade' | 'slide-up' | 'slide-side' | 'scale'
-  widgetAnimationExit?: 'slide-down' | 'scale' | 'fade' | 'slide-side'
-  widgetAnimationDuration?: number // seconds
-  widgetAnimationType?: 'spring' | 'tween'
   widgetAutoShow?: boolean // Deprecated in favor of widgetAutoShowDesktop
   widgetAutoShowDesktop?: boolean // Default true
   widgetAutoShowMobile?: boolean // Default false

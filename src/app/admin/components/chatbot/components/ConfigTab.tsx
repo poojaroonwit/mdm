@@ -452,34 +452,20 @@ export function ConfigTab({ formData, setFormData }: ConfigTabProps) {
                 Configure ChatKit-specific features and options.
               </p>
               <Accordion type="single" collapsible value={accordionValue} onValueChange={(value) => setAccordionValue(typeof value === 'string' ? value : value[0] || '')}>
-                <AccordionItem value="getstarted" className="border-b px-4">
-                  <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                    Get Started Screen
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-4 pb-6">
-                    <GetStartedSection formData={formData} setFormData={setFormData} chatkitOptions={chatkitOptions} />
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="startScreen" className="border-b px-4">
-                  <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                    Start Screen
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-4 pb-6">
-                    <StartScreenSection formData={formData} setFormData={setFormData} chatkitOptions={chatkitOptions} />
-                  </AccordionContent>
-                </AccordionItem>
-
+                <StartScreenSection formData={formData} setFormData={setFormData} chatkitOptions={chatkitOptions} />
                 <ThreadItemActionsSection formData={formData} setFormData={setFormData} chatkitOptions={chatkitOptions} />
                 <DisclaimerSection formData={formData} setFormData={setFormData} chatkitOptions={chatkitOptions} />
                 <ModelPickerSection formData={formData} setFormData={setFormData} chatkitOptions={chatkitOptions} />
-                
-                <AccordionItem value="personaPicker" className="border-b px-4">
-                  <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                    Persona Picker
+                <PersonaPickerSection formData={formData} setFormData={setFormData} chatkitOptions={chatkitOptions} />
+                <AccordionItem value="get-started" className="border-b-0 px-4">
+                  <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
+                    <div className="flex items-center gap-2">
+                      <Icons.PlayCircle className="h-4 w-4" />
+                      Get Started Popover
+                    </div>
                   </AccordionTrigger>
-                  <AccordionContent className="pt-4 pb-6">
-                    <PersonaPickerSection formData={formData} setFormData={setFormData} chatkitOptions={chatkitOptions} />
+                  <AccordionContent>
+                     <GetStartedSection formData={formData} setFormData={setFormData} chatkitOptions={chatkitOptions} />
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>

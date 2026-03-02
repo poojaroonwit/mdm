@@ -12,8 +12,7 @@ import {
   Sparkles, 
   History,
   PanelTop,
-  CircleDot,
-  Rocket
+  CircleDot
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import type { Chatbot } from '../types'
@@ -24,7 +23,6 @@ import {
   WidgetSection,
   PersonaPickerSection
 } from './sections'
-import { GetStartedSection } from './sections/GetStartedSection'
 import { ChatKitIntegrationSection } from './sections/ChatKitIntegrationSection'
 import { AnimationSection } from './sections/AnimationSection'
 
@@ -81,13 +79,25 @@ export function ChatKitStyleConfig({ formData, setFormData, chatkitOptions }: Ch
     <div className="space-y-6">
       <Tabs defaultValue="popover" value={activeTab} onValueChange={setActiveTab} className="flex flex-col md:flex-row w-full gap-6">
         <TabsList className="flex flex-col h-auto gap-1 bg-transparent p-0 w-full md:w-48 lg:w-64 shrink-0 justify-start">
-          <TabsTrigger value="getstarted" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
-            <Rocket className="h-4 w-4" />
-            Get Started Screen
-          </TabsTrigger>
           <TabsTrigger value="animation" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
             <Sparkles className="h-4 w-4" />
             Animation
+          </TabsTrigger>
+          <TabsTrigger value="header" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
+            <PanelTop className="h-4 w-4" />
+            Header
+          </TabsTrigger>
+          <TabsTrigger value="popover" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
+            <MessageSquare className="h-4 w-4" />
+            Chat Container
+          </TabsTrigger>
+          <TabsTrigger value="history" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
+            <History className="h-4 w-4" />
+            History Panel
+          </TabsTrigger>
+          <TabsTrigger value="widget" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
+            <CircleDot className="h-4 w-4" />
+            Widget Button
           </TabsTrigger>
           <TabsTrigger value="persona" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
             <UserCircle className="h-4 w-4" />
@@ -137,13 +147,6 @@ export function ChatKitStyleConfig({ formData, setFormData, chatkitOptions }: Ch
           <TabsContent value="widget" className="m-0 mt-0">
             <SectionWrapper>
               <WidgetSection formData={formData} setFormData={setFormData} chatkitOptions={chatkitOptions} />
-            </SectionWrapper>
-          </TabsContent>
-
-          {/* Get Started Screen */}
-          <TabsContent value="getstarted" className="m-0 mt-0">
-            <SectionWrapper>
-              <GetStartedSection formData={formData} setFormData={setFormData} chatkitOptions={chatkitOptions} />
             </SectionWrapper>
           </TabsContent>
 
