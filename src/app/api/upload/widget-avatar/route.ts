@@ -14,11 +14,14 @@ async function postHandler(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get('image') as File
 
-    if (!file) {
+    if (!file || !(file instanceof Blob)) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    if (!file.type.startsWith('image/')) {
+    // Only reject if the browser explicitly provides a non-image MIME type.
+    // An empty type (e.g. .webp on some browsers) is allowed — the input already
+    // restricts selection via accept="image/*".
+    if (file.type && !file.type.startsWith('image/')) {
       return NextResponse.json({ error: 'Invalid file type. Only images are allowed.' }, { status: 400 })
     }
 
