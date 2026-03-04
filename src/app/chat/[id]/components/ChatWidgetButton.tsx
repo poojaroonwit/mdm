@@ -44,8 +44,31 @@ export function ChatWidgetButton({
     const containerStyle = useMemo(() => {
         // Calculate the "ideal" background pieces from the utility
         // Strictly separate color from image/gradient to avoid shorthand issues
-        const bgColor = widgetButtonStyle.backgroundColor || 'transparent'
-        const bgImage = widgetButtonStyle.backgroundImage || widgetButtonStyle.background || 'none'
+        let bgColor = widgetButtonStyle.backgroundColor || 'transparent'
+        let bgImage = widgetButtonStyle.backgroundImage || widgetButtonStyle.background || 'none'
+
+        // When chat is OPEN, swap to open-state background if configured
+        if (isOpen) {
+            if (config.openBackgroundImage) {
+                // Open state has a background image
+                const imgUrl = config.openBackgroundImage
+                bgImage = imgUrl.startsWith('url(') ? imgUrl : `url(${imgUrl})`
+                bgColor = 'transparent'
+            } else if (config.openBackgroundColor) {
+                const openBg = config.openBackgroundColor
+                // Check if the open background is an image URL
+                if (openBg.startsWith('url(') || openBg.startsWith('http://') || openBg.startsWith('https://') || openBg.startsWith('/')) {
+                    bgImage = openBg.startsWith('url(') ? openBg : `url(${openBg})`
+                    bgColor = 'transparent'
+                } else if (openBg.toLowerCase().includes('gradient')) {
+                    bgImage = openBg
+                    bgColor = 'transparent'
+                } else {
+                    bgColor = openBg
+                    bgImage = 'none'
+                }
+            }
+        }
         
         // Final border radius calculation
         const finalBorderRadius = config.avatarStyle === 'circle' ? '50%' : (config.borderRadius || (widgetButtonStyle as any).borderRadius || '50%');

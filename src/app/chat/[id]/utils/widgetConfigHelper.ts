@@ -19,6 +19,8 @@ export interface WidgetConfig {
 
     // Styling
     backgroundColor: string
+    openBackgroundColor?: string
+    openBackgroundImage?: string
     borderColor: string
     borderWidth: string
     borderRadius: string
@@ -211,6 +213,8 @@ export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any): WidgetConf
         zIndex: c.widgetZIndex || Z_INDEX.chatWidget,
 
         backgroundColor,
+        openBackgroundColor: c.widgetOpenBackgroundColor || undefined,
+        openBackgroundImage: c.widgetOpenBackgroundImage || undefined,
         borderColor: c.widgetBorderColor || '#ffffff',
         borderWidth: c.widgetBorderWidth || '2px',
         borderRadius,

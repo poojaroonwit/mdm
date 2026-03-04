@@ -280,6 +280,8 @@ export interface ChatbotConfig {
   widgetBackgroundColor?: string
   widgetBackgroundBlur?: number // Blur percentage (0-100) for glassmorphism effect
   widgetBackgroundOpacity?: number // Background opacity (0-100) for glassmorphism effect
+  widgetOpenBackgroundColor?: string // Background color when chat is OPEN (falls back to widgetBackgroundColor)
+  widgetOpenBackgroundImage?: string // Background image URL when chat is OPEN
   widgetBorderColor?: string
   widgetBorderWidth?: string
   widgetBorderRadius?: string

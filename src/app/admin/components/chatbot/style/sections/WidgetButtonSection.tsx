@@ -328,13 +328,23 @@ export function WidgetButtonSection({ formData, setFormData }: WidgetButtonSecti
                 <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">px</span>
               </div>
             </FormRow>
-            <FormRow label="Widget Background" description="Background color or image for the widget button">
+            <FormRow label="Widget Background (Closed)" description="Background color or image when chat is closed">
               <ColorInput
                 value={formData.widgetBackgroundColor || '#3b82f6'}
                 onChange={(color) => setFormData({ ...formData, widgetBackgroundColor: color })}
                 allowImageVideo={true}
                 className="relative"
                 placeholder="#3b82f6"
+                inputClassName="h-7 text-xs pl-7 w-full"
+              />
+            </FormRow>
+            <FormRow label="Widget Background (Open)" description="Background color or image when chat is open">
+              <ColorInput
+                value={formData.widgetOpenBackgroundColor || ''}
+                onChange={(color) => setFormData({ ...formData, widgetOpenBackgroundColor: color })}
+                allowImageVideo={true}
+                className="relative"
+                placeholder="Leave empty to use closed background"
                 inputClassName="h-7 text-xs pl-7 w-full"
               />
             </FormRow>
