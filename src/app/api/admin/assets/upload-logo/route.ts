@@ -19,7 +19,7 @@ async function postHandler(request: NextRequest) {
     const assetId = formData.get('assetId') as string
 
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 500 })
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
     if (!file.type.startsWith('image/')) {
@@ -28,10 +28,10 @@ async function postHandler(request: NextRequest) {
 
     // Validate file size (max ~2MB)
     if (file.size > 2 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File too large' }, { status: 500 })
+      return NextResponse.json({ error: 'File too large' }, { status: 400 })
     }
 
-    const uploadsDir = join(process.cwd(), 'uploads', 'assets', 'logos')
+    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'assets', 'logos')
     if (!existsSync(uploadsDir)) {
       await mkdir(uploadsDir, { recursive: true })
     }

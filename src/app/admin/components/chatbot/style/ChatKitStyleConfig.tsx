@@ -21,7 +21,8 @@ import {
   LocaleSection,
   PopoverSection,
   WidgetSection,
-  PersonaPickerSection
+  PersonaPickerSection,
+  RegularAvatarSection
 } from './sections'
 import { ChatKitIntegrationSection } from './sections/ChatKitIntegrationSection'
 import { AnimationSection } from './sections/AnimationSection'
@@ -103,6 +104,10 @@ export function ChatKitStyleConfig({ formData, setFormData, chatkitOptions }: Ch
             <UserCircle className="h-4 w-4" />
             Persona Picker
           </TabsTrigger>
+          <TabsTrigger value="avatar" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
+            <UserCircle className="h-4 w-4" />
+            Avatar
+          </TabsTrigger>
           <TabsTrigger value="locale" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
             <Languages className="h-4 w-4" />
             Language
@@ -154,6 +159,17 @@ export function ChatKitStyleConfig({ formData, setFormData, chatkitOptions }: Ch
           <TabsContent value="persona" className="m-0 mt-0">
             <SectionWrapper>
               <PersonaPickerSection formData={formData} setFormData={setFormData} chatkitOptions={chatkitOptions} />
+            </SectionWrapper>
+          </TabsContent>
+
+          {/* Avatar Settings */}
+          <TabsContent value="avatar" className="m-0 mt-0">
+            <SectionWrapper>
+              <div className="py-2 w-full">
+                <Accordion type="single" collapsible defaultValue="avatar">
+                  <RegularAvatarSection formData={formData} setFormData={setFormData} />
+                </Accordion>
+              </div>
             </SectionWrapper>
           </TabsContent>
 

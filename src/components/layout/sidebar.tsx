@@ -345,8 +345,8 @@ export function Sidebar({ className }: SidebarProps) {
                                       variant={isActive(item.href) ? "secondary" : "ghost"}
                                       className="w-full justify-start text-sm h-8"
                                       style={{
-                                        color: settings.fontColor,
-                                        backgroundColor: isActive(item.href) ? 'rgba(255, 255, 255, 0.1)' : 'transparent'
+                                        color: isActive(item.href) ? 'var(--brand-primary, #3b82f6)' : settings.fontColor,
+                                        backgroundColor: isActive(item.href) ? 'var(--brand-primary-light, rgba(59, 130, 246, 0.15))' : 'transparent'
                                       }}
                                     >
                                       <ItemIcon className="mr-2 h-4 w-4" />
@@ -379,8 +379,8 @@ export function Sidebar({ className }: SidebarProps) {
                                       variant={isActive(href) ? "secondary" : "ghost"}
                                       className="w-full justify-start text-sm h-8"
                                       style={{
-                                        color: settings.fontColor,
-                                        backgroundColor: isActive(href) ? 'rgba(255, 255, 255, 0.1)' : 'transparent'
+                                        color: isActive(href) ? 'var(--brand-primary, #3b82f6)' : settings.fontColor,
+                                        backgroundColor: isActive(href) ? 'var(--brand-primary-light, rgba(59, 130, 246, 0.15))' : 'transparent'
                                       }}
                                     >
                                       {m.icon ? (

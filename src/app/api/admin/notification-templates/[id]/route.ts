@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAuth, withErrorHandling } from '@/lib/api-middleware'
+import { requireAdmin, withErrorHandling } from '@/lib/api-middleware'
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
 import { validateBody } from '@/lib/api-validation'
 
 async function getHandler(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const authResult = await requireAuth('ADMIN')
+  const authResult = await requireAdmin()
   if (!authResult.success) return authResult.response
 
   const { id } = await params
@@ -21,7 +21,7 @@ async function getHandler(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 async function putHandler(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const authResult = await requireAuth('ADMIN')
+  const authResult = await requireAdmin()
   if (!authResult.success) return authResult.response
 
   const { id } = await params

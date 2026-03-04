@@ -27,7 +27,7 @@ async function postHandler(request: NextRequest) {
       return NextResponse.json({ error: 'File too large' }, { status: 400 })
     }
 
-    const uploadsDir = join(process.cwd(), 'uploads', 'logos')
+    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'logos')
     if (!existsSync(uploadsDir)) {
       await mkdir(uploadsDir, { recursive: true })
     }

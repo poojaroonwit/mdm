@@ -114,6 +114,7 @@ class DatabaseChangeApproval {
       console.log('✅ Database change approval system initialized')
     } catch (error) {
       console.error('❌ Failed to initialize change approval system:', error)
+      throw error
     }
   }
 

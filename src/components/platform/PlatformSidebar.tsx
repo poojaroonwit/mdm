@@ -418,7 +418,7 @@ export function PlatformSidebar({
                         className={cn(
                           "platform-sidebar-menu-button w-full justify-center h-10 transition-colors duration-150 cursor-pointer",
                           (selectedGroup === groupId || (groupId === 'data-management' && (activeTab === 'space-selection' || selectedGroup === 'data-management')) || (groupId === 'infrastructure' && activeTab === 'infrastructure'))
-                            ? "platform-sidebar-menu-button-active !bg-muted !text-foreground rounded-sm"
+                            ? "platform-sidebar-menu-button-active !bg-primary/15 !text-primary rounded-sm"
                             : "text-muted-foreground hover:!bg-transparent hover:!text-foreground rounded-none"
                         )}
                         onClick={() => handleGroupClick(groupId)}
@@ -468,7 +468,7 @@ export function PlatformSidebar({
                         className={cn(
                           "platform-sidebar-menu-button w-full justify-start text-sm font-medium h-10 px-4 transition-colors duration-150 cursor-pointer",
                           (selectedGroup === groupId || (groupId === 'data-management' && activeTab === 'space-selection') || (groupId === 'infrastructure' && activeTab === 'infrastructure'))
-                            ? "platform-sidebar-menu-button-active !bg-muted !text-foreground rounded-sm"
+                            ? "platform-sidebar-menu-button-active !bg-primary/15 !text-primary rounded-sm"
                             : "text-foreground hover:!bg-transparent hover:!text-foreground rounded-none"
                         )}
                         onClick={() => handleGroupClick(groupId)}
@@ -554,7 +554,7 @@ export function PlatformSidebar({
                               className={cn(
                                 "platform-sidebar-menu-button w-full justify-start items-center text-sm font-medium h-9 px-4 transition-colors duration-150 cursor-pointer",
                                 activeTab === tab.id
-                                  ? "platform-sidebar-menu-button-active !bg-muted !text-foreground rounded-sm"
+                                  ? "platform-sidebar-menu-button-active !bg-primary/15 !text-primary rounded-sm"
                                   : "text-muted-foreground hover:!bg-transparent hover:!text-foreground rounded-none"
                               )}
                               onClick={() => handleTabClick(tab.id, (tab as any).href)}
@@ -562,7 +562,7 @@ export function PlatformSidebar({
                                 pointerEvents: 'auto',
                                 position: 'relative',
                                 zIndex: Z_INDEX.sidebar + 1,
-                                ...(activeTab === tab.id ? { backgroundColor: 'hsl(var(--muted))' } : {})
+                                ...(activeTab === tab.id ? { backgroundColor: 'var(--brand-primary-light, rgba(59, 130, 246, 0.15))' } : {})
                               }}
                             >
                               <tab.icon className="h-4 w-4 mr-3 flex-shrink-0" />

@@ -374,6 +374,8 @@ export interface Chatbot {
   widgetZIndex: number
   showNotificationBadge: boolean
   notificationBadgeColor: string
+  widgetCloseAvatarType?: 'icon' | 'image'
+  widgetCloseAvatarIcon?: string
   widgetCloseImageUrl?: string
   popoverPosition?: 'top' | 'left' // Position of popover relative to widget: 'top' = above widget, 'left' = to the left of widget
   widgetPopoverMargin?: string // Margin/spacing between widget button and popover window

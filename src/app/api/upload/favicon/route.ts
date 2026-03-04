@@ -32,7 +32,7 @@ async function postHandler(request: NextRequest) {
     }
 
     // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'uploads', 'favicons')
+    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'favicons')
     if (!existsSync(uploadsDir)) {
       await mkdir(uploadsDir, { recursive: true })
     }

@@ -6,6 +6,8 @@ export interface WidgetConfig {
     avatarStyle: 'circle' | 'square' | 'circle-with-label' | 'custom'
     avatarType: 'icon' | 'image' | 'none'
     avatarImageUrl: string
+    avatarCloseType?: 'icon' | 'image'
+    avatarCloseIcon?: string
     avatarCloseImageUrl?: string
     avatarIcon: string
     avatarIconColor: string
@@ -100,6 +102,8 @@ export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any): WidgetConf
     const avatarStyle = c.widgetAvatarStyle || 'circle'
     const avatarType = c.widgetAvatarType || c.avatarType || 'icon'
     const avatarImageUrl = c.widgetAvatarImageUrl || c.avatarImageUrl || ''
+    const avatarCloseType = c.widgetCloseAvatarType || 'icon' // default to icon for close state
+    const avatarCloseIcon = c.widgetCloseAvatarIcon || 'X' // default to X for close icon
     const avatarCloseImageUrl = c.widgetCloseImageUrl || ''
     const avatarIcon = c.widgetAvatarIcon || c.avatarIcon || 'Bot'
 
@@ -202,6 +206,8 @@ export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any): WidgetConf
         avatarStyle,
         avatarType,
         avatarImageUrl,
+        avatarCloseType,
+        avatarCloseIcon,
         avatarCloseImageUrl,
         avatarIcon,
         avatarIconColor,

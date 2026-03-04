@@ -198,7 +198,26 @@ export function ChatWidgetButton({
                 data-widget-button="true"
             >
             {isOpen ? (
-                <X className="h-6 w-6" style={{ color: config.avatarIconColor }} />
+                (() => {
+                    if (config.avatarCloseType === 'image' && config.avatarCloseImageUrl) {
+                        return (
+                            <img
+                                src={config.avatarCloseImageUrl}
+                                alt="Close chat"
+                                className="h-6 w-6 object-contain"
+                                style={{
+                                    width: '24px !important',
+                                    height: '24px !important',
+                                    background: 'transparent !important',
+                                    borderRadius: '0 !important'
+                                }}
+                            />
+                        )
+                    }
+                    const IconName = config.avatarCloseIcon as string
+                    const IconComponent = (Icons as any)[IconName] || X
+                    return <IconComponent className="h-6 w-6" style={{ color: config.avatarIconColor }} />
+                })()
             ) : (
                 (() => {
                     const renderIcon = () => {

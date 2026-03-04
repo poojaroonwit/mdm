@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAuth, withErrorHandling } from '@/lib/api-middleware'
+import { requireAdmin, withErrorHandling } from '@/lib/api-middleware'
 import { prisma } from '@/lib/db' // Assuming prisma is available for system settings access
 
 async function getHandler(request: NextRequest) {
-  const authResult = await requireAuth('ADMIN')
+  const authResult = await requireAdmin()
   if (!authResult.success) return authResult.response
 
   const setting = await prisma.systemSetting.findUnique({
@@ -24,7 +24,7 @@ async function getHandler(request: NextRequest) {
 }
 
 async function putHandler(request: NextRequest) {
-    const authResult = await requireAuth('ADMIN')
+    const authResult = await requireAdmin()
     if (!authResult.success) return authResult.response
 
     const body = await request.json()

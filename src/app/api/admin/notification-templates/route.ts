@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAuth, withErrorHandling } from '@/lib/api-middleware'
+import { requireAdmin, withErrorHandling } from '@/lib/api-middleware'
 import { prisma } from '@/lib/db'
 
 async function getHandler(request: NextRequest) {
-  const authResult = await requireAuth('ADMIN')
+  const authResult = await requireAdmin()
   if (!authResult.success) return authResult.response
   
   const templates = await prisma.notificationTemplate.findMany({

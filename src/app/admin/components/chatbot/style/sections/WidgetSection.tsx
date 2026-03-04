@@ -202,57 +202,58 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
           </AccordionTrigger>
           <AccordionContent>
             <FormSection className="pt-2 pb-4">
-              <FormRow label="Avatar Type" description="Icon or custom image">
-                <Select
-                  value={(formData as any).widgetAvatarType || formData.avatarType || 'icon'}
-                  onValueChange={(v: any) => setFormData({ ...formData, widgetAvatarType: v } as any)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="icon">Icon</SelectItem>
-                    <SelectItem value="image">Image</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormRow>
-              {(formData as any).widgetAvatarType === 'icon' || (!(formData as any).widgetAvatarType && formData.avatarType !== 'image') ? (
-                <FormRow label="Icon" description="Click to browse and search available icons">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className="w-full justify-between"
-                      >
-                        {(() => {
-                          const iconName = (formData as any).widgetAvatarIcon || formData.avatarIcon || 'Bot';
-                          const IconComp = (Icons as any)[iconName] || Icons.Bot;
-                          return (
-                            <div className="flex items-center gap-2">
-                              <IconComp className="h-4 w-4" />
-                              <span>{iconName}</span>
-                            </div>
-                          );
-                        })()}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[500px] p-4" align="start">
-                      <IconPicker
-                        value={(formData as any).widgetAvatarIcon || formData.avatarIcon || 'Bot'}
-                        onChange={(v) => setFormData({ ...formData, widgetAvatarIcon: v } as any)}
-                      />
-                    </PopoverContent>
-                  </Popover>
+              <div className="mb-6 space-y-4">
+                <h4 className="text-sm font-medium border-b pb-2">Avatar (Closed State)</h4>
+                <FormRow label="Type" description="Icon or custom image">
+                  <Select
+                    value={(formData as any).widgetAvatarType || formData.avatarType || 'icon'}
+                    onValueChange={(v: any) => setFormData({ ...formData, widgetAvatarType: v } as any)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="icon">Icon</SelectItem>
+                      <SelectItem value="image">Image</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </FormRow>
-              ) : (
-                <FormRow label="Avatar Image" description="Upload custom images for the widget button">
-                  <div className="space-y-4">
-                    {/* Trigger Image (shown when chat is closed) */}
-                    <div className="flex gap-4 items-start">
+                
+                {((formData as any).widgetAvatarType === 'icon' || (!(formData as any).widgetAvatarType && formData.avatarType !== 'image')) ? (
+                  <FormRow label="Icon" description="Shown when chat is closed">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between"
+                        >
+                          {(() => {
+                            const iconName = (formData as any).widgetAvatarIcon || formData.avatarIcon || 'Bot';
+                            const IconComp = (Icons as any)[iconName] || Icons.Bot;
+                            return (
+                              <div className="flex items-center gap-2">
+                                <IconComp className="h-4 w-4" />
+                                <span>{iconName}</span>
+                              </div>
+                            );
+                          })()}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[500px] p-4" align="start">
+                        <IconPicker
+                          value={(formData as any).widgetAvatarIcon || formData.avatarIcon || 'Bot'}
+                          onChange={(v) => setFormData({ ...formData, widgetAvatarIcon: v } as any)}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </FormRow>
+                ) : (
+                  <FormRow label="Image" description="Shown when chat is closed">
+                    <div className="flex gap-4 items-start w-full">
                       {((formData as any).widgetAvatarImageUrl || formData.avatarImageUrl) && (
-                        <div className="relative group">
+                        <div className="relative group shrink-0">
                           <img
                             src={(formData as any).widgetAvatarImageUrl || formData.avatarImageUrl}
                             alt="Widget avatar preview"
@@ -271,7 +272,7 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
                         </div>
                       )}
                       
-                      <div className="flex-1 space-y-2">
+                      <div className="flex-1 space-y-2 min-w-0">
                         <Input
                           value={(formData as any).widgetAvatarImageUrl || formData.avatarImageUrl || ''}
                           onChange={(e) => setFormData({ ...formData, widgetAvatarImageUrl: e.target.value } as any)}
@@ -309,19 +310,70 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
                             onClick={() => document.getElementById('widget-avatar-upload-main')?.click()}
                           >
                             <Icons.Upload className="h-3.5 w-3.5 mr-1.5" />
-                            Upload Trigger Image
+                            Upload Image
                           </Button>
                         </div>
                         <p className="text-[10px] text-muted-foreground">
-                          Recommended size: 256x256px. Shown when the chat is <strong>closed</strong>.
+                          Recommended size: 256x256px
                         </p>
                       </div>
                     </div>
+                  </FormRow>
+                )}
+              </div>
 
-                    {/* Close Image (shown when chat is open) */}
-                    <div className="flex gap-4 items-start pt-2 border-t border-dashed">
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium border-b pb-2">Close Avatar (Open State)</h4>
+                <FormRow label="Type" description="Icon or custom image">
+                  <Select
+                    value={(formData as any).widgetCloseAvatarType || 'icon'}
+                    onValueChange={(v: any) => setFormData({ ...formData, widgetCloseAvatarType: v } as any)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="icon">Icon</SelectItem>
+                      <SelectItem value="image">Image</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormRow>
+
+                {((formData as any).widgetCloseAvatarType === 'icon' || !(formData as any).widgetCloseAvatarType) ? (
+                  <FormRow label="Icon" description="Shown when chat is open">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between"
+                        >
+                          {(() => {
+                            const iconName = (formData as any).widgetCloseAvatarIcon || 'X';
+                            const IconComp = (Icons as any)[iconName] || Icons.X;
+                            return (
+                              <div className="flex items-center gap-2">
+                                <IconComp className="h-4 w-4" />
+                                <span>{iconName}</span>
+                              </div>
+                            );
+                          })()}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[500px] p-4" align="start">
+                        <IconPicker
+                          value={(formData as any).widgetCloseAvatarIcon || 'X'}
+                          onChange={(v) => setFormData({ ...formData, widgetCloseAvatarIcon: v } as any)}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </FormRow>
+                ) : (
+                  <FormRow label="Image" description="Shown when chat is open">
+                    <div className="flex gap-4 items-start w-full">
                       {(formData as any).widgetCloseImageUrl && (
-                        <div className="relative group">
+                        <div className="relative group shrink-0">
                           <img
                             src={(formData as any).widgetCloseImageUrl}
                             alt="Widget close preview"
@@ -340,7 +392,7 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
                         </div>
                       )}
                       
-                      <div className="flex-1 space-y-2">
+                      <div className="flex-1 space-y-2 min-w-0">
                         <Input
                           value={(formData as any).widgetCloseImageUrl || ''}
                           onChange={(e) => setFormData({ ...formData, widgetCloseImageUrl: e.target.value } as any)}
@@ -382,15 +434,13 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
                           </Button>
                         </div>
                         <p className="text-[10px] text-muted-foreground">
-                          Recommended size: 256x256px. Shown when the chat is <strong>open</strong>.
+                          Recommended size: 256x256px
                         </p>
                       </div>
                     </div>
-                  </div>
-                </FormRow>
-
-
-              )}
+                  </FormRow>
+                )}
+              </div>
             </FormSection>
           </AccordionContent>
         </AccordionItem>
