@@ -6,6 +6,8 @@ import { logger } from '@/lib/logger'
 import { validateParams, validateBody, commonSchemas } from '@/lib/api-validation'
 import { handleApiError } from '@/lib/api-middleware'
 import { addSecurityHeaders } from '@/lib/security-headers'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { z } from 'zod'
 
 // GET /api/users/[id] - get user (MANAGER+)
@@ -59,7 +61,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
-// PUT /api/users/[id] - update user (MANAGER+); can change name, role, activation, password
+// PUT /api/users/[id] - update user (MANAGER+); role changes require ADMIN+
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const startTime = Date.now()
   const forbidden = await requireRole(request, 'MANAGER')
@@ -96,6 +98,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const { email, name, role, is_active, password, spaces } = bodyValidation.data
 
+    // Role changes require ADMIN or higher to prevent privilege escalation
+    if (role) {
+      const adminForbidden = await requireRole(request, 'ADMIN')
+      if (adminForbidden) return addSecurityHeaders(adminForbidden)
+    }
+
     const sets: string[] = []
     const values: any[] = []
 
@@ -111,7 +119,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       values.push(hashed)
       sets.push(`password = $${values.length}`)
     }
-
 
     if (!sets.length) {
       return addSecurityHeaders(NextResponse.json({ error: 'No fields to update' }, { status: 400 }))
@@ -132,10 +139,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Handle space memberships if provided
     if (spaces && Array.isArray(spaces)) {
-      // Remove existing space memberships
       await query('DELETE FROM space_members WHERE user_id::text = $1', [id])
 
-      // Add new space memberships
       for (const space of spaces) {
         if (space.id && space.role) {
           await query(
@@ -146,14 +151,15 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    // Create audit log
+    // Get session to record the actor in audit log
+    const session = await getServerSession(authOptions)
     await createAuditLog({
       action: 'UPDATE',
       entityType: 'User',
       entityId: id,
       oldValue: currentData,
       newValue: rows[0],
-      userId: currentData.id, // The user being updated
+      userId: session?.user?.id || id,
       ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
       userAgent: request.headers.get('user-agent') || 'unknown'
     })
@@ -168,10 +174,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
-// DELETE /api/users/[id] - delete user (MANAGER+)
+// DELETE /api/users/[id] - delete user (ADMIN+)
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const startTime = Date.now()
-  const forbidden = await requireRole(request, 'MANAGER')
+  const forbidden = await requireRole(request, 'ADMIN')
   if (forbidden) return addSecurityHeaders(forbidden)
   try {
     const resolvedParams = await params

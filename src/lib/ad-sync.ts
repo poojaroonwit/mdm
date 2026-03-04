@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db'
-import { query } from '@/lib/db' // Assuming we can use this or prisma directly. Using prisma is easier for upsert.
+import { query } from '@/lib/db'
+import crypto from 'crypto'
 
 interface AdUser {
   id: string
@@ -105,33 +106,40 @@ export async function syncAdUsers() {
     try {
         const existingUser = await prisma.user.findUnique({ where: { email } })
 
-        const userData = {
-            name: adUser.displayName,
-            email: email, // Email should allow update if we match by adUserId? But usually email is unique.
-            // If user exists, we rely on email match.
-            adUserId: adUser.id,
-            jobTitle: adUser.jobTitle,
-            department: adUser.department,
-            organization: adUser.companyName,
-            allowedLoginMethods: ['azure-ad'],
-            isActive: true,
-            // Don't overwrite role if exists
-        }
-
         if (existingUser) {
+            // Preserve existing allowedLoginMethods; add 'azure-ad' if not already present
+            const existing = Array.isArray(existingUser.allowedLoginMethods)
+              ? existingUser.allowedLoginMethods as string[]
+              : []
+            const methods = existing.includes('azure-ad') ? existing : [...existing, 'azure-ad']
+
             await prisma.user.update({
                 where: { id: existingUser.id },
-                data: userData
+                data: {
+                    name: adUser.displayName,
+                    adUserId: adUser.id,
+                    jobTitle: adUser.jobTitle,
+                    department: adUser.department,
+                    organization: adUser.companyName,
+                    allowedLoginMethods: methods,
+                    isActive: true,
+                }
             })
             results.updated++
         } else {
-            // New user
-            // Generate random password as they must use AD
+            // New user — AD-only account with a cryptographically random unusable password
             await prisma.user.create({
                 data: {
-                    ...userData,
-                    password: Math.random().toString(36).slice(-8), // Dummy password
-                    role: 'USER', // Default role
+                    name: adUser.displayName,
+                    email,
+                    adUserId: adUser.id,
+                    jobTitle: adUser.jobTitle,
+                    department: adUser.department,
+                    organization: adUser.companyName,
+                    allowedLoginMethods: ['azure-ad'],
+                    isActive: true,
+                    password: crypto.randomBytes(32).toString('hex'),
+                    role: 'USER',
                 }
             })
             results.created++

@@ -24,42 +24,21 @@ export async function requireRole(
   required: AppRole
 ): Promise<NextResponse | null> {
   try {
-    console.log('🔍 Checking role requirement:', required);
     const session = await getServerSession(authOptions)
-    console.log('Session found:', !!session);
-    console.log('User:', session?.user);
-    
     const role = session?.user?.role
-    console.log('User role:', role);
-    console.log('Required role:', required);
-    
+
     if (!role) {
-      console.log('❌ No user role found');
-      return NextResponse.json({ 
-        error: 'Forbidden - No user role found',
-        debug: { session: !!session, user: !!session?.user }
-      }, { status: 403 })
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
-    
-    const hasRequiredRole = hasRole(role, required)
-    console.log('Has required role:', hasRequiredRole);
-    
-    if (!hasRequiredRole) {
-      console.log('❌ Insufficient permissions');
-      return NextResponse.json({ 
-        error: 'Forbidden - Insufficient permissions',
-        debug: { userRole: role, requiredRole: required }
-      }, { status: 403 })
+
+    if (!hasRole(role, required)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
-    
-    console.log('✅ Permission granted');
+
     return null
   } catch (error) {
-    console.error('❌ Role check error:', error);
-    return NextResponse.json({ 
-      error: 'Forbidden - Role check failed',
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 403 })
+    console.error('Role check error:', error)
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 }
 
