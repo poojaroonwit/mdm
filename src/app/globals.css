@@ -1,5 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap');
+@import 'tailwindcss';
 
 @layer base {
   :root {
@@ -125,28 +126,28 @@
     --z-chat-widget-control: 10002;
     --z-chat-widget-overlay-text: 10003;
     --z-chat-widget-preview: 10004;
-    
+
     /* Semantic Tokens - Permanent Branding - Light Theme */
     /* Primary brand color is black in light theme */
     --brand-primary: 0 0% 0%;
     --brand-secondary: 240 4.8% 95.9%;
     --brand-warning: 38 92% 50%;
     --brand-danger: 0 84% 60%;
-    
+
     --brand-body-bg: 0 0% 100%;
     --brand-body-text: 222.2 84% 4.9%;
-    
+
     --brand-ui-bg: 0 0% 100%;
     --brand-ui-border: 214.3 31.8% 91.4%;
-    
+
     --brand-sidebar-primary-bg: 0 0% 100%;
     --brand-sidebar-primary-text: 222.2 84% 4.9%;
     --brand-sidebar-secondary-bg: 0 0% 98%;
     --brand-sidebar-secondary-text: 222.2 84% 4.9%;
-    
+
     --brand-top-menu-bg: 0 0% 100%;
     --brand-top-menu-text: 222.2 84% 4.9%;
-    
+
     /* Component specific semantic tokens */
     --brand-input-bg: 0 0% 97%;
     --brand-input-border: 214.3 31.8% 91.4%;
@@ -177,15 +178,15 @@
     --brand-body-text: 210 40% 98%;
     --brand-ui-bg: 222.2 47.4% 8%;
     --brand-ui-border: 217.2 32.6% 17.5%;
-    
+
     --brand-sidebar-primary-bg: 222.2 47.4% 8%;
     --brand-sidebar-primary-text: 210 40% 98%;
     --brand-sidebar-secondary-bg: 222.2 47.4% 6%;
     --brand-sidebar-secondary-text: 210 40% 98%;
-    
+
     --brand-top-menu-bg: 222.2 47.4% 8%;
     --brand-top-menu-text: 210 40% 98%;
-    
+
     --brand-input-bg: 217.2 32.6% 12%;
     --brand-input-border: 217.2 32.6% 17.5%;
 
@@ -213,7 +214,7 @@
     --border: 0 0% 100% / 0.1;
     --input: 0 0% 100% / 0.1;
     --ring: 224.3 76.3% 48%;
-    
+
     /* Platform Sidebar overrides for dark mode */
     --brand-platform-sidebar-bg: hsl(222.2 47.4% 5.2%);
 
@@ -232,19 +233,24 @@
 
 /* Base modifications for Branding */
 @layer base {
-  button:not([role="combobox"]):not([role="tab"]):not([data-widget-button]):not([data-widget-container]) {
+  button:not([role='combobox']):not([role='tab']):not([data-widget-button]):not(
+      [data-widget-container]
+    ) {
     background: var(--brand-button-bg) !important;
     color: var(--brand-button-text) !important;
     border-radius: var(--brand-button-radius) !important;
     transition: all 0.2s ease !important;
   }
 
-  button:not([role="combobox"]):not([role="tab"]):not([data-widget-button]):not([data-widget-container]):hover {
+  button:not([role='combobox']):not([role='tab']):not([data-widget-button]):not(
+      [data-widget-container]
+    ):hover {
     opacity: 0.9 !important;
     transform: translateY(-1px) !important;
   }
 
-  .card:not([data-widget-container]), [data-component="card"]:not([data-widget-container]) {
+  .card:not([data-widget-container]),
+  [data-component='card']:not([data-widget-container]) {
     background: var(--brand-card-bg) !important;
     border: 1px solid var(--brand-card-border) !important;
     border-radius: var(--brand-card-radius) !important;
@@ -254,7 +260,7 @@
 
 @layer utilities {
   .text-primary-foreground {
-    color: #FFFFFF !important;
+    color: #ffffff !important;
   }
 }
 
@@ -271,11 +277,13 @@
     height: 100%;
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', 'IBM Plex Sans Thai', sans-serif !important;
   }
 
   /* Input styling - light grey background for light theme */
-  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+  input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='submit']):not(
+      [type='button']
+    ):not([type='reset']),
   textarea,
   select {
     background-color: hsl(var(--muted)) !important;
@@ -283,7 +291,6 @@
     border: 1px solid hsl(var(--border)) !important;
   }
 }
-
 
 /* Custom scrollbar - Supabase Style */
 ::-webkit-scrollbar {
@@ -440,7 +447,7 @@
 }
 
 /* Hide ChatKit header when rendered inside regular style container */
-.chatkit-in-regular-style>div>div:first-child,
+.chatkit-in-regular-style > div > div:first-child,
 .chatkit-in-regular-style [data-chatkit-header],
 .chatkit-in-regular-style header {
   display: none !important;
@@ -459,7 +466,7 @@
   bottom: 0 !important;
 }
 
-.chatkit-in-regular-style>div {
+.chatkit-in-regular-style > div {
   width: 100% !important;
   height: 100% !important;
   margin: 0 !important;
@@ -488,7 +495,7 @@
 }
 
 /* Hide ChatKit header when rendered inside regular style container */
-.chatkit-in-regular-style>div>div:first-child,
+.chatkit-in-regular-style > div > div:first-child,
 .chatkit-in-regular-style [data-chatkit-header],
 .chatkit-in-regular-style header {
   display: none !important;
@@ -507,7 +514,7 @@
   bottom: 0 !important;
 }
 
-.chatkit-in-regular-style>div {
+.chatkit-in-regular-style > div {
   width: 100% !important;
   height: 100% !important;
   margin: 0 !important;
@@ -523,7 +530,7 @@
 
 /* Force specific internal ChatKit elements to expand */
 .chatkit-in-regular-style openai-chatkit,
-.chatkit-in-regular-style [class*="chatkit"] {
+.chatkit-in-regular-style [class*='chatkit'] {
   height: 100% !important;
   width: 100% !important;
   flex: 1 !important;
@@ -543,14 +550,16 @@
    ============================================ */
 
 /* Common Button Styles - Use CSS variables */
-button[class*="button"]:not([class*="ghost"]):not([class*="link"]):not([class*="outline"]):not([class*="secondary"]) {
+button[class*='button']:not([class*='ghost']):not([class*='link']):not([class*='outline']):not(
+    [class*='secondary']
+  ) {
   background-color: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
 }
 
 /* Common Border Styles - Light theme borders (not black) */
 .border-common,
-[class*="border"]:not([class*="border-black"]):not([class*="border-0"]) {
+[class*='border']:not([class*='border-black']):not([class*='border-0']) {
   border-color: hsl(var(--border));
 }
 
@@ -572,10 +581,10 @@ button[class*="button"]:not([class*="ghost"]):not([class*="link"]):not([class*="
 }
 
 /* Common Input Styles */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input[type='number'],
 textarea,
 select {
   background-color: hsl(var(--muted));
@@ -595,8 +604,8 @@ select {
 }
 
 .menu-item-common.active,
-.menu-item-common[aria-selected="true"],
-.menu-item-common[data-state="active"] {
+.menu-item-common[aria-selected='true'],
+.menu-item-common[data-state='active'] {
   background-color: hsl(var(--muted));
   color: hsl(var(--foreground));
 }
@@ -607,7 +616,7 @@ select {
   color: hsl(var(--foreground));
 }
 
-.accordion-common [data-component="accordion-trigger"] {
+.accordion-common [data-component='accordion-trigger'] {
   background-color: transparent !important;
   color: hsl(var(--foreground)) !important;
 }
@@ -618,19 +627,19 @@ select {
 }
 
 /* Ensure emulator isolation - don't apply global styles */
-[data-emulator="true"],
-iframe[title*="Emulator"],
-iframe[title*="emulator"] {
+[data-emulator='true'],
+iframe[title*='Emulator'],
+iframe[title*='emulator'] {
   isolation: isolate;
 }
 
 /* Common Icon Button - No background */
 .icon-button-common,
-button[class*="icon"] {
+button[class*='icon'] {
   background-color: transparent !important;
 }
 
 .icon-button-common:hover,
-button[class*="icon"]:hover {
+button[class*='icon']:hover {
   background-color: transparent !important;
 }
