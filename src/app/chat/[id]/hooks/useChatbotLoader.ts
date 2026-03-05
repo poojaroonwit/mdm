@@ -236,7 +236,7 @@ export function useChatbotLoader({
     // Helper for public fallback (guests/embeds)
     const tryPublicApi = async () => {
       try {
-        const res = await fetch(`/chat-api/public/chatbots/${chatbotId}`, { cache: 'no-store' })
+        const res = await fetch(`/api/public/chatbots/${chatbotId}`, { cache: 'no-store' })
         if (res.ok) {
           const d = await res.json()
           if (d.chatbot) {
