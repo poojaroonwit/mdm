@@ -7,6 +7,7 @@
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
+import { logger } from './logger'
 
 async function tryLocalWrite(
   subDir: string,
@@ -20,7 +21,14 @@ async function tryLocalWrite(
     }
     await writeFile(join(uploadsDir, filename), buffer)
     return `/uploads/${subDir}/${filename}`
-  } catch {
+  } catch (error) {
+    logger.warn('Local file write failed, will try MinIO fallback', {
+      subDir,
+      filename,
+      targetDir: join(process.cwd(), 'public', 'uploads', subDir),
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    })
     return null
   }
 }
@@ -32,7 +40,14 @@ async function uploadToMinio(
   mimeType: string
 ): Promise<string> {
   const endpoint = process.env.MINIO_ENDPOINT
-  if (!endpoint) throw new Error('MinIO not configured')
+  if (!endpoint) {
+    logger.error('MinIO fallback failed: MINIO_ENDPOINT env var is not set', undefined, {
+      subDir,
+      filename,
+      hint: 'Local write also failed. Ensure either public/uploads is writable or MinIO is configured.',
+    })
+    throw new Error('MinIO not configured and local filesystem is not writable')
+  }
 
   const port = parseInt(process.env.MINIO_PORT || '9000', 10)
   const useSSL = port === 443 || process.env.MINIO_USE_SSL === 'true'

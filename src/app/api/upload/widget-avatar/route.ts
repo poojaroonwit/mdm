@@ -1,14 +1,16 @@
 import { requireAuth, withErrorHandling } from '@/lib/api-middleware'
 import { NextRequest, NextResponse } from 'next/server'
 import { storeUploadedImage } from '@/lib/upload-storage'
+import { logger } from '@/lib/logger'
 
 async function postHandler(request: NextRequest) {
+  let file: File | null = null
   try {
     const authResult = await requireAuth()
     if (!authResult.success) return authResult.response
 
     const formData = await request.formData()
-    const file = formData.get('image') as File
+    file = formData.get('image') as File
 
     if (!file || !(file instanceof Blob)) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
@@ -36,8 +38,24 @@ async function postHandler(request: NextRequest) {
 
     return NextResponse.json({ success: true, url: publicUrl, filename })
   } catch (error: any) {
-    console.error('Error uploading widget avatar image:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : undefined
+
+    logger.error('Error uploading widget avatar image', error, {
+      route: 'POST /api/upload/widget-avatar',
+      fileName: file?.name,
+      fileSize: file?.size,
+      fileType: file?.type,
+    })
+
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+        stack: process.env.NODE_ENV === 'development' ? errorStack : undefined,
+      },
+      { status: 500 }
+    )
   }
 }
 

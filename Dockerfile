@@ -62,7 +62,7 @@ RUN apk add --no-cache postgresql-client dos2unix openssl && \
     addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
@@ -72,7 +72,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
-RUN dos2unix /docker-entrypoint.sh && mkdir -p .next && chown nextjs:nodejs .next && chmod +x /docker-entrypoint.sh
+# Pre-create upload directories with correct ownership so the app can write files
+RUN dos2unix /docker-entrypoint.sh && mkdir -p .next && chown nextjs:nodejs .next && chmod +x /docker-entrypoint.sh \
+    && mkdir -p public/uploads/widget-avatars public/uploads/logos public/uploads/emulator-backgrounds public/uploads/favicons \
+    && chown -R nextjs:nodejs public/uploads
 
 USER nextjs
 EXPOSE 8301
