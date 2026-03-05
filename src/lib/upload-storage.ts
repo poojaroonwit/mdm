@@ -4,6 +4,23 @@
 
 import { logger } from './logger'
 
+/**
+ * Extract just the hostname from a MinIO endpoint string.
+ * Handles all formats:
+ *   'http://minio-service:9000'              → 'minio-service'
+ *   'https://minio.example.com'              → 'minio.example.com'
+ *   'ncc-dev-api-storage-data-product.com:443' → 'ncc-dev-api-storage-data-product.com'
+ *   'minio-service'                          → 'minio-service'
+ */
+function parseEndpointHostname(endpoint: string): string {
+  try {
+    const url = new URL(endpoint.includes('://') ? endpoint : `http://${endpoint}`)
+    return url.hostname
+  } catch {
+    return endpoint.replace(/^https?:\/\//, '').split(':')[0].split('/')[0]
+  }
+}
+
 async function uploadToMinio(
   subDir: string,
   filename: string,
@@ -22,8 +39,11 @@ async function uploadToMinio(
   const secretKey = process.env.MINIO_SECRET_KEY || ''
   const bucket = process.env.MINIO_UPLOADS_BUCKET || process.env.MINIO_BUCKET || 'uploads'
 
+  // Extract just the hostname (no protocol, no port) for the MinIO SDK
+  const endpointHostname = parseEndpointHostname(endpoint)
+
   logger.info('[upload-storage] Uploading to MinIO', {
-    endpoint: endpoint.replace(/^https?:\/\//, ''),
+    endpointHostname,
     port,
     useSSL,
     bucket,
@@ -35,7 +55,7 @@ async function uploadToMinio(
   const { Client } = await import('minio')
 
   const client = new Client({
-    endPoint: endpoint.replace(/^https?:\/\//, ''),
+    endPoint: endpointHostname,   // hostname only — no embedded port
     port: useSSL ? 443 : port,
     useSSL,
     accessKey,
@@ -65,15 +85,24 @@ async function uploadToMinio(
       'Content-Type': mimeType || 'application/octet-stream',
     })
 
-    const protocol = useSSL ? 'https' : 'http'
-    const portSuffix = (port === 80 || port === 443) ? '' : `:${port}`
-    const url = `${protocol}://${endpoint.replace(/^https?:\/\//, '')}${portSuffix}/${bucket}/${objectName}`
+    // Build the public-facing URL.
+    // MINIO_PUBLIC_URL overrides when the internal endpoint (e.g. minio-service:9000)
+    // is not browser-accessible. Set it to the externally reachable MinIO URL.
+    const publicBase = process.env.MINIO_PUBLIC_URL
+    let url: string
+    if (publicBase) {
+      url = `${publicBase.replace(/\/$/, '')}/${bucket}/${objectName}`
+    } else {
+      const protocol = useSSL ? 'https' : 'http'
+      const portSuffix = (port === 80 || port === 443) ? '' : `:${port}`
+      url = `${protocol}://${endpointHostname}${portSuffix}/${bucket}/${objectName}`
+    }
 
     logger.info('[upload-storage] MinIO upload success', { object: objectName, url })
     return url
   } catch (err) {
     logger.error('[upload-storage] MinIO upload failed', err instanceof Error ? err : new Error(String(err)), {
-      endpoint: endpoint.replace(/^https?:\/\//, ''),
+      endpointHostname,
       port,
       useSSL,
       bucket,
