@@ -20,7 +20,7 @@ async function tryLocalWrite(
       await mkdir(uploadsDir, { recursive: true })
     }
     await writeFile(join(uploadsDir, filename), buffer)
-    return `/uploads/${subDir}/${filename}`
+    return `/api/uploads/${subDir}/${filename}`
   } catch (error) {
     logger.warn('Local file write failed, will try MinIO fallback', {
       subDir,
