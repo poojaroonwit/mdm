@@ -550,22 +550,27 @@ export function PlatformSidebar({
                           {filteredItems.map((tab: any) => (
                             <Button
                               key={tab.id}
-                              variant="ghost"
+                              variant={activeTab === tab.id ? "secondary" : "ghost"}
                               className={cn(
                                 "platform-sidebar-menu-button w-full justify-start items-center text-sm font-medium h-9 px-4 transition-colors duration-150 cursor-pointer",
                                 activeTab === tab.id
-                                  ? "platform-sidebar-menu-button-active !bg-primary/15 !text-primary rounded-sm"
-                                  : "text-muted-foreground hover:!bg-transparent hover:!text-foreground rounded-none"
+                                  ? "platform-sidebar-menu-button-active bg-primary/10 text-primary hover:bg-primary/15"
+                                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground rounded-none"
                               )}
                               onClick={() => handleTabClick(tab.id, (tab as any).href)}
                               style={{
                                 pointerEvents: 'auto',
                                 position: 'relative',
                                 zIndex: Z_INDEX.sidebar + 1,
-                                ...(activeTab === tab.id ? { backgroundColor: 'var(--brand-primary-light, rgba(59, 130, 246, 0.15))' } : {})
+                                ...(activeTab === tab.id 
+                                  ? { 
+                                      backgroundColor: 'var(--brand-primary-light, rgba(59, 130, 246, 0.10))',
+                                      color: 'var(--brand-primary, hsl(var(--primary)))'
+                                    } 
+                                  : {})
                               }}
                             >
-                              <tab.icon className="h-4 w-4 mr-3 flex-shrink-0" />
+                              <tab.icon className={cn("h-4 w-4 mr-3 flex-shrink-0", activeTab === tab.id ? "text-primary" : "")} />
                               <span className="truncate text-left">{tab.name}</span>
                             </Button>
                           ))}

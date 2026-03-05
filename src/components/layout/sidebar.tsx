@@ -343,10 +343,13 @@ export function Sidebar({ className }: SidebarProps) {
                                   <Link href={typeof window !== 'undefined' ? DOMPurify.sanitize(item.href) : item.href}>
                                     <Button
                                       variant={isActive(item.href) ? "secondary" : "ghost"}
-                                      className="w-full justify-start text-sm h-8"
+                                      className={cn(
+                                        "w-full justify-start text-sm h-8",
+                                        isActive(item.href) ? "bg-primary/10 text-primary hover:bg-primary/15" : "hover:bg-muted/50"
+                                      )}
                                       style={{
-                                        color: isActive(item.href) ? 'var(--brand-primary, #3b82f6)' : settings.fontColor,
-                                        backgroundColor: isActive(item.href) ? 'var(--brand-primary-light, rgba(59, 130, 246, 0.15))' : 'transparent'
+                                        color: isActive(item.href) ? 'var(--brand-primary, hsl(var(--primary)))' : settings.fontColor,
+                                        backgroundColor: isActive(item.href) ? 'var(--brand-primary-light, rgba(59, 130, 246, 0.10))' : undefined
                                       }}
                                     >
                                       <ItemIcon className="mr-2 h-4 w-4" />
@@ -377,10 +380,13 @@ export function Sidebar({ className }: SidebarProps) {
                                   <Link key={m.id} href={typeof window !== 'undefined' ? DOMPurify.sanitize(href) : href}>
                                     <Button
                                       variant={isActive(href) ? "secondary" : "ghost"}
-                                      className="w-full justify-start text-sm h-8"
+                                      className={cn(
+                                        "w-full justify-start text-sm h-8",
+                                        isActive(href) ? "bg-primary/10 text-primary hover:bg-primary/15" : "hover:bg-muted/50"
+                                      )}
                                       style={{
-                                        color: isActive(href) ? 'var(--brand-primary, #3b82f6)' : settings.fontColor,
-                                        backgroundColor: isActive(href) ? 'var(--brand-primary-light, rgba(59, 130, 246, 0.15))' : 'transparent'
+                                        color: isActive(href) ? 'var(--brand-primary, hsl(var(--primary)))' : settings.fontColor,
+                                        backgroundColor: isActive(href) ? 'var(--brand-primary-light, rgba(59, 130, 246, 0.10))' : undefined
                                       }}
                                     >
                                       {m.icon ? (
