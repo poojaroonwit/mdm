@@ -114,8 +114,8 @@ temp_*
 # Build output logs
 build-output.txt
 
-# Uploads directory (if it contains user uploads)
-uploads/
+# Uploads directory (only ignore actual user-uploaded files, not route handlers)
+public/uploads/
 
 # Database files
 *.db
