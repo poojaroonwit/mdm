@@ -2,13 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth, requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { requireSpaceAccess } from '@/lib/space-access'
 import { db } from '@/lib/db'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
 import { v4 as uuidv4 } from 'uuid'
 import { createSuccessResponse, createErrorResponse } from '@/lib/api-response'
 import { logger } from '@/lib/logger'
 import { validateParams, validateQuery, commonSchemas } from '@/lib/api-validation'
 import { z } from 'zod'
+import { storeUploadedFile } from '@/lib/upload-storage'
 
 async function getHandler(
   request: NextRequest,
@@ -19,32 +18,22 @@ async function getHandler(
   if (!authResult.success) return authResult.response
   const { session } = authResult
 
-    const resolvedParams = await params
-    const paramValidation = validateParams(resolvedParams, z.object({
-      id: commonSchemas.id,
-    }))
-    
-    if (!paramValidation.success) {
-      return paramValidation.response
-    }
-    
-    const { id } = paramValidation.data
-    logger.apiRequest('GET', `/api/tickets/${id}/attachments`, { userId: session.user.id })
+  const resolvedParams = await params
+  const paramValidation = validateParams(resolvedParams, z.object({ id: commonSchemas.id }))
+  if (!paramValidation.success) return paramValidation.response
+  const { id } = paramValidation.data
+  logger.apiRequest('GET', `/api/tickets/${id}/attachments`, { userId: session.user.id })
 
-    const attachments = await db.ticketAttachment.findMany({
-      where: {
-        ticketId: id
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+  const attachments = await db.ticketAttachment.findMany({
+    where: { ticketId: id },
+    orderBy: { createdAt: 'desc' }
+  })
 
-    const duration = Date.now() - startTime
-    logger.apiResponse('GET', `/api/tickets/${id}/attachments`, 200, duration, {
-      attachmentCount: attachments.length
-    })
-    return NextResponse.json(createSuccessResponse({ attachments }))
+  const duration = Date.now() - startTime
+  logger.apiResponse('GET', `/api/tickets/${id}/attachments`, 200, duration, {
+    attachmentCount: attachments.length
+  })
+  return NextResponse.json(createSuccessResponse({ attachments }))
 }
 
 export const GET = withErrorHandling(getHandler, 'GET /api/tickets/[id]/attachments')
@@ -58,80 +47,59 @@ async function postHandler(
   if (!authResult.success) return authResult.response
   const { session } = authResult
 
-    const resolvedParams = await params
-    const paramValidation = validateParams(resolvedParams, z.object({
-      id: commonSchemas.id,
-    }))
-    
-    if (!paramValidation.success) {
-      return paramValidation.response
-    }
-    
-    const { id } = paramValidation.data
-    logger.apiRequest('POST', `/api/tickets/${id}/attachments`, { userId: session.user.id })
+  const resolvedParams = await params
+  const paramValidation = validateParams(resolvedParams, z.object({ id: commonSchemas.id }))
+  if (!paramValidation.success) return paramValidation.response
+  const { id } = paramValidation.data
+  logger.apiRequest('POST', `/api/tickets/${id}/attachments`, { userId: session.user.id })
 
-    const formData = await request.formData()
-    const file = formData.get('file') as File
+  const formData = await request.formData()
+  const file = formData.get('file') as File
 
-    if (!file) {
-      return NextResponse.json(createErrorResponse('File is required', 'VALIDATION_ERROR'), { status: 400 })
-    }
+  if (!file || !(file instanceof Blob)) {
+    return NextResponse.json(createErrorResponse('File is required', 'VALIDATION_ERROR'), { status: 400 })
+  }
 
-    // Check if ticket exists
-    const ticket = await db.ticket.findUnique({
-      where: { id },
-      include: { spaces: true }
-    })
+  const ticket = await db.ticket.findUnique({
+    where: { id },
+    include: { spaces: true }
+  })
 
-    if (!ticket || ticket.deletedAt) {
-      logger.warn('Ticket not found for attachment upload', { ticketId: id })
-      return NextResponse.json(createErrorResponse('Ticket not found', 'NOT_FOUND'), { status: 404 })
-    }
+  if (!ticket || ticket.deletedAt) {
+    logger.warn('Ticket not found for attachment upload', { ticketId: id })
+    return NextResponse.json(createErrorResponse('Ticket not found', 'NOT_FOUND'), { status: 404 })
+  }
 
-    // Check access - user must have access to at least one space associated with the ticket
-    const spaceId = ticket.spaces?.[0]?.spaceId
-    if (spaceId) {
-      const accessResult = await requireSpaceAccess(spaceId, session.user.id!)
-      if (!accessResult.success) return accessResult.response
-    }
+  const spaceId = ticket.spaces?.[0]?.spaceId
+  if (spaceId) {
+    const accessResult = await requireSpaceAccess(spaceId, session.user.id!)
+    if (!accessResult.success) return accessResult.response
+  }
 
-    // Note: Tickets use local file system storage instead of AttachmentStorageService
-    // because tickets may not be associated with a space, and local storage is simpler
-    // for ticket-specific attachments. This is an intentional design decision.
+  const fileExtension = (file.name.split('.').pop() || 'bin').toLowerCase()
+  const uniqueFileName = `${uuidv4()}.${fileExtension}`
 
-    // Generate unique filename
-    const fileExtension = file.name.split('.').pop()
-    const uniqueFileName = `${uuidv4()}.${fileExtension}`
-    
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'uploads', 'tickets', id)
-    await mkdir(uploadsDir, { recursive: true })
-    logger.debug('Created upload directory', { uploadsDir })
-    
-    // Save file
-    const filePath = join(uploadsDir, uniqueFileName)
-    const fileBuffer = Buffer.from(await file.arrayBuffer())
-    await writeFile(filePath, fileBuffer)
+  const fileBuffer = Buffer.from(await file.arrayBuffer())
+  const fileUrl = await storeUploadedFile(`tickets/${id}`, uniqueFileName, fileBuffer, file.type || 'application/octet-stream')
 
-    // Save attachment record
-    const attachment = await db.ticketAttachment.create({
-      data: {
-        ticketId: id,
-        fileName: file.name,
-        filePath: filePath,
-        fileSize: file.size,
-        mimeType: file.type,
-        uploadedBy: session.user.id
-      }
-    })
-
-    const duration = Date.now() - startTime
-    logger.apiResponse('POST', `/api/tickets/${id}/attachments`, 201, duration, {
-      attachmentId: attachment.id,
+  const attachment = await db.ticketAttachment.create({
+    data: {
+      ticketId: id,
       fileName: file.name,
+      filePath: fileUrl,
       fileSize: file.size,
-    })
-    return NextResponse.json(createSuccessResponse({ attachment }), { status: 201 })
+      mimeType: file.type,
+      uploadedBy: session.user.id
+    }
+  })
+
+  const duration = Date.now() - startTime
+  logger.apiResponse('POST', `/api/tickets/${id}/attachments`, 201, duration, {
+    attachmentId: attachment.id,
+    fileName: file.name,
+    fileSize: file.size,
+  })
+  return NextResponse.json(createSuccessResponse({ attachment }), { status: 201 })
 }
 
 export const POST = withErrorHandling(postHandler, 'POST /api/tickets/[id]/attachments')
@@ -145,56 +113,34 @@ async function deleteHandler(
   if (!authResult.success) return authResult.response
   const { session } = authResult
 
-    const resolvedParams = await params
-    const paramValidation = validateParams(resolvedParams, z.object({
-      id: commonSchemas.id,
-    }))
-    
-    if (!paramValidation.success) {
-      return paramValidation.response
-    }
-    
-    const { id } = paramValidation.data
-    logger.apiRequest('DELETE', `/api/tickets/${id}/attachments`, { userId: session.user.id })
+  const resolvedParams = await params
+  const paramValidation = validateParams(resolvedParams, z.object({ id: commonSchemas.id }))
+  if (!paramValidation.success) return paramValidation.response
+  const { id } = paramValidation.data
+  logger.apiRequest('DELETE', `/api/tickets/${id}/attachments`, { userId: session.user.id })
 
-    const querySchema = z.object({
-      attachmentId: z.string().uuid(),
-    })
+  const querySchema = z.object({ attachmentId: z.string().uuid() })
+  const queryValidation = validateQuery(request, querySchema)
+  if (!queryValidation.success) return queryValidation.response
+  const { attachmentId } = queryValidation.data
 
-    const queryValidation = validateQuery(request, querySchema)
-    if (!queryValidation.success) {
-      return queryValidation.response
-    }
+  const attachment = await db.ticketAttachment.findUnique({ where: { id: attachmentId } })
+  if (!attachment || attachment.ticketId !== id) {
+    logger.warn('Attachment not found', { ticketId: id, attachmentId })
+    return NextResponse.json(createErrorResponse('Attachment not found', 'NOT_FOUND'), { status: 404 })
+  }
 
-    const { attachmentId } = queryValidation.data
+  const ticket = await db.ticket.findUnique({ where: { id } })
+  if (attachment.uploadedBy !== session.user.id && ticket?.createdBy !== session.user.id) {
+    logger.warn('Unauthorized attachment deletion attempt', { ticketId: id, attachmentId, userId: session.user.id })
+    return NextResponse.json(createErrorResponse('Unauthorized', 'FORBIDDEN'), { status: 403 })
+  }
 
-    const attachment = await db.ticketAttachment.findUnique({
-      where: { id: attachmentId }
-    })
+  await db.ticketAttachment.delete({ where: { id: attachmentId } })
 
-    if (!attachment || attachment.ticketId !== id) {
-      logger.warn('Attachment not found', { ticketId: id, attachmentId })
-      return NextResponse.json(createErrorResponse('Attachment not found', 'NOT_FOUND'), { status: 404 })
-    }
-
-    // Only allow deletion by uploader or ticket owner
-    const ticket = await db.ticket.findUnique({
-      where: { id }
-    })
-
-    if (attachment.uploadedBy !== session.user.id && ticket?.createdBy !== session.user.id) {
-      logger.warn('Unauthorized attachment deletion attempt', { ticketId: id, attachmentId, userId: session.user.id })
-      return NextResponse.json(createErrorResponse('Unauthorized', 'FORBIDDEN'), { status: 403 })
-    }
-
-    await db.ticketAttachment.delete({
-      where: { id: attachmentId }
-    })
-
-    const duration = Date.now() - startTime
-    logger.apiResponse('DELETE', `/api/tickets/${id}/attachments`, 200, duration, { attachmentId })
-    return NextResponse.json(createSuccessResponse({ deleted: true }))
+  const duration = Date.now() - startTime
+  logger.apiResponse('DELETE', `/api/tickets/${id}/attachments`, 200, duration, { attachmentId })
+  return NextResponse.json(createSuccessResponse({ deleted: true }))
 }
 
 export const DELETE = withErrorHandling(deleteHandler, 'DELETE /api/tickets/[id]/attachments')
-

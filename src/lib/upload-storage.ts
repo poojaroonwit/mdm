@@ -1,5 +1,5 @@
 /**
- * Shared image upload helper.
+ * Shared file upload helper.
  * Tries the local public/ filesystem first (works in dev).
  * Falls back to MinIO when the filesystem is read-only or full (production Docker).
  */
@@ -91,3 +91,6 @@ export async function storeUploadedImage(
   // 2. Fall back to MinIO (production Docker where public/ is read-only)
   return uploadToMinio(subDir, filename, buffer, mimeType)
 }
+
+/** Alias for non-image files (PDFs, docs, etc.) — same implementation. */
+export const storeUploadedFile = storeUploadedImage
