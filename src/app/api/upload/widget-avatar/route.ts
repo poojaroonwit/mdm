@@ -1,15 +1,11 @@
-import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from '@/lib/api-middleware'
-import { requireSpaceAccess } from '@/lib/space-access'
+import { requireAuth, withErrorHandling } from '@/lib/api-middleware'
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { storeUploadedImage } from '@/lib/upload-storage'
 
 async function postHandler(request: NextRequest) {
   try {
     const authResult = await requireAuth()
     if (!authResult.success) return authResult.response
-    const { session } = authResult
 
     const formData = await request.formData()
     const file = formData.get('image') as File
@@ -30,21 +26,14 @@ async function postHandler(request: NextRequest) {
       return NextResponse.json({ error: 'File too large. Maximum size is 5MB.' }, { status: 400 })
     }
 
-    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'widget-avatars')
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
-
     const timestamp = Date.now()
     const fileExtension = (file.name.split('.').pop() || 'png').toLowerCase()
     const filename = `widget-avatar-${timestamp}.${fileExtension}`
-    const filepath = join(uploadsDir, filename)
 
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    await writeFile(filepath, buffer)
+    const publicUrl = await storeUploadedImage('widget-avatars', filename, buffer, file.type || 'image/png')
 
-    const publicUrl = `/uploads/widget-avatars/${filename}`
     return NextResponse.json({ success: true, url: publicUrl, filename })
   } catch (error: any) {
     console.error('Error uploading widget avatar image:', error)
