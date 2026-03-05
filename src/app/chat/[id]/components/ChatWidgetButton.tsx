@@ -173,12 +173,21 @@ export function ChatWidgetButton({
                     text-decoration: none !important;
                 }
                 
-                #chatbot-widget-button img {
+                #chatbot-widget-button img:not(.close-avatar-img) {
                     border-radius: var(--widget-border-radius) !important;
                     width: var(--avatar-size) !important;
                     height: var(--avatar-size) !important;
                     object-fit: cover !important;
                     /* Ensure image doesn't have a background/border of its own that conflicts */
+                    background: transparent !important;
+                    border: none !important;
+                }
+
+                #chatbot-widget-button img.close-avatar-img {
+                    width: 50% !important;
+                    height: 50% !important;
+                    object-fit: contain !important;
+                    border-radius: 0 !important;
                     background: transparent !important;
                     border: none !important;
                 }
@@ -204,13 +213,7 @@ export function ChatWidgetButton({
                             <img
                                 src={config.avatarCloseImageUrl}
                                 alt="Close chat"
-                                className="h-6 w-6 object-contain"
-                                style={{
-                                    width: '24px !important',
-                                    height: '24px !important',
-                                    background: 'transparent !important',
-                                    borderRadius: '0 !important'
-                                }}
+                                className="close-avatar-img"
                             />
                         )
                     }

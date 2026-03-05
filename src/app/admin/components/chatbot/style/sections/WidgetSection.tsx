@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -287,6 +288,7 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
                             onChange={async (e) => {
                               const file = e.target.files?.[0]
                               if (!file) return
+                              const loadingToast = toast.loading('Uploading avatar...')
                               const formDataUpload = new FormData()
                               formDataUpload.append('image', file)
                               try {
@@ -297,9 +299,15 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
                                 if (response.ok) {
                                   const data = await response.json()
                                   setFormData({ ...formData, widgetAvatarImageUrl: data.url } as any)
+                                  toast.success('Avatar uploaded', { id: loadingToast })
+                                } else {
+                                  toast.error('Upload failed', { id: loadingToast })
                                 }
                               } catch (err) {
                                 console.error('Upload failed', err)
+                                toast.error('Upload failed', { id: loadingToast })
+                              } finally {
+                                e.target.value = ''
                               }
                             }}
                           />
@@ -407,6 +415,7 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
                             onChange={async (e) => {
                               const file = e.target.files?.[0]
                               if (!file) return
+                              const loadingToast = toast.loading('Uploading close avatar...')
                               const formDataUpload = new FormData()
                               formDataUpload.append('image', file)
                               try {
@@ -417,9 +426,15 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
                                 if (response.ok) {
                                   const data = await response.json()
                                   setFormData({ ...formData, widgetCloseImageUrl: data.url } as any)
+                                  toast.success('Close avatar uploaded', { id: loadingToast })
+                                } else {
+                                  toast.error('Upload failed', { id: loadingToast })
                                 }
                               } catch (err) {
                                 console.error('Upload failed', err)
+                                toast.error('Upload failed', { id: loadingToast })
+                              } finally {
+                                e.target.value = ''
                               }
                             }}
                           />
