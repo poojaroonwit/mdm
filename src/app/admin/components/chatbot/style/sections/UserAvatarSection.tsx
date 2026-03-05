@@ -1,6 +1,8 @@
 'use client'
 
+import toast from 'react-hot-toast'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
@@ -93,12 +95,62 @@ export function UserAvatarSection({ formData, setFormData }: UserAvatarSectionPr
                   </FormRow>
                 </>
               ) : (
-                <FormRow label="Image URL" description="Custom avatar image URL">
-                  <Input
-                    value={formData.userAvatarImageUrl || ''}
-                    onChange={(e) => setFormData({ ...formData, userAvatarImageUrl: e.target.value })}
-                    placeholder="https://example.com/user-avatar.png"
-                  />
+                <FormRow label="Avatar Image" description="Custom user avatar image">
+                  <div className="space-y-2">
+                    {formData.userAvatarImageUrl && (
+                      <div className="relative group w-fit">
+                        <img
+                          src={formData.userAvatarImageUrl}
+                          alt="User avatar preview"
+                          className="h-12 w-12 object-cover border rounded-full bg-white shadow-sm"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, userAvatarImageUrl: '' })}
+                          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Icons.X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      id="user-avatar-upload"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        const loadingToast = toast.loading('Uploading avatar...')
+                        const fd = new FormData()
+                        fd.append('image', file)
+                        try {
+                          const res = await fetch('/api/upload/widget-avatar', { method: 'POST', body: fd })
+                          if (res.ok) {
+                            const data = await res.json()
+                            setFormData({ ...formData, userAvatarImageUrl: data.url })
+                            toast.success('Avatar uploaded', { id: loadingToast })
+                          } else {
+                            toast.error('Upload failed', { id: loadingToast })
+                          }
+                        } catch {
+                          toast.error('Upload failed', { id: loadingToast })
+                        } finally {
+                          e.target.value = ''
+                        }
+                      }}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => document.getElementById('user-avatar-upload')?.click()}
+                    >
+                      <Icons.Upload className="h-4 w-4 mr-2" />
+                      Upload Avatar
+                    </Button>
+                  </div>
                 </FormRow>
               )}
             </>

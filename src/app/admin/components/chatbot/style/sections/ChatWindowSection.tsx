@@ -1,9 +1,10 @@
 'use client'
 
+import toast from 'react-hot-toast'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { Maximize2, Palette, Square, Sun, Move, Layers } from 'lucide-react'
+import { Maximize2, Palette, Square, Sun, Move, Layers, Upload, X } from 'lucide-react'
 
 import { ColorInput } from '@/components/studio/layout-config/ColorInput'
 import type { Chatbot } from '../../types'
@@ -65,21 +66,62 @@ export function ChatWindowSection({ formData, setFormData }: ChatWindowSectionPr
                 inputClassName="h-7 text-xs pl-7 w-full"
               />
             </FormRow>
-            <FormRow label="Header Logo" description="Logo shown in the embed/popover chat window header">
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (!file) return
-                  const reader = new FileReader()
-                  reader.onload = (ev) => {
-                    const url = ev.target?.result as string
-                    setFormData({ ...formData, logo: url })
-                  }
-                  reader.readAsDataURL(file)
-                }}
-              />
+            <FormRow label="Header Logo" description="Logo shown in the chat window header">
+              <div className="space-y-2">
+                {(formData as any).logo && (
+                  <div className="relative group w-fit">
+                    <img
+                      src={(formData as any).logo}
+                      alt="Logo preview"
+                      className="h-10 object-contain border rounded bg-white shadow-sm px-2"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, logo: '' } as any)}
+                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+                <Input
+                  type="file"
+                  accept="image/*"
+                  id="chat-window-logo-upload"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const loadingToast = toast.loading('Uploading logo...')
+                    const fd = new FormData()
+                    fd.append('image', file)
+                    try {
+                      const res = await fetch('/api/upload/logo', { method: 'POST', body: fd })
+                      if (res.ok) {
+                        const data = await res.json()
+                        setFormData({ ...formData, logo: data.url } as any)
+                        toast.success('Logo uploaded', { id: loadingToast })
+                      } else {
+                        toast.error('Upload failed', { id: loadingToast })
+                      }
+                    } catch {
+                      toast.error('Upload failed', { id: loadingToast })
+                    } finally {
+                      e.target.value = ''
+                    }
+                  }}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => document.getElementById('chat-window-logo-upload')?.click()}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload Logo
+                </Button>
+              </div>
             </FormRow>
             <FormRow label="Background Blur" description="Glassmorphism blur effect (0-100%)">
               <div className="relative">

@@ -1,5 +1,6 @@
 'use client'
 
+import toast from 'react-hot-toast'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
@@ -64,12 +65,62 @@ export function RegularHeaderSection({ formData, setFormData }: RegularHeaderSec
               />
             </FormRow>
             {formData.headerShowLogo && (
-              <FormRow label="Logo URL" description="URL of the header logo image">
-                <Input
-                  value={formData.headerLogo || ''}
-                  onChange={(e) => setFormData({ ...formData, headerLogo: e.target.value })}
-                  placeholder="https://example.com/logo.png"
-                />
+              <FormRow label="Logo" description="Header logo image">
+                <div className="space-y-2">
+                  {formData.headerLogo && (
+                    <div className="relative group w-fit">
+                      <img
+                        src={formData.headerLogo}
+                        alt="Logo preview"
+                        className="h-10 object-contain border rounded bg-white shadow-sm px-2"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, headerLogo: '' })}
+                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Icons.X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    id="header-logo-upload"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      const loadingToast = toast.loading('Uploading logo...')
+                      const fd = new FormData()
+                      fd.append('image', file)
+                      try {
+                        const res = await fetch('/api/upload/logo', { method: 'POST', body: fd })
+                        if (res.ok) {
+                          const data = await res.json()
+                          setFormData({ ...formData, headerLogo: data.url })
+                          toast.success('Logo uploaded', { id: loadingToast })
+                        } else {
+                          toast.error('Upload failed', { id: loadingToast })
+                        }
+                      } catch {
+                        toast.error('Upload failed', { id: loadingToast })
+                      } finally {
+                        e.target.value = ''
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => document.getElementById('header-logo-upload')?.click()}
+                  >
+                    <Icons.Upload className="h-4 w-4 mr-2" />
+                    Upload Logo
+                  </Button>
+                </div>
               </FormRow>
             )}
             <FormRow label="Show Avatar" description="Display an avatar in the header">
@@ -95,12 +146,62 @@ export function RegularHeaderSection({ formData, setFormData }: RegularHeaderSec
                   </Select>
                 </FormRow>
                 {formData.headerAvatarType === 'image' ? (
-                  <FormRow label="Avatar Image" description="URL for header avatar image">
-                    <Input
-                      value={formData.headerAvatarImageUrl || ''}
-                      onChange={(e) => setFormData({ ...formData, headerAvatarImageUrl: e.target.value })}
-                      placeholder="https://example.com/avatar.png"
-                    />
+                  <FormRow label="Avatar Image" description="Header avatar image">
+                    <div className="space-y-2">
+                      {formData.headerAvatarImageUrl && (
+                        <div className="relative group w-fit">
+                          <img
+                            src={formData.headerAvatarImageUrl}
+                            alt="Avatar preview"
+                            className="h-12 w-12 object-cover border rounded-full bg-white shadow-sm"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, headerAvatarImageUrl: '' })}
+                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Icons.X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        id="header-avatar-upload"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+                          const loadingToast = toast.loading('Uploading avatar...')
+                          const fd = new FormData()
+                          fd.append('image', file)
+                          try {
+                            const res = await fetch('/api/upload/widget-avatar', { method: 'POST', body: fd })
+                            if (res.ok) {
+                              const data = await res.json()
+                              setFormData({ ...formData, headerAvatarImageUrl: data.url })
+                              toast.success('Avatar uploaded', { id: loadingToast })
+                            } else {
+                              toast.error('Upload failed', { id: loadingToast })
+                            }
+                          } catch {
+                            toast.error('Upload failed', { id: loadingToast })
+                          } finally {
+                            e.target.value = ''
+                          }
+                        }}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => document.getElementById('header-avatar-upload')?.click()}
+                      >
+                        <Icons.Upload className="h-4 w-4 mr-2" />
+                        Upload Avatar
+                      </Button>
+                    </div>
                   </FormRow>
                 ) : (
                   <>

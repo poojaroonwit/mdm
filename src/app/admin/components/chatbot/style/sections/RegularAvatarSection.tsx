@@ -1,5 +1,6 @@
 'use client'
 
+import toast from 'react-hot-toast'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
@@ -89,42 +90,66 @@ export function RegularAvatarSection({ formData, setFormData }: RegularAvatarSec
               </FormRow>
             </>
           ) : (
-            <FormRow label="Avatar Image" description="Custom avatar image shadow">
+            <FormRow label="Avatar Image" description="Custom avatar image">
               <div className="space-y-2">
-                <Input
-                  value={formData.avatarImageUrl || ''}
-                  onChange={(e) => setFormData({ ...formData, avatarImageUrl: e.target.value })}
-                  placeholder="https://example.com/avatar.png"
-                />
-                <div className="grid gap-2">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    className="h-9 py-1.5"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (!file) return
-                      const reader = new FileReader()
-                      reader.onload = (ev) => {
-                        const url = ev.target?.result as string
-                        setFormData({ ...formData, avatarImageUrl: url })
-                      }
-                      reader.readAsDataURL(file)
-                    }}
-                  />
-                </div>
-                {formData.avatarImageUrl && (
-                  <div className="mt-2 flex justify-center">
-                    <img
-                      src={formData.avatarImageUrl}
-                      alt="Avatar preview"
-                      className="h-16 w-16 object-cover border rounded-full bg-white shadow-sm"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none'
+                <div className="flex gap-4 items-start">
+                  {formData.avatarImageUrl && (
+                    <div className="relative group shrink-0">
+                      <img
+                        src={formData.avatarImageUrl}
+                        alt="Avatar preview"
+                        className="h-16 w-16 object-cover border rounded-full bg-white shadow-sm"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, avatarImageUrl: '' })}
+                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Icons.X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      id="regular-avatar-upload"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        const loadingToast = toast.loading('Uploading avatar...')
+                        const fd = new FormData()
+                        fd.append('image', file)
+                        try {
+                          const res = await fetch('/api/upload/widget-avatar', { method: 'POST', body: fd })
+                          if (res.ok) {
+                            const data = await res.json()
+                            setFormData({ ...formData, avatarImageUrl: data.url })
+                            toast.success('Avatar uploaded', { id: loadingToast })
+                          } else {
+                            toast.error('Upload failed', { id: loadingToast })
+                          }
+                        } catch {
+                          toast.error('Upload failed', { id: loadingToast })
+                        } finally {
+                          e.target.value = ''
+                        }
                       }}
                     />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => document.getElementById('regular-avatar-upload')?.click()}
+                    >
+                      <Icons.Upload className="h-4 w-4 mr-2" />
+                      Upload Image
+                    </Button>
+                    <p className="text-[10px] text-muted-foreground mt-1">Recommended: 256×256px</p>
                   </div>
-                )}
+                </div>
               </div>
             </FormRow>
 

@@ -91,11 +91,6 @@ export function WidgetButtonSection({ formData, setFormData }: WidgetButtonSecti
                       )}
                       
                       <div className="flex-1 space-y-2">
-                        <Input
-                          value={(formData as any).widgetAvatarImageUrl || formData.avatarImageUrl || ''}
-                          onChange={(e) => setFormData({ ...formData, widgetAvatarImageUrl: e.target.value } as any)}
-                          placeholder="https://example.com/avatar.png"
-                        />
                         <div className="flex items-center gap-2">
                           <Input
                             type="file"
@@ -178,11 +173,6 @@ export function WidgetButtonSection({ formData, setFormData }: WidgetButtonSecti
                       )}
                       
                       <div className="flex-1 space-y-2">
-                        <Input
-                          value={(formData as any).widgetCloseImageUrl || ''}
-                          onChange={(e) => setFormData({ ...formData, widgetCloseImageUrl: e.target.value } as any)}
-                          placeholder="https://example.com/close-avatar.png"
-                        />
                         <div className="flex items-center gap-2">
                           <Input
                             type="file"
