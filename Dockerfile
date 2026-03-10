@@ -48,15 +48,15 @@ RUN NODE_OPTIONS="--max-old-space-size=${BUILD_MEMORY_LIMIT} --max-semi-space-si
     npm run build
 
 # Production image
-FROM base AS runner
+FROM node:20-alpine AS runner
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=8301
-ENV HOSTNAME="0.0.0.0"
-# Reduced from 4096 - chunking allows lower memory usage
-ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=8301 \
+    HOSTNAME="0.0.0.0" \
+    NODE_OPTIONS="--max-old-space-size=2048"
 
 RUN apk add --no-cache postgresql-client dos2unix openssl && \
     addgroup --system --gid 1001 nodejs && \
