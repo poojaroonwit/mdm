@@ -254,21 +254,26 @@ export function useChatbotLoader({
     try {
       if (isUuid(chatbotId)) {
         // 1. Try Private API (Admin/Draft version)
-        try {
-          const response = await fetch(`/api/chatbots/${chatbotId}`, { cache: 'no-store' })
-          // Check for JSON content type to avoid handling auth redirects (HTML) as success
-          const contentType = response.headers.get('content-type')
+        // Optimization: Skip private API if in an iframe (embed) to avoid 400/CORS errors for anonymous users
+        // EXCEPT if it's explicitly a preview session (where admin is logged in)
+        const isPreview = window.location.search.includes('preview=true')
+        if (!isInIframe || isPreview) {
+          try {
+            const response = await fetch(`/api/chatbots/${chatbotId}`, { cache: 'no-store' })
+            // Check for JSON content type to avoid handling auth redirects (HTML) as success
+            const contentType = response.headers.get('content-type')
 
-          if (response.ok && contentType && contentType.includes('application/json')) {
-            const data = await response.json()
-            if (data.chatbot) {
-              const merged = mergeWithDefaults(data.chatbot)
-              setLoadedChatbot(merged)
-              return
+            if (response.ok && contentType && contentType.includes('application/json')) {
+              const data = await response.json()
+              if (data.chatbot) {
+                const merged = mergeWithDefaults(data.chatbot)
+                setLoadedChatbot(merged)
+                return
+              }
             }
+          } catch (e) {
+            // Failed to fetch private, continue to fallback
           }
-        } catch (e) {
-          // Failed to fetch private, continue to fallback
         }
 
         // 2. Try Public API (Published version)
