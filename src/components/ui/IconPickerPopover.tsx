@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Check, ChevronsUpDown, Search } from 'lucide-react'
+import { Check, ChevronsUpDown, Search, Bot } from 'lucide-react'
+import * as Icons from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,8 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { HERO_ICONS_LIST } from './IconList'
-import * as HeroIcons from '@heroicons/react/24/outline'
+import { LUCIDE_ICONS_LIST } from './IconList'
 
 interface IconPickerPopoverProps {
   value?: string | null
@@ -33,7 +33,7 @@ export function IconPickerPopover({
 }: IconPickerPopoverProps) {
   const [open, setOpen] = useState(false)
 
-  const SelectedIcon = value && (HeroIcons as any)[value] ? (HeroIcons as any)[value] : null
+  const SelectedIcon = value && (Icons as any)[value] ? (Icons as any)[value] : null
 
   return (
     <div className="w-full">
@@ -58,7 +58,7 @@ export function IconPickerPopover({
               {SelectedIcon ? (
                 <SelectedIcon className="w-4 h-4 text-muted-foreground" />
               ) : (
-                <div className="w-4 h-4 rounded-full bg-muted border border-border" />
+                <Bot className="w-4 h-4 text-muted-foreground opacity-50" />
               )}
               <span className="text-xs truncate">{value || placeholder}</span>
             </div>
@@ -79,8 +79,8 @@ export function IconPickerPopover({
             </CommandEmpty>
             <CommandList>
               <CommandGroup className="max-h-60 overflow-y-auto w-full p-1 custom-scrollbar">
-                {HERO_ICONS_LIST.map((iconName) => {
-                  const IconComponent = (HeroIcons as any)[iconName]
+                {LUCIDE_ICONS_LIST.map((iconName) => {
+                  const IconComponent = (Icons as any)[iconName]
                   return (
                     <CommandItem
                       key={iconName}

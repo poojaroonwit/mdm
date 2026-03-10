@@ -37,7 +37,7 @@ async function uploadToMinio(
   const useSSL = port === 443 || process.env.MINIO_USE_SSL === 'true'
   const accessKey = process.env.MINIO_ACCESS_KEY || ''
   const secretKey = process.env.MINIO_SECRET_KEY || ''
-  const bucket = process.env.MINIO_UPLOADS_BUCKET || process.env.MINIO_BUCKET || 'uploads'
+  const bucket = process.env.MINIO_UPLOADS_BUCKET || process.env.MINIO_BUCKET || process.env.MINIO_ACCESS_KEY || 'udp'
 
   // Extract just the hostname (no protocol, no port) for the MinIO SDK
   const endpointHostname = parseEndpointHostname(endpoint)
