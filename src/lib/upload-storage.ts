@@ -63,21 +63,31 @@ async function uploadToMinio(
   })
 
   try {
-    // Ensure bucket exists
-    const exists = await client.bucketExists(bucket)
-    if (!exists) {
-      await client.makeBucket(bucket, 'us-east-1')
-      // Set public-read policy so images are accessible via URL
-      const policy = JSON.stringify({
-        Version: '2012-10-17',
-        Statement: [{
-          Effect: 'Allow',
-          Principal: { AWS: ['*'] },
-          Action: ['s3:GetObject'],
-          Resource: [`arn:aws:s3:::${bucket}/*`],
-        }],
+    try {
+      // Ensure bucket exists
+      const exists = await client.bucketExists(bucket)
+      if (!exists) {
+        await client.makeBucket(bucket, 'us-east-1')
+        // Set public-read policy so images are accessible via URL
+        const policy = JSON.stringify({
+          Version: '2012-10-17',
+          Statement: [{
+            Effect: 'Allow',
+            Principal: { AWS: ['*'] },
+            Action: ['s3:GetObject'],
+            Resource: [`arn:aws:s3:::${bucket}/*`],
+          }],
+        })
+        await client.setBucketPolicy(bucket, policy)
+      }
+    } catch (bucketErr) {
+      // If we can't check/create the bucket or set policy (AccessDenied),
+      // we still try the putObject call because the user might have write permissions
+      // to an existing bucket but not permission to check headers or policies.
+      logger.warn('[upload-storage] Bucket check/creation failed, proceedings with direct upload attempt', {
+        error: bucketErr instanceof Error ? bucketErr.message : String(bucketErr),
+        bucket
       })
-      await client.setBucketPolicy(bucket, policy)
     }
 
     const objectName = `${subDir}/${filename}`
