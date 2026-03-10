@@ -27,6 +27,7 @@ import {
   getOverlayStyle,
   getWidgetButtonStyle,
   ensureUnits,
+  SHADOW_BUFFER,
 } from './utils/chatStyling'
 import { Z_INDEX } from '@/lib/z-index'
 import { ChatWidgetButton } from './components/ChatWidgetButton'
@@ -435,29 +436,65 @@ export default function ChatPage() {
     if (isEmbed || isInIframe) {
       let width = '100%'
       let height = '100%'
+      
+      // Positioning data for the parent frame
+      const x = chatbot as any
+      const pos = (x.widgetPosition || 'bottom-right') as string
+      const offsetX = ensureUnits(x.widgetOffsetX, '20px')
+      const offsetY = ensureUnits(x.widgetOffsetY, '20px')
+      
+      const positionData: any = {}
 
       const isPopover = previewDeploymentType === 'popover' || previewDeploymentType === 'popup-center'
 
       if (isPopover) {
         if (!isOpen) {
-          width = '120px'
-          height = '120px'
+          // Closed state: Add shadow buffer to widget size
+          // Standard widget size is usually 60px, button is 120x120 container in old script
+          // Let's use config.widgetSize + 2 * SHADOW_BUFFER
+          const widgetSizeRaw = parseFloat(x.widgetSize || '60') || 60
+          const size = `${widgetSizeRaw + (SHADOW_BUFFER * 2)}px`
+          width = size
+          height = size
         } else if (!isMobileRef.current) {
           // Desktop Popover - use ref to avoid dependency loop
-          // Respect configured dimensions if available
-          width = ensureUnits((chatbot as any).chatWindowWidth, '450px')
-          height = ensureUnits((chatbot as any).chatWindowHeight, '800px')
+          // Add 2 * SHADOW_BUFFER to both dimensions
+          const baseWidth = parseFloat(extractNumericValue(ensureUnits(x.chatWindowWidth, '450px'))) || 450
+          const baseHeight = parseFloat(extractNumericValue(ensureUnits(x.chatWindowHeight, '800px'))) || 800
+          
+          width = `${baseWidth + (SHADOW_BUFFER * 2)}px`
+          height = `${baseHeight + (SHADOW_BUFFER * 2)}px`
         }
-        // Mobile Open Popover remains 100%
+        
+        // Calculate parent positions
+        // We subtract SHADOW_BUFFER from the user's offset because the internal element 
+        // already has a SHADOW_BUFFER gap. 
+        // ParentOffset = UserOffset - SHADOW_BUFFER
+        // Actually, internal element is at (SHADOW_BUFFER, SHADOW_BUFFER).
+        // If we want the internal element to be at (UserOffset, UserOffset) relative to screen:
+        // ParentFrame must be at (UserOffset - SHADOW_BUFFER, UserOffset - SHADOW_BUFFER)
+        
+        const parentOffsetX = `calc(${offsetX} - ${SHADOW_BUFFER}px)`
+        const parentOffsetY = `calc(${offsetY} - ${SHADOW_BUFFER}px)`
+        
+        if (pos.includes('bottom')) positionData.bottom = parentOffsetY
+        else positionData.top = parentOffsetY
+        if (pos.includes('right')) positionData.right = parentOffsetX
+        else positionData.left = parentOffsetX
+        
+        if (pos.includes('center')) {
+          positionData.left = '50%'
+        }
       }
 
-      console.log('[ChatPage] Sending resize:', { isOpen, width, height, deploymentType: previewDeploymentType, isMobile: isMobileRef.current, isEmbed });
+      console.log('[ChatPage] Sending resize:', { isOpen, width, height, positionData, deploymentType: previewDeploymentType, isMobile: isMobileRef.current, isEmbed });
 
       window.parent.postMessage({
         type: 'chat-widget-resize',
         isOpen,
         width,
         height,
+        ...positionData,
         deploymentType: previewDeploymentType
       }, '*')
     }
@@ -642,7 +679,7 @@ export default function ChatPage() {
     (chatbot as any).chatkitOptions
   )
   const overlayStyle = getOverlayStyle(effectiveDeploymentType, chatbot, isOpen, (chatbot as any).chatkitOptions)
-  const popoverPositionStyle = getPopoverPositionStyle(chatbot)
+  const popoverPositionStyle = getPopoverPositionStyle(chatbot, isEmbed)
 
   // Render ChatKit only if engine type is chatkit or openai-agent-sdk with agent ID
   // In DESKTOP preview mode, don't force regular style on mobile - allow widget preview
@@ -1017,4 +1054,10 @@ export default function ChatPage() {
       )}
     </div>
   )
+}
+// Helper to extract numeric value from string like "8px" -> "8"
+function extractNumericValue(value: string | undefined): string {
+  if (!value) return '0'
+  const match = value.toString().match(/(\d+(?:\.\d+)?)/)
+  return match ? match[1] : '0'
 }

@@ -26,6 +26,9 @@ function hexToRgb(hex: string): string {
   return `${r}, ${g}, ${b}`
 }
 
+// Buffer to prevent shadow clipping in iframes
+export const SHADOW_BUFFER = 20
+
 export function getChatStyle(chatbot: ChatbotConfig, chatkitOptions?: any): React.CSSProperties {
   const options = chatkitOptions || (chatbot as any).chatkitOptions
   const theme = options?.theme || {}
@@ -46,17 +49,15 @@ export const ensureUnits = (val: string | number | undefined, defaultVal: string
   return /^\d+$/.test(strVal) ? `${strVal}px` : strVal
 }
 
-export function getPopoverPositionStyle(chatbot: ChatbotConfig): React.CSSProperties {
+export function getPopoverPositionStyle(chatbot: ChatbotConfig, isEmbed: boolean = false): React.CSSProperties {
   const x = chatbot as any
-  const options = x.chatkitOptions || {}
-
-  // Check options.widget or root properties
-  // Note: WidgetSection likely saves to root or chatkitOptions.widget. 
-  // We'll check both if needed, but prioritizing root for now as usually widget position is a root setting in older code.
-  // If WidgetSection saves to chatkitOptions.widget, we should check that too. Assuming root for now as per old code.
   const pos = (x.widgetPosition || 'bottom-right') as string
-  const offsetX = ensureUnits(x.widgetOffsetX, '20px')
-  const offsetY = ensureUnits(x.widgetOffsetY, '20px')
+  
+  // In embed mode, the parent frame handles the main offset (widgetOffsetX/Y).
+  // The internal container should only use the SHADOW_BUFFER to avoid clipping and double-offset.
+  const offsetX = isEmbed ? `${SHADOW_BUFFER}px` : ensureUnits(x.widgetOffsetX, '20px')
+  const offsetY = isEmbed ? `${SHADOW_BUFFER}px` : ensureUnits(x.widgetOffsetY, '20px')
+  
   const style: React.CSSProperties = { position: 'fixed' }
   if (pos.includes('bottom')) (style as any).bottom = offsetY
   else (style as any).top = offsetY

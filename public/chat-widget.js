@@ -87,6 +87,12 @@
                 container.style.width = width;
                 container.style.height = height;
 
+                // Dynamic positioning if provided by the chatbot config
+                if (data.bottom !== undefined) container.style.bottom = data.bottom;
+                if (data.right !== undefined) container.style.right = data.right;
+                if (data.top !== undefined) container.style.top = data.top;
+                if (data.left !== undefined) container.style.left = data.left;
+
                 if (data.isOpen) {
                     // Check if we are in a non-full-screen mode (e.g. popover)
                     // If width/height is NOT 100%, we allow interaction with the host page
