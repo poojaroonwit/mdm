@@ -69,7 +69,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/sql ./sql
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 # Pre-create upload directories with correct ownership so the app can write files

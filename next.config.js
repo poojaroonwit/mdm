@@ -54,7 +54,7 @@ const nextConfig = {
   // Experimental features for better build performance
   experimental: {
     // Reduce memory usage by limiting concurrent workers (Production Only)
-    webpackBuildWorker: process.env.NODE_ENV === 'production' ? false : undefined,
+    webpackBuildWorker: true,
     // Enable parallel routes for better route optimization (Disable in dev for speed)
     parallelServerBuildTraces: process.env.NODE_ENV === 'production' ? false : true,
     // Optimize package imports to reduce bundle size
@@ -67,12 +67,6 @@ const nextConfig = {
       'recharts',
       '@xyflow/react',
     ],
-    // Enable modularizeImports for lucide-react to tree-shake unused icons
-    // Enable modularizeImports for lucide-react to tree-shake unused icons
-    // modularizeImports removed due to being invalid in this Next.js version
-    
-    // Enable instrumentation hook for startup checks
-    instrumentationHook: true,
   },
 
   // Disable source maps to save memory and space used during build
