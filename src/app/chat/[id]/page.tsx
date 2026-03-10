@@ -67,7 +67,7 @@ export default function ChatPage() {
   // Use ref to track isMobile for resize effect without causing re-runs
   const isMobileRef = useRef(false)
 
-  const [showGetStarted, setShowGetStarted] = useState(urlDeploymentType === 'popover' && !isMobile)
+  const [showGetStarted, setShowGetStarted] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [messageFeedback, setMessageFeedback] = useState<Record<string, 'liked' | 'disliked' | null>>({})
   const [input, setInput] = useState('')

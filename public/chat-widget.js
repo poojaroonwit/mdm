@@ -30,6 +30,9 @@
       right: 0;
       width: 120px;
       height: 120px;
+      max-width: 100% !important;
+      max-height: 100% !important;
+      box-sizing: border-box;
       z-index: 999999;
       pointer-events: none;
     `;
@@ -42,6 +45,8 @@
         iframe.style.cssText = `
       width: 100%;
       height: 100%;
+      max-width: 100%;
+      max-height: 100%;
       border: none;
       background: transparent;
       pointer-events: auto;

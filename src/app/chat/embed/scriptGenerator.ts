@@ -49,7 +49,7 @@ export function generateEmbedScript(
     
     // Style the container to be a transparent overlay
     // Initial size is small (standard widget area) to prevent blocking the page before the widget loads/resizes
-    embedContainer.style.cssText = 'position: fixed; bottom: 0; right: 0; width: 120px; height: 120px; pointer-events: none; z-index: ' + (widgetConfig.zIndex || Z_INDEX.chatWidget) + '; border: none; overflow: visible;';
+    embedContainer.style.cssText = 'position: fixed; bottom: 0; right: 0; width: 120px; height: 120px; max-width: 100% !important; max-height: 100% !important; box-sizing: border-box; pointer-events: none; z-index: ' + (widgetConfig.zIndex || Z_INDEX.chatWidget) + '; border: none; overflow: visible;';
     
     // Create the iframe that loads the full chat page
     // The chat page will render the widget button and container with React components
@@ -62,7 +62,7 @@ export function generateEmbedScript(
     iframe.setAttribute('sandbox', 'allow-scripts allow-forms allow-popups allow-same-origin');
     
     // Style iframe to cover full viewport but be transparent except for widget
-    iframe.style.cssText = 'width: 100%; height: 100%; border: none; background: transparent; pointer-events: auto;';
+    iframe.style.cssText = 'width: 100%; height: 100%; max-width: 100%; max-height: 100%; border: none; background: transparent; pointer-events: auto;';
     
     embedContainer.appendChild(iframe);
     

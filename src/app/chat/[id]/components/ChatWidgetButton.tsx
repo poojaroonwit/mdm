@@ -171,6 +171,7 @@ export function ChatWidgetButton({
                     -webkit-appearance: none !important;
                     text-transform: none !important;
                     text-decoration: none !important;
+                    pointer-events: auto !important;
                 }
                 
                 #chatbot-widget-button img:not(.close-avatar-img) {

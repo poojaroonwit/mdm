@@ -648,13 +648,15 @@ export function ChatKitWrapper({
       )}
 
       {shouldShowWidgetButton && !useChatKitInRegularStyle && (
-        <ChatWidgetButton
-          chatbot={chatbot}
-          isOpen={isOpen}
-          onClick={() => setIsOpen(!isOpen)}
-          widgetButtonStyle={widgetButtonStyle}
-          popoverPositionStyle={widgetPopoverPositionStyle}
-        />
+        <div style={{ pointerEvents: 'auto', position: 'fixed', bottom: 0, right: 0, zIndex: Z_INDEX.chatWidget }}>
+          <ChatWidgetButton
+            chatbot={chatbot}
+            isOpen={isOpen}
+            onClick={() => setIsOpen(!isOpen)}
+            widgetButtonStyle={widgetButtonStyle}
+            popoverPositionStyle={widgetPopoverPositionStyle}
+          />
+        </div>
       )}
 
       {shouldShowContainer && (
