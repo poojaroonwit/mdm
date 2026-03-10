@@ -50,6 +50,7 @@ export const ensureUnits = (val: string | number | undefined, defaultVal: string
 }
 
 export function getPopoverPositionStyle(chatbot: ChatbotConfig, isEmbed: boolean = false): React.CSSProperties {
+  if (!chatbot) return { position: 'fixed' }
   const x = chatbot as any
   const pos = (x.widgetPosition || 'bottom-right') as string
   
@@ -472,6 +473,7 @@ function extractNumericValue(value: string | undefined): string {
 }
 
 export function getWidgetButtonStyle(chatbot: ChatbotConfig, chatkitOptions?: any): React.CSSProperties {
+  if (!chatbot) return {}
   const options = chatkitOptions || (chatbot as any).chatkitOptions || {}
   const theme = options.theme || {}
 

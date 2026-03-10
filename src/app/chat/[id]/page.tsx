@@ -427,6 +427,8 @@ export default function ChatPage() {
   // SKIP this for native ChatKit in embed mode - ChatKitWrapper handles its own resize messages
   // to ensure the iframe size matches its internal isOpen state
   useEffect(() => {
+    if (!chatbot) return
+
     // Skip if native ChatKit is handling resize messages itself
     if (isNativeChatKitMode && isEmbed) {
       console.log('[ChatPage] Skipping resize - native ChatKit handles its own resize messages')
