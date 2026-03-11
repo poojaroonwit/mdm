@@ -15,10 +15,20 @@ const BUCKET = process.env.MINIO_UPLOADS_BUCKET || 'udp'
 
 function convertToAbsolute(url: string | null | undefined): string | null {
   if (!url || typeof url !== 'string') return url || null
+  
+  // Handle legacy relative paths
   if (url.startsWith('/uploads/')) {
     const relativePath = url.replace(/^\/uploads\//, '')
     return `${PUBLIC_BASE}/${BUCKET}/${relativePath}`
   }
+  
+  // Handle incorrect absolute URLs from previous migration attempt
+  // dev-ncc-udp.qsncc.com is the app domain which shouldn't be in the Direct MinIO URL
+  const OLD_BASE = 'https://dev-ncc-udp.qsncc.com'
+  if (url.startsWith(`${OLD_BASE}/${BUCKET}/`)) {
+    return url.replace(OLD_BASE, PUBLIC_BASE)
+  }
+  
   return url
 }
 
@@ -31,7 +41,8 @@ async function main() {
   const chatbots = await prisma.chatbot.findMany({
     where: {
       OR: [
-        { logo: { startsWith: '/uploads/' } }
+        { logo: { startsWith: '/uploads/' } },
+        { logo: { startsWith: 'https://dev-ncc-udp.qsncc.com/' } }
       ]
     }
   })
@@ -72,11 +83,14 @@ async function main() {
     ]
 
     for (const field of urlFields) {
-      if (newConfig[field] && typeof newConfig[field] === 'string' && newConfig[field].startsWith('/uploads/')) {
-        const oldVal = newConfig[field]
-        newConfig[field] = convertToAbsolute(oldVal)
-        updated = true
-        console.log(`   - Field [${field}]: ${oldVal} -> ${newConfig[field]}`)
+      const oldVal = newConfig[field]
+      if (oldVal && typeof oldVal === 'string') {
+        const newVal = convertToAbsolute(oldVal)
+        if (newVal !== oldVal) {
+          newConfig[field] = newVal
+          updated = true
+          console.log(`   - Field [${field}]: ${oldVal} -> ${newConfig[field]}`)
+        }
       }
     }
 
