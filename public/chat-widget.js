@@ -26,8 +26,6 @@
         container.id = 'chat-widget-container';
         container.style.cssText = `
       position: fixed;
-      bottom: 0;
-      right: 0;
       width: 120px;
       height: 120px;
       max-width: 100% !important;
@@ -35,6 +33,7 @@
       box-sizing: border-box;
       z-index: 999999;
       pointer-events: none;
+      visibility: hidden;
     `;
 
         // Create iframe
@@ -88,10 +87,14 @@
                 container.style.height = height;
 
                 // Dynamic positioning if provided by the chatbot config
-                if (data.bottom !== undefined) container.style.bottom = data.bottom;
-                if (data.right !== undefined) container.style.right = data.right;
-                if (data.top !== undefined) container.style.top = data.top;
-                if (data.left !== undefined) container.style.left = data.left;
+                // Clear opposing axis properties to avoid conflicting anchors (e.g. left + right both set)
+                if (data.bottom !== undefined) { container.style.bottom = data.bottom; container.style.top = ''; }
+                else if (data.top !== undefined) { container.style.top = data.top; container.style.bottom = ''; }
+                if (data.right !== undefined) { container.style.right = data.right; container.style.left = ''; }
+                else if (data.left !== undefined) { container.style.left = data.left; container.style.right = ''; }
+
+                // Make visible once positioned (avoids flash at wrong corner before first resize)
+                container.style.visibility = 'visible';
 
                 if (data.isOpen) {
                     // Check if we are in a non-full-screen mode (e.g. popover)
