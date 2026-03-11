@@ -4,7 +4,7 @@ import React from 'react'
 import { X, Bot, Menu, Loader2, Paperclip } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { ChatbotConfig } from '../types'
-import { getOverlayStyle, getContainerStyle, getWidgetButtonStyle, getPopoverPositionStyle, ensureUnits } from '../utils/chatStyling'
+import { getOverlayStyle, getContainerStyle, getWidgetButtonStyle, getPopoverPositionStyle, ensureUnits, SHADOW_BUFFER } from '../utils/chatStyling'
 import { Z_INDEX } from '@/lib/z-index'
 import { extractNumericValue, convertToHex, isLightColor, hexToRgb } from './chatkit/themeUtils'
 import { buildChatKitTheme } from './chatkit/configBuilder'
@@ -111,34 +111,61 @@ export function ChatKitWrapper({
     const isPopover = previewDeploymentType === 'popover' || previewDeploymentType === 'popup-center'
     if (!isPopover) return
 
+    const x = chatbot as any
+    const widgetSizeRaw = parseFloat(x.widgetSize || '60') || 60
+    const pos = (x.widgetPosition || 'bottom-right') as string
+    const offsetX = ensureUnits(x.widgetOffsetX, '20px')
+    const offsetY = ensureUnits(x.widgetOffsetY, '20px')
+    const popoverMarginPx = parseFloat(x.widgetPopoverMargin || '10') || 10
+    const popoverPos = x.popoverPosition || 'top'
+
     let width = '100%'
     let height = '100%'
 
     if (!isOpen) {
       // If PWA overlay is enabled and we are on mobile, we must keep the iframe full scale
       // so the banner (fixed at top) remains visible.
-      // The pointer-events: none on the container (in page.tsx) will allow clicks to pass through.
       const isPwaOverlay = (chatbot as any).pwaInstallScope === 'website'
       if (isPwaOverlay && isMobileRef.current) {
         width = '100%'
         height = '100%'
       } else {
-        width = '120px'
-        height = '120px'
+        // Closed state: widget button size + shadow buffer
+        const closedSize = `${widgetSizeRaw + (SHADOW_BUFFER * 2)}px`
+        width = closedSize
+        height = closedSize
       }
-    } else {
-      // Popover open size (desktop OR mobile preview)
-      // Respect configured dimensions if available
-      width = ensureUnits((chatbot as any).chatWindowWidth, '380px')
-      height = ensureUnits((chatbot as any).chatWindowHeight, '600px')
-    }
+    } else if (!isMobileRef.current) {
+      // Desktop open: popover + widget button + margin + shadow buffer
+      const baseWidth = parseFloat(ensureUnits(x.chatWindowWidth, '380px')) || 380
+      const baseHeight = parseFloat(ensureUnits(x.chatWindowHeight, '600px')) || 600
 
+      if (popoverPos === 'left') {
+        width = `${baseWidth + widgetSizeRaw + popoverMarginPx + (SHADOW_BUFFER * 2)}px`
+        height = `${baseHeight + (SHADOW_BUFFER * 2)}px`
+      } else {
+        width = `${baseWidth + (SHADOW_BUFFER * 2)}px`
+        height = `${baseHeight + widgetSizeRaw + popoverMarginPx + (SHADOW_BUFFER * 2)}px`
+      }
+    }
+    // else: mobile open stays at 100% x 100%
+
+    // Calculate position data so parent iframe container is anchored correctly
+    const parentOffsetX = `calc(${offsetX} - ${SHADOW_BUFFER}px)`
+    const parentOffsetY = `calc(${offsetY} - ${SHADOW_BUFFER}px)`
+    const positionData: any = {}
+    if (pos.includes('bottom')) positionData.bottom = parentOffsetY
+    else positionData.top = parentOffsetY
+    if (pos.includes('right')) positionData.right = parentOffsetX
+    else positionData.left = parentOffsetX
+    if (pos.includes('center')) positionData.left = '50%'
 
     window.parent.postMessage({
       type: 'chat-widget-resize',
       isOpen,
       width,
       height,
+      ...positionData,
       deploymentType: previewDeploymentType
     }, '*')
   }, [isOpen, isEmbed, previewDeploymentType, chatbot])  // Removed isMobile - use ref instead
@@ -588,11 +615,11 @@ export function ChatKitWrapper({
   // Hide ChatKit widget button when:
   // - using regular style header
   // - OR on mobile when chat is open (fullpage covers screen)
-  // - OR in embed mode (parent embed script handles the launcher button)
-  // EXCEPTION: In emulator preview mode (isPreview=true from URL), always show widget
+  // NOTE: In embed mode, the widget button MUST be shown inside the iframe because
+  // the parent embed script (chat-widget.js) does NOT render its own button.
+  // The iframe IS the button container.
   const shouldShowWidgetButton = (deploymentType === 'popover' || deploymentType === 'popup-center') &&
     !useChatKitInRegularStyle &&
-    (!isEmbed || isPreview) && // Hide internal button in embed mode as parent script handles it, unless in preview
     !(isMobile && isOpen && !isPreview)  // Don't hide in emulator preview mode
 
   const shouldShowContainer = deploymentType === 'fullpage' ? true : isOpen
