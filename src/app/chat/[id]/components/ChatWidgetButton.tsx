@@ -4,6 +4,7 @@ import * as Icons from 'lucide-react'
 import { ChatbotConfig } from '../types'
 import { getWidgetConfig } from '../utils/widgetConfigHelper'
 import { buildChatKitTheme } from './chatkit/configBuilder'
+import { loadIcon } from '@/lib/utils/icon-loader'
 
 interface ChatWidgetButtonProps {
     chatbot: ChatbotConfig
@@ -234,10 +235,17 @@ export function ChatWidgetButton({
                             )
                         }
                         const IconName = config.avatarIcon as string
-                        const IconComponent = (Icons as any)[IconName] || Bot
-                        return <IconComponent
-                            style={{ color: config.avatarIconColor }}
-                        />
+                        const LazyIcon = loadIcon(IconName)
+
+                        return (
+                            <React.Suspense fallback={<Bot style={{ color: config.avatarIconColor }} />}>
+                                {LazyIcon ? (
+                                    <LazyIcon style={{ color: config.avatarIconColor }} />
+                                ) : (
+                                    <Bot style={{ color: config.avatarIconColor }} />
+                                )}
+                            </React.Suspense>
+                        )
                     }
 
                     if (config.avatarStyle === 'circle-with-label') {

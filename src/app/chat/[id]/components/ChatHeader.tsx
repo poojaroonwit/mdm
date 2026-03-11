@@ -4,17 +4,7 @@ import React from 'react'
 import { Bot, RotateCcw, X, ArrowLeft } from 'lucide-react'
 import { ChatbotConfig } from '../types'
 import { Button } from '@/components/ui/button'
-
-// Helper function to get icon component by name dynamically
-// This is more efficient than importing all icons
-const getIconComponent = async (iconName: string) => {
-  try {
-    const module = await import('lucide-react')
-    return module[iconName as keyof typeof module] as React.ComponentType<{ className?: string; style?: React.CSSProperties }>
-  } catch {
-    return Bot
-  }
-}
+import { loadIcon } from '@/lib/utils/icon-loader'
 
 interface ChatHeaderProps {
   chatbot: ChatbotConfig
@@ -137,16 +127,7 @@ export function ChatHeader({ chatbot, onClearSession, onClose, isMobile = false 
           )
         } else if (headerAvatarType === 'icon') {
           const IconName = chatbot.headerAvatarIcon || chatbot.avatarIcon || 'Bot'
-          // Use Bot as default, but try to get the correct icon dynamically
-          const [IconComponent, setIconComponent] = React.useState<React.ComponentType<any>>(Bot)
-
-          React.useEffect(() => {
-            if (IconName && IconName !== 'Bot') {
-              getIconComponent(IconName).then(setIconComponent)
-            } else {
-              setIconComponent(Bot)
-            }
-          }, [IconName])
+          const LazyIcon = loadIcon(IconName)
 
           const iconColor = chatbot.headerAvatarIconColor || chatbot.avatarIconColor || '#ffffff'
           const bgColor = chatbot.headerAvatarBackgroundColor || chatbot.avatarBackgroundColor || chatbot.primaryColor || '#3b82f6'
@@ -155,7 +136,13 @@ export function ChatHeader({ chatbot, onClearSession, onClose, isMobile = false 
               className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-200 ease-out hover:scale-105 ring-2 ring-white/20"
               style={{ backgroundColor: bgColor }}
             >
-              <IconComponent className="h-5 w-5 transition-transform duration-200" style={{ color: iconColor }} />
+              <React.Suspense fallback={<Bot className="h-5 w-5 transition-transform duration-200" style={{ color: iconColor }} />}>
+                 {LazyIcon ? (
+                     <LazyIcon className="h-5 w-5 transition-transform duration-200" style={{ color: iconColor }} />
+                 ) : (
+                     <Bot className="h-5 w-5 transition-transform duration-200" style={{ color: iconColor }} />
+                 )}
+              </React.Suspense>
             </div>
           )
         }
@@ -175,13 +162,7 @@ export function ChatHeader({ chatbot, onClearSession, onClose, isMobile = false 
         {/* ChatKit Custom Buttons (when useChatKitInRegularStyle is enabled) */}
         {useChatKitInRegularStyle && chatkitCustomButtons.map((button: any, index: number) => {
           const IconName = button.icon || 'Bot'
-          const [IconComponent, setIconComponent] = React.useState<React.ComponentType<any>>(Bot)
-
-          React.useEffect(() => {
-            if (IconName) {
-              getIconComponent(IconName).then(setIconComponent)
-            }
-          }, [IconName])
+          const LazyIcon = loadIcon(IconName)
 
           return (
             <Button
@@ -194,7 +175,9 @@ export function ChatHeader({ chatbot, onClearSession, onClose, isMobile = false 
               title={button.label || ''}
             >
               {button.icon ? (
-                <IconComponent className="h-4 w-4" />
+                <React.Suspense fallback={<Bot className="h-4 w-4" />}>
+                   {LazyIcon ? <LazyIcon className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                </React.Suspense>
               ) : button.label ? (
                 <span className="text-xs">{button.label}</span>
               ) : null}
