@@ -189,9 +189,9 @@ const nextConfig = {
       }
     }
 
-    // Reduce parallelism to lower RAM usage during build (Production only)
+    // Webpack parallelism: balance between speed and RAM usage
     if (process.env.NODE_ENV === 'production') {
-      config.parallelism = 1 // Set to 1 for maximum memory efficiency
+      config.parallelism = 2
     }
 
     // Custom error handling to collect all errors

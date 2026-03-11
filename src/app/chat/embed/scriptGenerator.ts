@@ -49,7 +49,22 @@ export function generateEmbedScript(
     
     // Style the container to be a transparent overlay
     // Initial size is small (standard widget area) to prevent blocking the page before the widget loads/resizes
-    embedContainer.style.cssText = 'position: fixed; bottom: 0; right: 0; width: 120px; height: 120px; max-width: 100% !important; max-height: 100% !important; box-sizing: border-box; pointer-events: none; z-index: ' + (widgetConfig.zIndex || Z_INDEX.chatWidget) + '; border: none; overflow: visible;';
+    // Compute initial position from widgetConfig so non-bottom-right widgets don't flash at the wrong corner
+    var shadowBuffer = 20;
+    var wPos = widgetConfig.position || 'bottom-right';
+    var wOffsetX = parseFloat(widgetConfig.offsetX || '20') || 20;
+    var wOffsetY = parseFloat(widgetConfig.offsetY || '20') || 20;
+    var initOffsetX = Math.max(0, wOffsetX - shadowBuffer) + 'px';
+    var initOffsetY = Math.max(0, wOffsetY - shadowBuffer) + 'px';
+    var initWidgetSize = parseFloat(widgetConfig.size || '60') || 60;
+    var initSize = (initWidgetSize + shadowBuffer * 2) + 'px';
+    var positionCss = 'position: fixed; ';
+    if (wPos.indexOf('bottom') !== -1) { positionCss += 'bottom: ' + initOffsetY + '; top: auto; '; }
+    else { positionCss += 'top: ' + initOffsetY + '; bottom: auto; '; }
+    if (wPos.indexOf('right') !== -1) { positionCss += 'right: ' + initOffsetX + '; left: auto; '; }
+    else if (wPos.indexOf('left') !== -1) { positionCss += 'left: ' + initOffsetX + '; right: auto; '; }
+    else { positionCss += 'left: 50%; right: auto; transform: translateX(-50%); '; }
+    embedContainer.style.cssText = positionCss + 'width: ' + initSize + '; height: ' + initSize + '; max-width: 100% !important; max-height: 100% !important; box-sizing: border-box; pointer-events: none; z-index: ' + (widgetConfig.zIndex || Z_INDEX.chatWidget) + '; border: none; overflow: visible;';
     
     // Create the iframe that loads the full chat page
     // The chat page will render the widget button and container with React components
@@ -75,29 +90,35 @@ export function generateEmbedScript(
         var width = e.data.width;
         var height = e.data.height;
         var isOpen = e.data.isOpen;
-        var type = e.data.type;
-        
+
         console.log('[EmbedScript] Received resize:', { width, height, isOpen, currentW: embedContainer.style.width, currentH: embedContainer.style.height });
 
         if (width && height) {
-          // Prevent infinite loop by checking if values actually changed
-          if (embedContainer.style.width === width && embedContainer.style.height === height) {
-             console.log('[EmbedScript] Skipping redundant resize');
-            return;
+          if (embedContainer.style.width !== width || embedContainer.style.height !== height) {
+            console.log('[EmbedScript] Applying resize:', { width, height });
+            embedContainer.style.width = width;
+            embedContainer.style.height = height;
           }
+        }
 
-          console.log('[EmbedScript] Applying resize:', { width, height });
-          embedContainer.style.width = width;
-          embedContainer.style.height = height;
+        // Apply position data so non-default widget positions (bottom-left, top-right, etc.) work correctly
+        if (e.data.bottom !== undefined) {
+          embedContainer.style.bottom = e.data.bottom;
+          embedContainer.style.top = 'auto';
+        } else if (e.data.top !== undefined) {
+          embedContainer.style.top = e.data.top;
+          embedContainer.style.bottom = 'auto';
         }
-        
-        // Manage pointer events:
-        if (width === '100%') {
-          embedContainer.style.pointerEvents = 'none'; 
-        } else {
-          // Partial size (button or desktop popover)
-           embedContainer.style.pointerEvents = 'none';
+        if (e.data.right !== undefined) {
+          embedContainer.style.right = e.data.right;
+          embedContainer.style.left = 'auto';
+        } else if (e.data.left !== undefined) {
+          embedContainer.style.left = e.data.left;
+          embedContainer.style.right = 'auto';
         }
+
+        // Manage pointer events
+        embedContainer.style.pointerEvents = 'none';
       }
     });
   

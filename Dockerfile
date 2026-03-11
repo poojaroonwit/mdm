@@ -7,7 +7,9 @@ FROM base AS deps
 COPY package.json package-lock.json* ./
 COPY prisma ./prisma
 ENV NODE_ENV=development
-RUN npm ci --prefer-offline --no-audit --legacy-peer-deps --include=dev 2>/dev/null || \
+# Cache the npm package store between builds to avoid re-downloading packages
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --prefer-offline --no-audit --legacy-peer-deps --include=dev 2>/dev/null || \
     npm install --no-audit --legacy-peer-deps --include=dev
 
 # Build application
@@ -42,9 +44,10 @@ ENV CI=true
 ENV npm_config_maxsockets=2
 # Limit webpack parallelism
 ENV WEBPACK_PARALLELISM=2
-RUN npm install -g cross-env
 
-RUN NODE_OPTIONS="--max-old-space-size=${BUILD_MEMORY_LIMIT} --max-semi-space-size=64" \
+# Cache .next/cache between builds for incremental Next.js compilation
+RUN --mount=type=cache,target=/app/.next/cache \
+    NODE_OPTIONS="--max-old-space-size=${BUILD_MEMORY_LIMIT} --max-semi-space-size=64" \
     npm run build
 
 # Production image

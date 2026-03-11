@@ -1,8 +1,0 @@
-﻿[96msrc/app/admin/features/system/components/branding/ApplicationLogoTab.tsx[0m:[93m114[0m:[93m30[0m - [91merror[0m[90m TS1381: [0mUnexpected token. Did you mean `{'}'}` or `&rbrace;`?
-
-[7m114[0m                             )}
-[7m   [0m [91m                             ~[0m
-
-
-Found 1 error in src/app/admin/features/system/components/branding/ApplicationLogoTab.tsx[90m:114[0m
-
