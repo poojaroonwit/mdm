@@ -269,7 +269,14 @@ export function getContainerStyle(
       paddingTop: (chatbot as any).chatWindowPaddingY || '0px',
       paddingBottom: (chatbot as any).chatWindowPaddingY || '0px',
       maxWidth: '100vw',
-      maxHeight: '100vh',
+      // In embed mode, constrain height so chat window never clips above the iframe top.
+      // The chat window bottom is at: SHADOW_BUFFER + widgetSizePx + popoverMarginPx (for 'top' position).
+      // We need SHADOW_BUFFER of space above the window, so max-height = 100vh - bottomOffset - SHADOW_BUFFER.
+      maxHeight: (isEmbed && !isPreview)
+        ? (popoverPos === 'left'
+          ? `calc(100vh - ${SHADOW_BUFFER * 2}px)`
+          : `calc(100vh - ${SHADOW_BUFFER + widgetSizePx + popoverMarginPx + SHADOW_BUFFER}px)`)
+        : '100vh',
       // boxSizing removed to match old version
     }
 
