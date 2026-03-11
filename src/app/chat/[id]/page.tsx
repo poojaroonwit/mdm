@@ -460,12 +460,21 @@ export default function ChatPage() {
           height = size
         } else if (!isMobileRef.current) {
           // Desktop Popover - use ref to avoid dependency loop
-          // Add 2 * SHADOW_BUFFER to both dimensions
           const baseWidth = parseFloat(extractNumericValue(ensureUnits(x.chatWindowWidth, '450px'))) || 450
           const baseHeight = parseFloat(extractNumericValue(ensureUnits(x.chatWindowHeight, '800px'))) || 800
-          
-          width = `${baseWidth + (SHADOW_BUFFER * 2)}px`
-          height = `${baseHeight + (SHADOW_BUFFER * 2)}px`
+          const widgetSizeRaw = parseFloat(x.widgetSize || '60') || 60
+          const popoverMarginPx = parseFloat(x.widgetPopoverMargin || '10') || 10
+          const popoverPos = x.popoverPosition || 'top'
+
+          if (popoverPos === 'left') {
+            // Side-by-side: popover is beside the button — needs extra width for the button + margin
+            width = `${baseWidth + widgetSizeRaw + popoverMarginPx + (SHADOW_BUFFER * 2)}px`
+            height = `${baseHeight + (SHADOW_BUFFER * 2)}px`
+          } else {
+            // Default 'top': popover is above the button — needs extra height for the button + margin
+            width = `${baseWidth + (SHADOW_BUFFER * 2)}px`
+            height = `${baseHeight + widgetSizeRaw + popoverMarginPx + (SHADOW_BUFFER * 2)}px`
+          }
         }
         
         // Calculate parent positions
