@@ -1,6 +1,6 @@
 {
   "name": "customer-data-management",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--max-old-space-size=8192 next dev --webpack",
