@@ -54,22 +54,6 @@ pipeline {
             }
         }
 
-        stage('Login to Registry') {
-            agent {
-                docker {
-                    image 'docker:27-cli'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: env.REGISTRY_CREDENTIALS_ID, usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')]) {
-                        sh "echo \$REG_PASS | docker login ${env.REGISTRY} -u \$REG_USER --password-stdin"
-                    }
-                }
-            }
-        }
-
         stage('Build & Push') {
             agent {
                 docker {
@@ -77,56 +61,69 @@ pipeline {
                     args '-v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
-            parallel {
-                stage('Main App') {
+            stages {
+                stage('Authenticate') {
                     steps {
                         script {
-                            echo "Building main app: ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG}"
-                            // Pull previous image to use as cache source (fails silently on first build)
-                            sh "docker pull ${env.FULL_IMAGE_NAME}:latest || true"
-                            sh """
-                                docker build \
-                                    --cache-from ${env.FULL_IMAGE_NAME}:latest \
-                                    -t ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG} \
-                                    -t ${env.FULL_IMAGE_NAME}:latest \
-                                    -f Dockerfile .
-                            """
-                            sh "docker push ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG}"
-                            sh "docker push ${env.FULL_IMAGE_NAME}:latest"
-                        }
-                    }
-                    post {
-                        always {
-                            script {
-                                sh "docker rmi ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG} || true"
-                                sh "docker rmi ${env.FULL_IMAGE_NAME}:latest || true"
+                            withCredentials([usernamePassword(credentialsId: env.REGISTRY_CREDENTIALS_ID, usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')]) {
+                                sh "echo \$REG_PASS | docker login ${env.REGISTRY} -u \$REG_USER --password-stdin"
                             }
                         }
                     }
                 }
-                stage('Plugin Hub') {
-                    steps {
-                        script {
-                            def hubImage = "${env.REGISTRY}/${env.REGISTRY_PROJECT}/unified-data-platform/plugin-hub"
-                            echo "Building plugin-hub: ${hubImage}:${env.IMAGE_TAG}"
-                            sh "docker pull ${hubImage}:latest || true"
-                            sh """
-                                docker build \
-                                    --cache-from ${hubImage}:latest \
-                                    -t ${hubImage}:${env.IMAGE_TAG} \
-                                    -t ${hubImage}:latest \
-                                    -f plugin-hub/Dockerfile plugin-hub
-                            """
-                            sh "docker push ${hubImage}:${env.IMAGE_TAG}"
-                            sh "docker push ${hubImage}:latest"
+                stage('Build Images') {
+                    parallel {
+                        stage('Main App') {
+                            steps {
+                                script {
+                                    echo "Building main app: ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG}"
+                                    // Pull previous image to use as cache source (fails silently on first build)
+                                    sh "docker pull ${env.FULL_IMAGE_NAME}:latest || true"
+                                    sh """
+                                        docker build \
+                                            --cache-from ${env.FULL_IMAGE_NAME}:latest \
+                                            -t ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG} \
+                                            -t ${env.FULL_IMAGE_NAME}:latest \
+                                            -f Dockerfile .
+                                    """
+                                    sh "docker push ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG}"
+                                    sh "docker push ${env.FULL_IMAGE_NAME}:latest"
+                                }
+                            }
+                            post {
+                                always {
+                                    script {
+                                        sh "docker rmi ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG} || true"
+                                        sh "docker rmi ${env.FULL_IMAGE_NAME}:latest || true"
+                                    }
+                                }
+                            }
                         }
-                    }
-                    post {
-                        always {
-                            script {
-                                def hubImage = "${env.REGISTRY}/${env.REGISTRY_PROJECT}/unified-data-platform/plugin-hub"
-                                sh "docker rmi ${hubImage}:${env.IMAGE_TAG} || true"
-                                sh "docker rmi ${hubImage}:latest || true"
+                        stage('Plugin Hub') {
+                            steps {
+                                script {
+                                    def hubImage = "${env.REGISTRY}/${env.REGISTRY_PROJECT}/unified-data-platform/plugin-hub"
+                                    echo "Building plugin-hub: ${hubImage}:${env.IMAGE_TAG}"
+                                    sh "docker pull ${hubImage}:latest || true"
+                                    sh """
+                                        docker build \
+                                            --cache-from ${hubImage}:latest \
+                                            -t ${hubImage}:${env.IMAGE_TAG} \
+                                            -t ${hubImage}:latest \
+                                            -f plugin-hub/Dockerfile plugin-hub
+                                    """
+                                    sh "docker push ${hubImage}:${env.IMAGE_TAG}"
+                                    sh "docker push ${hubImage}:latest"
+                                }
+                            }
+                            post {
+                                always {
+                                    script {
+                                        def hubImage = "${env.REGISTRY}/${env.REGISTRY_PROJECT}/unified-data-platform/plugin-hub"
+                                        sh "docker rmi ${hubImage}:${env.IMAGE_TAG} || true"
+                                        sh "docker rmi ${hubImage}:latest || true"
+                                    }
+                                }
                             }
                         }
                     }
