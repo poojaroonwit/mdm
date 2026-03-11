@@ -101,7 +101,7 @@ export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any): WidgetConf
     // 1. Basic Style Props
     const avatarStyle = c.widgetAvatarStyle || 'circle'
     const avatarType = c.widgetAvatarType || c.avatarType || 'icon'
-    const avatarImageUrl = c.widgetAvatarImageUrl || c.avatarImageUrl || ''
+    const avatarImageUrl = c.widgetAvatarImageUrl || c.avatarImageUrl || c.headerAvatarImageUrl || c.headerLogo || ''
     const avatarCloseType = c.widgetCloseAvatarType || 'icon' // default to icon for close state
     const avatarCloseIcon = c.widgetCloseAvatarIcon || 'X' // default to X for close icon
     const avatarCloseImageUrl = c.widgetCloseImageUrl || ''
