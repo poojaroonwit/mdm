@@ -645,7 +645,7 @@ export function ChatKitWrapper({
   const overlayStyle = getOverlayStyle(deploymentType as any, chatbot, isOpen, chatkitOptionsArg)
 
   const widgetButtonStyle = getWidgetButtonStyle(chatbot, chatkitOptionsArg)
-  const widgetPopoverPositionStyle = getPopoverPositionStyle(chatbot, isEmbed)
+  const widgetPopoverPositionStyle = getPopoverPositionStyle(chatbot)
 
   // Handler for closing that also notifies parent
   const handleBackdropClose = (e: React.MouseEvent) => {
@@ -671,7 +671,6 @@ export function ChatKitWrapper({
             inset: 0,
             background: 'transparent',
             zIndex: Z_INDEX.chatWidgetOverlay,
-            pointerEvents: 'auto',
           }}
           aria-hidden="true"
           onClick={handleBackdropClose}
@@ -683,24 +682,14 @@ export function ChatKitWrapper({
       )}
 
       {shouldShowWidgetButton && !useChatKitInRegularStyle && (
-        <div style={{ 
-            pointerEvents: 'none', 
-            position: 'fixed', 
-            inset: 0, 
-            zIndex: Z_INDEX.chatWidget,
-            display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'flex-end'
-        }}>
-          <div style={{ pointerEvents: 'auto', ...widgetPopoverPositionStyle }}>
-            <ChatWidgetButton
-              chatbot={chatbot}
-              isOpen={isOpen}
-              onClick={() => setIsOpen(!isOpen)}
-              widgetButtonStyle={widgetButtonStyle}
-              popoverPositionStyle={widgetPopoverPositionStyle}
-            />
-          </div>
+        <div style={{ pointerEvents: 'auto', position: 'fixed', bottom: 0, right: 0, zIndex: Z_INDEX.chatWidget }}>
+          <ChatWidgetButton
+            chatbot={chatbot}
+            isOpen={isOpen}
+            onClick={() => setIsOpen(!isOpen)}
+            widgetButtonStyle={widgetButtonStyle}
+            popoverPositionStyle={widgetPopoverPositionStyle}
+          />
         </div>
       )}
 

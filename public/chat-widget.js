@@ -21,22 +21,9 @@
     const baseUrl = scriptSrc.substring(0, scriptSrc.lastIndexOf('/'));
 
     function initWidget() {
-        // Helper to check if current window is mobile-sized or is a mobile device
-        function checkIsMobile() {
-            const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-            const isMobileWidth = window.matchMedia('(max-width: 1023px)').matches;
-            
-            // If it's a touch device AND it has a mobile-ish width/screen, it's mobile.
-            // Or if the UserAgent explicitly says so.
-            return isMobileUA || (isTouchDevice && isMobileWidth) || isMobileWidth;
-        }
-
         // Inject responsive CSS so the container goes fullscreen on mobile when the chat is open.
-        // This mirrors scriptGenerator.ts behaviour and acts as a reliable fallback in case the
-        // iframe resize postMessage arrives late or cannot override inline styles fast enough.
         var mobileStyle = document.createElement('style');
-        mobileStyle.innerHTML = '@media (max-width: 1023px) { #chat-widget-container.chat-open { width: 100% !important; height: 100% !important; top: 0 !important; left: 0 !important; bottom: auto !important; right: auto !important; transform: none !important; border-radius: 0 !important; } }';
+        mobileStyle.innerHTML = '@media (max-width: 1023px) { #chat-widget-container.chat-open { width: 100% !important; height: 100% !important; top: 0 !important; left: 0 !important; bottom: 0 !important; right: 0 !important; transform: none !important; border-radius: 0 !important; margin: 0 !important; } }';
         document.head.appendChild(mobileStyle);
 
         // Create iframe container - covers the full viewport to allow popover positioning
@@ -58,8 +45,7 @@
         const iframe = document.createElement('iframe');
         iframe.id = 'chat-widget-iframe';
         // Pass deployment type to the chat page - mode=embed tells it's in an iframe, type controls layout
-        // Also pass initial mobile state
-        iframe.src = `${baseUrl}/chat/${chatbotId}?mode=embed&type=${deploymentType}&isMobile=${checkIsMobile()}`;
+        iframe.src = `${baseUrl}/chat/${chatbotId}?mode=embed&type=${deploymentType}`;
         iframe.style.cssText = `
       width: 100%;
       height: 100%;
@@ -74,22 +60,6 @@
 
         container.appendChild(iframe);
         document.body.appendChild(container);
-
-        // Handle parent window resize to inform the iframe about mobile state changes
-        let resizeTimer;
-        window.addEventListener('resize', function() {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(function() {
-                if (iframe && iframe.contentWindow) {
-                    iframe.contentWindow.postMessage({ 
-                        type: 'parent-resize', 
-                        isMobile: checkIsMobile(),
-                        innerWidth: window.innerWidth,
-                        innerHeight: window.innerHeight
-                    }, '*');
-                }
-            }, 250);
-        });
 
         // Listen for messages from iframe to handle open/close state
         window.addEventListener('message', function (event) {
@@ -116,7 +86,6 @@
             }
 
             if (messageType === 'chat-widget-resize') {
-                console.log('[ChatWidget] Received resize:', data);
                 const width = data.width || (data.isOpen ? '100%' : '120px');
                 const height = data.height || (data.isOpen ? '100%' : '120px');
 
@@ -128,15 +97,16 @@
                     return isNaN(num) ? value : (num + extra) + 'px';
                 }
 
-                container.style.width = addPx(width, 60); // Increased width buffer
-                container.style.height = addPx(height, 250); // Increased height buffer for safety
+                container.style.width = addPx(width, 40);
+                container.style.height = addPx(height, 200);
 
                 // Dynamic positioning if provided by the chatbot config
-                // Clear opposing axis properties to avoid conflicting anchors (e.g. left + right both set)
                 if (data.bottom !== undefined) { container.style.bottom = data.bottom; container.style.top = ''; }
                 else if (data.top !== undefined) { container.style.top = data.top; container.style.bottom = ''; }
                 if (data.right !== undefined) { container.style.right = data.right; container.style.left = ''; }
                 else if (data.left !== undefined) { container.style.left = data.left; container.style.right = ''; }
+                if (data.transform !== undefined) { container.style.transform = data.transform; }
+                else { container.style.transform = 'none'; }
 
                 // Make visible once positioned (avoids flash at wrong corner before first resize)
                 container.style.visibility = 'visible';

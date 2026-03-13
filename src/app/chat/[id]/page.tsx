@@ -88,26 +88,17 @@ export default function ChatPage() {
         return
       }
 
-      // Robust mobile detection for actual devices/viewports
-      const urlIsMobile = searchParams.get('isMobile')
-      const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      const isTouchDevice = typeof window !== 'undefined' && (('ontouchstart' in window) || (navigator.maxTouchPoints > 0))
-      const isMobileWidth = typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches
-
-      // Priority: URL Param > UA > (Touch + Width) > Width
-      let mobile = false
-      if (urlIsMobile !== null) {
-        mobile = urlIsMobile === 'true'
-      } else {
-        mobile = isMobileUA || isMobileWidth || (isTouchDevice && window.innerWidth < 1280)
-      }
-
-      console.log('[ChatPage] Advanced Mobile check:', { mobile, isMobileUA, isTouchDevice, isMobileWidth, urlIsMobile, isEmbed })
-      console.log('[ChatPage] Chatbot config avatar:', { 
-        avatarType: chatbot.widgetAvatarType || chatbot.avatarType, 
-        avatarImageUrl: chatbot.widgetAvatarImageUrl || chatbot.avatarImageUrl,
-        deploymentType: chatbot.deploymentType 
-      })
+      // Detection logic for production (non-emulator)
+      // Check for mobile user agents as a primary indicator for mobile devices
+      const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : ''
+      const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent)
+      
+      // In embed mode, we prioritize user agent because window.screen.width 
+      // can be unreliable depending on the host page's viewport settings.
+      // Outside embed mode, we still check innerWidth for desktop responsiveness.
+      const width = (isEmbed && !isPreview) ? window.screen.width : window.innerWidth
+      const mobile = isMobileUA || width < 1024
+      
       setIsMobile(mobile)
       isMobileRef.current = mobile
     }
@@ -532,7 +523,7 @@ export default function ChatPage() {
         deploymentType: previewDeploymentType
       }, '*')
     }
-  }, [isOpen, isEmbed, isInIframe, previewDeploymentType, isNativeChatKitMode, chatbot]) // Added chatbot to ensure resize on load
+  }, [isOpen, isEmbed, isInIframe, previewDeploymentType, isNativeChatKitMode]) // Removed isMobile - use ref instead
 
   // Listen for preview mode changes and external control commands
   // Use ref to track previous preview mode to avoid unnecessary isOpen resets
@@ -578,12 +569,6 @@ export default function ChatPage() {
         if (data.type === 'close-chat') {
           setIsOpen(false)
           setShowGetStarted(false)
-        }
-        if (data.type === 'parent-resize') {
-          if (data.isMobile !== undefined) {
-             setIsMobile(data.isMobile)
-             isMobileRef.current = data.isMobile
-          }
         }
       } catch (err) {
         console.error('[ChatPage] Error processing message:', err)

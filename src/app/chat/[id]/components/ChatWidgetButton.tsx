@@ -28,12 +28,6 @@ export function ChatWidgetButton({
         // Theme is needed for accent color fallback
         const theme = buildChatKitTheme(chatbot)
         const computed = getWidgetConfig(chatbot, theme)
-        console.log('[ChatWidgetButton] Config:', {
-            avatarStyle: computed.avatarStyle,
-            avatarType: computed.avatarType,
-            avatarImageUrl: computed.avatarImageUrl,
-            size: computed.size
-        })
         return computed
     }, [chatbot])
 
@@ -87,16 +81,15 @@ export function ChatWidgetButton({
         const borderColor = borderParts.slice(2).join(' ') || 'transparent'
         const boxShadow = (widgetButtonStyle.boxShadow as string) || 'none'
 
-        // Determine avatar image/icon size - Icons should never be 100% even in custom mode
-        const imgSize = config.avatarStyle === 'circle-with-label' ? '24px' : (config.avatarStyle === 'custom' ? '100%' : '60%')
-        const iconSize = config.avatarStyle === 'circle-with-label' ? '24px' : '60%'
+        // Determine avatar image/icon size
+        const avatarSize = config.avatarStyle === 'circle-with-label' ? '24px' : (config.avatarStyle === 'custom' ? '100%' : '60%')
 
         // Base object - strictly avoid shorthand vs longhand conflicts here for React
         const style: any = {
-            // When inside the wrapper div (isEmbed), we don't want the button to have its own fixed position
-            // because it can lead to coordinate confusion. We use relative positioning instead.
-            position: 'relative',
+            ...popoverPositionStyle,
+            // Fallback for non-important rules
             borderRadius: activeBorderRadius,
+            // Use CSS variables for !important overrides in the <style> tag
             '--widget-border-radius': activeBorderRadius,
             '--widget-bg-color': bgColor,
             '--widget-bg-image': bgImage,
@@ -106,25 +99,20 @@ export function ChatWidgetButton({
             '--widget-border-width': borderWidth,
             '--widget-border-color': borderColor,
             '--widget-box-shadow': boxShadow,
-            '--img-size': imgSize,
-            '--icon-size': iconSize,
+            '--avatar-size': avatarSize,
             '--widget-padding-top': config.avatarStyle === 'custom' ? '0px' : (config.paddingTop || config.paddingY || config.padding || '0px'),
             '--widget-padding-right': config.avatarStyle === 'custom' ? '0px' : (config.paddingRight || config.paddingX || config.padding || '0px'),
             '--widget-padding-bottom': config.avatarStyle === 'custom' ? '0px' : (config.paddingBottom || config.paddingY || config.padding || '0px'),
             '--widget-padding-left': config.avatarStyle === 'custom' ? '0px' : (config.paddingLeft || config.paddingX || config.padding || '0px'),
+            '--avatar-object-fit': (config.avatarImageUrl === chatbot.headerLogo) ? 'contain' : 'cover',
             zIndex: config.zIndex,
             cursor: 'pointer',
-        }
-
-        // Apply offsets only if NOT embedded (if embedded, the parent wrapper div handles positioning)
-        if (!style.position || style.position === 'fixed') {
-             Object.assign(style, popoverPositionStyle)
         }
 
         // Apply shared layout props
         if (!isOpen && config.avatarStyle === 'circle-with-label') {
             style.width = 'auto'
-            style.height = config.size || '60px'
+            style.height = config.size
             style.paddingLeft = '16px'
             style.paddingRight = '16px'
             style.display = 'flex'
@@ -132,7 +120,7 @@ export function ChatWidgetButton({
             style.gap = '8px'
             style.flexDirection = 'row'
             style.justifyContent = 'center'
-            style.minWidth = config.size || '60px'
+            style.minWidth = config.size
             style.boxShadow = config.boxShadow !== 'none' ? config.boxShadow : undefined
         } else {
             // Standard circle/square button layout
@@ -190,9 +178,9 @@ export function ChatWidgetButton({
                 
                 #chatbot-widget-button img:not(.close-avatar-img) {
                     border-radius: var(--widget-border-radius) !important;
-                    width: var(--img-size) !important;
-                    height: var(--img-size) !important;
-                    object-fit: cover !important;
+                    width: var(--avatar-size) !important;
+                    height: var(--avatar-size) !important;
+                    object-fit: var(--avatar-object-fit, cover) !important;
                     /* Ensure image doesn't have a background/border of its own that conflicts */
                     background: transparent !important;
                     border: none !important;
@@ -208,8 +196,8 @@ export function ChatWidgetButton({
                 }
                 
                 #chatbot-widget-button svg {
-                    width: var(--icon-size) !important;
-                    height: var(--icon-size) !important;
+                    width: var(--avatar-size) !important;
+                    height: var(--avatar-size) !important;
                 }
             `}</style>
             <button
@@ -239,17 +227,20 @@ export function ChatWidgetButton({
             ) : (
                 (() => {
                     const renderIcon = () => {
-                        const [imgError, setImgError] = React.useState(false)
-
-                        if (config.avatarType === 'image' && config.avatarImageUrl && !imgError) {
+                        if (config.avatarType === 'image' && config.avatarImageUrl) {
+                            // Check if the current image is the header logo to decide on object-fit
+                            const isLogo = config.avatarImageUrl === chatbot.headerLogo
+                            
                             return (
                                 <img
                                     src={config.avatarImageUrl}
                                     alt="Chat"
-                                    crossOrigin="anonymous"
+                                    style={{ 
+                                        objectFit: isLogo ? 'contain' : 'cover'
+                                    }}
                                     onError={(e) => {
-                                        console.error('[ChatWidgetButton] Image load failed:', config.avatarImageUrl)
-                                        setImgError(true)
+                                        // If image fails to load, hide it so fallback icon shows
+                                        (e.target as HTMLImageElement).style.display = 'none'
                                     }}
                                 />
                             )
@@ -280,7 +271,15 @@ export function ChatWidgetButton({
                         )
                     }
 
-                    return renderIcon()
+                    return (
+                        <div className="relative w-full h-full flex items-center justify-center">
+                            {/* Fallback Icon (rendered underneath, visible if img fails or is transparent) */}
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50">
+                                <Bot style={{ color: config.avatarIconColor, width: '60%', height: '60%' }} />
+                            </div>
+                            {renderIcon()}
+                        </div>
+                    )
                 })()
             )}
 

@@ -130,8 +130,28 @@ export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any, baseUrl?: s
 
     // 1. Basic Style Props
     const avatarStyle = c.widgetAvatarStyle || 'circle'
-    const avatarImageUrl = resolveUrl(c.widgetAvatarImageUrl || c.avatarImageUrl || c.headerAvatarImageUrl || c.headerLogo || '')
+    
+    // Resolve Image URL logic to match ChatHeader.tsx priority
+    // Priority: Explicit widget avatar > Header Logo (if enabled) > Header Avatar > Message Avatar
+    const showHeaderLogo = c.headerShowLogo !== false && !!c.headerLogo
+    const headerLogoUrl = showHeaderLogo ? c.headerLogo : null
+    
+    const avatarImageUrl = resolveUrl(
+        c.widgetAvatarImageUrl || 
+        headerLogoUrl || 
+        c.headerAvatarImageUrl || 
+        c.avatarImageUrl || 
+        ''
+    )
+
+    // Type logic alignment
     let avatarType = c.widgetAvatarType || c.avatarType || c.headerAvatarType || (avatarImageUrl ? 'image' : 'icon')
+    
+    // If we have an image URL and type isn't explicitly set to 'none', default to image
+    if (avatarImageUrl && avatarType !== 'none' && avatarType !== 'icon') {
+        avatarType = 'image'
+    }
+
     // If Custom / Image Only style is selected and an image exists, force image type
     if (avatarStyle === 'custom' && avatarImageUrl) {
         avatarType = 'image'
