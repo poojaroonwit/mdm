@@ -111,7 +111,7 @@ export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any): WidgetConf
     // 1. Basic Style Props
     const avatarStyle = c.widgetAvatarStyle || 'circle'
     const avatarImageUrl = resolveUrl(c.widgetAvatarImageUrl || c.avatarImageUrl || c.headerAvatarImageUrl || c.headerLogo || '')
-    const avatarType = c.widgetAvatarType || c.avatarType || c.headerAvatarType || (avatarImageUrl ? 'image' : 'icon')
+    let avatarType = c.widgetAvatarType || c.avatarType || c.headerAvatarType || (avatarImageUrl ? 'image' : 'icon')
     // If Custom / Image Only style is selected and an image exists, force image type
     if (avatarStyle === 'custom' && avatarImageUrl) {
         avatarType = 'image'
