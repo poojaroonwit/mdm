@@ -1,7 +1,7 @@
 services:
   app:
     container_name: mdm-app
-    image: nccgit.qsncc.com:5555/ba/unified-data-platform:1.0.0
+    image: nccgit.qsncc.com:5555/ba/unified-data-platform:1.0.1
     # # Build from local Dockerfile
     # build:
     #   context: .
@@ -24,6 +24,8 @@ services:
       - MINIO_PORT=${MINIO_PORT:-9000}
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+      - MINIO_UPLOADS_BUCKET=${MINIO_UPLOADS_BUCKET:-udp}
+      - MINIO_PUBLIC_URL=${MINIO_PUBLIC_URL:-https://ncc-dev-api-storage-data-product.qsncc.com}
       - USE_VAULT=${USE_VAULT:-false}
       - VAULT_ADDR=${VAULT_ADDR:-http://vault:8200}
       - VAULT_TOKEN=${VAULT_TOKEN:-dev-root-token}
@@ -60,7 +62,7 @@ services:
   # Plugin Hub Service
   plugin-hub:
     container_name: mdm-plugin-hub
-    image: nccgit.qsncc.com:5555/ba/unified-data-platform/plugin-hub:1.0.0
+    image: nccgit.qsncc.com:5555/ba/unified-data-platform/plugin-hub:1.0.1
 
     ports:
       - "8629:3001"
