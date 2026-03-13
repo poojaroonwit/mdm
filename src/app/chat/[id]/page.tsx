@@ -712,9 +712,11 @@ export default function ChatPage() {
   // On mobile, when chat is open, hide widget button (fullpage mode covers entire screen)
   // Widget button should show in embed mode if deployment type is popover/popup-center
   // Also show widget button on mobile embed when chat is closed (so user can re-open)
-  // IMPORTANT: Handle mobile preview/embed where popover was converted to fullpage
+  // Determine if the container should be shown based on isOpen state and deployment type.
+  // - Fullpage (desktop non-widget) is always open.
+  // - Popover/Popup-center (widget) respects isOpen.
+  // Since mobile now uses CSS `100%` rather than faking `fullpage`, we can just check `isOpen` for all widget-based deployments.
   const isOriginallyWidgetBased = baseDeploymentType === 'popover' || baseDeploymentType === 'popup-center'
-  const isMobileFullpageFromWidget = isMobile && isOriginallyWidgetBased && effectiveDeploymentType === 'fullpage'
 
   const shouldShowWidgetButton = !isNativeChatKit && (
     // Show widget button when closed, OR when open on desktop (not mobile)
@@ -722,12 +724,9 @@ export default function ChatPage() {
     isOriginallyWidgetBased && (!isOpen || !isMobile)
   )
 
-  // For mobile where popover was converted to fullpage, respect isOpen state
-  // Regular fullpage (not from widget conversion) always shows container
+  // Fullpage is always visible, Widgets respect isOpen
   const shouldShowContainer = !isNativeChatKit && (
-    effectiveDeploymentType === 'fullpage'
-      ? (isMobileFullpageFromWidget ? isOpen : true)  // Mobile widget->fullpage respects isOpen
-      : isOpen
+    effectiveDeploymentType === 'fullpage' ? true : isOpen
   )
 
   const renderChatContent = () => {
@@ -948,7 +947,6 @@ export default function ChatPage() {
             useChatKitInRegularStyle={useChatKitInRegularStyle}
             shouldRenderChatKit={!!shouldRenderChatKit}
             effectiveDeploymentType={effectiveDeploymentType}
-            isMobileFullpageFromWidget={isMobileFullpageFromWidget}
             handleClose={handleClose}
             onClearSession={() => setMessages([])}
           >

@@ -17,7 +17,6 @@ interface WidgetChatContainerProps {
     useChatKitInRegularStyle: boolean
     shouldRenderChatKit: boolean
     effectiveDeploymentType: 'popover' | 'fullpage' | 'popup-center'
-    isMobileFullpageFromWidget: boolean  // True when popover/popup-center was converted to fullpage on mobile
     handleClose: () => void
     onClearSession: () => void
     children: React.ReactNode
@@ -34,7 +33,6 @@ export function WidgetChatContainer({
     useChatKitInRegularStyle,
     shouldRenderChatKit,
     effectiveDeploymentType,
-    isMobileFullpageFromWidget,
     handleClose,
     onClearSession,
     children
@@ -48,12 +46,11 @@ export function WidgetChatContainer({
 
     // On mobile, show close button when:
     // - popover/popup-center modes (widget-based)
-    // - OR when popover was converted to fullpage on mobile (so user can close and return to widget)
+    // OR when popover is open on mobile (since CSS makes it 100% fullpage, let user close it)
     // Do NOT show close for true fullpage deployment (user intentionally chose fullpage)
     const mobileHeaderCloseCallback = (
         effectiveDeploymentType === 'popover' ||
-        effectiveDeploymentType === 'popup-center' ||
-        isMobileFullpageFromWidget  // Only show close for converted fullpage, not true fullpage
+        effectiveDeploymentType === 'popup-center'
     )
         ? handleClose
         : undefined
@@ -61,7 +58,7 @@ export function WidgetChatContainer({
     // Extract padding to apply selectively (Header should not have top padding)
     const { paddingTop, paddingBottom, paddingLeft, paddingRight, ...stylesWithoutPadding } = containerStyle as any
     // Reconstruct container style without padding
-    const isFullPage = effectiveDeploymentType === 'fullpage' || isMobileFullpageFromWidget
+    const isFullPage = effectiveDeploymentType === 'fullpage' || isMobile
     const adaptedContainerStyle = {
         ...stylesWithoutPadding,
         paddingLeft,
