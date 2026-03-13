@@ -631,7 +631,7 @@ export default function ChatPage() {
   // EXCEPT: In DESKTOP preview mode (emulator), preserve the selected deployment type
   // EXCEPT: In EMBED mode, the iframe size determines "mobile" state. If the iframe is small (closed),
   // we do NOT want to switch to fullpage, because fullpage forces isOpen=true, which expands the iframe, creating a loop.
-  const effectiveDeploymentType = (isMobile && (baseDeploymentType === 'popover' || baseDeploymentType === 'popup-center'))
+  const effectiveDeploymentType = (isMobile && !isEmbed && (baseDeploymentType === 'popover' || baseDeploymentType === 'popup-center'))
     ? 'fullpage'
     : baseDeploymentType
 
