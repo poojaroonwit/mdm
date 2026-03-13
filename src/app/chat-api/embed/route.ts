@@ -134,10 +134,29 @@ export async function GET(request: NextRequest) {
   var chatbot = ${JSON.stringify(chatbot)};
   var iconSvg = ${JSON.stringify(iconSvg)};
   var closeIconSvg = ${JSON.stringify(closeIconSvg)};
-  
+
   if (!chatbot) {
     console.error('Chatbot config missing');
     return;
+  }
+
+  // Rewrite any image URLs that point to /api/assets to use the dynamic serverOrigin.
+  // The baked-in URLs use NEXTAUTH_URL as base (which may be localhost or an internal IP).
+  // serverOrigin is detected from the script tag src, so it's always correct for the browser.
+  function fixImageUrl(url) {
+    if (!url || typeof url !== 'string') return url;
+    if (url.indexOf('/api/assets') !== -1) {
+      try {
+        var parsed = new URL(url);
+        return serverOrigin + parsed.pathname + parsed.search;
+      } catch(e) {}
+    }
+    if (url.charAt(0) === '/') return serverOrigin + url;
+    return url;
+  }
+  var _imgFields = ['widgetAvatarImageUrl','avatarImageUrl','widgetCloseImageUrl','headerLogo','headerAvatarImageUrl','logo'];
+  for (var _f = 0; _f < _imgFields.length; _f++) {
+    if (chatbot[_imgFields[_f]]) chatbot[_imgFields[_f]] = fixImageUrl(chatbot[_imgFields[_f]]);
   }
 
   // Legacy load check (keep for compatibility if needed, but we have config now)

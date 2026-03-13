@@ -980,12 +980,12 @@ export default function ChatPage() {
         position: 'relative',
         height: '100%',
         minHeight: showDeviceFrame ? '100vh' : 'auto',
-        // Apply emulator background to page container (not popover)
-        backgroundColor: emulatorConfig.backgroundColor,
-        backgroundImage: emulatorConfig.backgroundImage ? `url(${emulatorConfig.backgroundImage})` : undefined,
-        backgroundSize: emulatorConfig.backgroundImage ? 'cover' : undefined,
-        backgroundPosition: emulatorConfig.backgroundImage ? 'center' : undefined,
-        backgroundRepeat: emulatorConfig.backgroundImage ? 'no-repeat' : undefined,
+        // Apply emulator background only in preview/standalone — not in embed (keeps iframe transparent)
+        backgroundColor: isEmbed ? undefined : emulatorConfig.backgroundColor,
+        backgroundImage: (!isEmbed && emulatorConfig.backgroundImage) ? `url(${emulatorConfig.backgroundImage})` : undefined,
+        backgroundSize: (!isEmbed && emulatorConfig.backgroundImage) ? 'cover' : undefined,
+        backgroundPosition: (!isEmbed && emulatorConfig.backgroundImage) ? 'center' : undefined,
+        backgroundRepeat: (!isEmbed && emulatorConfig.backgroundImage) ? 'no-repeat' : undefined,
         // When embedded and closed (or just PWA overlay showing), allow clicks to pass through
         pointerEvents: (isEmbed && !isOpen && !isPreview) ? 'none' : 'auto',
         // Isolate emulator from global.css styles - emulator has its own styling

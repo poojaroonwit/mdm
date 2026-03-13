@@ -94,7 +94,7 @@ export function RegularHeaderSection({ formData, setFormData }: RegularHeaderSec
                       if (!file) return
                       const loadingToast = toast.loading('Uploading logo...')
                       const fd = new FormData()
-                      fd.append('image', file)
+                      fd.append('logo', file)
                       try {
                         const res = await fetch('/api/upload/logo', { method: 'POST', body: fd })
                         if (res.ok) {
