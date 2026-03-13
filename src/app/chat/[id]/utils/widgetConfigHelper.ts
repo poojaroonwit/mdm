@@ -98,17 +98,27 @@ export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any): WidgetConf
         ? theme.color.accent.primary
         : null;
 
+    // Helper to resolve relative URLs
+    const resolveUrl = (url: string | undefined) => {
+        if (!url) return '';
+        if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
+        if (typeof window !== 'undefined' && url.startsWith('/')) {
+            return window.location.origin + url;
+        }
+        return url;
+    };
+
     // 1. Basic Style Props
     const avatarStyle = c.widgetAvatarStyle || 'circle'
-    const avatarImageUrl = c.widgetAvatarImageUrl || c.avatarImageUrl || c.headerAvatarImageUrl || c.headerLogo || ''
-    let avatarType = c.widgetAvatarType || c.avatarType || c.headerAvatarType || (avatarImageUrl ? 'image' : 'icon')
+    const avatarImageUrl = resolveUrl(c.widgetAvatarImageUrl || c.avatarImageUrl || c.headerAvatarImageUrl || c.headerLogo || '')
+    const avatarType = c.widgetAvatarType || c.avatarType || c.headerAvatarType || (avatarImageUrl ? 'image' : 'icon')
     // If Custom / Image Only style is selected and an image exists, force image type
     if (avatarStyle === 'custom' && avatarImageUrl) {
         avatarType = 'image'
     }
     const avatarCloseType = c.widgetCloseAvatarType || 'icon' // default to icon for close state
     const avatarCloseIcon = c.widgetCloseAvatarIcon || 'X' // default to X for close icon
-    const avatarCloseImageUrl = c.widgetCloseImageUrl || ''
+    const avatarCloseImageUrl = resolveUrl(c.widgetCloseImageUrl || '')
     const avatarIcon = c.widgetAvatarIcon || c.avatarIcon || 'Bot'
 
     // 2. Colors
@@ -179,8 +189,8 @@ export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any): WidgetConf
     const chatWindowBorderRadius = c.chatWindowBorderRadius || c.borderRadius || '8px'
 
     // Background (Complex Logic)
-    let chatWindowBackground = c.messageBoxColor || '#ffffff';
-    const bgValue = c.messageBoxColor || '#ffffff';
+    let chatWindowBackground = resolveUrl(c.messageBoxColor || '#ffffff');
+    const bgValue = chatWindowBackground;
     const bgAlpha = c.chatWindowBackgroundOpacity !== undefined ? c.chatWindowBackgroundOpacity : 100;
 
     // Helper to generate background style string (mirrors script logic but computed here)
@@ -223,8 +233,8 @@ export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any): WidgetConf
         zIndex: c.widgetZIndex || Z_INDEX.chatWidget,
 
         backgroundColor,
-        openBackgroundColor: c.widgetOpenBackgroundColor || undefined,
-        openBackgroundImage: c.widgetOpenBackgroundImage || undefined,
+        openBackgroundColor: resolveUrl(c.widgetOpenBackgroundColor || undefined),
+        openBackgroundImage: resolveUrl(c.widgetOpenBackgroundImage || undefined),
         borderColor: c.widgetBorderColor || '#ffffff',
         borderWidth: c.widgetBorderWidth || '2px',
         borderRadius,
