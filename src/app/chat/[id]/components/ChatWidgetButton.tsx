@@ -28,6 +28,12 @@ export function ChatWidgetButton({
         // Theme is needed for accent color fallback
         const theme = buildChatKitTheme(chatbot)
         const computed = getWidgetConfig(chatbot, theme)
+        console.log('[ChatWidgetButton] Config:', {
+            avatarStyle: computed.avatarStyle,
+            avatarType: computed.avatarType,
+            avatarImageUrl: computed.avatarImageUrl,
+            size: computed.size
+        })
         return computed
     }, [chatbot])
 
@@ -231,6 +237,7 @@ export function ChatWidgetButton({
                                 <img
                                     src={config.avatarImageUrl}
                                     alt="Chat"
+                                    onError={(e) => console.error('[ChatWidgetButton] Image load failed:', config.avatarImageUrl)}
                                 />
                             )
                         }
