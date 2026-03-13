@@ -280,6 +280,13 @@
     font-family: 'DM Sans', 'IBM Plex Sans Thai', sans-serif !important;
   }
 
+  /* Transparent background when loaded inside an embed iframe */
+  html.chat-embed-mode,
+  html.chat-embed-mode body {
+    background-color: transparent !important;
+    background: transparent !important;
+  }
+
   /* Input styling - light grey background for light theme */
   input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='submit']):not(
       [type='button']

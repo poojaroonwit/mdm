@@ -556,8 +556,10 @@ export async function GET(request: NextRequest) {
     // Create iframe for chat
     var iframe = document.createElement('iframe');
     iframe.src = serverOrigin + '/chat/' + chatbotId + '?mode=embed&type=' + type;
-    iframe.style.cssText = 'width: 100%; flex: 1; border: none; border-radius: ' + chatWindowBorderRadius + ';';
+    iframe.style.cssText = 'width: 100%; flex: 1; border: none; border-radius: ' + chatWindowBorderRadius + '; background: transparent;';
     iframe.style.border = 'none';
+    iframe.setAttribute('allowTransparency', 'true');
+    iframe.allow = 'microphone; clipboard-write';
     
     // PWA Separate Iframe Logic (Host Website scope)
     // FIXED: Use screen.width instead of window.innerWidth to detect actual device size
@@ -695,15 +697,23 @@ export async function GET(request: NextRequest) {
         var badge = document.getElementById('chatbot-badge-' + chatbotId);
         if (badge) badge.style.display = 'none';
       }
+      // Tell the iframe to open its chat content
+      if (iframe.contentWindow) {
+        iframe.contentWindow.postMessage({ type: 'open-chat' }, '*');
+      }
       // Focus management
       setTimeout(function() {
         iframe.focus();
       }, 100);
     }
-    
+
     function closeChat() {
       isOpen = false;
       button.setAttribute('aria-expanded', 'false');
+      // Tell the iframe to close its chat content
+      if (iframe.contentWindow) {
+        iframe.contentWindow.postMessage({ type: 'close-chat' }, '*');
+      }
       
       // Hide overlay if enabled
       if (overlay && widgetConfig.overlayEnabled) {

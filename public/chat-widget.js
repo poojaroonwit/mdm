@@ -51,6 +51,7 @@
       pointer-events: auto;
     `;
         iframe.allow = 'microphone; clipboard-write';
+        iframe.setAttribute('allowTransparency', 'true');
 
         container.appendChild(iframe);
         document.body.appendChild(container);

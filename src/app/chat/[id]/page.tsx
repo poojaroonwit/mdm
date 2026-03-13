@@ -126,16 +126,12 @@ export default function ChatPage() {
   // Set transparent background for embed mode to prevent white page background
   useEffect(() => {
     if (isEmbed) {
-      document.body.style.backgroundColor = 'transparent'
-      document.documentElement.style.backgroundColor = 'transparent'
+      document.documentElement.classList.add('chat-embed-mode')
     } else {
-      document.body.style.backgroundColor = ''
-      document.documentElement.style.backgroundColor = ''
+      document.documentElement.classList.remove('chat-embed-mode')
     }
-
     return () => {
-      document.body.style.backgroundColor = ''
-      document.documentElement.style.backgroundColor = ''
+      document.documentElement.classList.remove('chat-embed-mode')
     }
   }, [isEmbed])
 
