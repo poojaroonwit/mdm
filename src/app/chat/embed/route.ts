@@ -56,8 +56,12 @@ export async function GET(request: NextRequest) {
   // 1. Theme
   const chatKitTheme = buildChatKitTheme(chatbot)
 
+  const serverOrigin = request.nextUrl.origin
+
   // 2. Widget Config (Shared Logic)
-  const widgetConfig = getWidgetConfig(chatbot, chatKitTheme)
+  // Pass serverOrigin so relative / internal-hostname URLs in the config are resolved
+  // to an absolute public URL before being embedded in the script.
+  const widgetConfig = getWidgetConfig(chatbot, chatKitTheme, serverOrigin)
 
   // 3. Container Style (unused in script now, but good for reference if needed, or remove)
   // const containerStyle = getContainerStyle(chatbot, 'popover', {}, false) 
@@ -70,8 +74,6 @@ export async function GET(request: NextRequest) {
 
   // Actually, to "use like emulator", we should let scriptGenerator use the chatbot object
   // but we can pre-calculate complex things like the theme.
-
-  const serverOrigin = request.nextUrl.origin
 
   // Pass the FULL processed chatbot object + pre-calculated theme to the generator
   // The generator will embed this as JSON

@@ -90,7 +90,7 @@ export interface WidgetConfig {
 }
 
 // Logic extracted from ChatWidgetButton.tsx and route.ts
-export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any): WidgetConfig {
+export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any, baseUrl?: string): WidgetConfig {
     const c = chatbot as any; // Access potential loose props
 
     const isChatKit = c.engineType === 'chatkit';
@@ -99,12 +99,32 @@ export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any): WidgetConf
         : null;
 
     // Helper to resolve relative URLs
+    // baseUrl is used server-side (where window is undefined) to resolve relative URLs.
+    // On the client, window.location.origin is used.
     const resolveUrl = (url: string | undefined) => {
         if (!url) return '';
-        if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
-        if (typeof window !== 'undefined' && url.startsWith('/')) {
-            return window.location.origin + url;
+        if (url.startsWith('data:') || url.startsWith('blob:')) return url;
+
+        const origin = typeof window !== 'undefined' ? window.location.origin : (baseUrl || '');
+
+        // Normalize /api/assets proxy URLs to use the current origin.
+        // This handles the case where NEXTAUTH_URL was set to an internal hostname
+        // (e.g. http://app-internal:3000) that external browsers cannot reach.
+        if (url.startsWith('http') && url.includes('/api/assets')) {
+            try {
+                const parsed = new URL(url);
+                if (parsed.pathname.startsWith('/api/assets') && origin) {
+                    return origin + parsed.pathname + parsed.search;
+                }
+            } catch (_) {}
         }
+
+        if (url.startsWith('http')) return url; // External absolute URL — keep as-is
+
+        if (url.startsWith('/') && origin) {
+            return origin + url;
+        }
+
         return url;
     };
 

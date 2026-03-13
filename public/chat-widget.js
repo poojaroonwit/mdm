@@ -21,6 +21,13 @@
     const baseUrl = scriptSrc.substring(0, scriptSrc.lastIndexOf('/'));
 
     function initWidget() {
+        // Inject responsive CSS so the container goes fullscreen on mobile when the chat is open.
+        // This mirrors scriptGenerator.ts behaviour and acts as a reliable fallback in case the
+        // iframe resize postMessage arrives late or cannot override inline styles fast enough.
+        var mobileStyle = document.createElement('style');
+        mobileStyle.innerHTML = '@media (max-width: 1023px) { #chat-widget-container.chat-open { width: 100% !important; height: 100% !important; top: 0 !important; left: 0 !important; bottom: auto !important; right: auto !important; transform: none !important; border-radius: 0 !important; } }';
+        document.head.appendChild(mobileStyle);
+
         // Create iframe container - covers the full viewport to allow popover positioning
         const container = document.createElement('div');
         container.id = 'chat-widget-container';
@@ -63,7 +70,7 @@
                 const iframeOrigin = new URL(baseUrl).origin;
                 if (event.origin !== iframeOrigin && event.origin !== window.location.origin) {
                     // For now, permitting mismatch to ensure functionality across different embed environments
-                    // return; 
+                    // return;
                 }
             } catch (e) {
                 //
@@ -105,6 +112,13 @@
                 // Make visible once positioned (avoids flash at wrong corner before first resize)
                 container.style.visibility = 'visible';
 
+                // Toggle chat-open class — the CSS media query uses it to force fullscreen on mobile
+                if (data.isOpen) {
+                    container.classList.add('chat-open');
+                } else {
+                    container.classList.remove('chat-open');
+                }
+
                 if (data.isOpen) {
                     // Check if we are in a non-full-screen mode (e.g. popover)
                     // If width/height is NOT 100%, we allow interaction with the host page
@@ -112,7 +126,7 @@
                     const isFullScreen = width === '100%' && height === '100%';
 
                     if (!isFullScreen) {
-                        // Container should generally pass through clicks if it has empty space, 
+                        // Container should generally pass through clicks if it has empty space,
                         // but here we sized the container to FIT the widget.
                         // So we want the container to capture clicks (it's the widget).
                         // Pointer events should be 'none' on container only if it was full screen overlay.
@@ -142,6 +156,7 @@
 
             // Handle close chat message
             if (messageType === 'close-chat') {
+                container.classList.remove('chat-open');
                 container.style.width = '120px';
                 container.style.height = '120px';
                 container.style.pointerEvents = 'none';

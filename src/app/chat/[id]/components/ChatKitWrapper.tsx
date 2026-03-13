@@ -154,11 +154,18 @@ export function ChatKitWrapper({
     const parentOffsetX = `calc(${offsetX} - ${SHADOW_BUFFER}px)`
     const parentOffsetY = `calc(${offsetY} - ${SHADOW_BUFFER}px)`
     const positionData: any = {}
-    if (pos.includes('bottom')) positionData.bottom = parentOffsetY
-    else positionData.top = parentOffsetY
-    if (pos.includes('right')) positionData.right = parentOffsetX
-    else positionData.left = parentOffsetX
-    if (pos.includes('center')) positionData.left = '50%'
+    if (isOpen && isMobileRef.current) {
+      // On mobile, the chat covers the full screen — anchor to top-left so the CSS
+      // media query (top:0; left:0; width:100%; height:100%) works unambiguously.
+      positionData.top = '0px'
+      positionData.left = '0px'
+    } else {
+      if (pos.includes('bottom')) positionData.bottom = parentOffsetY
+      else positionData.top = parentOffsetY
+      if (pos.includes('right')) positionData.right = parentOffsetX
+      else positionData.left = parentOffsetX
+      if (pos.includes('center')) positionData.left = '50%'
+    }
 
     window.parent.postMessage({
       type: 'chat-widget-resize',
