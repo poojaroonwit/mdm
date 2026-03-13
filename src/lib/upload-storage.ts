@@ -95,18 +95,10 @@ async function uploadToMinio(
       'Content-Type': mimeType || 'application/octet-stream',
     })
 
-    // Build the public-facing URL.
-    // MINIO_PUBLIC_URL overrides when the internal endpoint (e.g. minio-service:9000)
-    // is not browser-accessible. Set it to the externally reachable MinIO URL.
-    const publicBase = process.env.MINIO_PUBLIC_URL
-    let url: string
-    if (publicBase) {
-      url = `${publicBase.replace(/\/$/, '')}/${bucket}/${objectName}`
-    } else {
-      const protocol = useSSL ? 'https' : 'http'
-      const portSuffix = (port === 80 || port === 443) ? '' : `:${port}`
-      url = `${protocol}://${endpointHostname}${portSuffix}/${bucket}/${objectName}`
-    }
+    // Return a proxy-relative URL so the browser always fetches through the
+    // Next.js /uploads/... route (authenticated via MinIO SDK). This avoids
+    // AccessDenied errors when the bucket has no public-read policy.
+    const url = `/uploads/${objectName}`
 
     logger.info('[upload-storage] MinIO upload success', { object: objectName, url })
     return url

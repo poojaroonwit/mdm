@@ -36,30 +36,46 @@ export async function GET(
       })
     }
 
-    // 2. Fallback: Try proxying to MinIO if local file doesn't exist
-    // This handles cases where assets were uploaded to MinIO but the frontend is using legacy /uploads/ paths
-    const PUBLIC_BASE = process.env.MINIO_PUBLIC_URL || (process.env.MINIO_ENDPOINT ? `https://${process.env.MINIO_ENDPOINT}` : null)
+    // 2. Fallback: Fetch from MinIO using SDK with credentials (handles private buckets)
     const BUCKET = process.env.MINIO_UPLOADS_BUCKET || 'udp'
+    const endpoint = process.env.MINIO_ENDPOINT
 
-    if (PUBLIC_BASE) {
-      const minioUrl = `${PUBLIC_BASE.replace(/\/$/, '')}/${BUCKET}/${relativePath}`
-      console.log(`[uploads-proxy] Local file not found, proxying to: ${minioUrl}`)
-      
+    if (endpoint) {
       try {
-        const response = await fetch(minioUrl)
-        if (response.ok) {
-          const buffer = await response.arrayBuffer()
-          const contentType = response.headers.get('Content-Type') || 'application/octet-stream'
-          
-          return new NextResponse(buffer, {
-            headers: {
-              'Content-Type': contentType,
-              'Cache-Control': 'public, max-age=86400',
-            },
-          })
+        const port = parseInt(process.env.MINIO_PORT || '9000', 10)
+        const useSSL = port === 443 || process.env.MINIO_USE_SSL === 'true'
+        const accessKey = process.env.MINIO_ACCESS_KEY || ''
+        const secretKey = process.env.MINIO_SECRET_KEY || ''
+
+        // Extract hostname only (no protocol/port) for the MinIO SDK
+        let hostname = endpoint
+        try {
+          const u = new URL(endpoint.includes('://') ? endpoint : `http://${endpoint}`)
+          hostname = u.hostname
+        } catch {
+          hostname = endpoint.replace(/^https?:\/\//, '').split(':')[0].split('/')[0]
         }
-      } catch (proxyError) {
-        console.error(`[uploads-proxy] Proxy failed for ${minioUrl}:`, proxyError)
+
+        const { Client } = await import('minio')
+        const client = new Client({ endPoint: hostname, port: useSSL ? 443 : port, useSSL, accessKey, secretKey })
+
+        const stream = await client.getObject(BUCKET, relativePath)
+        const chunks: Buffer[] = []
+        for await (const chunk of stream) {
+          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as any))
+        }
+        const buffer = Buffer.concat(chunks)
+        const ext = relativePath.split('.').pop()?.toLowerCase() || ''
+        const contentType = MIME_TYPES[ext] || 'application/octet-stream'
+
+        return new NextResponse(buffer, {
+          headers: {
+            'Content-Type': contentType,
+            'Cache-Control': 'public, max-age=86400',
+          },
+        })
+      } catch (minioError) {
+        console.error(`[uploads-proxy] MinIO SDK fetch failed for ${relativePath}:`, minioError)
       }
     }
 

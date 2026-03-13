@@ -83,8 +83,16 @@
                 const width = data.width || (data.isOpen ? '100%' : '120px');
                 const height = data.height || (data.isOpen ? '100%' : '120px');
 
-                container.style.width = width;
-                container.style.height = height;
+                // Add extra space so overflowing content (shadows, popovers) isn't clipped.
+                // Only applies to pixel values — percentage values (e.g. 100% full-screen) are kept as-is.
+                function addPx(value, extra) {
+                    if (!value || value === '100%') return value;
+                    var num = parseFloat(value);
+                    return isNaN(num) ? value : (num + extra) + 'px';
+                }
+
+                container.style.width = addPx(width, 40);
+                container.style.height = addPx(height, 200);
 
                 // Dynamic positioning if provided by the chatbot config
                 // Clear opposing axis properties to avoid conflicting anchors (e.g. left + right both set)

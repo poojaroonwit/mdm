@@ -42,18 +42,56 @@ export function mergeVersionConfig(chatbot: any): any {
   }
 }
 
+// Image URL fields that may contain MinIO direct URLs and need to be rewritten to the proxy path
+const MINIO_IMAGE_FIELDS = [
+  'widgetAvatarImageUrl',
+  'avatarImageUrl',
+  'headerAvatarImageUrl',
+  'widgetCloseImageUrl',
+  'headerLogo',
+  'pageBackgroundImage',
+  'widgetOpenBackgroundImage',
+  'userAvatarImageUrl',
+]
+
+/**
+ * Rewrite any direct MinIO public URLs in the chatbot config to go through the
+ * /uploads/... proxy route. This ensures images are served via authenticated MinIO
+ * SDK requests even when the bucket has no public-read policy.
+ */
+function rewriteMinioUrls(config: any): any {
+  const publicBase = process.env.MINIO_PUBLIC_URL
+  const bucket = process.env.MINIO_UPLOADS_BUCKET || 'udp'
+  if (!publicBase) return config
+
+  const prefix = `${publicBase.replace(/\/$/, '')}/${bucket}/`
+
+  const rewrite = (url: any): any => {
+    if (typeof url === 'string' && url.startsWith(prefix)) {
+      return `/uploads/${url.slice(prefix.length)}`
+    }
+    return url
+  }
+
+  const result = { ...config }
+  for (const field of MINIO_IMAGE_FIELDS) {
+    if (result[field]) result[field] = rewrite(result[field])
+  }
+  return result
+}
+
 /**
  * Sanitize chatbot config by removing sensitive API keys.
  * This should be used before returning the chatbot object to the frontend.
- * 
+ *
  * @param chatbot - The merged chatbot object
  * @returns The sanitized chatbot object
  */
 export function sanitizeChatbotConfig(chatbot: any): any {
   if (!chatbot) return chatbot
 
-  // Create a shallow copy
-  const sanitized = { ...chatbot }
+  // Create a shallow copy and rewrite MinIO URLs to proxy paths
+  const sanitized = rewriteMinioUrls({ ...chatbot })
 
   // Remove sensitive keys from root (merged config)
   delete sanitized.openaiAgentSdkApiKey
