@@ -81,6 +81,11 @@ export function generateEmbedScript(
     
     embedContainer.appendChild(iframe);
     
+    // Inject responsive CSS for mobile full-screen behavior
+    var style = document.createElement('style');
+    style.innerHTML = '@media (max-width: 1023px) { #chatbot-embed-' + chatbotId + '.chat-open { width: 100% !important; height: 100% !important; top: 0 !important; left: 0 !important; bottom: auto !important; right: auto !important; transform: none !important; border-radius: 0 !important; } }';
+    document.head.appendChild(style);
+    
     // Listen for messages from the iframe (e.g., resize, close requests)
     window.addEventListener('message', function(e) {
       if (!e.data) return;
@@ -90,6 +95,13 @@ export function generateEmbedScript(
         var width = e.data.width;
         var height = e.data.height;
         var isOpen = e.data.isOpen;
+
+        // Toggle open state for CSS media query
+        if (isOpen) {
+          embedContainer.classList.add('chat-open');
+        } else {
+          embedContainer.classList.remove('chat-open');
+        }
 
         console.log('[EmbedScript] Received resize:', { width, height, isOpen, currentW: embedContainer.style.width, currentH: embedContainer.style.height });
 
@@ -109,6 +121,7 @@ export function generateEmbedScript(
           embedContainer.style.top = e.data.top;
           embedContainer.style.bottom = 'auto';
         }
+        
         if (e.data.right !== undefined) {
           embedContainer.style.right = e.data.right;
           embedContainer.style.left = 'auto';
