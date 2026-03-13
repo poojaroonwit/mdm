@@ -82,7 +82,6 @@ pipeline {
                                     sh """
                                         docker build \
                                             --cache-from ${env.FULL_IMAGE_NAME}:latest \
-                                            --build-arg NEXT_PUBLIC_APP_VERSION=${env.IMAGE_TAG} \
                                             -t ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG} \
                                             -t ${env.FULL_IMAGE_NAME}:latest \
                                             -f Dockerfile .

@@ -28,13 +28,11 @@ COPY plugin-hub ./plugin-hub
 ARG NEXT_PUBLIC_API_URL=http://localhost:8302
 ARG NEXT_PUBLIC_WS_PROXY_URL=ws://localhost:3002/api/openai-realtime
 ARG NEXT_PUBLIC_WS_PROXY_PORT=3002
-ARG NEXT_PUBLIC_APP_VERSION=0.1.0
 ARG BUILD_MEMORY_LIMIT=8192
 
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_WS_PROXY_URL=${NEXT_PUBLIC_WS_PROXY_URL}
 ENV NEXT_PUBLIC_WS_PROXY_PORT=${NEXT_PUBLIC_WS_PROXY_PORT}
-ENV NEXT_PUBLIC_APP_VERSION=${NEXT_PUBLIC_APP_VERSION}
 ENV NODE_ENV=production
 ENV DOCKER_BUILD=true
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -49,6 +47,7 @@ ENV WEBPACK_PARALLELISM=2
 
 # Cache .next/cache between builds for incremental Next.js compilation
 RUN --mount=type=cache,target=/app/.next/cache \
+    NEXT_PUBLIC_APP_VERSION=$(node -p "require('./package.json').version") \
     NODE_OPTIONS="--max-old-space-size=${BUILD_MEMORY_LIMIT} --max-semi-space-size=64" \
     npm run build
 
