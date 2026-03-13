@@ -91,18 +91,18 @@ export default function ChatPage() {
       // Robust mobile detection for actual devices/viewports
       const urlIsMobile = searchParams.get('isMobile')
       const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      const isSmallScreen = typeof window !== 'undefined' && window.screen && window.screen.width < 1024
-      const isSmallWindow = typeof window !== 'undefined' && window.innerWidth < 1024
+      const isTouchDevice = typeof window !== 'undefined' && (('ontouchstart' in window) || (navigator.maxTouchPoints > 0))
+      const isMobileWidth = typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches
 
-      // Priority: URL Param > UA > Screen Width > InnerWidth
+      // Priority: URL Param > UA > (Touch + Width) > Width
       let mobile = false
       if (urlIsMobile !== null) {
         mobile = urlIsMobile === 'true'
       } else {
-        mobile = isMobileUA || isSmallScreen || isSmallWindow
+        mobile = isMobileUA || isMobileWidth || (isTouchDevice && window.innerWidth < 1280)
       }
 
-      console.log('[ChatPage] Mobile check:', { mobile, isMobileUA, isSmallScreen, isSmallWindow, urlIsMobile, isEmbed })
+      console.log('[ChatPage] Advanced Mobile check:', { mobile, isMobileUA, isTouchDevice, isMobileWidth, urlIsMobile, isEmbed })
       setIsMobile(mobile)
       isMobileRef.current = mobile
     }

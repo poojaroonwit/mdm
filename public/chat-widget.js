@@ -24,7 +24,12 @@
         // Helper to check if current window is mobile-sized or is a mobile device
         function checkIsMobile() {
             const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            return isMobileUA || window.innerWidth < 1024 || (window.screen && window.screen.width < 1024);
+            const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+            const isMobileWidth = window.matchMedia('(max-width: 1023px)').matches;
+            
+            // If it's a touch device AND it has a mobile-ish width/screen, it's mobile.
+            // Or if the UserAgent explicitly says so.
+            return isMobileUA || (isTouchDevice && isMobileWidth) || isMobileWidth;
         }
 
         // Inject responsive CSS so the container goes fullscreen on mobile when the chat is open.
