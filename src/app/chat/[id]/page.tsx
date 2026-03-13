@@ -103,6 +103,11 @@ export default function ChatPage() {
       }
 
       console.log('[ChatPage] Advanced Mobile check:', { mobile, isMobileUA, isTouchDevice, isMobileWidth, urlIsMobile, isEmbed })
+      console.log('[ChatPage] Chatbot config avatar:', { 
+        avatarType: chatbot.widgetAvatarType || chatbot.avatarType, 
+        avatarImageUrl: chatbot.widgetAvatarImageUrl || chatbot.avatarImageUrl,
+        deploymentType: chatbot.deploymentType 
+      })
       setIsMobile(mobile)
       isMobileRef.current = mobile
     }

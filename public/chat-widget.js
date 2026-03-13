@@ -116,6 +116,7 @@
             }
 
             if (messageType === 'chat-widget-resize') {
+                console.log('[ChatWidget] Received resize:', data);
                 const width = data.width || (data.isOpen ? '100%' : '120px');
                 const height = data.height || (data.isOpen ? '100%' : '120px');
 
