@@ -95,10 +95,13 @@ async function uploadToMinio(
       'Content-Type': mimeType || 'application/octet-stream',
     })
 
-    // Return a proxy-relative URL so the browser always fetches through the
-    // Next.js /uploads/... route (authenticated via MinIO SDK). This avoids
-    // AccessDenied errors when the bucket has no public-read policy.
-    const url = `/uploads/${objectName}`
+    // Return an absolute URL pointing to our /api/assets proxy (studio-2 pattern).
+    // Using an absolute URL ensures it works from external pages embedding the widget,
+    // because relative paths would resolve against the embedding page's domain.
+    const appBase = (process.env.NEXTAUTH_URL || '').replace(/\/$/, '')
+    const url = appBase
+      ? `${appBase}/api/assets?filePath=${encodeURIComponent(objectName)}`
+      : `/api/assets?filePath=${encodeURIComponent(objectName)}`
 
     logger.info('[upload-storage] MinIO upload success', { object: objectName, url })
     return url

@@ -62,14 +62,33 @@ const MINIO_IMAGE_FIELDS = [
 function rewriteMinioUrls(config: any): any {
   const publicBase = process.env.MINIO_PUBLIC_URL
   const bucket = process.env.MINIO_UPLOADS_BUCKET || 'udp'
-  if (!publicBase) return config
+  const appBase = (process.env.NEXTAUTH_URL || '').replace(/\/$/, '')
 
-  const prefix = `${publicBase.replace(/\/$/, '')}/${bucket}/`
+  // Build the proxy URL in the same absolute form as storeUploadedImage (studio-2 pattern)
+  const toProxyUrl = (filePath: string): string =>
+    appBase
+      ? `${appBase}/api/assets?filePath=${encodeURIComponent(filePath)}`
+      : `/api/assets?filePath=${encodeURIComponent(filePath)}`
 
   const rewrite = (url: any): any => {
-    if (typeof url === 'string' && url.startsWith(prefix)) {
-      return `/uploads/${url.slice(prefix.length)}`
+    if (typeof url !== 'string' || !url) return url
+
+    // Already our proxy URL — leave it alone
+    if (url.includes('/api/assets?filePath=')) return url
+
+    // Old direct MinIO public URL: https://minio-host/bucket/path
+    if (publicBase) {
+      const minioPrefix = `${publicBase.replace(/\/$/, '')}/${bucket}/`
+      if (url.startsWith(minioPrefix)) {
+        return toProxyUrl(url.slice(minioPrefix.length))
+      }
     }
+
+    // Old relative proxy path from previous fix: /uploads/path
+    if (url.startsWith('/uploads/')) {
+      return toProxyUrl(url.slice('/uploads/'.length))
+    }
+
     return url
   }
 
