@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(wmic logicaldisk where \"DeviceID=''C:''\" get FreeSpace,Size)",
-      "Bash(wmic logicaldisk get size,freespace,caption)"
+      "Bash(wmic logicaldisk get size,freespace,caption)",
+      "Bash(xargs grep -l \"chatbot\")",
+      "Bash(grep -n \"fetch\\\\|useChatbot\\\\|/api/public\\\\|/chat-api\\\\|chatbot-api\\\\|useConfig\" /c/Users/MD3770/Desktop/repo/mdm-1/src/app/chat/[id]/page.tsx)"
     ]
   }
 }

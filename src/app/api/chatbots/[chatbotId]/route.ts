@@ -80,6 +80,7 @@ async function putHandler(
     console.log('[PUT /api/chatbots] Request body parsed successfully')
   } catch (parseError: any) {
     console.error('[PUT /api/chatbots] Failed to parse request body:', parseError)
+    console.error('[PUT /api/chatbots] Payload causing error:', rawBody)
     return NextResponse.json({
       error: 'Invalid JSON body',
       details: parseError.message

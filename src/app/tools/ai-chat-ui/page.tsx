@@ -182,9 +182,21 @@ export default function ChatEmbedUIPage() {
         // Only create a new draft version if the current version is published
         const versionToSave = isCurrentlyDraft ? currentVersion : incrementVersion(currentVersion)
         
+        // Strip massive nested objects to prevent 10MB payload size limits
+        const {
+            id: _id,
+            createdAt: _createdAt,
+            updatedAt: _updatedAt,
+            deletedAt: _deletedAt,
+            versions: _versions,
+            creator: _creator,
+            space: _space,
+            createdBy: _createdBy,
+            ...cleanData
+        } = { ...editorFormData, ...dataOverride } as any;
+
         const dataToSave = { 
-            ...editorFormData, 
-            ...dataOverride,
+            ...cleanData,
             currentVersion: versionToSave,
             isPublished: false // Always save as draft
         }

@@ -203,7 +203,8 @@ export function getContainerStyle(
   if (previewDeploymentType === 'popover') {
     // On mobile only, popover becomes fullpage layout (fills the container/iframe)
     // Desktop embed should still show as popover with proper positioning
-    // Mobile conversion
+    // Mobile conversion: whether embedded or not, the internal container should be fullpage
+    // so it fills the 100% x 100% iframe when open on mobile
     if (isMobile) {
       return {
         position: 'fixed',

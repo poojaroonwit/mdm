@@ -627,13 +627,10 @@ export default function ChatPage() {
     ? (searchParams.get('type') as 'popover' | 'fullpage' | 'popup-center')
     : (isEmbed ? 'fullpage' : previewDeploymentType)
 
-  // On mobile/tablet, auto-switch popover/popup-center to fullpage for better UX
-  // EXCEPT: In DESKTOP preview mode (emulator), preserve the selected deployment type
-  // EXCEPT: In EMBED mode, the iframe size determines "mobile" state. If the iframe is small (closed),
-  // we do NOT want to switch to fullpage, because fullpage forces isOpen=true, which expands the iframe, creating a loop.
-  const effectiveDeploymentType = (isMobile && !isEmbed && (baseDeploymentType === 'popover' || baseDeploymentType === 'popup-center'))
-    ? 'fullpage'
-    : baseDeploymentType
+  // We no longer force fullpage on mobile.
+  // Instead, getContainerStyle in chatStyling.ts handles rendering the popover as full screen
+  // This allows the iframe embedded parent scripts to receive proper resize events while still displaying 100% on mobile.
+  const effectiveDeploymentType = baseDeploymentType
 
   // Memoize widget button style to ensure it recomputes when chatbot config changes
   const widgetButtonStyle = useMemo(() => {
