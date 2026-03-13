@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
     // Get the script tag that loaded this file
     const currentScript = document.currentScript;
     if (!currentScript) {
