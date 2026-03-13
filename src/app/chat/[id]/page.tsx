@@ -88,17 +88,25 @@ export default function ChatPage() {
         return
       }
 
-      // In embed mode (NOT preview/emulator), use screen width
-      const useScreen = isEmbed && !isPreview
-      const width = useScreen ? window.screen.width : window.innerWidth
-      const mobile = width < 1024
+      // Check if mobile state was explicitly passed from parent script
+      const urlIsMobile = searchParams.get('isMobile')
+      if (isEmbed && urlIsMobile !== null) {
+        const mobile = urlIsMobile === 'true'
+        setIsMobile(mobile)
+        isMobileRef.current = mobile
+        return
+      }
+
+      // In embed mode (NOT preview/emulator), use window width
+      // We no longer use window.screen.width as it's unreliable in browser responsive modes
+      const mobile = window.innerWidth < 1024
       setIsMobile(mobile)
       isMobileRef.current = mobile
     }
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
-  }, [isEmbed, isPreview])
+  }, [isEmbed, isPreview, searchParams])
 
   // Auto-hide Get Started on mobile
   useEffect(() => {
@@ -426,7 +434,9 @@ export default function ChatPage() {
     if (!chatbot) return
 
     // Skip if native ChatKit is handling resize messages itself
-    if (isNativeChatKitMode && isEmbed) {
+    // EXCEPTION: On mobile, always send resize immediately so the container goes fullscreen
+    // without waiting for the ChatKit module to load (ChatKitWrapper handles it async).
+    if (isNativeChatKitMode && isEmbed && !isMobileRef.current) {
       console.log('[ChatPage] Skipping resize - native ChatKit handles its own resize messages')
       return
     }
@@ -560,6 +570,12 @@ export default function ChatPage() {
         if (data.type === 'close-chat') {
           setIsOpen(false)
           setShowGetStarted(false)
+        }
+        if (data.type === 'parent-resize') {
+          if (data.isMobile !== undefined) {
+             setIsMobile(data.isMobile)
+             isMobileRef.current = data.isMobile
+          }
         }
       } catch (err) {
         console.error('[ChatPage] Error processing message:', err)

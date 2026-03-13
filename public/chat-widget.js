@@ -21,6 +21,11 @@
     const baseUrl = scriptSrc.substring(0, scriptSrc.lastIndexOf('/'));
 
     function initWidget() {
+        // Helper to check if current window is mobile-sized
+        function checkIsMobile() {
+            return window.innerWidth < 1024;
+        }
+
         // Inject responsive CSS so the container goes fullscreen on mobile when the chat is open.
         // This mirrors scriptGenerator.ts behaviour and acts as a reliable fallback in case the
         // iframe resize postMessage arrives late or cannot override inline styles fast enough.
@@ -47,7 +52,8 @@
         const iframe = document.createElement('iframe');
         iframe.id = 'chat-widget-iframe';
         // Pass deployment type to the chat page - mode=embed tells it's in an iframe, type controls layout
-        iframe.src = `${baseUrl}/chat/${chatbotId}?mode=embed&type=${deploymentType}`;
+        // Also pass initial mobile state
+        iframe.src = `${baseUrl}/chat/${chatbotId}?mode=embed&type=${deploymentType}&isMobile=${checkIsMobile()}`;
         iframe.style.cssText = `
       width: 100%;
       height: 100%;
@@ -62,6 +68,22 @@
 
         container.appendChild(iframe);
         document.body.appendChild(container);
+
+        // Handle parent window resize to inform the iframe about mobile state changes
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                if (iframe && iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({ 
+                        type: 'parent-resize', 
+                        isMobile: checkIsMobile(),
+                        innerWidth: window.innerWidth,
+                        innerHeight: window.innerHeight
+                    }, '*');
+                }
+            }, 250);
+        });
 
         // Listen for messages from iframe to handle open/close state
         window.addEventListener('message', function (event) {

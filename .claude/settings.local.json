@@ -4,7 +4,11 @@
       "Bash(wmic logicaldisk where \"DeviceID=''C:''\" get FreeSpace,Size)",
       "Bash(wmic logicaldisk get size,freespace,caption)",
       "Bash(xargs grep -l \"chatbot\")",
-      "Bash(grep -n \"fetch\\\\|useChatbot\\\\|/api/public\\\\|/chat-api\\\\|chatbot-api\\\\|useConfig\" /c/Users/MD3770/Desktop/repo/mdm-1/src/app/chat/[id]/page.tsx)"
+      "Bash(grep -n \"fetch\\\\|useChatbot\\\\|/api/public\\\\|/chat-api\\\\|chatbot-api\\\\|useConfig\" /c/Users/MD3770/Desktop/repo/mdm-1/src/app/chat/[id]/page.tsx)",
+      "Bash(find /c/Users/MD3770/Desktop/repo/mdm-1/src/app/chat/[id] -type f -name \"page.tsx\" -o -name \"layout.tsx\")",
+      "Bash(find /c/Users/MD3770/Desktop/repo/mdm-1/src/app/chat/[id]/components -type f -name \"*.tsx\")",
+      "Bash(find /c/Users/MD3770/Desktop/repo/mdm-1/src/app/chat/[id] -name \"chatStyling.ts\" -o -name \"*Styling*\")",
+      "Bash(find /c/Users/MD3770/Desktop/repo/mdm-1/src/app/chat/[id]/components -type f -name \"*WidgetChat*\" -o -name \"*Container*\")"
     ]
   }
 }
