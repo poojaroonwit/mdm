@@ -83,7 +83,7 @@ export function generateEmbedScript(
     
     // Inject responsive CSS for mobile full-screen behavior
     var style = document.createElement('style');
-    style.innerHTML = '@media (max-width: 1023px) { #chatbot-embed-' + chatbotId + '.chat-open { width: 100% !important; height: 100% !important; top: 0 !important; left: 0 !important; bottom: 0 !important; right: 0 !important; transform: none !important; border-radius: 0 !important; margin: 0 !important; } }';
+    style.innerHTML = '@media (max-width: 1023px) { #chatbot-embed-' + chatbotId + '.chat-open { width: 100% !important; height: 100% !important; top: 0 !important; left: 0 !important; bottom: auto !important; right: auto !important; transform: none !important; border-radius: 0 !important; } }';
     document.head.appendChild(style);
     
     // Listen for messages from the iframe (e.g., resize, close requests)

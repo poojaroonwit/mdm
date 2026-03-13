@@ -88,24 +88,17 @@ export default function ChatPage() {
         return
       }
 
-      // Detection logic for production (non-emulator)
-      // Check for mobile user agents as a primary indicator for mobile devices
-      const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : ''
-      const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent)
-      
-      // In embed mode, we prioritize user agent because window.screen.width 
-      // can be unreliable depending on the host page's viewport settings.
-      // Outside embed mode, we still check innerWidth for desktop responsiveness.
-      const width = (isEmbed && !isPreview) ? window.screen.width : window.innerWidth
-      const mobile = isMobileUA || width < 1024
-      
+      // In embed mode (NOT preview/emulator), use screen width
+      const useScreen = isEmbed && !isPreview
+      const width = useScreen ? window.screen.width : window.innerWidth
+      const mobile = width < 1024
       setIsMobile(mobile)
       isMobileRef.current = mobile
     }
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
-  }, [isEmbed, isPreview, searchParams])
+  }, [isEmbed, isPreview])
 
   // Auto-hide Get Started on mobile
   useEffect(() => {

@@ -22,8 +22,10 @@
 
     function initWidget() {
         // Inject responsive CSS so the container goes fullscreen on mobile when the chat is open.
+        // This mirrors scriptGenerator.ts behaviour and acts as a reliable fallback in case the
+        // iframe resize postMessage arrives late or cannot override inline styles fast enough.
         var mobileStyle = document.createElement('style');
-        mobileStyle.innerHTML = '@media (max-width: 1023px) { #chat-widget-container.chat-open { width: 100% !important; height: 100% !important; top: 0 !important; left: 0 !important; bottom: 0 !important; right: 0 !important; transform: none !important; border-radius: 0 !important; margin: 0 !important; } }';
+        mobileStyle.innerHTML = '@media (max-width: 1023px) { #chat-widget-container.chat-open { width: 100% !important; height: 100% !important; top: 0 !important; left: 0 !important; bottom: auto !important; right: auto !important; transform: none !important; border-radius: 0 !important; } }';
         document.head.appendChild(mobileStyle);
 
         // Create iframe container - covers the full viewport to allow popover positioning
@@ -101,12 +103,11 @@
                 container.style.height = addPx(height, 200);
 
                 // Dynamic positioning if provided by the chatbot config
+                // Clear opposing axis properties to avoid conflicting anchors (e.g. left + right both set)
                 if (data.bottom !== undefined) { container.style.bottom = data.bottom; container.style.top = ''; }
                 else if (data.top !== undefined) { container.style.top = data.top; container.style.bottom = ''; }
                 if (data.right !== undefined) { container.style.right = data.right; container.style.left = ''; }
                 else if (data.left !== undefined) { container.style.left = data.left; container.style.right = ''; }
-                if (data.transform !== undefined) { container.style.transform = data.transform; }
-                else { container.style.transform = 'none'; }
 
                 // Make visible once positioned (avoids flash at wrong corner before first resize)
                 container.style.visibility = 'visible';

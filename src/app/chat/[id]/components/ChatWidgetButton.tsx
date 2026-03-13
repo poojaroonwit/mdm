@@ -104,7 +104,6 @@ export function ChatWidgetButton({
             '--widget-padding-right': config.avatarStyle === 'custom' ? '0px' : (config.paddingRight || config.paddingX || config.padding || '0px'),
             '--widget-padding-bottom': config.avatarStyle === 'custom' ? '0px' : (config.paddingBottom || config.paddingY || config.padding || '0px'),
             '--widget-padding-left': config.avatarStyle === 'custom' ? '0px' : (config.paddingLeft || config.paddingX || config.padding || '0px'),
-            '--avatar-object-fit': (config.avatarImageUrl === chatbot.headerLogo) ? 'contain' : 'cover',
             zIndex: config.zIndex,
             cursor: 'pointer',
         }
@@ -180,7 +179,7 @@ export function ChatWidgetButton({
                     border-radius: var(--widget-border-radius) !important;
                     width: var(--avatar-size) !important;
                     height: var(--avatar-size) !important;
-                    object-fit: var(--avatar-object-fit, cover) !important;
+                    object-fit: cover !important;
                     /* Ensure image doesn't have a background/border of its own that conflicts */
                     background: transparent !important;
                     border: none !important;
@@ -228,20 +227,10 @@ export function ChatWidgetButton({
                 (() => {
                     const renderIcon = () => {
                         if (config.avatarType === 'image' && config.avatarImageUrl) {
-                            // Check if the current image is the header logo to decide on object-fit
-                            const isLogo = config.avatarImageUrl === chatbot.headerLogo
-                            
                             return (
                                 <img
                                     src={config.avatarImageUrl}
                                     alt="Chat"
-                                    style={{ 
-                                        objectFit: isLogo ? 'contain' : 'cover'
-                                    }}
-                                    onError={(e) => {
-                                        // If image fails to load, hide it so fallback icon shows
-                                        (e.target as HTMLImageElement).style.display = 'none'
-                                    }}
                                 />
                             )
                         }
@@ -271,15 +260,7 @@ export function ChatWidgetButton({
                         )
                     }
 
-                    return (
-                        <div className="relative w-full h-full flex items-center justify-center">
-                            {/* Fallback Icon (rendered underneath, visible if img fails or is transparent) */}
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50">
-                                <Bot style={{ color: config.avatarIconColor, width: '60%', height: '60%' }} />
-                            </div>
-                            {renderIcon()}
-                        </div>
-                    )
+                    return renderIcon()
                 })()
             )}
 
