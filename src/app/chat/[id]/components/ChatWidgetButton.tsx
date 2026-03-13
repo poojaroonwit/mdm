@@ -87,15 +87,16 @@ export function ChatWidgetButton({
         const borderColor = borderParts.slice(2).join(' ') || 'transparent'
         const boxShadow = (widgetButtonStyle.boxShadow as string) || 'none'
 
-        // Determine avatar image/icon size
-        const avatarSize = config.avatarStyle === 'circle-with-label' ? '24px' : (config.avatarStyle === 'custom' ? '100%' : '60%')
+        // Determine avatar image/icon size - Icons should never be 100% even in custom mode
+        const imgSize = config.avatarStyle === 'circle-with-label' ? '24px' : (config.avatarStyle === 'custom' ? '100%' : '60%')
+        const iconSize = config.avatarStyle === 'circle-with-label' ? '24px' : '60%'
 
         // Base object - strictly avoid shorthand vs longhand conflicts here for React
         const style: any = {
-            ...popoverPositionStyle,
-            // Fallback for non-important rules
+            // When inside the wrapper div (isEmbed), we don't want the button to have its own fixed position
+            // because it can lead to coordinate confusion. We use relative positioning instead.
+            position: 'relative',
             borderRadius: activeBorderRadius,
-            // Use CSS variables for !important overrides in the <style> tag
             '--widget-border-radius': activeBorderRadius,
             '--widget-bg-color': bgColor,
             '--widget-bg-image': bgImage,
@@ -105,7 +106,8 @@ export function ChatWidgetButton({
             '--widget-border-width': borderWidth,
             '--widget-border-color': borderColor,
             '--widget-box-shadow': boxShadow,
-            '--avatar-size': avatarSize,
+            '--img-size': imgSize,
+            '--icon-size': iconSize,
             '--widget-padding-top': config.avatarStyle === 'custom' ? '0px' : (config.paddingTop || config.paddingY || config.padding || '0px'),
             '--widget-padding-right': config.avatarStyle === 'custom' ? '0px' : (config.paddingRight || config.paddingX || config.padding || '0px'),
             '--widget-padding-bottom': config.avatarStyle === 'custom' ? '0px' : (config.paddingBottom || config.paddingY || config.padding || '0px'),
@@ -114,10 +116,15 @@ export function ChatWidgetButton({
             cursor: 'pointer',
         }
 
+        // Apply offsets only if NOT embedded (if embedded, the parent wrapper div handles positioning)
+        if (!style.position || style.position === 'fixed') {
+             Object.assign(style, popoverPositionStyle)
+        }
+
         // Apply shared layout props
         if (!isOpen && config.avatarStyle === 'circle-with-label') {
             style.width = 'auto'
-            style.height = config.size
+            style.height = config.size || '60px'
             style.paddingLeft = '16px'
             style.paddingRight = '16px'
             style.display = 'flex'
@@ -125,7 +132,7 @@ export function ChatWidgetButton({
             style.gap = '8px'
             style.flexDirection = 'row'
             style.justifyContent = 'center'
-            style.minWidth = config.size
+            style.minWidth = config.size || '60px'
             style.boxShadow = config.boxShadow !== 'none' ? config.boxShadow : undefined
         } else {
             // Standard circle/square button layout
@@ -183,8 +190,8 @@ export function ChatWidgetButton({
                 
                 #chatbot-widget-button img:not(.close-avatar-img) {
                     border-radius: var(--widget-border-radius) !important;
-                    width: var(--avatar-size) !important;
-                    height: var(--avatar-size) !important;
+                    width: var(--img-size) !important;
+                    height: var(--img-size) !important;
                     object-fit: cover !important;
                     /* Ensure image doesn't have a background/border of its own that conflicts */
                     background: transparent !important;
@@ -201,8 +208,8 @@ export function ChatWidgetButton({
                 }
                 
                 #chatbot-widget-button svg {
-                    width: var(--avatar-size) !important;
-                    height: var(--avatar-size) !important;
+                    width: var(--icon-size) !important;
+                    height: var(--icon-size) !important;
                 }
             `}</style>
             <button
@@ -232,12 +239,18 @@ export function ChatWidgetButton({
             ) : (
                 (() => {
                     const renderIcon = () => {
-                        if (config.avatarType === 'image' && config.avatarImageUrl) {
+                        const [imgError, setImgError] = React.useState(false)
+
+                        if (config.avatarType === 'image' && config.avatarImageUrl && !imgError) {
                             return (
                                 <img
                                     src={config.avatarImageUrl}
                                     alt="Chat"
-                                    onError={(e) => console.error('[ChatWidgetButton] Image load failed:', config.avatarImageUrl)}
+                                    crossOrigin="anonymous"
+                                    onError={(e) => {
+                                        console.error('[ChatWidgetButton] Image load failed:', config.avatarImageUrl)
+                                        setImgError(true)
+                                    }}
                                 />
                             )
                         }

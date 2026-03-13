@@ -128,8 +128,8 @@
                     return isNaN(num) ? value : (num + extra) + 'px';
                 }
 
-                container.style.width = addPx(width, 40);
-                container.style.height = addPx(height, 200);
+                container.style.width = addPx(width, 60); // Increased width buffer
+                container.style.height = addPx(height, 250); // Increased height buffer for safety
 
                 // Dynamic positioning if provided by the chatbot config
                 // Clear opposing axis properties to avoid conflicting anchors (e.g. left + right both set)
