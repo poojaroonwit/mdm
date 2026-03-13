@@ -88,18 +88,21 @@ export default function ChatPage() {
         return
       }
 
-      // Check if mobile state was explicitly passed from parent script
+      // Robust mobile detection for actual devices/viewports
       const urlIsMobile = searchParams.get('isMobile')
-      if (isEmbed && urlIsMobile !== null) {
-        const mobile = urlIsMobile === 'true'
-        setIsMobile(mobile)
-        isMobileRef.current = mobile
-        return
+      const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      const isSmallScreen = typeof window !== 'undefined' && window.screen && window.screen.width < 1024
+      const isSmallWindow = typeof window !== 'undefined' && window.innerWidth < 1024
+
+      // Priority: URL Param > UA > Screen Width > InnerWidth
+      let mobile = false
+      if (urlIsMobile !== null) {
+        mobile = urlIsMobile === 'true'
+      } else {
+        mobile = isMobileUA || isSmallScreen || isSmallWindow
       }
 
-      // In embed mode (NOT preview/emulator), use window width
-      // We no longer use window.screen.width as it's unreliable in browser responsive modes
-      const mobile = window.innerWidth < 1024
+      console.log('[ChatPage] Mobile check:', { mobile, isMobileUA, isSmallScreen, isSmallWindow, urlIsMobile, isEmbed })
       setIsMobile(mobile)
       isMobileRef.current = mobile
     }
@@ -524,7 +527,7 @@ export default function ChatPage() {
         deploymentType: previewDeploymentType
       }, '*')
     }
-  }, [isOpen, isEmbed, isInIframe, previewDeploymentType, isNativeChatKitMode]) // Removed isMobile - use ref instead
+  }, [isOpen, isEmbed, isInIframe, previewDeploymentType, isNativeChatKitMode, chatbot]) // Added chatbot to ensure resize on load
 
   // Listen for preview mode changes and external control commands
   // Use ref to track previous preview mode to avoid unnecessary isOpen resets

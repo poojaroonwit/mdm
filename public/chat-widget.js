@@ -21,9 +21,10 @@
     const baseUrl = scriptSrc.substring(0, scriptSrc.lastIndexOf('/'));
 
     function initWidget() {
-        // Helper to check if current window is mobile-sized
+        // Helper to check if current window is mobile-sized or is a mobile device
         function checkIsMobile() {
-            return window.innerWidth < 1024;
+            const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            return isMobileUA || window.innerWidth < 1024 || (window.screen && window.screen.width < 1024);
         }
 
         // Inject responsive CSS so the container goes fullscreen on mobile when the chat is open.
