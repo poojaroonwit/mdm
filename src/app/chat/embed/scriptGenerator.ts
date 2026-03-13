@@ -117,6 +117,12 @@ export function generateEmbedScript(
           embedContainer.style.right = 'auto';
         }
 
+        if (e.data.transform !== undefined) {
+          embedContainer.style.transform = e.data.transform;
+        } else {
+          embedContainer.style.transform = 'none';
+        }
+
         // Manage pointer events
         embedContainer.style.pointerEvents = 'none';
       }

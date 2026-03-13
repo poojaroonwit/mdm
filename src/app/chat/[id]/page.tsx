@@ -484,13 +484,22 @@ export default function ChatPage() {
         const parentOffsetX = `calc(${offsetX} - ${SHADOW_BUFFER}px)`
         const parentOffsetY = `calc(${offsetY} - ${SHADOW_BUFFER}px)`
         
-        if (pos.includes('bottom')) positionData.bottom = parentOffsetY
-        else positionData.top = parentOffsetY
-        if (pos.includes('right')) positionData.right = parentOffsetX
-        else positionData.left = parentOffsetX
-        
-        if (pos.includes('center')) {
-          positionData.left = '50%'
+        if (isOpen && isMobileRef.current) {
+          // Force top-left anchor for 100% fullscreen on mobile
+          // This prevents height: 100% combined with bottom: 20px from shifting the frame offscreen
+          positionData.top = '0px'
+          positionData.left = '0px'
+        } else {
+          if (pos.includes('bottom')) positionData.bottom = parentOffsetY
+          else positionData.top = parentOffsetY
+          
+          if (pos.includes('right')) positionData.right = parentOffsetX
+          else positionData.left = parentOffsetX
+          
+          if (pos.includes('center')) {
+            positionData.left = '50%'
+            positionData.transform = 'translateX(-50%)'
+          }
         }
       }
 
