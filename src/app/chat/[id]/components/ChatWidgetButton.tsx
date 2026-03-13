@@ -82,7 +82,7 @@ export function ChatWidgetButton({
         const boxShadow = (widgetButtonStyle.boxShadow as string) || 'none'
 
         // Determine avatar image/icon size
-        const avatarSize = config.avatarStyle === 'circle-with-label' ? '24px' : '60%'
+        const avatarSize = config.avatarStyle === 'circle-with-label' ? '24px' : (config.avatarStyle === 'custom' ? '100%' : '60%')
 
         // Base object - strictly avoid shorthand vs longhand conflicts here for React
         const style: any = {
