@@ -77,6 +77,19 @@ function rewriteMinioUrls(config: any): any {
   for (const field of MINIO_IMAGE_FIELDS) {
     if (result[field]) result[field] = rewrite(result[field])
   }
+
+  // Also rewrite inside versions[x].config so the admin editor postMessage flow gets clean URLs
+  if (Array.isArray(result.versions)) {
+    result.versions = result.versions.map((v: any) => {
+      if (!v?.config) return v
+      const newConfig = { ...v.config }
+      for (const field of MINIO_IMAGE_FIELDS) {
+        if (newConfig[field]) newConfig[field] = rewrite(newConfig[field])
+      }
+      return { ...v, config: newConfig }
+    })
+  }
+
   return result
 }
 

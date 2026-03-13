@@ -51,8 +51,8 @@ async function getHandler(
     return NextResponse.json({ error: 'Chatbot not found' }, { status: 404 })
   }
 
-  // Merge version config into chatbot object
-  const mergedChatbot = mergeVersionConfig(chatbot)
+  // Merge version config and sanitize (rewrites MinIO URLs to proxy paths, strips API keys)
+  const mergedChatbot = sanitizeChatbotConfig(mergeVersionConfig(chatbot))
 
   return NextResponse.json({ chatbot: mergedChatbot })
 }
