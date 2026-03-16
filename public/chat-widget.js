@@ -46,8 +46,10 @@
         // Create iframe
         const iframe = document.createElement('iframe');
         iframe.id = 'chat-widget-iframe';
-        // Pass deployment type to the chat page - mode=embed tells it's in an iframe, type controls layout
-        iframe.src = `${baseUrl}/chat/${chatbotId}?mode=embed&type=${deploymentType}`;
+        // Pass deployment type and parent viewport width so the chat page can correctly detect mobile
+        // (window.screen.width inside the iframe can return desktop resolution in some browsers/DevTools)
+        const parentWidth = window.innerWidth;
+        iframe.src = `${baseUrl}/chat/${chatbotId}?mode=embed&type=${deploymentType}&pw=${parentWidth}`;
         iframe.style.cssText = `
       width: 100%;
       height: 100%;
@@ -62,6 +64,16 @@
 
         container.appendChild(iframe);
         document.body.appendChild(container);
+
+        // Send parent viewport width to iframe so it can correctly detect mobile
+        // Runs on load (after React hydration) and on resize (handles rotation)
+        function sendViewport() {
+            if (iframe.contentWindow) {
+                iframe.contentWindow.postMessage({ type: 'parent-viewport', width: window.innerWidth }, '*');
+            }
+        }
+        iframe.addEventListener('load', function () { sendViewport(); });
+        window.addEventListener('resize', function () { sendViewport(); });
 
         // Listen for messages from iframe to handle open/close state
         window.addEventListener('message', function (event) {

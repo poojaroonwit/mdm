@@ -149,7 +149,11 @@ const nextConfig = {
         cacheGroups: {
           // Separate large vendor libraries into their own chunks
           framework: {
-            test: /[\\/]node_modules[\\/](react|react-dom|next)[\\/]/,
+            // Exclude CSS modules — they must stay as initial chunks loaded via <link>, not scripts
+            test: (module) => {
+              if (module.type && module.type.startsWith('css')) return false
+              return /[\\/]node_modules[\\/](react|react-dom|next)[\\/]/.test(module.resource || '')
+            },
             name: 'framework',
             priority: 40,
             chunks: 'all',
@@ -157,21 +161,30 @@ const nextConfig = {
           },
           // UI libraries chunk
           ui: {
-            test: /[\\/]node_modules[\\/](lucide-react|react-icons|@tiptap|recharts|@xyflow)[\\/]/,
+            test: (module) => {
+              if (module.type && module.type.startsWith('css')) return false
+              return /[\\/]node_modules[\\/](lucide-react|react-icons|@tiptap|recharts|@xyflow)[\\/]/.test(module.resource || '')
+            },
             name: 'ui-libs',
             priority: 30,
             chunks: 'all',
           },
           // Utilities chunk
           utils: {
-            test: /[\\/]node_modules[\\/](date-fns|clsx|class-variance-authority|tailwind-merge|zod)[\\/]/,
+            test: (module) => {
+              if (module.type && module.type.startsWith('css')) return false
+              return /[\\/]node_modules[\\/](date-fns|clsx|class-variance-authority|tailwind-merge|zod)[\\/]/.test(module.resource || '')
+            },
             name: 'utils',
             priority: 20,
             chunks: 'all',
           },
           // Other vendor libraries
           vendors: {
-            test: /[\\/]node_modules[\\/]/,
+            test: (module) => {
+              if (module.type && module.type.startsWith('css')) return false
+              return /[\\/]node_modules[\\/]/.test(module.resource || '')
+            },
             name: 'vendors',
             priority: 10,
             chunks: 'all',
@@ -180,6 +193,10 @@ const nextConfig = {
           },
           // Common components shared across pages
           commons: {
+            test: (module) => {
+              if (module.type && module.type.startsWith('css')) return false
+              return true
+            },
             name: 'commons',
             minChunks: 2,
             priority: 5,

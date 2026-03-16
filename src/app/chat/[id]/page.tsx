@@ -43,6 +43,9 @@ export default function ChatPage() {
   const isPwaOnly = searchParams.get('mode') === 'pwa-only'
   console.log('[ChatPage] Search Params:', searchParams.toString(), 'isEmbed:', isEmbed, 'isPwaOnly:', isPwaOnly);
   const urlDeploymentType = searchParams.get('deploymentType') || searchParams.get('type')
+  // Parent viewport width passed by the embed script — more reliable than window.screen.width
+  // inside the iframe (screen.width can return desktop resolution in DevTools Responsive mode)
+  const parentWidthParam = searchParams.get('pw')
   const isPreview = searchParams.get('preview') === 'true'
   const urlLocale = searchParams.get('locale') || searchParams.get('lang')
   
@@ -61,7 +64,9 @@ export default function ChatPage() {
     (urlDeploymentType === 'popover' || urlDeploymentType === 'popup-center') ? urlDeploymentType : 'fullpage'
   )
   const [isOpen, setIsOpen] = useState<boolean>(urlDeploymentType === 'fullpage' || (!urlDeploymentType && !isEmbed))
-  const [isInIframe, setIsInIframe] = useState(false)
+  // Initialize isInIframe from isEmbed (URL param) so the chatbot loader immediately
+  // skips the private API on first render, avoiding auth redirect failures in cross-site iframes
+  const [isInIframe, setIsInIframe] = useState(isEmbed)
   
   // Track if viewport is mobile
   const [isMobile, setIsMobile] = useState(false)
@@ -88,9 +93,17 @@ export default function ChatPage() {
         return
       }
 
-      // In embed mode (NOT preview/emulator), use screen width
-      const useScreen = isEmbed && !isPreview
-      const width = useScreen ? window.screen.width : window.innerWidth
+      // In embed mode (NOT preview/emulator), detect mobile from the parent viewport width.
+      // window.screen.width inside the iframe can return the desktop monitor resolution in
+      // Chrome DevTools Responsive mode or on some Android browsers (physical pixels).
+      // The embed script passes the parent's window.innerWidth as ?pw=<n> for accuracy.
+      let width: number
+      if (isEmbed && !isPreview) {
+        const pw = parentWidthParam !== null ? parseInt(parentWidthParam, 10) : NaN
+        width = !isNaN(pw) ? pw : window.screen.width
+      } else {
+        width = window.innerWidth
+      }
       const mobile = width < 1024
       setIsMobile(mobile)
       isMobileRef.current = mobile
@@ -554,6 +567,15 @@ export default function ChatPage() {
         }
         if (data.type === 'clear-session') {
           setMessages([])
+        }
+        // Parent embed script reports its viewport width (sent on load and resize).
+        // Use this to keep mobile detection accurate when the iframe itself is small.
+        if (data.type === 'parent-viewport' && isEmbed) {
+          const mobile = (data.width as number) < 1024
+          if (mobile !== isMobileRef.current) {
+            setIsMobile(mobile)
+            isMobileRef.current = mobile
+          }
         }
         // Handle external control commands from parent window (embed script)
         if (data.type === 'open-chat') {

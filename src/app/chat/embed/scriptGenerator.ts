@@ -70,7 +70,10 @@ export function generateEmbedScript(
     // The chat page will render the widget button and container with React components
     var iframe = document.createElement('iframe');
     iframe.id = 'chatbot-iframe-' + chatbotId;
-    iframe.src = serverOrigin + '/chat/' + chatbotId + '?mode=embed&type=' + type;
+    // Pass parent viewport width so the chat page can correctly detect mobile.
+    // window.screen.width inside the iframe can return desktop resolution in some browsers.
+    var parentWidth = window.innerWidth;
+    iframe.src = serverOrigin + '/chat/' + chatbotId + '?mode=embed&type=' + type + '&pw=' + parentWidth;
     console.log('[EmbedScript] Generated iframe src:', iframe.src);
     iframe.setAttribute('title', 'Chat widget');
     iframe.setAttribute('allow', 'microphone; camera; clipboard-write');
@@ -86,6 +89,16 @@ export function generateEmbedScript(
     style.innerHTML = '@media (max-width: 1023px) { #chatbot-embed-' + chatbotId + '.chat-open { width: 100% !important; height: 100% !important; top: 0 !important; left: 0 !important; bottom: auto !important; right: auto !important; transform: none !important; border-radius: 0 !important; } }';
     document.head.appendChild(style);
     
+    // Send parent viewport width to iframe for accurate mobile detection.
+    // Runs after React hydration completes and on device rotation/resize.
+    function sendViewport() {
+      if (iframe.contentWindow) {
+        iframe.contentWindow.postMessage({ type: 'parent-viewport', width: window.innerWidth }, '*');
+      }
+    }
+    iframe.addEventListener('load', function() { sendViewport(); });
+    window.addEventListener('resize', function() { sendViewport(); });
+
     // Listen for messages from the iframe (e.g., resize, close requests)
     window.addEventListener('message', function(e) {
       if (!e.data) return;
