@@ -433,18 +433,10 @@ export default function ChatPage() {
   }, [chatbot, previewDeploymentType, isNativeChatKitMode, messages.length])
 
   // Notify parent window about open/close state for iframe resizing
-  // SKIP this for native ChatKit in embed mode - ChatKitWrapper handles its own resize messages
-  // to ensure the iframe size matches its internal isOpen state
+  // For native ChatKit in embed mode, this sends the INITIAL resize to make the container
+  // visible (it starts as visibility:hidden). ChatKitWrapper takes over for subsequent resizes.
   useEffect(() => {
     if (!chatbot) return
-
-    // Skip if native ChatKit is handling resize messages itself
-    // EXCEPTION: On mobile, always send resize immediately so the container goes fullscreen
-    // without waiting for the ChatKit module to load (ChatKitWrapper handles it async).
-    if (isNativeChatKitMode && isEmbed && !isMobileRef.current) {
-      console.log('[ChatPage] Skipping resize - native ChatKit handles its own resize messages')
-      return
-    }
 
     if (isEmbed || isInIframe) {
       let width = '100%'
