@@ -3,7 +3,7 @@ import { Z_INDEX } from '@/lib/z-index'
 
 export interface WidgetConfig {
     // Appearance
-    avatarStyle: 'circle' | 'square' | 'circle-with-label' | 'custom'
+    avatarStyle: 'circle' | 'square' | 'circle-with-label' | 'custom' | 'rounded-diagonal'
     avatarType: 'icon' | 'image' | 'none'
     avatarImageUrl: string
     avatarCloseType?: 'icon' | 'image'

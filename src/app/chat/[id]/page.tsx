@@ -523,7 +523,8 @@ export default function ChatPage() {
         deploymentType: previewDeploymentType
       }, '*')
     }
-  }, [isOpen, isEmbed, isInIframe, previewDeploymentType, isNativeChatKitMode, chatbot]) // chatbot added so initial resize fires when config loads (fixes auto-open OFF case)
+  // isMobile added so resize re-fires on device rotation or when mobile is detected after initial load
+  }, [isOpen, isEmbed, isInIframe, previewDeploymentType, isNativeChatKitMode, chatbot, isMobile])
 
   // Listen for preview mode changes and external control commands
   // Use ref to track previous preview mode to avoid unnecessary isOpen resets

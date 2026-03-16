@@ -56,6 +56,7 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
                   <SelectContent>
                     <SelectItem value="circle">Circle</SelectItem>
                     <SelectItem value="square">Square</SelectItem>
+                    <SelectItem value="rounded-diagonal">Rounded Diagonal</SelectItem>
                     <SelectItem value="circle-with-label">Label</SelectItem>
                     <SelectItem value="custom">Custom / Image Only</SelectItem>
                   </SelectContent>

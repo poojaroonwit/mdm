@@ -216,11 +216,13 @@ export async function GET(request: NextRequest) {
 
     // Determine default borderRadius based on avatarStyle
     // For circle style, always use 50% regardless of widgetBorderRadius setting
-    var defaultBorderRadiusForConfig = chatbot.widgetAvatarStyle === 'circle' 
-      ? '50%' 
-      : chatbot.widgetAvatarStyle === 'square' 
-        ? (chatbot.widgetBorderRadius || '8px')
-        : (chatbot.widgetBorderRadius || '50%');
+    var defaultBorderRadiusForConfig = chatbot.widgetAvatarStyle === 'circle'
+      ? '50%'
+      : chatbot.widgetAvatarStyle === 'rounded-diagonal'
+        ? '30px 0px 30px 0px'
+        : chatbot.widgetAvatarStyle === 'square'
+          ? (chatbot.widgetBorderRadius || '8px')
+          : (chatbot.widgetBorderRadius || '50%');
     
     var widgetConfig = {
       avatarStyle: chatbot.widgetAvatarStyle || 'circle',

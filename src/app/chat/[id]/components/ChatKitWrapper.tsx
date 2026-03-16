@@ -104,8 +104,11 @@ export function ChatKitWrapper({
   // CRITICAL: Send resize messages to parent when isOpen changes in embed mode
   // This ensures the parent iframe size stays in sync with ChatKitWrapper's popover state
   // IMPORTANT: Do NOT include isMobile in dependencies - use ref instead to prevent loops
+  // NOTE: In regular-style mode (isNative=false), page.tsx handles all resizing — skip here
+  // to avoid conflicting messages that could shrink the iframe when chat opens on mobile.
   React.useEffect(() => {
     if (!isEmbed) return
+    if (!isNative) return // page.tsx handles resize in regular-style mode
     if (previewDeploymentType === 'fullpage') return
 
     const isPopover = previewDeploymentType === 'popover' || previewDeploymentType === 'popup-center'
