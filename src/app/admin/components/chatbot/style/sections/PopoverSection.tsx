@@ -63,6 +63,30 @@ export function PopoverSection({ formData, setFormData, chatkitOptions }: Sectio
                   <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs" style={{ color: 'hsl(var(--secondary))' }}>px</span>
                 </div>
               </FormRow>
+              <FormRow label="Left Margin" description="Extra space on the left side of the open popover window">
+                <div className="relative">
+                  <Input
+                    type="number"
+                    value={extractNumericValue((formData as any).widgetPopoverMarginLeft || '0px')}
+                    onChange={(e) => setFormData({ ...formData, widgetPopoverMarginLeft: ensurePx(e.target.value) } as any)}
+                    placeholder="0"
+                    className="pr-8"
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs" style={{ color: 'hsl(var(--secondary))' }}>px</span>
+                </div>
+              </FormRow>
+              <FormRow label="Right Margin" description="Extra space on the right side of the open popover window">
+                <div className="relative">
+                  <Input
+                    type="number"
+                    value={extractNumericValue((formData as any).widgetPopoverMarginRight || '0px')}
+                    onChange={(e) => setFormData({ ...formData, widgetPopoverMarginRight: ensurePx(e.target.value) } as any)}
+                    placeholder="0"
+                    className="pr-8"
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs" style={{ color: 'hsl(var(--secondary))' }}>px</span>
+                </div>
+              </FormRow>
             </FormSection>
           </AccordionContent>
         </AccordionItem>

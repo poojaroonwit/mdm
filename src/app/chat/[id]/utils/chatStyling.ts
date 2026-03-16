@@ -235,6 +235,8 @@ export function getContainerStyle(
     const popoverMargin = x.widgetPopoverMargin || '10px'
     const popoverMarginPx = parseFloat(popoverMargin) || 10
     const popoverPos = (x.popoverPosition || 'top') as 'top' | 'left'
+    const marginLeftPx = parseFloat(x.widgetPopoverMarginLeft || '0') || 0
+    const marginRightPx = parseFloat(x.widgetPopoverMarginRight || '0') || 0
 
     // Border logic: Mobile gets no border/radius by default unless specifically overridden? 
     // User requested "border is setup differanace mobile and desktop"
@@ -293,11 +295,11 @@ export function getContainerStyle(
           ; (popoverStyle as any).top = topOffset
       }
 
-      // Horizontal alignment matches widget position
+      // Horizontal alignment matches widget position, with optional left/right margin
       if (pos.includes('right')) {
-        ; (popoverStyle as any).right = offsetX
+        ; (popoverStyle as any).right = marginRightPx > 0 ? `calc(${offsetX} + ${marginRightPx}px)` : offsetX
       } else if (pos.includes('left')) {
-        ; (popoverStyle as any).left = offsetX
+        ; (popoverStyle as any).left = marginLeftPx > 0 ? `calc(${offsetX} + ${marginLeftPx}px)` : offsetX
       } else if (pos.includes('center')) {
         ; (popoverStyle as any).left = '50%'
           ; (popoverStyle as any).transform = 'translateX(-50%)'
@@ -310,15 +312,18 @@ export function getContainerStyle(
         ; (popoverStyle as any).top = offsetY
       }
 
-      // Place popover to the right regarding widget
-      // Logic from route.ts:
+      // Place popover beside the widget, with optional left/right margin
       if (pos.includes('right')) {
         // Widget is on right side, popover appears to the left of widget
-        const rightOffset = `calc(${offsetX} + ${widgetSizePx}px + ${popoverMarginPx}px)`
+        const rightOffset = marginRightPx > 0
+          ? `calc(${offsetX} + ${widgetSizePx}px + ${popoverMarginPx}px + ${marginRightPx}px)`
+          : `calc(${offsetX} + ${widgetSizePx}px + ${popoverMarginPx}px)`
           ; (popoverStyle as any).right = rightOffset
       } else if (pos.includes('left')) {
         // Widget is on left side, popover appears to the right of widget
-        const leftOffset = `calc(${offsetX} + ${widgetSizePx}px + ${popoverMarginPx}px)`
+        const leftOffset = marginLeftPx > 0
+          ? `calc(${offsetX} + ${widgetSizePx}px + ${popoverMarginPx}px + ${marginLeftPx}px)`
+          : `calc(${offsetX} + ${widgetSizePx}px + ${popoverMarginPx}px)`
           ; (popoverStyle as any).left = leftOffset
       } else if (pos.includes('center')) {
         // For center positions, place popover to the right of widget (default)

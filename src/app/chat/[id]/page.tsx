@@ -468,14 +468,16 @@ export default function ChatPage() {
           const widgetSizeRaw = parseFloat(x.widgetSize || '60') || 60
           const popoverMarginPx = parseFloat(x.widgetPopoverMargin || '10') || 10
           const popoverPos = x.popoverPosition || 'top'
+          const popoverMarginLeft = parseFloat(x.widgetPopoverMarginLeft || '0') || 0
+          const popoverMarginRight = parseFloat(x.widgetPopoverMarginRight || '0') || 0
 
           if (popoverPos === 'left') {
             // Side-by-side: popover is beside the button — needs extra width for the button + margin
-            width = `${baseWidth + widgetSizeRaw + popoverMarginPx + (SHADOW_BUFFER * 2)}px`
+            width = `${baseWidth + widgetSizeRaw + popoverMarginPx + (SHADOW_BUFFER * 2) + popoverMarginLeft + popoverMarginRight}px`
             height = `${baseHeight + (SHADOW_BUFFER * 2)}px`
           } else {
             // Default 'top': popover is above the button — needs extra height for the button + margin
-            width = `${baseWidth + (SHADOW_BUFFER * 2)}px`
+            width = `${baseWidth + (SHADOW_BUFFER * 2) + popoverMarginLeft + popoverMarginRight}px`
             height = `${baseHeight + widgetSizeRaw + popoverMarginPx + (SHADOW_BUFFER * 2)}px`
           }
         }

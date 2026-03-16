@@ -379,6 +379,8 @@ export interface Chatbot {
   widgetCloseImageUrl?: string
   popoverPosition?: 'top' | 'left' // Position of popover relative to widget: 'top' = above widget, 'left' = to the left of widget
   widgetPopoverMargin?: string // Margin/spacing between widget button and popover window
+  widgetPopoverMarginLeft?: string // Extra left margin of the open popover window
+  widgetPopoverMarginRight?: string // Extra right margin of the open popover window (shifts window left for right-anchored widgets)
   widgetPadding?: string // Padding of widget button
   widgetPaddingTop?: string
   widgetPaddingRight?: string

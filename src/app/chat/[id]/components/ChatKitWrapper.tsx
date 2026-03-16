@@ -118,6 +118,8 @@ export function ChatKitWrapper({
     const offsetY = ensureUnits(x.widgetOffsetY, '20px')
     const popoverMarginPx = parseFloat(x.widgetPopoverMargin || '10') || 10
     const popoverPos = x.popoverPosition || 'top'
+    const popoverMarginLeft = parseFloat(x.widgetPopoverMarginLeft || '0') || 0
+    const popoverMarginRight = parseFloat(x.widgetPopoverMarginRight || '0') || 0
 
     let width = '100%'
     let height = '100%'
@@ -141,10 +143,10 @@ export function ChatKitWrapper({
       const baseHeight = parseFloat(ensureUnits(x.chatWindowHeight, '600px')) || 600
 
       if (popoverPos === 'left') {
-        width = `${baseWidth + widgetSizeRaw + popoverMarginPx + (SHADOW_BUFFER * 2)}px`
+        width = `${baseWidth + widgetSizeRaw + popoverMarginPx + (SHADOW_BUFFER * 2) + popoverMarginLeft + popoverMarginRight}px`
         height = `${baseHeight + (SHADOW_BUFFER * 2)}px`
       } else {
-        width = `${baseWidth + (SHADOW_BUFFER * 2)}px`
+        width = `${baseWidth + (SHADOW_BUFFER * 2) + popoverMarginLeft + popoverMarginRight}px`
         height = `${baseHeight + widgetSizeRaw + popoverMarginPx + (SHADOW_BUFFER * 2)}px`
       }
     }

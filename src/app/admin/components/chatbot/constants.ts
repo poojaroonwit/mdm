@@ -157,6 +157,8 @@ export const DEFAULT_CHATBOT_CONFIG: Partial<Chatbot> = {
   notificationBadgeColor: '#ef4444',
   popoverPosition: 'left', // Default: popover appears to the left of widget
   widgetPopoverMargin: '10px', // Default margin between widget and popover
+  widgetPopoverMarginLeft: '0px', // Default left margin of open popover window
+  widgetPopoverMarginRight: '0px', // Default right margin of open popover window
   chatWindowWidth: '380px',
   chatWindowHeight: '600px',
   chatWindowBackgroundBlur: 0, // No blur by default
@@ -400,6 +402,8 @@ export function createDefaultChatbot(name: string): Chatbot {
     notificationBadgeColor: '#ef4444',
     popoverPosition: 'left', // Default: popover appears to the left of widget
     widgetPopoverMargin: '10px', // Default margin between widget and popover
+    widgetPopoverMarginLeft: '0px', // Default left margin of open popover window
+    widgetPopoverMarginRight: '0px', // Default right margin of open popover window
     chatWindowWidth: '380px',
     chatWindowHeight: '600px',
     chatWindowBackgroundBlur: 0, // No blur by default
