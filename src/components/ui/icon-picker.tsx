@@ -128,7 +128,13 @@ export function IconPicker({ value, onChange, placeholder = "Search icons...", g
     <div className="space-y-2">
       <Input
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => {
+          setQuery(e.target.value)
+          // Reset category to "All" when searching so filtered results are always visible
+          if (e.target.value.trim() !== '') {
+            setActiveCategory('All')
+          }
+        }}
         placeholder={placeholder}
       />
       {filtered.length === 0 ? (
