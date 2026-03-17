@@ -75,7 +75,7 @@ export function ChatHeader({ chatbot, onClearSession, onClose, isMobile = false 
         paddingLeft: headerPaddingLeft,
         // Border styling
         borderColor: (chatbot as any).headerBorderColor || chatbot.borderColor,
-        borderTopWidth: (chatbot as any).headerBorderWidthTop || ((chatbot as any).headerBorderWidth !== undefined ? (chatbot as any).headerBorderWidth : (chatbot.borderWidth || '0px')),
+        borderTopWidth: isMobile ? '0px' : ((chatbot as any).headerBorderWidthTop || ((chatbot as any).headerBorderWidth !== undefined ? (chatbot as any).headerBorderWidth : (chatbot.borderWidth || '0px'))),
         borderRightWidth: (chatbot as any).headerBorderWidthRight || ((chatbot as any).headerBorderWidth !== undefined ? (chatbot as any).headerBorderWidth : '0px'),
         borderBottomWidth: (chatbot as any).headerBorderWidthBottom || (headerBorderEnabled ? (parseInt(headerBorderWidth.toString()) || 1) : 0),
         borderLeftWidth: (chatbot as any).headerBorderWidthLeft || ((chatbot as any).headerBorderWidth !== undefined ? (chatbot as any).headerBorderWidth : '0px'),
