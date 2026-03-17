@@ -152,30 +152,6 @@ async function putHandler(request: NextRequest) {
       clientSecret: aSecret
     }
 
-    // Upsert Google Auth
-    await query(
-      `INSERT INTO platform_integrations (type, config, is_enabled, updated_at) 
-       VALUES ($1, $2, $3, NOW())
-       ON CONFLICT (type) WHERE deleted_at IS NULL 
-       DO UPDATE SET config = $2, is_enabled = $3, updated_at = NOW()`,
-      ['google-auth', JSON.stringify(googleConfig), googleEnabled || false]
-    )
-
-    // Upsert Azure AD
-    await query(
-      `INSERT INTO platform_integrations (type, config, is_enabled, updated_at) 
-       VALUES ($1, $2, $3, NOW())
-       ON CONFLICT (type) WHERE deleted_at IS NULL
-       DO UPDATE SET config = $2, is_enabled = $3, updated_at = NOW()`,
-      ['azure-ad', JSON.stringify(azureConfig), azureEnabled || false]
-    )
-
-    // Note: The original implementation did not seem to enforce a unique constraint on 'type' in schema.prisma 
-    // but typically integrations are unique by type. If 'type' is not unique in DB, we might need a dedicated unique index.
-    // However, looking at schema.prisma provided earlier, there is NO unique constraint on 'type'.
-    // We should probably check if exists first to avoid duplicates if standard upsert (ON CONFLICT) fails without a unique constraint.
-    // But typically platform_integrations are managed. Let's do a Check-then-Insert/Update to be safe.
-
     // Re-implementation with Check-then-Upsert logic since `type` might not be unique in schema (it's not marked @unique)
     const upsertIntegration = async (type: string, conf: any, enabled: boolean) => {
       const { rows } = await query("SELECT id FROM platform_integrations WHERE type = $1 AND deleted_at IS NULL LIMIT 1", [type])
