@@ -133,14 +133,16 @@ export function WidgetChatContainer({
     }
 
     // Pass border radius and dimensions as CSS variables for the style tag to pick up
-    const containerBorderRadius = isFullPage ? '0px' : (adaptedContainerStyle.borderRadius || '8px')
+    const rawRadius = adaptedContainerStyle.borderRadius
+    const containerBorderRadius = isFullPage ? '0px' : (rawRadius !== undefined && rawRadius !== null ? (typeof rawRadius === 'number' ? `${rawRadius}px` : rawRadius) : '8px')
+    const containerBorder = isFullPage ? 'none' : (adaptedContainerStyle.border || 'none')
     const containerWidth = adaptedContainerStyle.width || 'auto'
     const containerHeight = adaptedContainerStyle.height || 'auto'
     const containerMaxHeight = adaptedContainerStyle.maxHeight || 'none'
     const containerMaxWidth = adaptedContainerStyle.maxWidth || 'none'
     const containerMinHeight = adaptedContainerStyle.minHeight || '0'
     const containerMinWidth = adaptedContainerStyle.minWidth || '0'
-    const containerBoxShadow = adaptedContainerStyle.boxShadow || 'none'
+    const containerBoxShadow = isFullPage ? 'none' : (adaptedContainerStyle.boxShadow || 'none')
 
     console.log('[WidgetChatContainer] Debug Styles:', {
         containerWidth,

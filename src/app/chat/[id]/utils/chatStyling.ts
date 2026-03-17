@@ -93,6 +93,10 @@ export function getContainerStyle(
   const options = (chatbot as any).chatkitOptions || {}
   const theme = options.theme || {}
 
+  // Add direct window check for resilience in case the isMobile prop hasn't propagated yet
+  // but we are definitely in a small viewport
+  const effectiveIsMobile = isMobile || (typeof window !== 'undefined' && window.innerWidth < 1024)
+
   const shadowColor = (chatbot as any).chatWindowShadowColor || chatbot.shadowColor || '#000000'
   const shadowBlurRaw = (chatbot as any).chatWindowShadowBlur || chatbot.shadowBlur || '4px'
   const shadowBlur = `${extractNumericValue(shadowBlurRaw)}px`
@@ -215,7 +219,7 @@ export function getContainerStyle(
         width: '100%',
         height: '100%',
         border: 'none',
-        borderRadius: 0,
+        borderRadius: '0px',
         zIndex: Z_INDEX.chatWidget,
         overflow: 'hidden',
         display: 'flex',
@@ -255,7 +259,7 @@ export function getContainerStyle(
       // Remove duplicate height check
       border: `${chatbot.chatWindowBorderWidth || chatbot.borderWidth || '1px'} solid ${chatbot.chatWindowBorderColor || chatbot.borderColor || '#e2e8f0'}`,
       borderRadius: ensureUnits(chatbot.chatWindowBorderRadius || chatbot.borderRadius, '12px'),
-      boxShadow: simpleShadow,
+      boxShadow: effectiveIsMobile ? 'none' : simpleShadow,
       outline: undefined,
       zIndex: (chatbot as any).widgetZIndex || Z_INDEX.chatWidget,
       // Note: Emulator background should NOT be applied to popover - only to page background
@@ -356,7 +360,7 @@ export function getContainerStyle(
         width: '100%',
         height: '100%',
         border: 'none',
-        borderRadius: 0,
+        borderRadius: '0px',
         zIndex: Z_INDEX.chatWidgetWindow,
         overflow: 'hidden',
         display: 'flex',

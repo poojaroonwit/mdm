@@ -26,7 +26,7 @@
         // This mirrors scriptGenerator.ts behaviour and acts as a reliable fallback in case the
         // iframe resize postMessage arrives late or cannot override inline styles fast enough.
         var mobileStyle = document.createElement('style');
-        mobileStyle.innerHTML = '@media (max-width: 1023px) { #chat-widget-container.chat-open { width: 100% !important; height: 100% !important; top: 0 !important; left: 0 !important; bottom: auto !important; right: auto !important; transform: none !important; border-radius: 0 !important; } }';
+        mobileStyle.innerHTML = '@media (max-width: 1023px) { #chat-widget-container.chat-open { width: 100% !important; height: 100% !important; top: 0 !important; left: 0 !important; bottom: auto !important; right: auto !important; transform: none !important; border-radius: 0 !important; box-shadow: none !important; } }';
         document.head.appendChild(mobileStyle);
 
         // Create iframe container - covers the full viewport to allow popover positioning

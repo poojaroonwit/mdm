@@ -76,6 +76,7 @@ export function ChatHeader({ chatbot, onClearSession, onClose, isMobile = false 
         // Border styling
         borderColor: (chatbot as any).headerBorderColor || chatbot.borderColor,
         borderTopWidth: isMobile ? '0px' : ((chatbot as any).headerBorderWidthTop || ((chatbot as any).headerBorderWidth !== undefined ? (chatbot as any).headerBorderWidth : (chatbot.borderWidth || '0px'))),
+        borderTopStyle: isMobile ? 'none' : (headerBorderEnabled ? 'solid' : 'none'),
         borderRightWidth: (chatbot as any).headerBorderWidthRight || ((chatbot as any).headerBorderWidth !== undefined ? (chatbot as any).headerBorderWidth : '0px'),
         borderBottomWidth: (chatbot as any).headerBorderWidthBottom || (headerBorderEnabled ? (parseInt(headerBorderWidth.toString()) || 1) : 0),
         borderLeftWidth: (chatbot as any).headerBorderWidthLeft || ((chatbot as any).headerBorderWidth !== undefined ? (chatbot as any).headerBorderWidth : '0px'),
@@ -87,11 +88,11 @@ export function ChatHeader({ chatbot, onClearSession, onClose, isMobile = false 
         fontFamily: chatbot.headerFontFamily || chatbot.fontFamily,
         // Border radius (top corners only for header, none on mobile fullpage)
         // Use CSS variable from container if available, with config fallback
-        borderTopLeftRadius: isMobile ? 0 : `var(--container-border-radius, ${(() => {
+        borderTopLeftRadius: isMobile ? '0px' : `var(--container-border-radius, ${(() => {
           const r = chatbot.chatWindowBorderRadius || chatbot.borderRadius || '12px'
           return /^\d+$/.test(String(r)) ? `${r}px` : r
         })()})`,
-        borderTopRightRadius: isMobile ? 0 : `var(--container-border-radius, ${(() => {
+        borderTopRightRadius: isMobile ? '0px' : `var(--container-border-radius, ${(() => {
           const r = chatbot.chatWindowBorderRadius || chatbot.borderRadius || '12px'
           return /^\d+$/.test(String(r)) ? `${r}px` : r
         })()})`,
