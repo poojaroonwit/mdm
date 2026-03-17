@@ -72,7 +72,11 @@ export function ChatWidgetButton({
         }
         
         // Final border radius calculation
-        const finalBorderRadius = config.avatarStyle === 'circle' ? '50%' : (config.borderRadius || (widgetButtonStyle as any).borderRadius || '50%');
+        const finalBorderRadius = (config.avatarStyle === 'circle') 
+            ? '50%' 
+            : (config.avatarStyle === 'rounded-diagonal')
+                ? '30px 0px 30px 0px'
+                : (config.borderRadius || (widgetButtonStyle as any).borderRadius || '50%');
         const activeBorderRadius = (!isOpen && config.avatarStyle === 'circle-with-label') ? config.labelBorderRadius : finalBorderRadius;
 
         // Extract border and shadow for granular enforcement

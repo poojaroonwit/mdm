@@ -27,7 +27,7 @@ function hexToRgb(hex: string): string {
 }
 
 // Buffer to prevent shadow clipping in iframes
-export const SHADOW_BUFFER = 20
+export const SHADOW_BUFFER = 40
 
 export function getChatStyle(chatbot: ChatbotConfig, chatkitOptions?: any): React.CSSProperties {
   const options = chatkitOptions || (chatbot as any).chatkitOptions
@@ -94,12 +94,20 @@ export function getContainerStyle(
   const theme = options.theme || {}
 
   // Add direct window check for resilience in case the isMobile prop hasn't propagated yet
-  // but we are definitely in a small viewport
+  // but we are definitely in a small viewport. 
+  // Breakpoint 1024 is for "conversion to full-page mode", 
+  // but for "shadow removal", we might want to be less aggressive.
   const effectiveIsMobile = isMobile || (typeof window !== 'undefined' && window.innerWidth < 1024)
 
+  const shadowX = extractNumericValue((chatbot as any).chatWindowShadowX || chatbot.shadowX || '0px')
+  const shadowY = extractNumericValue((chatbot as any).chatWindowShadowY || chatbot.shadowY || '0px')
+  const shadowBlur = extractNumericValue((chatbot as any).chatWindowShadowBlur || chatbot.shadowBlur || '4px')
+  const shadowSpread = extractNumericValue((chatbot as any).chatWindowShadowSpread || chatbot.shadowSpread || '0px')
   const shadowColor = (chatbot as any).chatWindowShadowColor || chatbot.shadowColor || '#000000'
-  const shadowBlurRaw = (chatbot as any).chatWindowShadowBlur || chatbot.shadowBlur || '4px'
-  const shadowBlur = `${extractNumericValue(shadowBlurRaw)}px`
+
+  const fullBoxShadow = (shadowBlur !== '0' || shadowX !== '0' || shadowY !== '0' || shadowSpread !== '0')
+    ? `${shadowX}px ${shadowY}px ${shadowBlur}px ${shadowSpread}px ${shadowColor}`
+    : `0px 0px 4px 0px ${shadowColor}`
 
   // Base background style from emulator config
   const backgroundStyle: React.CSSProperties = {}
@@ -120,10 +128,6 @@ export function getContainerStyle(
     isChatKit: isChatKit(chatbot)
   })
 
-
-    // Build box-shadow - Reverted to simple logic as per previous working version
-    // This ignores X/Y/Spread for now to ensure reliability matching the "working" state
-    const simpleShadow = `0 0 ${shadowBlur} ${shadowColor}`
 
     // Common background logic helper
     const getBackgroundStyle = () => {
@@ -259,7 +263,7 @@ export function getContainerStyle(
       // Remove duplicate height check
       border: `${chatbot.chatWindowBorderWidth || chatbot.borderWidth || '1px'} solid ${chatbot.chatWindowBorderColor || chatbot.borderColor || '#e2e8f0'}`,
       borderRadius: ensureUnits(chatbot.chatWindowBorderRadius || chatbot.borderRadius, '12px'),
-      boxShadow: effectiveIsMobile ? 'none' : simpleShadow,
+      boxShadow: effectiveIsMobile ? 'none' : fullBoxShadow,
       outline: undefined,
       zIndex: (chatbot as any).widgetZIndex || Z_INDEX.chatWidget,
       // Note: Emulator background should NOT be applied to popover - only to page background
@@ -380,7 +384,7 @@ export function getContainerStyle(
       // Remove duplicate height check
       border: `${chatbot.chatWindowBorderWidth || chatbot.borderWidth || '1px'} solid ${chatbot.chatWindowBorderColor || chatbot.borderColor || '#e2e8f0'}`,
       borderRadius: ensureUnits(chatbot.chatWindowBorderRadius || chatbot.borderRadius, '12px'),
-      boxShadow: simpleShadow,
+      boxShadow: fullBoxShadow,
       outline: undefined,
       zIndex: Z_INDEX.chatWidgetWindow,
       position: 'fixed',

@@ -169,6 +169,8 @@ export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any, baseUrl?: s
     let borderRadius: string
     if (avatarStyle === 'circle') {
         borderRadius = '50%' // Always circular for circle style
+    } else if (avatarStyle === 'rounded-diagonal') {
+        borderRadius = '30px 0px 30px 0px' // top-left and bottom-right rounded
     } else {
         // Check for individual corner properties which are saved by the admin UI
         const tl = c.widgetBorderRadiusTopLeft

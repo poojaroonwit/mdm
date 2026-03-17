@@ -45,6 +45,7 @@ export function WidgetButtonSection({ formData, setFormData }: WidgetButtonSecti
                 <SelectContent>
                   <SelectItem value="circle">Circle</SelectItem>
                   <SelectItem value="square">Square</SelectItem>
+                  <SelectItem value="rounded-diagonal">Rounded Diagonal</SelectItem>
                   <SelectItem value="circle-with-label">Circle with Label</SelectItem>
                   <SelectItem value="custom">Custom / Image Only</SelectItem>
                 </SelectContent>

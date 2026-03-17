@@ -141,6 +141,9 @@ export interface ChatbotConfig {
   messageBoxColor: string
   shadowColor: string
   shadowBlur: string
+  shadowX?: string
+  shadowY?: string
+  shadowSpread?: string
   conversationOpener: string
   showStartConversation?: boolean // Show/hide the start conversation message
   // Start Screen Prompts (for Agent SDK and other engines)
@@ -274,7 +277,7 @@ export interface ChatbotConfig {
   userAvatarBackgroundColor?: string
   userAvatarImageUrl?: string
   deploymentType?: 'popover' | 'fullpage' | 'popup-center'
-  widgetAvatarStyle?: 'circle' | 'square' | 'circle-with-label'
+  widgetAvatarStyle?: 'circle' | 'square' | 'circle-with-label' | 'custom' | 'rounded-diagonal'
   widgetPosition?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'bottom-center' | 'top-center'
   widgetSize?: string
   widgetBackgroundColor?: string
@@ -312,6 +315,9 @@ export interface ChatbotConfig {
   chatWindowBorderRadius?: string
   chatWindowShadowColor?: string
   chatWindowShadowBlur?: string
+  chatWindowShadowX?: string
+  chatWindowShadowY?: string
+  chatWindowShadowSpread?: string
 
   chatWindowPaddingX?: string
   chatWindowPaddingY?: string

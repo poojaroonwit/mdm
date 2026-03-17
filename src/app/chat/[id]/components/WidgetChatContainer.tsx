@@ -150,6 +150,7 @@ export function WidgetChatContainer({
         containerMaxWidth,
         containerMaxHeight,
         containerBorderRadius,
+        containerBoxShadow, // Added for debugging
         deploymentType: effectiveDeploymentType,
         chatbotId: chatbot.id
     })

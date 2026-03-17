@@ -112,8 +112,8 @@
                     return isNaN(num) ? value : (num + extra) + 'px';
                 }
 
-                container.style.width = addPx(width, 40);
-                container.style.height = addPx(height, 200);
+                container.style.width = addPx(width, 80); // 2 * SHADOW_BUFFER
+                container.style.height = addPx(height, 240); // 1.5 * SHADOW_BUFFER + extra for popover alignment
 
                 // Dynamic positioning if provided by the chatbot config
                 // Clear opposing axis properties to avoid conflicting anchors (e.g. left + right both set)
