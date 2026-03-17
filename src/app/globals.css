@@ -159,6 +159,13 @@
   }
 }
 
+/* Ensure embed mode is always transparent to show host website */
+html.chat-embed-mode, 
+html.chat-embed-mode body {
+  background-color: transparent !important;
+}
+
+
 /* Enhanced Component Classes - Platform Sidebar Inspired */
 .platform-card {
   background-color: var(--bg-surface);
