@@ -16,9 +16,10 @@
     // Get optional deployment type (default to popover for widget behavior)
     const deploymentType = currentScript.getAttribute('data-type') || 'popover';
 
-    // Get the base URL from the script src
+    // Get the base URL from the script src or data attribute
     const scriptSrc = currentScript.src;
-    const baseUrl = scriptSrc.substring(0, scriptSrc.lastIndexOf('/'));
+    const baseUrlFromScript = scriptSrc.substring(0, scriptSrc.lastIndexOf('/'));
+    const baseUrl = currentScript.getAttribute('data-base-url') || baseUrlFromScript;
 
     function initWidget() {
         // Inject responsive CSS so the container goes fullscreen on mobile when the chat is open.

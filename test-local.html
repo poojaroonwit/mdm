@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Chatbot Testing</title>
+    <!-- Use local widget script and point it to the local Next.js server -->
+    <script src="/public/chat-widget.js" 
+            data-chatbot-id="1755b346-d923-4337-8d5c-22a13fccdfab"
+            data-base-url="http://localhost:3000"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #eef2f7;
+        }
+        .container {
+            text-align: center;
+            padding: 2.5rem;
+            max-width: 600px;
+            width: 90%;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        h1 { font-size: 2.5rem; color: #1a202c; margin-bottom: 0.5rem; }
+        p { font-size: 1.1rem; color: #4a5568; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Local Test</h1>
+        <p>Testing mobile responsiveness with local changes.</p>
+    </div>
+</body>
+</html>
