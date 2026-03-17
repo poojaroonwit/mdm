@@ -217,6 +217,7 @@ export function WidgetChatContainer({
                         chatbot={chatbot}
                         onClearSession={onClearSession}
                         onClose={handleClose}
+                        isMobile={false}
                     />
                 )}
 

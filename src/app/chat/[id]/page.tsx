@@ -811,6 +811,7 @@ export default function ChatPage() {
             isMobile={isMobile}
             useChatKitInRegularStyle={true}
             onChatKitUnavailable={() => setChatKitUnavailable(true)}
+            isMobile={isMobile}
           />
         </div>
       )
@@ -955,7 +956,8 @@ export default function ChatPage() {
               onStart={handleStartChat}
               onClose={() => setShowGetStarted(false)}
               theme={(chatbot as any).chatkitOptions?.theme}
-            />
+              isMobile={isMobile}
+          />
            )}
           
           <ChatWidgetButton
@@ -968,6 +970,7 @@ export default function ChatPage() {
               console.log('Force toggling Get Started');
               setShowGetStarted(prev => !prev);
             }}
+            isMobile={isMobile}
           />
         </div>
       )}

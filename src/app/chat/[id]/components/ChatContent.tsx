@@ -37,6 +37,7 @@ interface ChatContentProps {
   chatbotId?: string
   threadId?: string | null
   hideHeader?: boolean
+  isMobile?: boolean
 }
 
 export function ChatContent({
@@ -69,6 +70,7 @@ export function ChatContent({
   chatbotId,
   threadId,
   hideHeader = false,
+  isMobile = false,
 }: ChatContentProps) {
   // Check if wave UI should be shown
   const showWaveUI = chatbot.enableVoiceAgent && chatbot.voiceUIStyle === 'wave'
@@ -80,6 +82,7 @@ export function ChatContent({
           <ChatHeader
             chatbot={chatbot}
             onClearSession={() => setMessages([])}
+            isMobile={isMobile}
           />
         )}
         <div className="flex-1 relative flex flex-col" style={{ minHeight: '400px' }}>
@@ -150,6 +153,7 @@ export function ChatContent({
         <ChatHeader
           chatbot={chatbot}
           onClearSession={() => setMessages([])}
+          isMobile={isMobile}
         />
       )}
 
