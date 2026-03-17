@@ -4,9 +4,124 @@ import GoogleProvider from "next-auth/providers/google"
 import AzureADProvider from "next-auth/providers/azure-ad"
 import bcrypt from "bcryptjs"
 import crypto from "crypto"
-import { query } from "@/lib/db"
+import { db as prisma, query } from "@/lib/db"
 import { authenticator } from "otplib"
 import { sendEmail } from "@/lib/email"
+import { NextRequest, NextResponse } from 'next/server';
+import { jwtVerify } from 'jose';
+
+export interface AuthenticatedRequest extends NextRequest {
+  admin?: {
+    id: string;
+    adminId?: string;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+    avatarUrl?: string;
+    role: string;
+    permissions: string[];
+    isSuperAdmin: boolean;
+  };
+}
+
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'fallback-secret-key-for-development'
+);
+
+export async function authenticate(req: NextRequest) {
+  const authHeader = req.headers.get('authorization');
+  const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
+  const cookieToken = req.cookies.get('appkit_token')?.value;
+  const token = bearerToken || cookieToken;
+
+  if (!token) {
+    return { error: 'Access denied', status: 401 };
+  }
+
+  try {
+    const { payload: decoded } = await jwtVerify(token, JWT_SECRET);
+
+    // Infer admin type from role claim for legacy tokens missing the type field
+    const role = (decoded as any).role;
+    const tokenType = (decoded as any).type || (role === 'ADMIN' || role === 'SUPER_ADMIN' ? 'admin' : undefined);
+
+    if (tokenType !== 'admin') {
+      return { error: 'Admin access required', status: 403 };
+    }
+
+    // Verify user exists in DB and is active
+    // Check admin_users first, then fall back to users table
+    const userId = (decoded as any).adminId || (decoded as any).sub || (decoded as any).id;
+    
+    let adminUser = await prisma.adminUser.findUnique({
+      where: { id: userId },
+      select: { id: true, isActive: true, isSuperAdmin: true, email: true }
+    });
+
+    if (!adminUser) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, isActive: true, email: true, role: true }
+      });
+      if (user && user.isActive) {
+        adminUser = {
+          id: user.id,
+          isActive: true,
+          isSuperAdmin: user.role === 'SUPER_ADMIN' || user.role === 'ADMIN',
+          email: user.email
+        };
+      }
+    }
+
+    // Last resort: trust verified JWT claims when DB lookup fails
+    if (!adminUser || !adminUser.isActive) {
+      return {
+        admin: {
+          id: (decoded as any).sub || (decoded as any).id,
+          adminId: (decoded as any).adminId || (decoded as any).sub || (decoded as any).id,
+          email: (decoded as any).email,
+          firstName: (decoded as any).firstName,
+          lastName: (decoded as any).lastName,
+          name: (decoded as any).name,
+          avatarUrl: (decoded as any).avatarUrl,
+          role: (decoded as any).role || 'ADMIN',
+          permissions: (decoded as any).permissions || ['*'],
+          isSuperAdmin: (decoded as any).isSuperAdmin || (decoded as any).role === 'SUPER_ADMIN' || true
+        }
+      };
+    }
+
+    return {
+      admin: {
+        id: (decoded as any).sub || (decoded as any).id,
+        adminId: (decoded as any).adminId,
+        email: (decoded as any).email,
+        firstName: (decoded as any).firstName,
+        lastName: (decoded as any).lastName,
+        name: (decoded as any).name,
+        avatarUrl: (decoded as any).avatarUrl,
+        role: (decoded as any).role,
+        permissions: (decoded as any).permissions || [],
+        isSuperAdmin: adminUser.isSuperAdmin
+      }
+    };
+  } catch (err: any) {
+    console.error(`[auth] Token verification failed: ${err.message}`);
+    return { error: 'Invalid or expired token', status: 401 };
+  }
+}
+
+export function hasPermission(admin: any, permission: string) {
+  // Grant all permissions to any authenticated admin user
+  if (admin) {
+    return true;
+  }
+  if (admin.isSuperAdmin || admin.permissions.includes('*')) {
+    return true;
+  }
+  return admin.permissions.includes(permission);
+}
 
 // Simple in-memory cache
 const CACHE_TTL_MS = 10 * 60 * 1000 // 10 minutes

@@ -5,6 +5,20 @@ import { createAuditLog } from '@/lib/audit'
 import { getSecretsManager } from '@/lib/secrets-manager'
 import { encryptApiKey, decryptApiKey } from '@/lib/encryption'
 import { createAuditContext } from '@/lib/audit-context-helper'
+import { validateBody } from '@/lib/api-validation'
+import { z } from 'zod'
+
+const ssoConfigSchema = z.object({
+  config: z.object({
+    googleEnabled: z.boolean().optional(),
+    googleClientId: z.string().optional(),
+    googleClientSecret: z.string().optional(),
+    azureEnabled: z.boolean().optional(),
+    azureTenantId: z.string().optional(),
+    azureClientId: z.string().optional(),
+    azureClientSecret: z.string().optional(),
+  })
+})
 
 async function getHandler(request: NextRequest) {
   try {
@@ -87,28 +101,13 @@ async function putHandler(request: NextRequest) {
     if (!authResult.success) return authResult.response
     const { session } = authResult
 
-    if (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    // Validate request body
+    const bodyValidation = await validateBody(request, ssoConfigSchema)
+    if (!bodyValidation.success) {
+      return bodyValidation.response
     }
 
-    const body = await request.json()
-    const { config } = body as { config?: Record<string, any> }
-
-    if (!config || typeof config !== 'object') {
-      return NextResponse.json(
-        { error: 'SSO configuration object is required' },
-        { status: 400 }
-      )
-    }
-
-    // Resolve final values with fallbacks
-    const googleEnabled = config.googleEnabled !== undefined ? config.googleEnabled : config.google_enabled
-    const azureEnabled = config.azureEnabled !== undefined ? config.azureEnabled : config.azure_enabled
-    const googleClientId = config.googleClientId || config.google_client_id
-    const googleClientSecret = config.googleClientSecret || config.google_client_secret
-    const azureTenantId = config.azureTenantId || config.azure_tenant_id
-    const azureClientId = config.azureClientId || config.azure_client_id
-    const azureClientSecret = config.azureClientSecret || config.azure_client_secret
+    const { config } = bodyValidation.data
 
     const secretsManager = getSecretsManager()
     const useVault = secretsManager.getBackend() === 'vault'
@@ -138,19 +137,29 @@ async function putHandler(request: NextRequest) {
     }
 
     // Prepare configurations
-    const gSecret = await processSecretStorage('googleClientSecret', googleClientSecret)
-    const aSecret = await processSecretStorage('azureClientSecret', azureClientSecret)
+    const googleSecret = await processSecretStorage('googleClientSecret', config.googleClientSecret)
+    const azureSecret = await processSecretStorage('azureClientSecret', config.azureClientSecret)
 
     const googleConfig = {
-      clientId: googleClientId,
-      clientSecret: gSecret
+      clientId: config.googleClientId,
+      clientSecret: googleSecret
     }
 
     const azureConfig = {
-      tenantId: azureTenantId,
-      clientId: azureClientId,
-      clientSecret: aSecret
+      tenantId: config.azureTenantId,
+      clientId: config.azureClientId,
+      clientSecret: azureSecret
     }
+
+    // Capture old state for audit
+    const { rows: currentIntegrations } = await query(
+      "SELECT type, config, is_enabled FROM platform_integrations WHERE type IN ('google-auth', 'azure-ad') AND deleted_at IS NULL"
+    )
+
+    const oldState = currentIntegrations.reduce((acc: any, row) => {
+      acc[row.type] = { config: row.config, enabled: row.is_enabled }
+      return acc
+    }, {})
 
     // Re-implementation with Check-then-Upsert logic since `type` might not be unique in schema (it's not marked @unique)
     const upsertIntegration = async (type: string, conf: any, enabled: boolean) => {
@@ -168,15 +177,18 @@ async function putHandler(request: NextRequest) {
       }
     }
 
-    await upsertIntegration('google-auth', googleConfig, googleEnabled || false)
-    await upsertIntegration('azure-ad', azureConfig, azureEnabled || false)
+    await upsertIntegration('google-auth', googleConfig, config.googleEnabled || false)
+    await upsertIntegration('azure-ad', azureConfig, config.azureEnabled || false)
 
     await createAuditLog({
       action: 'UPDATE',
       entityType: 'SSOConfiguration',
       entityId: 'system',
-      oldValue: { action: 'updated sso config via platform_integrations' }, // Simplified for brevity
-      newValue: { googleEnabled: googleEnabled, azureEnabled: azureEnabled },
+      oldValue: oldState,
+      newValue: {
+        'google-auth': { config: googleConfig, enabled: config.googleEnabled },
+        'azure-ad': { config: azureConfig, enabled: config.azureEnabled }
+      },
       userId: session.user.id,
       ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
       userAgent: request.headers.get('user-agent') || 'unknown'

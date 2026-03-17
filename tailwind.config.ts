@@ -34,6 +34,9 @@ const config: Config = {
         '2xl': '2rem',    // 32px
         '3xl': '2.5rem',  // 40px
         '4xl': '3rem',    // 48px
+        'macos': '8px',
+        'macos-lg': '16px',
+        'macos-xl': '24px'
       },
       // Optimized font sizes
       fontSize: {
@@ -53,13 +56,54 @@ const config: Config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        supabase: {
+          black: 'var(--bg-default)',
+          dark: 'var(--bg-surface)',
+          border: 'var(--border-default)',
+          hover: 'var(--bg-surface-hover)',
+          text: {
+            main: 'var(--text-primary)',
+            muted: 'var(--text-muted)'
+          }
+        },
+        navy: {
+          start: '#1e40af',
+          end: '#3b82f6'
+        },
+        macos: {
+          blue: {
+            '50': '#1e293b',
+            '100': '#1e40af',
+            '500': '#3b82f6',
+            '600': '#2563eb',
+            '900': '#1e3a8a'
+          },
+          gray: {
+            '50': 'var(--bg-default)',
+            '100': 'var(--bg-surface)',
+            '200': 'var(--border-default)',
+            '300': 'var(--border-hover)',
+            '400': 'var(--text-muted)',
+            '500': 'var(--text-secondary)',
+            '800': 'var(--text-primary)',
+            '900': 'var(--text-primary)'
+          }
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          '50': '#1e293b',
+          '500': '#3b82f6',
+          '600': '#2563eb',
+          '700': '#1d4ed8',
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
+          '50': '#1c1917',
+          '500': '#a855f7',
+          '600': '#9333ea',
+          '700': '#7c3aed',
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -86,6 +130,21 @@ const config: Config = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        macos: '12px',
+        'macos-lg': '16px',
+        'macos-xl': '20px',
+      },
+      boxShadow: {
+        macos: '0 4px 20px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(0, 0, 0, 0.04)',
+        'macos-lg': '0 8px 32px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.06)',
+        'macos-xl': '0 12px 48px rgba(0, 0, 0, 0.16), 0 0 0 0.5px rgba(0, 0, 0, 0.08)',
+        'macos-inset': 'inset 0 1px 2px rgba(0, 0, 0, 0.1)',
+        'macos-focus': '0 0 0 3px rgba(13, 126, 255, 0.2)'
+      },
+      backdropBlur: {
+        xs: '2px',
+        macos: '20px',
+        'macos-lg': '40px'
       },
       keyframes: {
         "accordion-down": {
@@ -96,14 +155,55 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' }
+        },
+        fadeOut: {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' }
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(8px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' }
+        },
+        slideDown: {
+          '0%': { transform: 'translateY(-8px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' }
+        },
+        scaleIn: {
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' }
+        },
+        scaleOut: {
+          '0%': { transform: 'scale(1)', opacity: '1' },
+          '100%': { transform: 'scale(0.95)', opacity: '0' }
+        },
+        tooltip: {
+          '0%': { transform: 'translateY(4px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' }
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-1000px 0' },
+          '100%': { backgroundPosition: '1000px 0' }
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        'fade-in': 'fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        'fade-out': 'fadeOut 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        'slide-up': 'slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        'slide-down': 'slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        'scale-in': 'scaleIn 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        'scale-out': 'scaleOut 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        tooltip: 'tooltip 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        shimmer: 'shimmer 2s linear infinite'
       },
       fontFamily: {
         'thai': ['Prompt', 'sans-serif'],
-        'sans': ['Inter', 'SF Pro Display', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Open Sans', 'Helvetica Neue', 'sans-serif'],
+        'sans': ['"DM Sans"', '"IBM Plex Sans Thai"', 'Inter', 'SF Pro Display', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Open Sans', 'Helvetica Neue', 'sans-serif'],
+        'mono': ['"SF Mono"', 'Monaco', '"Cascadia Code"', '"Roboto Mono"', 'Consolas', '"Courier New"', 'monospace']
       },
     },
   },

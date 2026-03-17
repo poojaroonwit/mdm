@@ -745,11 +745,24 @@ export function ChatKitWrapper({
                 height: 100%;
                 /* Explicitly use the variable instead of inherit to ensure it works */
                 border-radius: var(--container-border-radius) !important;
-                overflow: hidden !important;
+                /* Allow overflow to show shadow */
+                overflow: visible !important;
                 transform: translateZ(0) !important;
-                -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
                 display: flex;
                 flex-direction: column;
+                box-shadow: var(--container-box-shadow) !important;
+            }
+            
+            /* Inner wrapper that actually clips to border radius */
+            #chatbot-content-wrapper {
+                width: 100%;
+                height: 100%;
+                border-radius: inherit;
+                overflow: hidden !important;
+                display: flex;
+                flex-direction: column;
+                background: inherit;
+                -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
             }
             
             /* Clean up iframes - remove any default borders */
@@ -760,23 +773,25 @@ export function ChatKitWrapper({
             }
           `}</style>
           
-          {/* Inner wrapper for strict clipping */}
+          {/* Inner wrapper for shadow and clipping */}
           <div id="chatbot-native-inner">
-            <ChatKitGlobalStyles chatbot={chatbot} chatkitOptions={chatkitOptions} />
-            <ChatKitStyleEnforcer chatbot={chatbot} containerRef={containerRef} isOpen={isOpen} />
+            <div id="chatbot-content-wrapper">
+              <ChatKitGlobalStyles chatbot={chatbot} chatkitOptions={chatkitOptions} />
+              <ChatKitStyleEnforcer chatbot={chatbot} containerRef={containerRef} isOpen={isOpen} />
 
-            <ChatKit
-                control={control}
-                style={{
-                width: '100%',
-                height: '100%',
-                border: 'none',
-                display: 'flex',
-                flexDirection: 'column',
-                flex: 1,
-                minHeight: 0,
-                }}
-            />
+              <ChatKit
+                  control={control}
+                  style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  flex: 1,
+                  minHeight: 0,
+                  }}
+              />
+            </div>
 
             {/* CSS transitions for animations */}
             <style>{`

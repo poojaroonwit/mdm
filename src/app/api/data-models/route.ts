@@ -6,6 +6,7 @@ import { handleApiError, requireAuth, requireAuthWithId, withErrorHandling } fro
 import { addSecurityHeaders } from '@/lib/security-headers'
 import { z } from 'zod'
 import { requireAnySpaceAccess } from '@/lib/space-access'
+import { createAuditLog } from '@/lib/audit'
 
 async function getHandler(request: NextRequest) {
   const startTime = Date.now()
@@ -145,32 +146,53 @@ async function postHandler(request: NextRequest) {
 
   // Check if user has access to all spaces
   const accessResult = await requireAnySpaceAccess(finalSpaceIds, session.user.id!)
-  if (!accessResult.success) return accessResult.response
-
-  // Create the data model with ID generation
-  const insertSql = `INSERT INTO public.data_models (id, name, description, created_by, is_active, sort_order)
-                       VALUES (gen_random_uuid(), $1, $2, $3, $4, $5) RETURNING *`
-  const { rows } = await query(insertSql, [
-    name,
-    description ?? null,
-    session.user.id,
-    true,
-    0
-  ])
-
-  const dataModel = rows[0]
-
-  // Associate the data model with all specified spaces
-  for (const spaceId of finalSpaceIds) {
-    await query(
-      'INSERT INTO public.data_model_spaces (id, data_model_id, space_id, created_at, updated_at) VALUES (gen_random_uuid(), $1, $2, NOW(), NOW())',
-      [dataModel.id, spaceId]
-    )
+  if (!accessResult.success) {
+    logger.warn('Access denied to one or more spaces', { userId: session.user.id, spaceIds: finalSpaceIds })
+    return accessResult.response
   }
 
-  const duration = Date.now() - startTime
-  logger.apiResponse('POST', '/api/data-models', 201, duration, { dataModelId: dataModel.id })
-  return NextResponse.json({ dataModel }, { status: 201 })
+  // Create the data model within a try-catch for better error reporting
+  try {
+    // Create the data model with ID generation
+    const insertSql = `INSERT INTO public.data_models (id, name, description, created_by, is_active, sort_order)
+                         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5) RETURNING *`
+    const { rows } = await query(insertSql, [
+      name,
+      description ?? null,
+      session.user.id,
+      true,
+      0
+    ])
+
+    const dataModel = rows[0]
+
+    // Associate the data model with all specified spaces
+    for (const spaceId of finalSpaceIds) {
+      await query(
+        'INSERT INTO public.data_model_spaces (id, data_model_id, space_id, created_at, updated_at) VALUES (gen_random_uuid(), $1, $2, NOW(), NOW())',
+        [dataModel.id, spaceId]
+      )
+    }
+
+    // Audit Log
+    await createAuditLog({
+      action: 'CREATE',
+      entityType: 'DataModel',
+      entityId: dataModel.id,
+      oldValue: null,
+      newValue: { ...dataModel, spaceIds: finalSpaceIds },
+      userId: session.user.id,
+      ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+      userAgent: request.headers.get('user-agent') || 'unknown'
+    })
+
+    const duration = Date.now() - startTime
+    logger.apiResponse('POST', '/api/data-models', 201, duration, { dataModelId: dataModel.id })
+    return NextResponse.json({ dataModel }, { status: 201 })
+  } catch (error: any) {
+    logger.error('Failed to create data model', error, { userId: session.user.id, name })
+    return handleApiError(error, 'POST /api/data-models')
+  }
 }
 
 export const POST = withErrorHandling(postHandler, 'POST /api/data-models')

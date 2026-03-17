@@ -107,7 +107,7 @@ export function getContainerStyle(
 
   const fullBoxShadow = (shadowBlur !== '0' || shadowX !== '0' || shadowY !== '0' || shadowSpread !== '0')
     ? `${shadowX}px ${shadowY}px ${shadowBlur}px ${shadowSpread}px ${shadowColor}`
-    : `0px 0px 4px 0px ${shadowColor}`
+    : `0px 4px 12px 0px ${shadowColor}`
 
   // Base background style from emulator config
   const backgroundStyle: React.CSSProperties = {}
