@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -98,6 +98,12 @@ export function SystemSettings() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [testResults, setTestResults] = useState<Record<string, 'success' | 'error' | 'pending' | null>>({})
+  const [activeTab, setActiveTab] = useState('general')
+  const [activeEmailTab, setActiveEmailTab] = useState('config')
+
+  // Refs for child components
+  const ssoRef = useRef<{ saveConfig: () => Promise<void> }>(null)
+  const emailTemplatesRef = useRef<{ handleSave: () => Promise<void> }>(null)
 
   useEffect(() => {
     loadSettings()
@@ -193,6 +199,32 @@ export function SystemSettings() {
       toast.error('Failed to save settings')
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const handleGlobalSave = async () => {
+    if (activeTab === 'sso') {
+      if (ssoRef.current) {
+        setIsSaving(true)
+        try {
+          await ssoRef.current.saveConfig()
+        } finally {
+          setIsSaving(false)
+        }
+      }
+    } else if (activeTab === 'email' && activeEmailTab === 'templates') {
+      if (emailTemplatesRef.current) {
+        setIsSaving(true)
+        try {
+          await emailTemplatesRef.current.handleSave()
+        } finally {
+          setIsSaving(false)
+        }
+      }
+    } else if (['general', 'appearance', 'database', 'email', 'security', 'features'].includes(activeTab)) {
+      // For email tab, if on 'config' sub-tab, it's part of general settings in this UI
+      // For integrations and storage, they have their own save buttons in dialogs/rows
+      await saveSettings()
     }
   }
 
@@ -332,7 +364,7 @@ export function SystemSettings() {
             Configure system-wide settings and preferences
           </p>
         </div>
-        <Button onClick={saveSettings} disabled={isSaving}>
+        <Button onClick={handleGlobalSave} disabled={isSaving}>
           {isSaving ? (
             <>
               <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -348,7 +380,7 @@ export function SystemSettings() {
       </div>
 
       <div className="w-full">
-        <Tabs defaultValue="general">
+        <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="inline-flex h-auto w-auto justify-start bg-transparent border-b border-border p-0 gap-6">
             <TabsTrigger
               value="general"
@@ -781,7 +813,7 @@ export function SystemSettings() {
           </TabsContent>
 
           <TabsContent value="email" className="space-y-6">
-            <Tabs defaultValue="config" className="w-full">
+            <Tabs defaultValue="config" value={activeEmailTab} onValueChange={setActiveEmailTab} className="w-full">
               <div className="flex items-center justify-between mb-4">
                 <TabsList>
                   <TabsTrigger value="config">Configuration</TabsTrigger>
@@ -871,7 +903,7 @@ export function SystemSettings() {
               <TabsContent value="templates">
                 <Card>
                   <CardContent className="p-6">
-                    <EmailTemplates />
+                    <EmailTemplates ref={emailTemplatesRef} hideHeader={true} />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -979,7 +1011,7 @@ export function SystemSettings() {
           </TabsContent>
 
           <TabsContent value="sso" className="space-y-6">
-            <SSOConfiguration />
+            <SSOConfiguration ref={ssoRef} hideHeader={true} />
           </TabsContent>
 
           <TabsContent value="features" className="space-y-6">
@@ -1088,11 +1120,11 @@ export function SystemSettings() {
           </TabsContent>
 
           <TabsContent value="integrations" className="space-y-6">
-            <SystemIntegrations />
+            <SystemIntegrations hideHeader={true} />
           </TabsContent>
 
           <TabsContent value="storage" className="space-y-6">
-            <StorageConnections />
+            <StorageConnections hideHeader={true} />
           </TabsContent>
         </Tabs>
       </div>

@@ -41,7 +41,11 @@ interface StorageConnection {
   updatedAt: string
 }
 
-export function StorageConnections() {
+interface StorageConnectionsProps {
+  hideHeader?: boolean
+}
+
+export function StorageConnections({ hideHeader = false }: StorageConnectionsProps) {
   const [connections, setConnections] = useState<StorageConnection[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [showDialog, setShowDialog] = useState(false)
@@ -162,21 +166,23 @@ export function StorageConnections() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <HardDrive className="h-6 w-6" />
-            Storage Connections
-          </h2>
-          <p className="text-muted-foreground">
-            Manage storage connections for MinIO, S3, SFTP, OneDrive, and Google Drive
-          </p>
+      {!hideHeader && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <HardDrive className="h-6 w-6" />
+              Storage Connections
+            </h2>
+            <p className="text-muted-foreground">
+              Manage storage connections for MinIO, S3, SFTP, OneDrive, and Google Drive
+            </p>
+          </div>
+          <Button onClick={openCreate}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Connection
+          </Button>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Connection
-        </Button>
-      </div>
+      )}
 
       <Card>
         <CardHeader>

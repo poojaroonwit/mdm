@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,7 +9,12 @@ import { Loader2, Mail, Save } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { NotificationTemplate } from '../types'
 
-export function EmailTemplates() {
+interface EmailTemplatesProps {
+  hideHeader?: boolean
+}
+
+export const EmailTemplates = forwardRef<{ handleSave: () => Promise<void> }, EmailTemplatesProps>((props, ref) => {
+  const { hideHeader = false } = props
   const [templates, setTemplates] = useState<NotificationTemplate[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<NotificationTemplate | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -70,6 +75,11 @@ export function EmailTemplates() {
     }
   }
 
+  // Expose the handleSave method to parent components
+  useImperativeHandle(ref, () => ({
+    handleSave
+  }))
+
   if (isLoading) {
     return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>
   }
@@ -107,10 +117,12 @@ export function EmailTemplates() {
                     <h3 className="text-lg font-medium">{selectedTemplate.name}</h3>
                     <p className="text-sm text-muted-foreground">Key: {selectedTemplate.key}</p>
                   </div>
-                  <Button onClick={handleSave} disabled={isSaving}>
-                    {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                    Save Changes
-                  </Button>
+                  {!hideHeader && (
+                    <Button onClick={handleSave} disabled={isSaving}>
+                      {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                      Save Changes
+                    </Button>
+                  )}
                </div>
                
                <div className="grid gap-4 flex-1 overflow-y-auto pr-2 pb-4">
@@ -160,4 +172,6 @@ export function EmailTemplates() {
       </div>
     </div>
   )
-}
+})
+
+EmailTemplates.displayName = 'EmailTemplates'

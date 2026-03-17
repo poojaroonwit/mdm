@@ -1,7 +1,7 @@
 services:
   app:
     container_name: mdm-app
-    image: nccgit.qsncc.com:5555/ba/unified-data-platform:1.0.2
+    image: nccgit.qsncc.com:5555/ba/unified-data-platform:1.0.3
     # # Build from local Dockerfile
     # build:
     #   context: .
@@ -9,7 +9,7 @@ services:
     #   args:
     #     BUILDKIT_INLINE_CACHE: 1
     ports:
-      - "8029:8029"
+      - '8029:8029'
     environment:
       - NODE_ENV=production
       - PORT=8029
@@ -62,10 +62,10 @@ services:
   # Plugin Hub Service
   plugin-hub:
     container_name: mdm-plugin-hub
-    image: nccgit.qsncc.com:5555/ba/unified-data-platform/plugin-hub:1.0.2
+    image: nccgit.qsncc.com:5555/ba/unified-data-platform/plugin-hub:1.0.3
 
     ports:
-      - "8629:3001"
+      - '8629:3001'
     environment:
       - NODE_ENV=production
       - PORT=3001
@@ -79,7 +79,7 @@ services:
       - mdm-network
 
     healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/api/plugins" ]
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:3001/api/plugins']
       interval: 30s
       timeout: 10s
       retries: 5
@@ -103,7 +103,7 @@ services:
       # Max rows per request (safety limit)
       PGRST_DB_MAX_ROWS: 1000
     ports:
-      - "8129:3000"
+      - '8129:3000'
     restart: unless-stopped
     networks:
       - mdm-network
@@ -113,7 +113,7 @@ services:
     container_name: mdm-vault
     image: hashicorp/vault:latest
     ports:
-      - "8529:8200"
+      - '8529:8200'
     environment:
       VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-dev-root-token}
       VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
@@ -131,13 +131,12 @@ services:
     # command: vault server -config=/vault/config/vault.hcl
     # and mount a config file
 
-
     # Redis (for rate limiting and caching in agent SDK)
   redis:
     container_name: mdm-redis
     image: redis:7-alpine
     ports:
-      - "8729:6379"
+      - '8729:6379'
     command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-redispassword}"
     volumes:
       - /var/dockers/8028/redis:/data
@@ -145,7 +144,7 @@ services:
     networks:
       - mdm-network
     healthcheck:
-      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redispassword}", "ping" ]
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD:-redispassword}', 'ping']
       interval: 10s
       timeout: 3s
       retries: 3

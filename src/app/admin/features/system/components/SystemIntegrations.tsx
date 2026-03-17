@@ -104,7 +104,11 @@ const SYSTEM_CONFIG_INTEGRATIONS: Omit<IntegrationConfig, 'id' | 'isConfigured' 
   }
 ]
 
-export function SystemIntegrations() {
+interface SystemIntegrationsProps {
+  hideHeader?: boolean
+}
+
+export function SystemIntegrations({ hideHeader = false }: SystemIntegrationsProps) {
   const [integrations, setIntegrations] = useState<IntegrationConfig[]>([])
   const [selectedIntegration, setSelectedIntegration] = useState<IntegrationConfig | null>(null)
   const [showConfigDialog, setShowConfigDialog] = useState(false)
@@ -445,18 +449,20 @@ export function SystemIntegrations() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">System Integrations</h3>
-          <p className="text-sm text-muted-foreground">
-            Configure system-level integrations (single instance per system)
-          </p>
+      {!hideHeader && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">System Integrations</h3>
+            <p className="text-sm text-muted-foreground">
+              Configure system-level integrations (single instance per system)
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={loadIntegrations} disabled={isLoading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={loadIntegrations} disabled={isLoading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
-      </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {integrations.map(integration => {

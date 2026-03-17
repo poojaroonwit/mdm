@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -20,7 +20,12 @@ import {
 import toast from 'react-hot-toast'
 import { SSOConfig } from '../types'
 
-export function SSOConfiguration() {
+interface SSOConfigurationProps {
+  hideHeader?: boolean
+}
+
+export const SSOConfiguration = forwardRef<{ saveConfig: () => Promise<void> }, SSOConfigurationProps>((props, ref) => {
+  const { hideHeader = false } = props
   const [config, setConfig] = useState<SSOConfig>({
     googleEnabled: false,
     azureEnabled: false,
@@ -91,6 +96,11 @@ export function SSOConfiguration() {
     }
   }
 
+  // Expose the saveConfig method to parent components
+  useImperativeHandle(ref, () => ({
+    saveConfig
+  }))
+
   if (isLoading) {
     return (
       <div className="text-center py-12">
@@ -102,30 +112,32 @@ export function SSOConfiguration() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Shield className="h-6 w-6" />
-            SSO Configuration
-          </h2>
-          <p className="text-muted-foreground">
-            Configure Single Sign-On (SSO) providers for authentication
-          </p>
+      {!hideHeader && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <Shield className="h-6 w-6" />
+              SSO Configuration
+            </h2>
+            <p className="text-muted-foreground">
+              Configure Single Sign-On (SSO) providers for authentication
+            </p>
+          </div>
+          <Button onClick={saveConfig} disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save Configuration
+              </>
+            )}
+          </Button>
         </div>
-        <Button onClick={saveConfig} disabled={isSaving}>
-          {isSaving ? (
-            <>
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="h-4 w-4 mr-2" />
-              Save Configuration
-            </>
-          )}
-        </Button>
-      </div>
+      )}
 
       {/* Google SSO */}
       <Card>
@@ -256,4 +268,6 @@ export function SSOConfiguration() {
 
     </div>
   )
-}
+})
+
+SSOConfiguration.displayName = 'SSOConfiguration'
