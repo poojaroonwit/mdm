@@ -702,7 +702,7 @@ export function ChatKitWrapper({
         <div
           id="chatbot-native-container"
           ref={containerRef}
-          className={`chatkit-embedded-container ${(deploymentType === 'popover' || deploymentType === 'popup-center') ? 'chatbot-popover-enter' : ''}`}
+          className={`chatkit-embedded-container ${((deploymentType === 'popover' || deploymentType === 'popup-center') && !isMobile) ? 'chatbot-popover-enter' : ''}`}
           style={{
             ...containerStyle,
             '--container-border-radius': useChatKitInRegularStyle ? '0px' : (containerStyle.borderRadius || '8px'),

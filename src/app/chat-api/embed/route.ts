@@ -565,7 +565,7 @@ export async function GET(request: NextRequest) {
     var chatWindow = document.createElement('div');
     chatWindow.id = 'chatbot-window-' + chatbotId;
     // Fix: Add pointer-events: auto
-    chatWindow.style.cssText = 'position: fixed; ' + chatWindowPositionMobile + ' width: ' + chatWindowWidth + '; height: ' + chatWindowHeight + '; ' + chatBgStyle + 'border-radius: ' + chatWindowBorderRadius + '; box-shadow: 0 0 ' + chatWindowShadowBlur + ' ' + chatWindowShadowColor + '; border: ' + borderWidth + ' solid ' + borderColor + '; font-family: ' + (chatKitFontFamily || chatbot.fontFamily || 'Inter') + '; font-size: ' + (chatKitFontSize || chatbot.fontSize || '14px') + '; color: ' + (chatKitTextColor || chatbot.fontColor || '#000000') + '; display: none; flex-direction: column; z-index: ' + (widgetConfig.zIndex >= ${Z_INDEX.chatWidget} ? widgetConfig.zIndex + 1 : ${Z_INDEX.chatWidgetWindow}) + '; transition: opacity 0.3s ease, transform 0.3s ease; opacity: 0; transform: ' + (currentBaseChatTransform !== 'none' ? currentBaseChatTransform + ' scale(0.9)' : 'scale(0.9)') + '; pointer-events: auto;';
+    chatWindow.style.cssText = 'position: fixed; ' + chatWindowPositionMobile + ' width: ' + chatWindowWidth + '; height: ' + chatWindowHeight + '; ' + chatBgStyle + 'border-radius: ' + chatWindowBorderRadius + '; box-shadow: 0 0 ' + chatWindowShadowBlur + ' ' + chatWindowShadowColor + '; border: ' + borderWidth + ' solid ' + borderColor + '; font-family: ' + (chatKitFontFamily || chatbot.fontFamily || 'Inter') + '; font-size: ' + (chatKitFontSize || chatbot.fontSize || '14px') + '; color: ' + (chatKitTextColor || chatbot.fontColor || '#000000') + '; display: none; flex-direction: column; z-index: ' + (widgetConfig.zIndex >= ${Z_INDEX.chatWidget} ? widgetConfig.zIndex + 1 : ${Z_INDEX.chatWidgetWindow}) + '; transition: opacity 0.3s ease, transform 0.3s ease; opacity: 0; transform: ' + (currentBaseChatTransform !== 'none' ? currentBaseChatTransform + ' scale(0.9)' : (isMobile ? 'translateY(20px)' : 'scale(0.9)')) + '; pointer-events: auto;';
     
     // Event listener for closing the chat via postMessage from the iframe
     window.addEventListener('message', function(event) {
@@ -710,7 +710,7 @@ export async function GET(request: NextRequest) {
 
       setTimeout(function() {
         chatWindow.style.opacity = '1';
-        chatWindow.style.transform = 'scale(1)';
+        chatWindow.style.transform = isMobile ? 'translateY(0)' : (currentBaseChatTransform !== 'none' ? currentBaseChatTransform + ' scale(1)' : 'scale(1)');
       }, 10);
       
       // Hide badge when chat is open
@@ -751,7 +751,7 @@ export async function GET(request: NextRequest) {
       button.innerHTML = originalButtonHTML;
 
       chatWindow.style.opacity = '0';
-      chatWindow.style.transform = 'scale(0.9)';
+      chatWindow.style.transform = isMobile ? 'translateY(20px)' : (currentBaseChatTransform !== 'none' ? currentBaseChatTransform + ' scale(0.9)' : 'scale(0.9)');
       setTimeout(function() {
         chatWindow.style.display = 'none';
       }, 300);
