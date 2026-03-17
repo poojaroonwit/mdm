@@ -152,7 +152,6 @@ async function postHandler(request: NextRequest) {
                        VALUES (gen_random_uuid(), $1, $2, $3, $4, $5) RETURNING *`
   const { rows } = await query(insertSql, [
     name,
-    finalDisplayName || name,
     description ?? null,
     session.user.id,
     true,
