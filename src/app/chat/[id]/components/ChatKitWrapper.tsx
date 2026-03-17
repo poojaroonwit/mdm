@@ -733,7 +733,7 @@ export function ChatKitWrapper({
                 max-width: var(--container-max-width) !important;
                 min-height: var(--container-min-height) !important;
                 min-width: var(--container-min-width) !important;
-                box-shadow: var(--container-box-shadow) !important;
+                /* Removed box-shadow here, moved to inner container */
                 
                 /* Explicitly allow overflow so shadow is visible */
                 overflow: visible !important;
@@ -753,6 +753,7 @@ export function ChatKitWrapper({
                 display: flex;
                 flex-direction: column;
                 background: inherit;
+                box-shadow: var(--container-box-shadow) !important;
             }
             
             /* Inner wrapper that actually clips to border radius */
