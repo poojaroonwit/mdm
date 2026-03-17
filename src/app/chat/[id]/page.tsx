@@ -72,6 +72,8 @@ export default function ChatPage() {
   const [isMobile, setIsMobile] = useState(false)
   // Use ref to track isMobile for resize effect without causing re-runs
   const isMobileRef = useRef(false)
+  // Store the latest width from parent-viewport message to survive resizes/re-renders
+  const latestParentWidthRef = useRef<number | null>(null)
 
   const [showGetStarted, setShowGetStarted] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -99,8 +101,15 @@ export default function ChatPage() {
       // The embed script passes the parent's window.innerWidth as ?pw=<n> for accuracy.
       let width: number
       if (isEmbed && !isPreview) {
-        const pw = parentWidthParam !== null ? parseInt(parentWidthParam, 10) : NaN
-        width = !isNaN(pw) ? pw : window.screen.width
+        // Priority: Latest postMessage width > Initial URL param > window.screen.width
+        const latestPw = latestParentWidthRef.current
+        const initialPw = parentWidthParam !== null ? parseInt(parentWidthParam, 10) : NaN
+        
+        if (latestPw !== null && !isNaN(latestPw)) {
+          width = latestPw
+        } else {
+          width = !isNaN(initialPw) ? initialPw : window.screen.width
+        }
       } else {
         width = window.innerWidth
       }
@@ -566,7 +575,9 @@ export default function ChatPage() {
         // Parent embed script reports its viewport width (sent on load and resize).
         // Use this to keep mobile detection accurate when the iframe itself is small.
         if (data.type === 'parent-viewport' && isEmbed) {
-          const mobile = (data.width as number) < 1024
+          const newWidth = data.width as number
+          latestParentWidthRef.current = newWidth
+          const mobile = newWidth < 1024
           if (mobile !== isMobileRef.current) {
             setIsMobile(mobile)
             isMobileRef.current = mobile
