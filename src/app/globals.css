@@ -344,3 +344,7 @@ html.chat-embed-mode body {
   background-color: var(--primary-blue-light);
   color: var(--primary-blue);
 }
+
+.card-compliance {
+  border: 2px solid #10b981 !important;
+}

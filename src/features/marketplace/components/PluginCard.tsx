@@ -17,10 +17,7 @@ export interface PluginCardProps {
 export function PluginCard({ plugin, onInstall, onUninstall, installing = false, installed = false }: PluginCardProps) {
   const isCompliance = plugin.isCompliance || !!plugin.securityAudit
   return (
-    <Card
-      className="hover:shadow-md transition-shadow"
-      style={isCompliance ? { border: '2px solid #10b981' } : undefined}
-    >
+    <Card className={`hover:shadow-md transition-shadow ${isCompliance ? 'card-compliance' : ''}`}>
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
