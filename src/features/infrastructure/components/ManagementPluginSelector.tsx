@@ -54,7 +54,7 @@ export function ManagementPluginSelector({
           {compatiblePlugins.map((plugin) => (
             <Card
               key={plugin.id}
-              className={service.managementPluginId === plugin.id ? 'border-primary' : ''}
+              className={`${service.managementPluginId === plugin.id ? 'border-primary' : ''} ${plugin.isCompliance || plugin.securityAudit ? 'card-compliance' : ''}`}
             >
               <CardHeader>
                 <div className="flex items-start justify-between">

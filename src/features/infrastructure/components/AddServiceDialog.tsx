@@ -320,7 +320,7 @@ export function AddServiceDialog({
                 {filteredPlugins.map((plugin) => (
                   <Card
                     key={plugin.id}
-                    className="cursor-pointer hover:shadow-lg transition-shadow"
+                    className={`cursor-pointer hover:shadow-lg transition-shadow ${plugin.isCompliance || plugin.securityAudit ? 'card-compliance' : ''}`}
                     onClick={() => handlePluginSelect(plugin)}
                   >
                     <CardHeader>

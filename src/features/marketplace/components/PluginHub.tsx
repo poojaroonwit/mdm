@@ -229,7 +229,7 @@ export function PluginHub() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredPlugins.map((plugin) => (
-            <Card key={plugin.id} className="hover:shadow-lg transition-shadow">
+            <Card key={plugin.id} className={`hover:shadow-lg transition-shadow ${plugin.isCompliance || plugin.securityAudit ? 'card-compliance' : ''}`}>
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
