@@ -5,7 +5,7 @@ import type { SectionProps } from './types'
 
 export function FooterSection({ formData, setFormData, chatkitOptions }: SectionProps) {
   return (
-    <AccordionItem value="footer" className="border-b px-4">
+    <AccordionItem value="footer" className="border-b border-border/50 px-4">
       <AccordionTrigger className="text-lg font-semibold hover:no-underline">
         Footer
       </AccordionTrigger>

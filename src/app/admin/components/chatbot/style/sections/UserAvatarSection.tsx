@@ -18,7 +18,7 @@ interface UserAvatarSectionProps {
 
 export function UserAvatarSection({ formData, setFormData }: UserAvatarSectionProps) {
   return (
-    <AccordionItem value="user-avatar" className="border-b px-4">
+    <AccordionItem value="user-avatar" className="border-b border-border/50 px-4">
       <AccordionTrigger className="text-lg font-semibold hover:no-underline">
         User Avatar
       </AccordionTrigger>

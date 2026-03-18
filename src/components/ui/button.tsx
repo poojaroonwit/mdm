@@ -25,7 +25,7 @@ export const Button = forwardRef<HTMLButtonElement | HTMLSpanElement, ButtonProp
     const variantStyles = {
       primary: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm border border-transparent',
       secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm border border-transparent',
-      outline: 'bg-transparent text-foreground border border-input hover:bg-accent hover:text-accent-foreground',
+      outline: 'bg-transparent text-foreground border border-input/50 hover:bg-accent hover:text-accent-foreground',
       ghost: 'bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground border border-transparent',
       danger: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm border border-transparent',
       warning: 'bg-yellow-500 text-white hover:bg-yellow-600 shadow-sm border border-transparent',

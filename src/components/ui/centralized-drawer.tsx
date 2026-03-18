@@ -45,7 +45,7 @@ export function CentralizedDrawer({
                 floating={floating}
                 floatingMargin={floatingMargin}
             >
-                <DrawerHeader className="border-b border-border sticky top-0 bg-background z-10 flex-shrink-0">
+                <DrawerHeader className="border-b border-border/50 sticky top-0 bg-background z-10 flex-shrink-0">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             {Icon && <Icon className="h-5 w-5" />}

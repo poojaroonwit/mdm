@@ -7,7 +7,7 @@ import { FormRow, FormSection } from '../components/FormRow'
 
 export function EntitiesSection({ formData, setFormData, chatkitOptions }: SectionProps) {
   return (
-    <AccordionItem value="entities" className="border-b px-4">
+    <AccordionItem value="entities" className="border-b border-border/50 px-4">
       <AccordionTrigger className="text-lg font-semibold hover:no-underline">
         Entities (Tags & Mentions)
       </AccordionTrigger>

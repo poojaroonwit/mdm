@@ -411,7 +411,7 @@ export function PlatformSidebar({
                   return (
                     <div key={groupId}>
                       {isDataManagement && index > 0 && (
-                        <div className="border-t border-border my-1 mx-2" />
+                        <div className="border-t border-border/50 my-1 mx-2" />
                       )}
                       <Button
                         variant="ghost"
@@ -461,7 +461,7 @@ export function PlatformSidebar({
                   return (
                     <div key={groupId}>
                       {isDataManagement && (
-                        <div className="border-t border-border my-2 mx-4" />
+                        <div className="border-t border-border/50 my-2 mx-4" />
                       )}
                       <Button
                         variant="ghost"
@@ -524,7 +524,7 @@ export function PlatformSidebar({
 
                 {/* Group Header Label */}
                 {selectedGroup && groupMetadata[selectedGroup] && (
-                  <div className="px-4 py-3 border-b border-border mb-2">
+                  <div className="px-4 py-3 border-b border-border/50 mb-2">
                     <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'inherit' }}>
                       {(() => {
                         const Icon = groupMetadata[selectedGroup].icon
@@ -576,7 +576,7 @@ export function PlatformSidebar({
                           ))}
                         </div>
                         {sectionIndex < Object.entries(activeGroupSections).length - 1 && (
-                          <div className="border-t border-border my-2 mx-0" />
+                          <div className="border-t border-border/50 my-2 mx-0" />
                         )}
                       </div>
                     )
@@ -596,7 +596,7 @@ export function PlatformSidebar({
       {/* GCP-style Footer */}
       {mode === 'primary' && onToggleCollapse && (
         <div
-          className={`px-4 py-3 border-t border-border bg-background ${collapsed ? 'px-2' : ''}`}
+          className={`px-4 py-3 border-t border-border/50 bg-background ${collapsed ? 'px-2' : ''}`}
           style={{ pointerEvents: 'auto' }}
         >
           {collapsed ? (

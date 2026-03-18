@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import * as Icons from 'lucide-react'
 import type { Chatbot } from '../types'
@@ -22,27 +21,6 @@ export function RegularStyleConfig({ formData, setFormData }: RegularStyleConfig
   const isOpenAIAgentSDK = engineType === 'openai-agent-sdk'
   const chatkitOptions = (formData as any).chatkitOptions || {}
   
-  // Ensure all borders use light theme color
-  useEffect(() => {
-    const styleId = 'chatbot-style-border-fix'
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement('style')
-      style.id = styleId
-      style.textContent = `
-        /* Ensure all borders in style config use light theme color */
-        [class*="border-b"]:not([class*="border-black"]):not([class*="border-blue"]):not([class*="border-green"]):not([class*="border-red"]):not([class*="border-yellow"]):not([class*="border-purple"]):not([class*="border-pink"]):not([class*="border-orange"]):not([class*="border-amber"]) {
-          border-color: hsl(var(--border)) !important;
-        }
-        [class*="border"]:not([class*="border-black"]):not([class*="border-blue"]):not([class*="border-green"]):not([class*="border-red"]):not([class*="border-yellow"]):not([class*="border-purple"]):not([class*="border-pink"]):not([class*="border-orange"]):not([class*="border-amber"]):not([class*="border-current"]) {
-          border-color: hsl(var(--border)) !important;
-        }
-        [class*="divide"] {
-          border-color: hsl(var(--border)) !important;
-        }
-      `
-      document.head.appendChild(style)
-    }
-  }, [])
 
   return (
     <div className="w-full">

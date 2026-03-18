@@ -704,7 +704,7 @@ export function ChatKitWrapper({
           ref={containerRef}
           className={`chatkit-embedded-container ${((deploymentType === 'popover' || deploymentType === 'popup-center') && !isMobile) ? 'chatbot-popover-enter' : ''}`}
           style={{
-            ...containerStyle,
+            ...(useChatKitInRegularStyle ? { flex: 1, minHeight: 0 } : containerStyle),
             '--container-border-radius': useChatKitInRegularStyle ? '0px' : (containerStyle.borderRadius || '8px'),
             '--container-border': useChatKitInRegularStyle ? 'none' : (containerStyle.border || 'none'),
             '--container-outline': useChatKitInRegularStyle ? 'none' : (containerStyle.outline || 'none'),
@@ -715,6 +715,7 @@ export function ChatKitWrapper({
             '--container-min-height': useChatKitInRegularStyle ? '0' : (containerStyle.minHeight || '0'),
             '--container-min-width': useChatKitInRegularStyle ? '0' : (containerStyle.minWidth || '0'),
             '--container-box-shadow': useChatKitInRegularStyle ? 'none' : (containerStyle.boxShadow || 'none'),
+            '--container-overflow': useChatKitInRegularStyle ? 'hidden' : 'visible',
             zIndex: (deploymentType === 'popover' || deploymentType === 'popup-center')
               ? (chatbot as any).widgetZIndex || Z_INDEX.chatWidgetWindow
               : undefined,
@@ -735,8 +736,8 @@ export function ChatKitWrapper({
                 min-width: var(--container-min-width) !important;
                 /* Removed box-shadow here, moved to inner container */
                 
-                /* Explicitly allow overflow so shadow is visible */
-                overflow: visible !important;
+                /* Allow overflow so shadow is visible; hidden in regular-style mode to prevent header overlap */
+                overflow: var(--container-overflow, visible) !important;
             }
 
             /* Inner container handles clipping */
@@ -747,8 +748,8 @@ export function ChatKitWrapper({
                 padding: 0 !important;
                 /* Explicitly use the variable instead of inherit to ensure it works */
                 border-radius: var(--container-border-radius) !important;
-                /* Allow overflow to show shadow */
-                overflow: visible !important;
+                /* Allow overflow to show shadow; hidden in regular-style mode */
+                overflow: var(--container-overflow, visible) !important;
                 display: flex;
                 flex-direction: column;
                 background: inherit;

@@ -364,7 +364,7 @@ export default function ChatEmbedUIPage() {
     if (isEditing) {
         return (
             <div className="flex flex-col h-full bg-background overflow-hidden">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 shrink-0">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" onClick={() => setIsEditing(false)}>
                             <ArrowLeft className="h-4 w-4" />
@@ -436,7 +436,7 @@ export default function ChatEmbedUIPage() {
                 </div>
 
                 <div className="flex-1 flex overflow-hidden">
-                    <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 min-w-[500px] border-r border-border">
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 min-w-[500px] border-r border-border/50">
                         <ChatbotEditor
                             formData={editorFormData}
                             setFormData={setEditorFormData}

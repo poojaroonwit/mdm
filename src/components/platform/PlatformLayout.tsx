@@ -447,7 +447,7 @@ export function PlatformLayout({
         <div className="flex flex-shrink-0">
           {/* Primary Sidebar - Groups */}
           <div
-            className={`transition-all duration-150 ease-in-out ${sidebarCollapsed ? 'w-16' : 'w-52'} flex-shrink-0 border-r border-border`}
+            className={`transition-all duration-150 ease-in-out ${sidebarCollapsed ? 'w-16' : 'w-52'} flex-shrink-0 border-r border-border/50`}
             data-sidebar="primary"
             style={{
               position: 'relative',
@@ -493,7 +493,7 @@ export function PlatformLayout({
           {/* Show secondary sidebar when hovering over a group or when a group is selected */}
           {showSpaceSidebar ? (
             <div
-              className={`${secondarySidebarCollapsed ? 'w-0' : 'w-56'} flex-shrink-0 transition-all duration-150 ease-in-out overflow-hidden border-r border-border`}
+              className={`${secondarySidebarCollapsed ? 'w-0' : 'w-56'} flex-shrink-0 transition-all duration-150 ease-in-out overflow-hidden border-r border-border/50`}
               data-sidebar="secondary"
               style={{
                 position: 'relative',
@@ -516,7 +516,7 @@ export function PlatformLayout({
             </div>
           ) : showSpaceSettingsSidebar ? (
             <div
-              className={`${secondarySidebarCollapsed ? 'w-0' : 'w-56'} flex-shrink-0 transition-all duration-150 ease-in-out overflow-hidden border-r border-border`}
+              className={`${secondarySidebarCollapsed ? 'w-0' : 'w-56'} flex-shrink-0 transition-all duration-150 ease-in-out overflow-hidden border-r border-border/50`}
               data-sidebar="secondary"
               style={{
                 position: 'relative',
@@ -544,7 +544,7 @@ export function PlatformLayout({
             </div>
           ) : displayGroup && displayGroup !== '' && (
             <div
-              className={`${secondarySidebarCollapsed ? 'w-0' : 'w-56'} flex-shrink-0 transition-all duration-150 ease-in-out overflow-hidden border-r border-border`}
+              className={`${secondarySidebarCollapsed ? 'w-0' : 'w-56'} flex-shrink-0 transition-all duration-150 ease-in-out overflow-hidden border-r border-border/50`}
               data-sidebar="secondary"
               style={{
                 position: 'relative',
@@ -597,7 +597,7 @@ export function PlatformLayout({
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Breadcrumb Bar */}
-          <div className="h-10 bg-background flex items-center justify-between px-4 border-b border-border">
+          <div className="h-10 bg-background flex items-center justify-between px-4 border-b border-border/50 tracking-tight">
             <div className="flex items-center gap-2 text-sm flex-1 min-w-0">
               <nav aria-label="Breadcrumb" className="truncate text-muted-foreground min-w-0">
                 <ol className="flex items-center space-x-2">

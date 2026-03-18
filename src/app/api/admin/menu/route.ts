@@ -20,9 +20,9 @@ async function getHandler(request: NextRequest) {
             orderBy: { priority: 'asc' },
             include: {
                 items: {
-                    where: { 
+                    where: {
                         isVisible: true,
-                        slug: { not: 'themes' }
+                        slug: { notIn: ['themes', 'integrations', 'api', 'performance'] }
                     },
                     orderBy: { priority: 'asc' },
                 },

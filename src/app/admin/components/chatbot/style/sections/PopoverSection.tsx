@@ -28,7 +28,7 @@ export function PopoverSection({ formData, setFormData, chatkitOptions }: Sectio
         value={openItem}
         onValueChange={(val) => setOpenItem(val as string)}
       >
-        <AccordionItem value="position-spacing" className="border-b px-4">
+        <AccordionItem value="position-spacing" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             <div className="flex items-center gap-2">
               <Move className="h-4 w-4" />
@@ -91,7 +91,7 @@ export function PopoverSection({ formData, setFormData, chatkitOptions }: Sectio
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="container-size" className="border-b px-4">
+        <AccordionItem value="container-size" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             <div className="flex items-center gap-2">
               <Maximize className="h-4 w-4" />
@@ -128,7 +128,7 @@ export function PopoverSection({ formData, setFormData, chatkitOptions }: Sectio
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="container-border" className="border-b px-4">
+        <AccordionItem value="container-border" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             <div className="flex items-center gap-2">
               <div className="h-4 w-4 border border-current rounded-sm" />
@@ -175,7 +175,7 @@ export function PopoverSection({ formData, setFormData, chatkitOptions }: Sectio
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="z-index" className="border-b px-4">
+        <AccordionItem value="z-index" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             <div className="flex items-center gap-2">
               <Layers className="h-4 w-4" />
@@ -198,7 +198,7 @@ export function PopoverSection({ formData, setFormData, chatkitOptions }: Sectio
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="shadow" className="border-b px-4">
+        <AccordionItem value="shadow" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             <div className="flex items-center gap-2">
               <Sun className="h-4 w-4" />
@@ -234,7 +234,7 @@ export function PopoverSection({ formData, setFormData, chatkitOptions }: Sectio
         </AccordionItem>
 
         {/* Basic Theme Settings */}
-        <AccordionItem value="basic-settings" className="border-b px-4">
+        <AccordionItem value="basic-settings" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             Basic Settings
           </AccordionTrigger>
@@ -318,7 +318,7 @@ export function PopoverSection({ formData, setFormData, chatkitOptions }: Sectio
         </AccordionItem>
 
         {/* Colors Section */}
-        <AccordionItem value="colors" className="border-b px-4">
+        <AccordionItem value="colors" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             Colors
           </AccordionTrigger>
@@ -556,7 +556,7 @@ export function PopoverSection({ formData, setFormData, chatkitOptions }: Sectio
         </AccordionItem>
 
         {/* Typography Section */}
-        <AccordionItem value="typography" className="border-b-0 px-4">
+        <AccordionItem value="typography" className="border-b-0 border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             Typography
           </AccordionTrigger>

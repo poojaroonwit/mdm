@@ -109,7 +109,7 @@ export function EmulatorConfigDrawer({
       </div>
 
       {/* Footer with Save/Cancel buttons */}
-      <div className="border-t p-4 flex justify-end gap-2 bg-background sticky bottom-0">
+      <div className="border-t border-border/50 p-4 flex justify-end gap-2 bg-background sticky bottom-0">
         <Button variant="outline" onClick={handleCancel}>
           Cancel
         </Button>

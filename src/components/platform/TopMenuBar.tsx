@@ -93,9 +93,9 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
     })
   }, [])
 
-  // Use branding config if available, otherwise use props
-  const displayName = branding?.applicationName || applicationName
-  const displayLogo = branding?.applicationLogo || logoUrl
+  // Use branding config if available, then system settings, then props
+  const displayName = branding?.applicationName || settings.siteName || applicationName
+  const displayLogo = branding?.applicationLogo || settings.logoUrl || logoUrl
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/auth/signin' })

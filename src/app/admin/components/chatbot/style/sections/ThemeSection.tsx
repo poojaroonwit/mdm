@@ -22,7 +22,7 @@ export function ThemeSection({ formData, setFormData, chatkitOptions }: SectionP
         onValueChange={(val) => setOpenItem(val as string)}
       >
         {/* Basic Theme Settings */}
-        <AccordionItem value="basic-settings" className="border-b px-4">
+        <AccordionItem value="basic-settings" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             Basic Settings
           </AccordionTrigger>
@@ -106,7 +106,7 @@ export function ThemeSection({ formData, setFormData, chatkitOptions }: SectionP
         </AccordionItem>
 
         {/* Colors Section */}
-        <AccordionItem value="colors" className="border-b px-4">
+        <AccordionItem value="colors" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             Colors
           </AccordionTrigger>
@@ -344,7 +344,7 @@ export function ThemeSection({ formData, setFormData, chatkitOptions }: SectionP
         </AccordionItem>
 
         {/* Typography Section */}
-        <AccordionItem value="typography" className="border-b-0 px-4">
+        <AccordionItem value="typography" className="border-b-0 border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             Typography
           </AccordionTrigger>

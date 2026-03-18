@@ -546,8 +546,9 @@ export function ColorPickerPopover({
 
   const swatchStyle = React.useMemo(() => getSwatchStyle(actualColor), [actualColor])
 
-  // Callback ref to apply size styles immediately when button is mounted
-  // The useEffect will handle background colors/styles when swatchStyle is ready
+  // Callback ref to apply size and background styles immediately when button is mounted.
+  // swatchStyle is included as a dependency so React re-calls this with the fresh button
+  // element whenever the color changes, keeping the swatch in sync.
   const solidColorSwatchButtonRefCallback = React.useCallback((button: HTMLButtonElement | null) => {
     solidColorSwatchButtonRef.current = button
     if (!button) return
@@ -567,7 +568,37 @@ export function ColorPickerPopover({
     button.style.setProperty('border-width', '0', 'important')
     button.style.setProperty('border-radius', '0', 'important')
     button.style.setProperty('box-sizing', 'border-box', 'important')
-  }, [])
+
+    // Apply background/swatch styles immediately so the color shows on first open
+    button.style.removeProperty('background')
+    button.style.removeProperty('background-color')
+    button.style.removeProperty('background-image')
+    button.style.removeProperty('background-size')
+    button.style.removeProperty('background-position')
+    button.style.removeProperty('background-repeat')
+
+    if (swatchStyle.background) {
+      button.style.setProperty('background', String(swatchStyle.background), 'important')
+    } else {
+      if (swatchStyle.backgroundColor) {
+        button.style.setProperty('background-color', swatchStyle.backgroundColor, 'important')
+      } else {
+        button.style.setProperty('background-color', '#e5e5e5', 'important')
+      }
+      if (swatchStyle.backgroundImage) {
+        button.style.setProperty('background-image', swatchStyle.backgroundImage, 'important')
+      }
+      if (swatchStyle.backgroundSize) {
+        button.style.setProperty('background-size', String(swatchStyle.backgroundSize), 'important')
+      }
+      if (swatchStyle.backgroundPosition) {
+        button.style.setProperty('background-position', String(swatchStyle.backgroundPosition), 'important')
+      }
+      if (swatchStyle.backgroundRepeat) {
+        button.style.setProperty('background-repeat', swatchStyle.backgroundRepeat, 'important')
+      }
+    }
+  }, [swatchStyle])
 
   // Calculate proper padding: button width (20px) + left offset (4px) + gap (6px) = 30px
   // Using 6px gap to ensure no overlap (same as ColorInput)

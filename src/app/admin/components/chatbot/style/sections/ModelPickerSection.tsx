@@ -7,7 +7,7 @@ import { FormRow, FormSection } from '../components/FormRow'
 
 export function ModelPickerSection({ formData, setFormData, chatkitOptions }: SectionProps) {
   return (
-    <AccordionItem value="modelPicker" className="border-b px-4">
+    <AccordionItem value="modelPicker" className="border-b border-border/50 px-4">
       <AccordionTrigger className="text-lg font-semibold hover:no-underline">
         Model Picker
       </AccordionTrigger>

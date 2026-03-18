@@ -374,7 +374,7 @@ export function OpenAIAgentSDKAdvancedFeatures({ chatbot }: OpenAIAgentSDKAdvanc
     <div className="w-full space-y-0">
       <Accordion type="multiple">
       {/* Custom Functions Accordion */}
-      <AccordionItem value="custom-functions" className="border-b px-4">
+      <AccordionItem value="custom-functions" className="border-b border-border/50 px-4">
         <AccordionTrigger className="text-lg font-semibold hover:no-underline">
           <div className="flex items-center gap-2">
             <Code className="h-4 w-4" />
@@ -556,7 +556,7 @@ export function OpenAIAgentSDKAdvancedFeatures({ chatbot }: OpenAIAgentSDKAdvanc
       </AccordionItem>
 
       {/* Multi-Agent Accordion */}
-      <AccordionItem value="multi-agent" className="border-b px-4">
+      <AccordionItem value="multi-agent" className="border-b border-border/50 px-4">
         <AccordionTrigger className="text-lg font-semibold hover:no-underline">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4" />
@@ -613,7 +613,7 @@ export function OpenAIAgentSDKAdvancedFeatures({ chatbot }: OpenAIAgentSDKAdvanc
       </AccordionItem>
 
       {/* Lifecycle Hooks Accordion */}
-      <AccordionItem value="lifecycle-hooks" className="border-b px-4">
+      <AccordionItem value="lifecycle-hooks" className="border-b border-border/50 px-4">
         <AccordionTrigger className="text-lg font-semibold hover:no-underline">
           <div className="flex items-center gap-2">
             <HookIcon className="h-4 w-4" />
@@ -778,7 +778,7 @@ export function OpenAIAgentSDKAdvancedFeatures({ chatbot }: OpenAIAgentSDKAdvanc
       </AccordionItem>
 
       {/* Connectors Accordion */}
-      <AccordionItem value="connectors" className="border-b px-4">
+      <AccordionItem value="connectors" className="border-b border-border/50 px-4">
         <AccordionTrigger className="text-lg font-semibold hover:no-underline">
           <div className="flex items-center gap-2">
             <Plug className="h-4 w-4" />
@@ -889,7 +889,7 @@ export function OpenAIAgentSDKAdvancedFeatures({ chatbot }: OpenAIAgentSDKAdvanc
       </AccordionItem>
 
       {/* Agent Loop Accordion */}
-      <AccordionItem value="agent-loop" className="border-b px-4">
+      <AccordionItem value="agent-loop" className="border-b border-border/50 px-4">
         <AccordionTrigger className="text-lg font-semibold hover:no-underline">
           <div className="flex items-center gap-2">
             <Settings className="h-4 w-4" />

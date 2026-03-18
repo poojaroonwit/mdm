@@ -14,7 +14,7 @@ import {
   PanelTop,
   CircleDot
 } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import type { Chatbot } from '../types'
 import type { ChatbotConfig } from '@/app/chat/[id]/types'
 import {
@@ -36,7 +36,7 @@ interface ChatKitStyleConfigProps {
 // Wrapper for section content to ensure consistent styling
 const SectionWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="w-full bg-white dark:bg-card rounded-lg border shadow-sm p-0 overflow-hidden">
+    <div className="w-full bg-white dark:bg-card rounded-lg border border-border/50 shadow-sm p-0 overflow-hidden">
       {children}
     </div>
   )
@@ -45,28 +45,6 @@ const SectionWrapper = ({ children }: { children: React.ReactNode }) => {
 export function ChatKitStyleConfig({ formData, setFormData, chatkitOptions }: ChatKitStyleConfigProps) {
   const [activeTab, setActiveTab] = useState('popover')
   
-  // Ensure all borders use light theme color
-  useEffect(() => {
-    const styleId = 'chatbot-style-border-fix'
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement('style')
-      style.id = styleId
-      style.textContent = `
-        /* Ensure all borders in style config use light theme color */
-        [class*="border-b"]:not([class*="border-black"]):not([class*="border-blue"]):not([class*="border-green"]):not([class*="border-red"]):not([class*="border-yellow"]):not([class*="border-purple"]):not([class*="border-pink"]):not([class*="border-orange"]):not([class*="border-amber"]) {
-          border-color: hsl(var(--border)) !important;
-        }
-        [class*="border"]:not([class*="border-black"]):not([class*="border-blue"]):not([class*="border-green"]):not([class*="border-red"]):not([class*="border-yellow"]):not([class*="border-purple"]):not([class*="border-pink"]):not([class*="border-orange"]):not([class*="border-amber"]):not([class*="border-current"]) {
-          border-color: hsl(var(--border)) !important;
-        }
-        [class*="divide"] {
-          border-color: hsl(var(--border)) !important;
-        }
-      `
-      document.head.appendChild(style)
-    }
-  }, [])
-
   const handleChange = (field: keyof ChatbotConfig, value: any) => {
     setFormData((prev) => ({
       ...prev,
@@ -212,7 +190,7 @@ function ChatKitHeaderSection({ formData, setFormData }: { formData: Partial<Cha
         onValueChange={(val) => setOpenItem(val as string)}
       >
         {/* Header Content */}
-        <AccordionItem value="header-content" className="border-b px-4">
+        <AccordionItem value="header-content" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-3">
             <div className="flex items-center gap-2">
               <Layout className="h-4 w-4 text-muted-foreground" />
@@ -419,7 +397,7 @@ function ChatKitHeaderSection({ formData, setFormData }: { formData: Partial<Cha
         </AccordionItem>
 
         {/* Header Action Buttons */}
-        <AccordionItem value="header-actions" className="border-b px-4">
+        <AccordionItem value="header-actions" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-3">
             <div className="flex items-center gap-2">
               <MousePointerClick className="h-4 w-4 text-muted-foreground" />
@@ -473,7 +451,7 @@ function ChatKitHeaderSection({ formData, setFormData }: { formData: Partial<Cha
         </AccordionItem>
 
         {/* Header Styling */}
-        <AccordionItem value="header-styling" className="border-b px-4">
+        <AccordionItem value="header-styling" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-3">
             <div className="flex items-center gap-2">
               <Palette className="h-4 w-4 text-muted-foreground" />
@@ -509,7 +487,7 @@ function ChatKitHeaderSection({ formData, setFormData }: { formData: Partial<Cha
         </AccordionItem>
 
         {/* Header Border */}
-        <AccordionItem value="header-border" className="border-b-0 px-4">
+        <AccordionItem value="header-border" className="border-b-0 border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-3">
             <div className="flex items-center gap-2">
               <Square className="h-4 w-4 text-muted-foreground" />

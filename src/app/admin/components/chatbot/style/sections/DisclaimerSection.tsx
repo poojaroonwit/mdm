@@ -9,7 +9,7 @@ import type { SectionProps } from './types'
 
 export function DisclaimerSection({ formData, setFormData, chatkitOptions }: SectionProps) {
   return (
-    <AccordionItem value="disclaimer" className="border-b px-4">
+    <AccordionItem value="disclaimer" className="border-b border-border/50 px-4">
       <AccordionTrigger className="text-lg font-semibold hover:no-underline">
         Disclaimer
       </AccordionTrigger>

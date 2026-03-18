@@ -794,12 +794,8 @@ export default function ChatPage() {
     if (shouldRenderChatKit && useChatKitInRegularStyle) {
       return (
         <div
-          className="flex-1 relative overflow-hidden chatkit-in-regular-style"
+          className="flex-1 min-h-0 relative overflow-hidden chatkit-in-regular-style"
           style={{
-            flex: '1 1 auto',
-            minHeight: 0,
-            width: '100%',
-            height: '100%', // Use 100% to respect parent container height
             display: 'flex',
             flexDirection: 'column',
           }}

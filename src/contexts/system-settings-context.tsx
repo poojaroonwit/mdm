@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 
 export interface SystemSettings {
     siteName: string
+    logoUrl?: string
     deletePolicyDays: number
     requireEmailVerification: boolean
     requireAdminApproval: boolean
@@ -20,6 +21,7 @@ interface SystemSettingsContextType {
 
 const defaultSettings: SystemSettings = {
     siteName: 'Unified Data Platform',
+    logoUrl: '',
     deletePolicyDays: 30,
     requireEmailVerification: true,
     requireAdminApproval: false,

@@ -41,7 +41,7 @@ export function ChatKitIntegrationSection({ formData, setFormData }: ChatKitInte
         onValueChange={(val) => setOpenItem(val as string)}
       >
         {/* General Settings */}
-        <AccordionItem value="general-settings" className="border-b px-4">
+        <AccordionItem value="general-settings" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-3">
             <div className="flex items-center gap-2">
               <Settings className="h-4 w-4 text-muted-foreground" />
@@ -69,7 +69,7 @@ export function ChatKitIntegrationSection({ formData, setFormData }: ChatKitInte
         </AccordionItem>
 
         {/* Header Content */}
-        <AccordionItem value="header-content" className="border-b px-4">
+        <AccordionItem value="header-content" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-3">
             <div className="flex items-center gap-2">
               <Layout className="h-4 w-4 text-muted-foreground" />
@@ -268,7 +268,7 @@ export function ChatKitIntegrationSection({ formData, setFormData }: ChatKitInte
         </AccordionItem>
 
         {/* Header Action Buttons */}
-        <AccordionItem value="header-actions" className="border-b px-4">
+        <AccordionItem value="header-actions" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-3">
             <div className="flex items-center gap-2">
               <MousePointerClick className="h-4 w-4 text-muted-foreground" />
@@ -306,7 +306,7 @@ export function ChatKitIntegrationSection({ formData, setFormData }: ChatKitInte
         </AccordionItem>
 
         {/* Header Styling */}
-        <AccordionItem value="header-styling" className="border-b px-4">
+        <AccordionItem value="header-styling" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-3">
             <div className="flex items-center gap-2">
               <Palette className="h-4 w-4 text-muted-foreground" />
@@ -340,7 +340,7 @@ export function ChatKitIntegrationSection({ formData, setFormData }: ChatKitInte
         </AccordionItem>
 
         {/* Header Border */}
-        <AccordionItem value="header-border" className="border-b px-4">
+        <AccordionItem value="header-border" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-3">
             <div className="flex items-center gap-2">
               <Square className="h-4 w-4 text-muted-foreground" />
@@ -372,7 +372,7 @@ export function ChatKitIntegrationSection({ formData, setFormData }: ChatKitInte
         </AccordionItem>
 
         {/* History Panel Settings */}
-        <AccordionItem value="history-panel" className="border-b px-4">
+        <AccordionItem value="history-panel" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-3">
             <div className="flex items-center gap-2">
               <History className="h-4 w-4 text-muted-foreground" />

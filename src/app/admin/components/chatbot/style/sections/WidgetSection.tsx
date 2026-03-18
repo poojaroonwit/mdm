@@ -36,7 +36,7 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
         value={openItem}
         onValueChange={(val) => setOpenItem(val as string)}
       >
-        <AccordionItem value="appearance" className="border-b px-4">
+        <AccordionItem value="appearance" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             <div className="flex items-center gap-2">
               <Palette className="h-4 w-4" />
@@ -110,7 +110,7 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="behavior" className="border-b px-4">
+        <AccordionItem value="behavior" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             <div className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
@@ -195,7 +195,7 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="avatar-icon" className="border-b px-4">
+        <AccordionItem value="avatar-icon" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             <div className="flex items-center gap-2">
               <Bot className="h-4 w-4" />
@@ -451,7 +451,7 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="size-colors" className="border-b px-4">
+        <AccordionItem value="size-colors" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             <div className="flex items-center gap-2">
               <Maximize className="h-4 w-4" />
@@ -514,7 +514,7 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="borders" className="border-b px-4">
+        <AccordionItem value="borders" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             <div className="flex items-center gap-2">
               <Square className="h-4 w-4" />
@@ -557,7 +557,7 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="shadow" className="border-b px-4">
+        <AccordionItem value="shadow" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             <div className="flex items-center gap-2">
               <Sun className="h-4 w-4" />
@@ -629,7 +629,7 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
         </AccordionItem>
 
         {formData.widgetAvatarStyle === 'circle-with-label' && (
-          <AccordionItem value="label" className="border-b px-4">
+          <AccordionItem value="label" className="border-b border-border/50 px-4">
             <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
               <div className="flex items-center gap-2">
                 <Tag className="h-4 w-4" />
@@ -726,7 +726,7 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
           </AccordionItem>
         )}
 
-        <AccordionItem value="position" className="border-b-0 px-4">
+        <AccordionItem value="position" className="border-b-0 border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             <div className="flex items-center gap-2">
               <Move className="h-4 w-4" />

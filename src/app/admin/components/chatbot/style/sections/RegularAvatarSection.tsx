@@ -21,7 +21,7 @@ interface RegularAvatarSectionProps {
 
 export function RegularAvatarSection({ formData, setFormData }: RegularAvatarSectionProps) {
   return (
-    <AccordionItem value="avatar" className="border-b px-4">
+    <AccordionItem value="avatar" className="border-b border-border/50 px-4">
       <AccordionTrigger className="text-lg font-semibold hover:no-underline">
         Avatar
       </AccordionTrigger>

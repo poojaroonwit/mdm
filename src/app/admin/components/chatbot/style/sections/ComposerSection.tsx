@@ -75,7 +75,7 @@ export function ComposerSection({ formData, setFormData, chatkitOptions }: Secti
         value={openItem}
         onValueChange={(val) => setOpenItem(val as string)}
       >
-        <AccordionItem value="placeholder" className="border-b px-4">
+        <AccordionItem value="placeholder" className="border-b border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             <div className="flex items-center gap-2">
               <Icons.Type className="h-4 w-4" />
@@ -95,7 +95,7 @@ export function ComposerSection({ formData, setFormData, chatkitOptions }: Secti
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="tools" className="border-b-0 px-4">
+        <AccordionItem value="tools" className="border-b-0 border-border/50 px-4">
           <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
             <div className="flex items-center gap-2">
               <Icons.Wrench className="h-4 w-4" />
