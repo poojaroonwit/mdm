@@ -150,6 +150,11 @@
 
 /* Base modifications for Branding */
 @layer base {
+  /* Fix Tailwind v4: bare `border` utility defaults to currentColor instead of --border */
+  *, *::before, *::after {
+    border-color: hsl(var(--border));
+  }
+
   body {
     font-family: "DM Sans", "IBM Plex Sans Thai", sans-serif !important;
     background-color: var(--bg-default);

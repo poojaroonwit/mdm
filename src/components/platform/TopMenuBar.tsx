@@ -225,7 +225,7 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
             <Button
               variant="ghost"
               size="icon"
-              className="relative h-9 w-9"
+              className="relative h-9 w-9 rounded-full bg-background border border-border shadow-[0_2px_8px_rgba(0,0,0,0.10),0_1px_3px_rgba(0,0,0,0.07)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.14)] hover:bg-muted active:scale-[0.96] active:shadow-none"
               title="Notifications"
             >
               <Bell className="h-4 w-4" />
