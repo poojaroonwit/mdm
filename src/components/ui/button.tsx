@@ -1,64 +1,61 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+'use client'
 
-import { cn } from "@/lib/utils"
+import { ButtonHTMLAttributes, forwardRef } from 'react'
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+import { Tooltip } from './tooltip'
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground shadow-sm hover:brightness-110 active:scale-[0.98] transition-all duration-200 border-0",
-        destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline:
-          "border border-border bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        // Ghost buttons (used a lot for icon buttons) should not have a background.
-        // Keep background transparent even on hover; only change text/icon color.
-        ghost: "bg-transparent hover:bg-transparent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-lg px-8",
-        icon: "h-10 w-10",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-)
-
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    if (asChild) {
-      const child = React.Children.only(props.children) as React.ReactElement<any>
-      return React.cloneElement(child, {
-        className: cn(buttonVariants({ variant, size, className }), (child.props as any)?.className),
-        ref,
-        ...props,
-      } as any)
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'warning' | 'success' | 'destructive'
+  size?: 'sm' | 'md' | 'lg' | 'icon'
+  tooltip?: string
+  as?: 'button' | 'span'
+}
+
+export const Button = forwardRef<HTMLButtonElement | HTMLSpanElement, ButtonProps>(
+  ({ className, variant = 'primary', size = 'md', tooltip, children, as = 'button', ...props }, ref) => {
+    const Element = as === 'span' ? 'span' : 'button'
+    
+    const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+    
+    const variantStyles = {
+      primary: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm border border-transparent',
+      secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm border border-transparent',
+      outline: 'bg-transparent text-foreground border border-input hover:bg-accent hover:text-accent-foreground',
+      ghost: 'bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground border border-transparent',
+      danger: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm border border-transparent',
+      warning: 'bg-yellow-500 text-white hover:bg-yellow-600 shadow-sm border border-transparent',
+      success: 'bg-green-500 text-white hover:bg-green-600 shadow-sm border border-transparent',
+      destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm border border-transparent',
     }
-    return (
-      <button
-        className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
-        {...props}
-      />
+    
+    const sizeStyles = {
+      sm: 'h-8 px-3 text-xs rounded-md',
+      md: 'h-10 px-4 py-2 text-sm rounded-md',
+      lg: 'h-11 px-8 text-base rounded-md',
+      icon: 'h-10 w-10 rounded-md',
+    }
+
+    const button = (
+      <Element
+        ref={ref as any}
+        className={cn(baseStyles, variantStyles[variant], sizeStyles[size], className)}
+        {...(as === 'button' ? (props as any) : {})}
+      >
+        {children}
+      </Element>
     )
+
+    if (tooltip) {
+      return <Tooltip content={tooltip}>{button}</Tooltip>
+    }
+
+    return button
   }
 )
-Button.displayName = "Button"
 
-export { Button, buttonVariants }
+Button.displayName = 'Button'

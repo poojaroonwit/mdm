@@ -1,6 +1,6 @@
 import { requireAdmin, withErrorHandling } from '@/lib/api-middleware'
 import { NextRequest, NextResponse } from 'next/server'
-import { query } from '@/lib/db'
+import { db as prisma } from '@/lib/db'
 import { createAuditLog } from '@/lib/audit'
 import { getSecretsManager } from '@/lib/secrets-manager'
 import { encryptApiKey, decryptApiKey } from '@/lib/encryption'
@@ -8,89 +8,58 @@ import { createAuditContext } from '@/lib/audit-context-helper'
 import { validateBody } from '@/lib/api-validation'
 import { z } from 'zod'
 
+const providerSchema = z.object({
+  id: z.string().uuid().optional(),
+  providerName: z.string().min(1),
+  displayName: z.string().min(1),
+  isEnabled: z.boolean().default(true),
+  clientId: z.string().min(1),
+  clientSecret: z.string().optional(),
+  scopes: z.array(z.string()).default([]),
+  allowedDomains: z.array(z.string()).default([]),
+  displayOrder: z.number().default(0),
+})
+
 const ssoConfigSchema = z.object({
-  config: z.object({
-    googleEnabled: z.boolean().optional(),
-    googleClientId: z.string().optional(),
-    googleClientSecret: z.string().optional(),
-    azureEnabled: z.boolean().optional(),
-    azureTenantId: z.string().optional(),
-    azureClientId: z.string().optional(),
-    azureClientSecret: z.string().optional(),
-  })
+  providers: z.array(providerSchema)
 })
 
 async function getHandler(request: NextRequest) {
   try {
     const authResult = await requireAdmin()
     if (!authResult.success) return authResult.response
-    const { session } = authResult
-
-    if (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    // New way: Fetch from platform_integrations
-    const { rows: integrationRows } = await query(
-      "SELECT type, config, is_enabled FROM platform_integrations WHERE type IN ('google-auth', 'azure-ad') AND deleted_at IS NULL"
-    )
-
-    const config: Record<string, any> = {
-      googleEnabled: false,
-      azureEnabled: false,
-      googleClientId: '',
-      googleClientSecret: '',
-      azureTenantId: '',
-      azureClientId: '',
-      azureClientSecret: ''
-    }
+    
+    const providers = await (prisma as any).oAuthProvider.findMany({
+      orderBy: { displayOrder: 'asc' }
+    })
 
     const secretsManager = getSecretsManager()
     const useVault = secretsManager.getBackend() === 'vault'
 
-    // Helper to process secret retrieval
-    const processSecret = async (key: string, value: any) => {
-      if (useVault && typeof value === 'string' && value.startsWith('vault://')) {
+    const processedProviders = await Promise.all(providers.map(async (p: any) => {
+      let clientSecret = p.clientSecret
+      
+      if (useVault && clientSecret?.startsWith('vault://')) {
         try {
-          const vaultPath = value.replace('vault://', '')
-          // For integration secrets, we might store them under sso/ still or integration/
-          // To keep compatible with previous logic, let's assume 'sso/' prefix used in PUT
-          const secret = await secretsManager.getSecret(`sso/${key}`)
-          if (secret) {
-            return secret[key] || secret.value || ''
-          }
-        } catch (error) {
-          console.warn(`Failed to retrieve ${key} from Vault:`, error)
+          const secret = await secretsManager.getSecret(`sso/${p.providerName}`)
+          clientSecret = secret?.value || ''
+        } catch (e) {
+          console.warn(`Failed to retrieve secret for ${p.providerName}`)
         }
-        return value
-      } else if (typeof value === 'string' && value.length > 0) {
-        const decrypted = decryptApiKey(value)
-        return decrypted && decrypted !== value ? decrypted : value
+      } else if (clientSecret) {
+        const decrypted = decryptApiKey(clientSecret)
+        clientSecret = decrypted && decrypted !== clientSecret ? decrypted : clientSecret
       }
-      return value
-    }
 
-    // Process integration rows
-    for (const row of integrationRows) {
-      if (row.type === 'google-auth') {
-        config.googleEnabled = row.is_enabled
-        if (row.config) {
-          config.googleClientId = row.config.clientId || ''
-          config.googleClientSecret = await processSecret('googleClientSecret', row.config.clientSecret || '')
-        }
-      } else if (row.type === 'azure-ad') {
-        config.azureEnabled = row.is_enabled
-        if (row.config) {
-          config.azureTenantId = row.config.tenantId || ''
-          config.azureClientId = row.config.clientId || ''
-          config.azureClientSecret = await processSecret('azureClientSecret', row.config.clientSecret || '')
-        }
+      return {
+        ...p,
+        clientSecret: clientSecret ? '••••••••' : '' // Mask for GET
       }
-    }
+    }))
 
-    return NextResponse.json({ config })
+    return NextResponse.json({ providers: processedProviders })
   } catch (error) {
-    console.error('Error fetching SSO config:', error)
+    console.error('Error fetching identity providers:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -101,105 +70,65 @@ async function putHandler(request: NextRequest) {
     if (!authResult.success) return authResult.response
     const { session } = authResult
 
-    // Validate request body
     const bodyValidation = await validateBody(request, ssoConfigSchema)
-    if (!bodyValidation.success) {
-      return bodyValidation.response
-    }
+    if (!bodyValidation.success) return bodyValidation.response
 
-    const { config } = bodyValidation.data
-
+    const { providers } = bodyValidation.data
     const secretsManager = getSecretsManager()
     const useVault = secretsManager.getBackend() === 'vault'
     const auditContext = createAuditContext(request, session.user, 'SSO configuration update')
 
-    // Helper to process secret storage
-    const processSecretStorage = async (key: string, value: any) => {
-      if (value && String(value).trim() !== '') {
+    const oldProviders = await (prisma as any).oAuthProvider.findMany()
+
+    for (const provider of providers) {
+      let clientSecret = provider.clientSecret
+      
+      if (clientSecret && clientSecret !== '••••••••') {
         if (useVault) {
-          try {
-            await secretsManager.storeSecret(
-              `sso/${key}`,
-              { value: String(value) },
-              undefined,
-              auditContext
-            )
-            return `vault://${key}`
-          } catch (error) {
-            console.error(`Failed to store ${key} in Vault:`, error)
-            return encryptApiKey(String(value))
-          }
+          await secretsManager.storeSecret(
+            `sso/${provider.providerName}`,
+            { value: clientSecret },
+            undefined,
+            auditContext
+          )
+          clientSecret = `vault://${provider.providerName}`
         } else {
-          return encryptApiKey(String(value))
+          clientSecret = encryptApiKey(clientSecret)
         }
-      }
-      return value
-    }
-
-    // Prepare configurations
-    const googleSecret = await processSecretStorage('googleClientSecret', config.googleClientSecret)
-    const azureSecret = await processSecretStorage('azureClientSecret', config.azureClientSecret)
-
-    const googleConfig = {
-      clientId: config.googleClientId,
-      clientSecret: googleSecret
-    }
-
-    const azureConfig = {
-      tenantId: config.azureTenantId,
-      clientId: config.azureClientId,
-      clientSecret: azureSecret
-    }
-
-    // Capture old state for audit
-    const { rows: currentIntegrations } = await query(
-      "SELECT type, config, is_enabled FROM platform_integrations WHERE type IN ('google-auth', 'azure-ad') AND deleted_at IS NULL"
-    )
-
-    const oldState = currentIntegrations.reduce((acc: any, row) => {
-      acc[row.type] = { config: row.config, enabled: row.is_enabled }
-      return acc
-    }, {})
-
-    // Re-implementation with Check-then-Upsert logic since `type` might not be unique in schema (it's not marked @unique)
-    const upsertIntegration = async (type: string, conf: any, enabled: boolean) => {
-      const { rows } = await query("SELECT id FROM platform_integrations WHERE type = $1 AND deleted_at IS NULL LIMIT 1", [type])
-      if (rows.length > 0) {
-        await query(
-          "UPDATE platform_integrations SET config = $1, is_enabled = $2, updated_at = NOW() WHERE id = $3",
-          [JSON.stringify(conf), enabled, rows[0].id]
-        )
       } else {
-        await query(
-          "INSERT INTO platform_integrations (type, config, is_enabled) VALUES ($1, $2, $3)",
-          [type, JSON.stringify(conf), enabled]
-        )
+        // Keep existing secret if not updated
+        const existing = oldProviders.find((p: any) => p.id === provider.id || p.providerName === provider.providerName)
+        clientSecret = (existing as any)?.clientSecret || ''
       }
-    }
 
-    await upsertIntegration('google-auth', googleConfig, config.googleEnabled || false)
-    await upsertIntegration('azure-ad', azureConfig, config.azureEnabled || false)
+      await (prisma as any).oAuthProvider.upsert({
+        where: { id: provider.id || '00000000-0000-0000-0000-000000000000' },
+        update: {
+          ...provider,
+          clientSecret: clientSecret || '',
+          updatedAt: new Date()
+        },
+        create: {
+          ...provider,
+          clientSecret: clientSecret || ''
+        }
+      })
+    }
 
     await createAuditLog({
       action: 'UPDATE',
-      entityType: 'SSOConfiguration',
+      entityType: 'IdentityProviders',
       entityId: 'system',
-      oldValue: oldState,
-      newValue: {
-        'google-auth': { config: googleConfig, enabled: config.googleEnabled },
-        'azure-ad': { config: azureConfig, enabled: config.azureEnabled }
-      },
+      oldValue: oldProviders,
+      newValue: providers,
       userId: session.user.id,
-      ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+      ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
       userAgent: request.headers.get('user-agent') || 'unknown'
     })
 
-    return NextResponse.json({
-      success: true,
-      message: 'SSO configuration saved successfully'
-    })
+    return NextResponse.json({ success: true, message: 'Identity providers updated successfully' })
   } catch (error) {
-    console.error('Error updating SSO config:', error)
+    console.error('Error updating identity providers:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -223,7 +223,7 @@ const DropdownMenuContent = React.forwardRef<
       <div
         ref={contentRef}
         className={cn(
-          "min-w-[8rem] rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg outline-none backdrop-blur-xl",
+          "min-w-[8rem] rounded-xl border border-border/50 bg-background/80 p-1 text-foreground shadow-2xl outline-none backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-200",
           className
         )}
         style={{
@@ -255,7 +255,7 @@ const DropdownMenuItem = React.forwardRef<
     ref={ref}
     role="menuitem"
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-sm outline-none transition-colors duration-150 hover:bg-muted/50 focus:bg-muted/50 disabled:pointer-events-none disabled:opacity-50",
       inset && "pl-8",
       className
     )}
@@ -275,7 +275,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
     role="menuitemcheckbox"
     aria-checked={checked}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm outline-none transition-colors duration-150 hover:bg-muted/50 focus:bg-muted/50 disabled:pointer-events-none disabled:opacity-50",
       className
     )}
     {...props}
@@ -299,7 +299,7 @@ const DropdownMenuRadioItem = React.forwardRef<
     role="menuitemradio"
     aria-checked={checked}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm outline-none transition-colors duration-150 hover:bg-muted/50 focus:bg-muted/50 disabled:pointer-events-none disabled:opacity-50",
       className
     )}
     {...props}

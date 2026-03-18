@@ -470,7 +470,7 @@ const PopoverContent = React.forwardRef<
     <div
       ref={contentRef}
       className={cn(
-        "rounded-md border border-border text-popover-foreground shadow-lg outline-none backdrop-blur-xl flex flex-col overflow-hidden",
+        "rounded-xl border border-border/50 text-foreground shadow-2xl outline-none backdrop-blur-xl flex flex-col overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200",
         className
       )}
       style={{

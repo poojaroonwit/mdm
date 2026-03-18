@@ -226,10 +226,15 @@ export function Sidebar({ className }: SidebarProps) {
                 }}
               >
                 <div className="flex items-center">
-                  <Building2 className="mr-2 h-5 w-5" />
-                  {currentSpace?.name || 'Select Space'}
+                  <div className="h-9 w-9 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-white text-sm shadow-lg shadow-blue-600/25 mr-3 overflow-hidden bg-gradient-to-br from-blue-600 via-blue-600 to-blue-700">
+                    <span>{(currentSpace?.name || 'C').substring(0, 1).toUpperCase()}</span>
+                  </div>
+                  <div className="flex flex-col items-start overflow-hidden whitespace-nowrap">
+                    <h1 className="font-bold text-foreground tracking-tight text-lg leading-none mb-0.5">{currentSpace?.name || 'Select Space'}</h1>
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest leading-none">Space</p>
+                  </div>
                 </div>
-                <ChevronDown className="h-5 w-5" />
+                <ChevronDown className="h-4 w-4 ml-2 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
@@ -305,9 +310,9 @@ export function Sidebar({ className }: SidebarProps) {
 
               return (
                 <AccordionItem key={group.slug} value={group.name} className="border-none">
-                  <AccordionTrigger className="py-2 hover:no-underline md:py-2 px-2" style={{ color: settings.fontColor, opacity: 0.9 }}>
-                    <div className="flex items-center text-xs font-medium uppercase tracking-wide">
-                      <IconComponent className="mr-2 h-4 w-4" />
+                  <AccordionTrigger className="py-2 hover:no-underline md:py-2 px-2 group" style={{ color: settings.fontColor, opacity: 0.9 }}>
+                    <div className="flex items-center text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground group-hover:text-foreground transition-colors">
+                      <IconComponent className="mr-3 h-4 w-4" />
                       {group.name}
                     </div>
                   </AccordionTrigger>
@@ -316,7 +321,7 @@ export function Sidebar({ className }: SidebarProps) {
                       {Object.entries(itemsBySection).map(([section, items]) => (
                         <div key={section} className="space-y-1">
                           {Object.keys(itemsBySection).length > 1 && (
-                            <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider opacity-40" style={{ color: settings.fontColor }}>
+                            <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60" style={{ color: settings.fontColor }}>
                               {section}
                             </div>
                           )}
@@ -342,18 +347,23 @@ export function Sidebar({ className }: SidebarProps) {
                                 ) : (
                                   <Link href={typeof window !== 'undefined' ? DOMPurify.sanitize(item.href) : item.href}>
                                     <Button
-                                      variant={isActive(item.href) ? "secondary" : "ghost"}
+                                      variant="ghost"
                                       className={cn(
-                                        "w-full justify-start text-sm h-8",
-                                        isActive(item.href) ? "bg-primary/10 text-primary hover:bg-primary/15" : "hover:bg-muted/50"
+                                        "w-full justify-start text-[13px] font-medium h-9 px-3 rounded-lg group transition-all duration-150",
+                                        isActive(item.href) ? "bg-primary/5 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
                                       )}
                                       style={{
-                                        color: isActive(item.href) ? 'var(--brand-primary, hsl(var(--primary)))' : settings.fontColor,
-                                        backgroundColor: isActive(item.href) ? 'var(--brand-primary-light, rgba(59, 130, 246, 0.10))' : undefined
+                                        color: isActive(item.href) ? 'var(--brand-primary, hsl(var(--primary)))' : undefined,
                                       }}
                                     >
-                                      <ItemIcon className="mr-2 h-4 w-4" />
-                                      {item.name}
+                                      <ItemIcon className={cn(
+                                        "mr-3 h-[18px] w-[18px]",
+                                        isActive(item.href) ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                                      )} />
+                                      <span>{item.name}</span>
+                                      {isActive(item.href) && (
+                                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                                      )}
                                     </Button>
                                   </Link>
                                 )}
@@ -379,30 +389,38 @@ export function Sidebar({ className }: SidebarProps) {
                                 return (
                                   <Link key={m.id} href={typeof window !== 'undefined' ? DOMPurify.sanitize(href) : href}>
                                     <Button
-                                      variant={isActive(href) ? "secondary" : "ghost"}
+                                      variant="ghost"
                                       className={cn(
-                                        "w-full justify-start text-sm h-8",
-                                        isActive(href) ? "bg-primary/10 text-primary hover:bg-primary/15" : "hover:bg-muted/50"
+                                        "w-full justify-start text-[13px] font-medium h-9 px-3 rounded-lg group transition-all duration-150",
+                                        isActive(href) ? "bg-primary/5 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
                                       )}
                                       style={{
-                                        color: isActive(href) ? 'var(--brand-primary, hsl(var(--primary)))' : settings.fontColor,
-                                        backgroundColor: isActive(href) ? 'var(--brand-primary-light, rgba(59, 130, 246, 0.10))' : undefined
+                                        color: isActive(href) ? 'var(--brand-primary, hsl(var(--primary)))' : undefined,
                                       }}
                                     >
                                       {m.icon ? (
                                         <AnimatedIcon
                                           icon={m.icon}
-                                          size={16}
+                                          size={18}
                                           animation="float"
                                           trigger="hover"
-                                          className="mr-2"
+                                          className={cn(
+                                            "mr-3",
+                                            isActive(href) ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                                          )}
                                         />
                                       ) : (
-                                        <span className="mr-2 inline-flex h-4 w-4 items-center justify-center rounded bg-black/10">
+                                        <span className={cn(
+                                          "mr-3 inline-flex h-4 w-4 items-center justify-center rounded bg-muted font-bold text-[10px]",
+                                          isActive(href) ? "text-primary bg-primary/10" : "text-muted-foreground"
+                                        )}>
                                           {(String(m.display_name || m.name || '')?.slice(0, 1) || '?').toUpperCase()}
                                         </span>
                                       )}
-                                      {m.display_name || m.name}
+                                      <span>{m.display_name || m.name}</span>
+                                      {isActive(href) && (
+                                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                                      )}
                                     </Button>
                                   </Link>
                                 )

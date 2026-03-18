@@ -251,15 +251,15 @@ const DrawerContent = React.forwardRef<
   // Get drawer style from CSS variables (set by branding config)
   const getDrawerStyle = () => {
     if (typeof window === 'undefined') {
-      return { type: 'floating', margin: '16px', borderRadius: '12px', width: '500px', backgroundBlur: '10px', backgroundOpacity: '95' }
+      return { type: 'floating', margin: '16px', borderRadius: '24px', width: '500px', backgroundBlur: '20px', backgroundOpacity: '80' }
     }
     
     const type = getComputedStyle(document.documentElement).getPropertyValue('--drawer-style-type').trim() || 'floating'
-    const margin = getComputedStyle(document.documentElement).getPropertyValue('--drawer-style-margin').trim() || '16px'
-    const borderRadius = getComputedStyle(document.documentElement).getPropertyValue('--drawer-style-border-radius').trim() || '12px'
+    const margin = getComputedStyle(document.documentElement).getPropertyValue('--drawer-style-margin').trim() || '20px'
+    const borderRadius = getComputedStyle(document.documentElement).getPropertyValue('--drawer-style-border-radius').trim() || '24px'
     const width = getComputedStyle(document.documentElement).getPropertyValue('--drawer-style-width').trim() || '500px'
-    const backgroundBlur = getComputedStyle(document.documentElement).getPropertyValue('--drawer-style-background-blur').trim() || '10px'
-    const backgroundOpacity = getComputedStyle(document.documentElement).getPropertyValue('--drawer-style-background-opacity').trim() || '95'
+    const backgroundBlur = getComputedStyle(document.documentElement).getPropertyValue('--drawer-style-background-blur').trim() || '20px'
+    const backgroundOpacity = getComputedStyle(document.documentElement).getPropertyValue('--drawer-style-background-opacity').trim() || '80'
     
     return { type, margin, borderRadius, width, backgroundBlur, backgroundOpacity }
   }
@@ -269,33 +269,30 @@ const DrawerContent = React.forwardRef<
   const margin = floatingMargin || style.margin
   const borderRadius = style.borderRadius
   const backgroundBlur = style.backgroundBlur
-  const backgroundOpacity = parseFloat(style.backgroundOpacity) || 95
+  const backgroundOpacity = parseFloat(style.backgroundOpacity) || 80
   // Use provided widthClassName or generate from style.width
   const defaultWidth = widthClassName || (style.width ? `w-[${style.width}]` : 'w-[500px]')
   const widthValue = widthClassName ? undefined : style.width
 
   // Determine styling based on drawer type
   const getDrawerClasses = () => {
-    const baseClasses = "fixed border border-border shadow-2xl outline-none transition-all duration-300 ease-out"
+    const baseClasses = "fixed border border-border/50 shadow-2xl outline-none transition-all duration-300 ease-out"
     
     switch (drawerType) {
       case 'modern':
-        // Modern: full height, margins top/bottom, right side, rounded
         return cn(
           baseClasses,
-          "rounded-xl",
+          "rounded-3xl",
           defaultWidth
         )
       case 'floating':
-        // Floating: margins all around, rounded
         return cn(
           baseClasses,
-          "rounded-xl",
+          "rounded-3xl",
           defaultWidth
         )
       case 'normal':
       default:
-        // Normal: full height, no margins, right side
         return cn(
           baseClasses,
           "inset-y-0 right-0 h-full border-l",
@@ -318,8 +315,7 @@ const DrawerContent = React.forwardRef<
 
     switch (drawerType) {
       case 'modern':
-        // Modern: full height, margins top/bottom/right, right side, rounded on all corners
-        const marginNum = parseFloat(margin) || 16
+        const marginNum = parseFloat(margin) || 20
         const marginUnit = margin.replace(String(marginNum), '') || 'px'
         return {
           ...baseStyle,
@@ -330,8 +326,7 @@ const DrawerContent = React.forwardRef<
           borderRadius: borderRadius,
         }
       case 'floating':
-        // Floating: margins all around
-        const floatingMarginNum = parseFloat(margin) || 16
+        const floatingMarginNum = parseFloat(margin) || 20
         const floatingMarginUnit = margin.replace(String(floatingMarginNum), '') || 'px'
         return {
           ...baseStyle,
@@ -360,6 +355,7 @@ const DrawerContent = React.forwardRef<
             opacity: isAnimating ? 1 : 0,
             transition: 'opacity 300ms ease-out',
           }}
+          className="bg-slate-900/40 backdrop-blur-sm"
         />
       )}
       <div
@@ -384,12 +380,12 @@ DrawerContent.displayName = "DrawerContent"
 const DrawerHeader = ({ className, style, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
   // Get border radius from CSS variable to match drawer
   const borderRadius = typeof window !== 'undefined' 
-    ? getComputedStyle(document.documentElement).getPropertyValue('--drawer-style-border-radius').trim() || '12px'
-    : '12px'
+    ? getComputedStyle(document.documentElement).getPropertyValue('--drawer-style-border-radius').trim() || '24px'
+    : '24px'
   
   return (
     <div 
-      className={cn("border-b border-border px-4 py-3", className)} 
+      className={cn("border-b border-border/50 px-6 py-6", className)} 
       style={{
         borderTopLeftRadius: borderRadius,
         borderTopRightRadius: borderRadius,
@@ -400,7 +396,7 @@ const DrawerHeader = ({ className, style, ...props }: React.HTMLAttributes<HTMLD
   )
 }
 const DrawerTitle = ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
-  <h2 className={cn("text-base font-semibold", className)} {...props} />
+  <h2 className={cn("text-lg font-black uppercase tracking-tight text-foreground", className)} {...props} />
 )
 
 const DrawerDescription = ({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (

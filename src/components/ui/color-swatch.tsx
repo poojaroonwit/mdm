@@ -11,22 +11,13 @@ interface ColorSwatchProps {
 }
 
 const predefinedColors = [
-  '#1e40af', // Blue
-  '#dc2626', // Red
-  '#16a34a', // Green
-  '#ca8a04', // Yellow
-  '#9333ea', // Purple
-  '#ea580c', // Orange
-  '#0891b2', // Cyan
-  '#be123c', // Rose
-  '#059669', // Emerald
-  '#7c3aed', // Violet
-  '#0d9488', // Teal
-  '#c2410c', // Amber
-  '#1f2937', // Gray
-  '#374151', // Dark Gray
-  '#6b7280', // Light Gray
-  '#9ca3af', // Very Light Gray
+    '#ffffff', '#f8fafc', '#f1f5f9', '#e2e8f0', // Grays
+    '#3b82f6', '#2563eb', '#1d4ed8', // Blues
+    '#ef4444', '#dc2626', '#b91c1c', // Reds
+    '#10b981', '#059669', '#047857', // Greens
+    '#f59e0b', '#d97706', '#b45309', // Ambers
+    '#8b5cf6', '#7c3aed', '#6d28d9', // Violets
+    '#000000', '#1e293b',
 ]
 
 export function ColorSwatch({ 
@@ -43,17 +34,20 @@ export function ColorSwatch({
           variant="outline"
           size="sm"
           className={cn(
-            'w-8 h-8 p-0 border-2 rounded-md transition-all hover:scale-110',
+            'w-8 h-8 p-0 border-2 rounded-full transition-all hover:scale-110 shadow-sm',
             selectedColor === color 
               ? 'border-primary ring-2 ring-primary/20' 
-              : 'border-border hover:border-primary/50'
+              : 'border-border/50 hover:border-primary/50'
           )}
           style={{ backgroundColor: color }}
           onClick={() => onColorSelect(color)}
           title={color}
         >
           {selectedColor === color && (
-            <div className="w-3 h-3 bg-white rounded-full shadow-sm" />
+            <div className={cn(
+              "w-2.5 h-2.5 rounded-full shadow-sm",
+              color.toLowerCase() === '#ffffff' ? "bg-black/20" : "bg-white"
+            )} />
           )}
         </Button>
       ))}
@@ -70,20 +64,26 @@ interface ColorPickerProps {
 
 export function ColorPicker({ value, onChange, label, className }: ColorPickerProps) {
   return (
-    <div className={cn('space-y-2', className)}>
-      {label && <label className="text-sm font-medium">{label}</label>}
-      <div className="flex items-center space-x-2">
-        <input
-          type="color"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-12 h-8 border border-border rounded cursor-pointer"
-        />
+    <div className={cn('space-y-2.5', className)}>
+      {label && <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">{label}</label>}
+      <div className="flex items-center space-x-3">
+        <div className="relative group">
+          <input
+            type="color"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-11 h-11 border border-border/50 rounded-xl cursor-pointer p-0 overflow-hidden bg-transparent"
+          />
+          <div 
+            className="absolute inset-1 rounded-lg pointer-events-none border border-black/5" 
+            style={{ backgroundColor: value }}
+          />
+        </div>
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 px-2 py-1 border border-border rounded text-sm"
+          className="flex-1 h-11 px-4 border border-border/50 rounded-xl text-sm bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase font-mono"
           placeholder="#000000"
         />
       </div>

@@ -4,7 +4,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
-import { LogOut, User, Bell, CheckCircle, AlertCircle, Info, AlertTriangle, ExternalLink, MoreHorizontal } from 'lucide-react'
+import { LogOut, User, Bell, CheckCircle, AlertCircle, Info, AlertTriangle, ExternalLink, MoreHorizontal, ChevronDown } from 'lucide-react'
 import { Z_INDEX } from '@/lib/z-index'
 import { useEffect, useState } from 'react'
 import { loadBrandingConfig } from '@/lib/branding'
@@ -146,14 +146,9 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
   const recentNotifications = notifications.slice(0, 5)
 
   return (
-    <div
-      className="h-14 border-b border-border flex items-center justify-between px-2 top-menu-bar"
+    <header
+      className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-border/50 glass px-6 backdrop-blur-xl"
       data-component="top-menu-bar"
-      style={{
-        zIndex: Z_INDEX.navigation,
-        backgroundColor: 'var(--brand-top-menu-bg, hsl(var(--background)))',
-        color: 'var(--brand-top-menu-text, hsl(var(--foreground)))'
-      }}
     >
       {/* Left Section: Logo, Application Name, and Selected Feature */}
       <div className="flex items-center gap-1.5 min-w-0">
@@ -162,14 +157,14 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
           <img
             src={displayLogo}
             alt={displayName}
-            className="h-5 w-5 object-contain flex-shrink-0 ml-2 mr-2"
+            className="h-6 w-6 object-contain flex-shrink-0 mr-3"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none'
             }}
           />
         ) : (
-          <div className="h-5 w-5 rounded bg-primary flex items-center justify-center flex-shrink-0 ml-2 mr-2">
-            <span className="text-primary-foreground text-[10px] font-bold">
+          <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center flex-shrink-0 mr-3 shadow-sm">
+            <span className="text-white text-[10px] font-bold">
               {displayName.charAt(0)}
             </span>
           </div>
@@ -351,53 +346,51 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
         {/* User Avatar with Popover */}
         <Popover open={profilePopoverOpen} onOpenChange={setProfilePopoverOpen}>
           <PopoverTrigger asChild>
-            <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
-              <Avatar className="h-9 w-9 border border-border">
-                <AvatarImage src={userImage} alt={userName} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                  {userInitial}
-                </AvatarFallback>
-              </Avatar>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-64 p-1" align="end">
-            {/* User Info Section */}
-            <div className="px-3 py-2.5">
-              <div className="flex flex-col">
-                <p className="text-sm font-medium leading-tight">
+            <button className="flex items-center space-x-3 p-1 rounded-full hover:bg-muted/50 transition-all duration-200 group outline-none ml-2">
+              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-blue-600/25 group-hover:shadow-blue-600/40 transition-all duration-300 overflow-hidden">
+                {userImage ? (
+                  <img src={userImage} alt={userName} className="h-full w-full object-cover" />
+                ) : userInitial}
+              </div>
+              <div className="hidden sm:block text-left pr-1">
+                <p className="text-xs font-semibold text-foreground leading-none">
                   {userName}
                 </p>
-                <p className="text-xs text-muted-foreground truncate mt-0.5">
-                  {userEmail}
+                <p className="text-[10px] text-muted-foreground font-medium uppercase mt-0.5 tracking-wider">
+                  {userRole}
                 </p>
               </div>
+              <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors duration-200" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-72 mt-2 rounded-2xl border-border/50 glass p-0" align="end">
+            <div className="px-5 py-4 border-b border-border/50">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1">Signed in as</p>
+              <p className="text-sm font-semibold truncate mt-1">{userEmail}</p>
             </div>
 
-            <div className="border-t border-border my-1" />
-
-            {/* Menu Items */}
-            <div className="py-1">
+            <div className="p-2">
               <Button
                 variant="ghost"
-                className="w-full justify-start font-normal h-9 px-3"
+                className="w-full justify-start font-medium h-11 px-4 rounded-xl hover:bg-muted/50 transition-colors"
                 onClick={() => {
                   setProfilePopoverOpen(false)
                   setProfileModalOpen(true)
                 }}
               >
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile Settings</span>
+                <User className="mr-3 h-4 w-4 text-muted-foreground" />
+                <span>Account Settings</span>
               </Button>
+            </div>
 
-              <div className="border-t border-border my-1" />
-
+            <div className="p-2 border-t border-border/50">
               <Button
                 variant="ghost"
-                className="w-full justify-start font-normal h-9 px-3"
+                className="w-full justify-start font-semibold h-11 px-4 text-destructive rounded-xl hover:bg-destructive/10 transition-colors"
                 onClick={handleSignOut}
               >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Sign out</span>
+                <LogOut className="mr-3 h-4 w-4" />
+                <span>Sign Out</span>
               </Button>
             </div>
           </PopoverContent>
@@ -410,7 +403,7 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
           user={user}
         />
       </div>
-    </div>
+    </header>
   )
 }
 

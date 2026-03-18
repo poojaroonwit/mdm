@@ -1,121 +1,61 @@
-import * as React from "react"
-import { useEffect, useRef } from "react"
+'use client'
 
-import { cn } from "@/lib/utils"
+import { TextareaHTMLAttributes, forwardRef } from 'react'
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
-export interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> { }
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
 
-const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, style, ...props }, ref) => {
-    const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: string
+  error?: string
+  helperText?: string
+}
 
-    // Function to apply theme-aware styles
-    const applyThemeStyles = React.useCallback((node: HTMLTextAreaElement) => {
-      if (!node) return
-
-      // Skip if inside a space (data-space attribute)
-      if (node.closest('[data-space]')) return
-
-      // Get theme-aware colors from CSS variables
-      const root = document.documentElement
-      const borderHsl = root.style.getPropertyValue('--border') || getComputedStyle(root).getPropertyValue('--border')
-      const mutedHsl = root.style.getPropertyValue('--muted') || getComputedStyle(root).getPropertyValue('--muted')
-      const foregroundHsl = root.style.getPropertyValue('--foreground') || getComputedStyle(root).getPropertyValue('--foreground')
-
-      // Apply background - use --muted to match text inputs (same as globals.css)
-      if (mutedHsl) {
-        node.style.setProperty('background-color', `hsl(${mutedHsl})`, 'important')
-      } else {
-        // Fallback for light theme
-        node.style.setProperty('background-color', 'hsl(210 40% 96%)', 'important')
-      }
-      node.style.setProperty('background-image', 'none', 'important')
-
-      // Apply text color
-      if (foregroundHsl) {
-        node.style.setProperty('color', `hsl(${foregroundHsl})`, 'important')
-      } else {
-        node.style.setProperty('color', 'rgb(15, 23, 42)', 'important')
-      }
-
-      // Apply border - same as text input (using --border)
-      if (borderHsl) {
-        node.style.setProperty('border', `1px solid hsl(${borderHsl})`, 'important')
-      } else {
-        node.style.setProperty('border', '1px solid hsl(214.3 31.8% 91.4%)', 'important')
-      }
-
-      // Apply padding and fontSize from theme to match text-input
-      // Get values from CSS custom properties set by component-styling.ts
-      // Try textarea-specific values first, then fall back to text-input values
-      const textareaPadding = root.style.getPropertyValue('--textarea-padding')?.trim() ||
-        getComputedStyle(root).getPropertyValue('--textarea-padding')?.trim() ||
-        root.style.getPropertyValue('--text-input-padding')?.trim() ||
-        getComputedStyle(root).getPropertyValue('--text-input-padding')?.trim()
-
-      const textareaFontSize = root.style.getPropertyValue('--textarea-font-size')?.trim() ||
-        getComputedStyle(root).getPropertyValue('--textarea-font-size')?.trim() ||
-        root.style.getPropertyValue('--text-input-font-size')?.trim() ||
-        getComputedStyle(root).getPropertyValue('--text-input-font-size')?.trim()
-
-      if (textareaPadding) {
-        node.style.setProperty('padding', textareaPadding, 'important')
-      }
-      if (textareaFontSize) {
-        node.style.setProperty('font-size', textareaFontSize, 'important')
-      }
-    }, [])
-
-    // Update styles when theme changes
-    useEffect(() => {
-      if (textareaRef.current) {
-        applyThemeStyles(textareaRef.current)
-
-        // Watch for theme changes by observing the document element
-        const observer = new MutationObserver(() => {
-          if (textareaRef.current) {
-            applyThemeStyles(textareaRef.current)
-          }
-        })
-
-        observer.observe(document.documentElement, {
-          attributes: true,
-          attributeFilter: ['class', 'style'],
-        })
-
-        return () => observer.disconnect()
-      }
-    }, [applyThemeStyles])
-
-    const handleRef = React.useCallback((node: HTMLTextAreaElement | null) => {
-      // Handle forwarded ref
-      if (typeof ref === 'function') {
-        ref(node)
-      } else if (ref) {
-        ref.current = node
-      }
-
-      textareaRef.current = node
-
-      if (node) {
-        applyThemeStyles(node)
-      }
-    }, [ref, applyThemeStyles])
-
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ className, label, error, helperText, id, ...props }, ref) => {
+    const textareaId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`
+    
     return (
-      <textarea
-        className={cn(
-          "w-full px-2 py-1.5 text-xs border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-muted-foreground",
-          className
+      <div className="w-full">
+        {label && (
+          <label
+            htmlFor={textareaId}
+            className="block text-sm font-medium text-foreground mb-2"
+          >
+            {label}
+          </label>
         )}
-        style={style}
-        ref={handleRef}
-        {...props}
-      />
+        <textarea
+          ref={ref}
+          id={textareaId}
+          className={cn(
+            'flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm',
+            'ring-offset-background placeholder:text-muted-foreground',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+            'disabled:cursor-not-allowed disabled:opacity-50',
+            error && 'border-destructive focus-visible:ring-destructive',
+            className
+          )}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${textareaId}-error` : helperText ? `${textareaId}-helper` : undefined}
+          {...props}
+        />
+        {error && (
+          <p id={`${textareaId}-error`} className="mt-1.5 text-sm text-destructive" role="alert">
+            {error}
+          </p>
+        )}
+        {helperText && !error && (
+          <p id={`${textareaId}-helper`} className="mt-1.5 text-sm text-muted-foreground">
+            {helperText}
+          </p>
+        )}
+      </div>
     )
   }
 )
-Textarea.displayName = "Textarea"
 
-export { Textarea }
+Textarea.displayName = 'Textarea'

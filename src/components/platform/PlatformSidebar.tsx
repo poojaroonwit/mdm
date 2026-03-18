@@ -416,10 +416,10 @@ export function PlatformSidebar({
                       <Button
                         variant="ghost"
                         className={cn(
-                          "platform-sidebar-menu-button w-full justify-center h-10 transition-colors duration-150 cursor-pointer",
+                          "platform-sidebar-menu-button w-full justify-center h-10 transition-all duration-200 cursor-pointer",
                           (selectedGroup === groupId || (groupId === 'data-management' && (activeTab === 'space-selection' || selectedGroup === 'data-management')) || (groupId === 'infrastructure' && activeTab === 'infrastructure'))
-                            ? "platform-sidebar-menu-button-active !bg-primary/15 !text-primary rounded-sm"
-                            : "text-muted-foreground hover:!bg-transparent hover:!text-foreground rounded-none"
+                            ? "platform-sidebar-menu-button-active bg-primary/10 text-primary rounded-lg"
+                            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground rounded-lg"
                         )}
                         onClick={() => handleGroupClick(groupId)}
                         onMouseEnter={() => {
@@ -466,10 +466,10 @@ export function PlatformSidebar({
                       <Button
                         variant="ghost"
                         className={cn(
-                          "platform-sidebar-menu-button w-full justify-start text-sm font-medium h-10 px-4 transition-colors duration-150 cursor-pointer",
+                          "platform-sidebar-menu-button w-full justify-start text-sm font-medium h-10 px-4 transition-all duration-200 cursor-pointer group",
                           (selectedGroup === groupId || (groupId === 'data-management' && activeTab === 'space-selection') || (groupId === 'infrastructure' && activeTab === 'infrastructure'))
-                            ? "platform-sidebar-menu-button-active !bg-primary/15 !text-primary rounded-sm"
-                            : "text-foreground hover:!bg-transparent hover:!text-foreground rounded-none"
+                            ? "platform-sidebar-menu-button-active bg-primary/10 text-primary rounded-lg"
+                            : "text-foreground hover:bg-muted/50 hover:text-foreground rounded-lg"
                         )}
                         onClick={() => handleGroupClick(groupId)}
                         onMouseEnter={() => {
@@ -543,7 +543,7 @@ export function PlatformSidebar({
 
                     return (
                       <div key={sectionName} className="py-2 px-2">
-                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-2">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] mb-3 px-3">
                           {sectionName}
                         </div>
                         <div className="space-y-1">
@@ -552,10 +552,10 @@ export function PlatformSidebar({
                               key={tab.id}
                               variant={activeTab === tab.id ? "secondary" : "ghost"}
                               className={cn(
-                                "platform-sidebar-menu-button w-full justify-start items-center text-sm font-medium h-9 px-4 transition-colors duration-150 cursor-pointer",
+                                "platform-sidebar-menu-button w-full justify-start items-center text-sm font-medium h-9 px-3 transition-colors duration-150 cursor-pointer rounded-lg",
                                 activeTab === tab.id
-                                  ? "platform-sidebar-menu-button-active bg-primary/10 text-primary hover:bg-primary/15"
-                                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground rounded-none"
+                                  ? "platform-sidebar-menu-button-active bg-primary/10 text-primary"
+                                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                               )}
                               onClick={() => handleTabClick(tab.id, (tab as any).href)}
                               style={{

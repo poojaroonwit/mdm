@@ -7,16 +7,18 @@ import { cn } from "@/lib/utils"
 interface TabsContextValue {
   value: string
   onValueChange: (value: string) => void
+  variant: "pills" | "underline"
 }
 
 const TabsContext = React.createContext<TabsContextValue | undefined>(undefined)
 
-const Tabs = ({ children, value: controlledValue, onValueChange, defaultValue, className }: {
+const Tabs = ({ children, value: controlledValue, onValueChange, defaultValue, className, variant = "pills" }: {
   children: React.ReactNode
   value?: string
   onValueChange?: (value: string) => void
   defaultValue?: string
   className?: string
+  variant?: "pills" | "underline"
 }) => {
   const [internalValue, setInternalValue] = React.useState(defaultValue || "")
   const isControlled = controlledValue !== undefined
@@ -30,7 +32,7 @@ const Tabs = ({ children, value: controlledValue, onValueChange, defaultValue, c
   }, [isControlled, onValueChange])
 
   return (
-    <TabsContext.Provider value={{ value, onValueChange: handleValueChange }}>
+    <TabsContext.Provider value={{ value, onValueChange: handleValueChange, variant }}>
       <div className={className}>
         {children}
       </div>
@@ -43,20 +45,26 @@ const TabsList = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement> & {
     orientation?: "horizontal" | "vertical"
   }
->(({ className, orientation = "horizontal", ...props }, ref) => (
-  <div
-    ref={ref}
-    role="tablist"
-    aria-orientation={orientation}
-    data-component={orientation === "vertical" ? "vertical-tab-list" : undefined}
-    className={cn(
-      "inline-flex h-10 items-center justify-start border-b border-border text-muted-foreground",
-      orientation === "vertical" && "inline-flex h-auto w-full flex-col items-stretch border-b-0",
-      className
-    )}
-    {...props}
-  />
-))
+>(({ className, orientation = "horizontal", ...props }, ref) => {
+  const context = React.useContext(TabsContext)
+  const variant = context?.variant || "pills"
+
+  return (
+    <div
+      ref={ref}
+      role="tablist"
+      aria-orientation={orientation}
+      className={cn(
+        variant === "pills" 
+          ? "inline-flex items-center justify-center rounded-xl bg-muted/30 p-1 text-muted-foreground border border-border/50"
+          : "inline-flex h-10 items-center justify-start border-b border-border text-muted-foreground",
+        orientation === "vertical" && "inline-flex h-auto w-full flex-col items-stretch border-b-0",
+        className
+      )}
+      {...props}
+    />
+  )
+})
 TabsList.displayName = "TabsList"
 
 const TabsTrigger = React.forwardRef<
@@ -67,19 +75,10 @@ const TabsTrigger = React.forwardRef<
 >(({ className, value, children, ...props }, ref) => {
   const context = React.useContext(TabsContext)
   const isActive = context?.value === value
-
-  // Check if parent is a vertical tablist
-  const [isVertical, setIsVertical] = React.useState(false)
-  React.useEffect(() => {
-    if (ref && typeof ref !== 'function' && ref.current) {
-      const parent = ref.current.closest('[role="tablist"][aria-orientation="vertical"]')
-      setIsVertical(!!parent)
-    }
-  }, [ref])
+  const variant = context?.variant || "pills"
 
   const handleClick = () => {
     context?.onValueChange(value)
-    props.onClick?.(undefined as any)
   }
 
   return (
@@ -89,11 +88,20 @@ const TabsTrigger = React.forwardRef<
       role="tab"
       aria-selected={isActive}
       onClick={handleClick}
-      data-component={isVertical ? "vertical-tab-trigger" : undefined}
       className={cn(
-        "inline-flex items-center justify-start whitespace-nowrap px-3 py-2.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-        isActive && "text-foreground font-semibold relative after:content-[''] after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-primary",
-        !isActive && "text-muted-foreground hover:text-foreground",
+        "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        variant === "pills" && [
+          "rounded-lg px-4 py-1.5 grayscale-0",
+          isActive 
+            ? "bg-background text-foreground shadow-sm" 
+            : "text-muted-foreground hover:bg-background/20 hover:text-foreground"
+        ],
+        variant === "underline" && [
+          "px-3 py-2.5",
+          isActive 
+            ? "text-foreground font-semibold relative after:content-[''] after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:bg-primary"
+            : "text-muted-foreground hover:text-foreground"
+        ],
         className
       )}
       {...props}

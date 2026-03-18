@@ -105,13 +105,13 @@ const SelectTrigger = React.forwardRef<
       onClick={handleClick}
       data-component="select-trigger"
       className={cn(
-        "flex h-11 w-full items-center justify-between rounded-[4px] border border-border bg-input text-foreground px-3 py-2.5 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+        "flex h-10 w-full items-center justify-between rounded-xl border border-border/50 bg-background px-3 py-2 text-sm ring-offset-background transition-all duration-200 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 group",
         className
       )}
       {...props}
     >
       {children}
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors duration-200" />
     </button>
   )
 })
@@ -202,7 +202,7 @@ const SelectContent = React.forwardRef<
       ref={contentRef}
       data-component="select-content"
       className={cn(
-        "fixed rounded-md border border-border bg-card text-popover-foreground shadow-lg outline-none backdrop-blur-xl flex flex-col overflow-hidden",
+        "fixed rounded-xl border border-border/50 bg-background/80 text-foreground shadow-2xl outline-none backdrop-blur-xl flex flex-col overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200",
         className
       )}
       style={{
@@ -308,7 +308,8 @@ const SelectItem = React.forwardRef<
       aria-selected={isSelected}
       onClick={handleClick}
       className={cn(
-        "relative flex w-full cursor-default select-none items-center rounded-sm py-2.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+        "relative flex w-full cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm outline-none transition-colors duration-150 hover:bg-muted/50 focus:bg-muted/50 dark:hover:bg-muted dark:focus:bg-muted disabled:pointer-events-none disabled:opacity-50",
+        isSelected && "bg-muted/50 font-medium text-primary",
         className
       )}
       {...props}
