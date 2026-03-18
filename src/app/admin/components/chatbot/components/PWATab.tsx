@@ -68,7 +68,7 @@ export function PWATab({
                         {/* General Section */}
                         <TabsContent value="general" className="m-0 mt-0">
                             <div className="space-y-4 border rounded-lg p-4">
-                                <div className="flex items-center gap-2 pb-2 border-b">
+                                <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                                     <Icons.Settings className="h-4 w-4 text-muted-foreground" />
                                     <Label className="text-base font-medium">General Settings</Label>
                                 </div>
@@ -147,7 +147,7 @@ export function PWATab({
                         {/* App Metadata Section */}
                         <TabsContent value="metadata" className="m-0 mt-0">
                             <div className="space-y-4 border rounded-lg p-4">
-                                <div className="flex items-center gap-2 pb-2 border-b">
+                                <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                                     <Icons.FileText className="h-4 w-4 text-muted-foreground" />
                                     <Label className="text-base font-medium">App Metadata</Label>
                                 </div>
@@ -275,7 +275,7 @@ export function PWATab({
                         {/* Banner Styling Section */}
                         <TabsContent value="banner-styling" className="m-0 mt-0">
                             <div className="space-y-4 border rounded-lg p-4">
-                                <div className="flex items-center gap-2 pb-2 border-b">
+                                <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                                     <Icons.Palette className="h-4 w-4 text-muted-foreground" />
                                     <Label className="text-base font-medium">Banner Styling</Label>
                                 </div>
@@ -492,7 +492,7 @@ export function PWATab({
                         {/* Button Styling Section */}
                         <TabsContent value="button-styling" className="m-0 mt-0">
                             <div className="space-y-4 border rounded-lg p-4">
-                                <div className="flex items-center gap-2 pb-2 border-b">
+                                <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                                     <Icons.MousePointer className="h-4 w-4 text-muted-foreground" />
                                     <Label className="text-base font-medium">Install Button Styling</Label>
                                 </div>

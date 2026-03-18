@@ -231,7 +231,7 @@ export function ConfigTab({ formData, setFormData }: ConfigTabProps) {
                   </div>
                 )}
 
-                <div className="space-y-2 border-t pt-4">
+                <div className="space-y-2 border-t border-border/50 pt-4">
                   <Label>Follow-up Questions</Label>
                   <p className="text-xs text-muted-foreground">Add suggested follow-up questions for users</p>
                   <div className="flex gap-2">
@@ -418,7 +418,7 @@ export function ConfigTab({ formData, setFormData }: ConfigTabProps) {
                     </div>
 
                     {formData.voiceProvider === 'openai-realtime' && (
-                      <div className="space-y-4 pt-2 border-t">
+                      <div className="space-y-4 pt-2 border-t border-border/50">
                         <h5 className="text-sm font-medium">Realtime Voice Settings</h5>
                         <div className="space-y-2">
                           <Label>Realtime Voice Prompt ID (Optional)</Label>

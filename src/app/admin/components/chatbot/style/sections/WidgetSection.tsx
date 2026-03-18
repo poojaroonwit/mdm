@@ -205,7 +205,7 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
           <AccordionContent>
             <FormSection className="pt-2 pb-4">
               <div className="mb-6 space-y-4">
-                <h4 className="text-sm font-medium border-b pb-2">Avatar (Closed State)</h4>
+                <h4 className="text-sm font-medium border-b border-border/50 pb-2">Avatar (Closed State)</h4>
                 <FormRow label="Type" description="Icon or custom image">
                   <Select
                     value={(formData as any).widgetAvatarType || formData.avatarType || 'icon'}
@@ -327,7 +327,7 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-sm font-medium border-b pb-2">Close Avatar (Open State)</h4>
+                <h4 className="text-sm font-medium border-b border-border/50 pb-2">Close Avatar (Open State)</h4>
                 <FormRow label="Type" description="Icon or custom image">
                   <Select
                     value={(formData as any).widgetCloseAvatarType || 'icon'}

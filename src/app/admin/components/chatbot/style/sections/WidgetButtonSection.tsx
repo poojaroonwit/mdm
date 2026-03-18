@@ -152,7 +152,7 @@ export function WidgetButtonSection({ formData, setFormData }: WidgetButtonSecti
                     </div>
 
                     {/* Close State Image (shown when chat is open) */}
-                    <div className="flex gap-4 items-start pt-2 border-t border-dashed">
+                    <div className="flex gap-4 items-start pt-2 border-t border-dashed border-border/50">
                       {(formData as any).widgetCloseImageUrl && (
                         <div className="relative group">
                           <img

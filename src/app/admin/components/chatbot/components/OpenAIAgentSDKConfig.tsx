@@ -48,7 +48,7 @@ function WorkflowFileSelectorComponent({
   const selectedWorkflow = (formData as any).openaiAgentSdkWorkflowFile || 'qsncc-workflow'
 
   return (
-    <FormSection className="pt-2 border-t">
+    <FormSection className="pt-2 border-t border-border/50">
       <FormRow 
         label="Workflow File" 
         description="Select the workflow file from src/lib/workflows to use for this chatbot. The workflow file must export a runWorkflow function."
@@ -545,7 +545,7 @@ export function OpenAIAgentSDKConfig({
             />
           </FormRow>
 
-          <div className="pt-2 border-t space-y-4">
+          <div className="pt-2 border-t border-border/50 space-y-4">
             <div className="mb-4">
               <h5 className="text-sm font-medium">Tools</h5>
             </div>

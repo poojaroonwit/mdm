@@ -931,7 +931,7 @@ export function PerformanceTab({ chatbot }: PerformanceTabProps) {
                     </div>
 
                     {/* Cost Forecast Section */}
-                    <div className="mt-6 pt-6 border-t">
+                    <div className="mt-6 pt-6 border-t border-border/50">
                       <div className="flex items-center justify-between mb-4">
                         <Label className="text-lg font-semibold">Cost Forecast (Next 30 Days)</Label>
                         <Button onClick={loadCostForecast} variant="outline" size="sm" disabled={forecastLoading}>

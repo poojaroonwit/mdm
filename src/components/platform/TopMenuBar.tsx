@@ -145,26 +145,43 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
   // Get recent notifications (first 5)
   const recentNotifications = notifications.slice(0, 5)
 
+  // Derive header background/text – prefer explicit brand colours from branding config,
+  // fall back to CSS-variable-based defaults so the bar is always opaque.
+  const headerBg = (branding?.topMenuBackgroundColor &&
+    !branding.topMenuBackgroundColor.includes('var(--brand-top-menu-bg)'))
+    ? branding.topMenuBackgroundColor
+    : 'var(--brand-top-menu-bg, hsl(var(--background)))'
+
+  const headerColor = (branding?.topMenuTextColor &&
+    !branding.topMenuTextColor.includes('var(--brand-top-menu-text)'))
+    ? branding.topMenuTextColor
+    : 'var(--brand-top-menu-text, hsl(var(--foreground)))'
+
   return (
     <header
-      className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-border/50 glass px-6 backdrop-blur-xl"
+      className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-border px-4"
       data-component="top-menu-bar"
+      style={{
+        zIndex: Z_INDEX.navigation,
+        backgroundColor: headerBg,
+        color: headerColor,
+      }}
     >
-      {/* Left Section: Logo, Application Name, and Selected Feature */}
-      <div className="flex items-center gap-1.5 min-w-0">
+      {/* Left Section: Logo + Application Name + Feature */}
+      <div className="flex items-center gap-2 min-w-0">
         {/* Logo */}
         {displayLogo ? (
           <img
             src={displayLogo}
             alt={displayName}
-            className="h-6 w-6 object-contain flex-shrink-0 mr-3"
+            className="h-5 w-5 object-contain flex-shrink-0"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none'
             }}
           />
         ) : (
-          <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center flex-shrink-0 mr-3 shadow-sm">
-            <span className="text-white text-[10px] font-bold">
+          <div className="h-6 w-6 rounded-md bg-primary flex items-center justify-center flex-shrink-0">
+            <span className="text-primary-foreground text-[10px] font-bold">
               {displayName.charAt(0)}
             </span>
           </div>
@@ -173,26 +190,25 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
         {/* Space Name or Application Name */}
         {showSpaceName && spaceName ? (
           <div className="flex flex-col min-w-0">
-            <span className="font-semibold text-sm whitespace-nowrap" style={{ color: 'var(--brand-top-menu-text, hsl(var(--foreground)))' }}>
+            <span className="font-semibold text-sm whitespace-nowrap leading-none">
               {spaceName}
             </span>
-            <span className="text-xs text-muted-foreground whitespace-nowrap" style={{ color: 'var(--brand-top-menu-text, hsl(var(--muted-foreground)))', opacity: 0.7 }}>
+            <span className="text-xs whitespace-nowrap leading-none mt-0.5 opacity-60">
               {displayName}
             </span>
           </div>
         ) : displayName && (
           <>
-            <span className="font-semibold text-sm whitespace-nowrap" style={{ color: 'var(--brand-top-menu-text, hsl(var(--foreground)))' }}>
+            <span className="font-semibold text-sm whitespace-nowrap">
               {displayName}
             </span>
 
-            {/* Separator */}
             {!showSpaceName && (
               <>
-                <span className="text-sm" style={{ color: 'var(--brand-top-menu-text, hsl(var(--muted-foreground)))', opacity: 0.6 }}>|</span>
+                <span className="text-sm opacity-30 select-none">/</span>
 
                 {/* Selected Feature */}
-                <span className="text-sm truncate" style={{ color: 'var(--brand-top-menu-text, hsl(var(--muted-foreground)))', opacity: 0.8 }}>
+                <span className="text-sm truncate opacity-70">
                   {featureName}
                 </span>
               </>

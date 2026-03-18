@@ -93,12 +93,6 @@ export function getContainerStyle(
   const options = (chatbot as any).chatkitOptions || {}
   const theme = options.theme || {}
 
-  // Add direct window check for resilience in case the isMobile prop hasn't propagated yet
-  // but we are definitely in a small viewport. 
-  // Breakpoint 1024 is for "conversion to full-page mode", 
-  // but for "shadow removal", we might want to be less aggressive.
-  const effectiveIsMobile = isMobile || (typeof window !== 'undefined' && window.innerWidth < 1024)
-
   const shadowX = extractNumericValue((chatbot as any).chatWindowShadowX || chatbot.shadowX || '0px')
   const shadowY = extractNumericValue((chatbot as any).chatWindowShadowY || chatbot.shadowY || '0px')
   const shadowBlur = extractNumericValue((chatbot as any).chatWindowShadowBlur || chatbot.shadowBlur || '4px')
@@ -263,7 +257,7 @@ export function getContainerStyle(
       // Remove duplicate height check
       border: `${chatbot.chatWindowBorderWidth || chatbot.borderWidth || '1px'} solid ${chatbot.chatWindowBorderColor || chatbot.borderColor || '#e2e8f0'}`,
       borderRadius: ensureUnits(chatbot.chatWindowBorderRadius || chatbot.borderRadius, '12px'),
-      boxShadow: effectiveIsMobile ? 'none' : fullBoxShadow,
+      boxShadow: isMobile ? 'none' : fullBoxShadow,
       outline: undefined,
       zIndex: (chatbot as any).widgetZIndex || Z_INDEX.chatWidget,
       // Note: Emulator background should NOT be applied to popover - only to page background
