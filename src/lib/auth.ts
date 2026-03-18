@@ -4,7 +4,6 @@ import GoogleProvider from "next-auth/providers/google"
 import GitHubProvider from "next-auth/providers/github"
 import AzureADProvider from "next-auth/providers/azure-ad"
 import bcrypt from "bcryptjs"
-import crypto from "crypto"
 import { db as prisma, query } from "@/lib/db"
 import { authenticator } from "otplib"
 import { sendEmail } from "@/lib/email"
@@ -138,7 +137,7 @@ async function getSessionTimeoutSeconds(): Promise<number> {
 }
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET || crypto.randomBytes(32).toString('base64'),
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: "credentials",
