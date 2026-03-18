@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Search, Download, Star, ExternalLink, Loader, AlertCircle, RefreshCw, Plus, BarChart3, Activity, Database, HardDrive, Globe, Settings, Workflow, TrendingUp, Shield, Code, Package, FileText, Upload } from 'lucide-react'
+import { Search, Download, Star, ExternalLink, Loader, AlertCircle, RefreshCw, Plus, BarChart3, Activity, Database, HardDrive, Globe, Settings, Workflow, TrendingUp, Shield, Code, Package, FileText, Upload, ShieldCheck } from 'lucide-react'
 import { useSpace } from '@/contexts/space-context'
 import { PluginCard } from './PluginCard'
 import { InstallationWizard } from './InstallationWizard'
@@ -58,6 +58,7 @@ export function MarketplaceHome({
     }
   }, [categoryFromUrl])
   const [searchQuery, setSearchQuery] = useState('')
+  const [complianceFilter, setComplianceFilter] = useState(false)
   const [selectedPlugin, setSelectedPlugin] = useState<PluginDefinition | null>(null)
   const [showInstallWizard, setShowInstallWizard] = useState(false)
 
@@ -136,6 +137,11 @@ export function MarketplaceHome({
 
     // Filter by category (client-side)
     if (selectedCategory !== 'all' && plugin.category !== selectedCategory) {
+      return false
+    }
+
+    // Filter by compliance
+    if (complianceFilter && !plugin.isCompliance && !plugin.securityAudit) {
       return false
     }
 
@@ -321,6 +327,30 @@ export function MarketplaceHome({
             </Badge>
           )
         })}
+      </div>
+
+      {/* Compliance Filter Tag */}
+      <div className="flex items-center gap-2">
+        <Badge
+          variant={complianceFilter ? 'default' : 'outline'}
+          className={`inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-full cursor-pointer transition-all ${
+            complianceFilter
+              ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700'
+              : 'text-emerald-700 border-emerald-400 hover:bg-emerald-50'
+          }`}
+          onClick={() => setComplianceFilter((v) => !v)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              setComplianceFilter((v) => !v)
+            }
+          }}
+        >
+          <ShieldCheck className="h-4 w-4" />
+          Is Compliance
+        </Badge>
       </div>
 
       {/* Filters Section */}

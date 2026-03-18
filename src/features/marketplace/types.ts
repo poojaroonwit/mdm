@@ -27,6 +27,7 @@ export interface PluginDefinition {
   rating?: number
   reviewCount?: number
   verified?: boolean
+  isCompliance?: boolean
   securityAudit?: Record<string, any>
 
   // External plugin support
@@ -37,7 +38,7 @@ export interface PluginDefinition {
   downloadUrl?: string    // URL to download plugin package
   checksum?: string        // SHA256 checksum for verification
   installedPath?: string   // Where plugin is installed locally
-  
+
   // Navigation configuration
   navigation?: {
     group: 'overview' | 'tools' | 'system' | 'infrastructure' | 'data-management'
@@ -95,4 +96,3 @@ export interface UseMarketplacePluginsOptions {
     installedOnly?: boolean // Only show plugins installed in the space
   }
 }
-
