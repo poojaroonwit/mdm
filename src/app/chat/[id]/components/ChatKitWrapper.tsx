@@ -741,15 +741,14 @@ export function ChatKitWrapper({
 
             /* Inner container handles clipping */
             #chatbot-native-inner {
-                width: calc(100% - ${SHADOW_BUFFER * 2}px);
-                height: calc(100% - ${SHADOW_BUFFER * 2}px);
-                margin: ${SHADOW_BUFFER}px !important;
+                width: 100%;
+                height: 100%;
+                margin: 0 !important;
                 padding: 0 !important;
                 /* Explicitly use the variable instead of inherit to ensure it works */
                 border-radius: var(--container-border-radius) !important;
                 /* Allow overflow to show shadow */
                 overflow: visible !important;
-                transform: translateZ(0) !important;
                 display: flex;
                 flex-direction: column;
                 background: inherit;
