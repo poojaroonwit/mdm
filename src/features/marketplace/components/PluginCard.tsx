@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Star, Download, ExternalLink, CheckCircle2, Trash2, Info, ShieldCheck } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 export interface PluginCardProps {
   plugin: PluginDefinition
@@ -18,7 +17,10 @@ export interface PluginCardProps {
 export function PluginCard({ plugin, onInstall, onUninstall, installing = false, installed = false }: PluginCardProps) {
   const isCompliance = plugin.isCompliance || !!plugin.securityAudit
   return (
-    <Card className={cn('hover:shadow-md transition-shadow', isCompliance && 'border-2 border-emerald-500 ring-1 ring-emerald-500/20')}>
+    <Card
+      className="hover:shadow-md transition-shadow"
+      style={isCompliance ? { border: '2px solid #10b981' } : undefined}
+    >
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
