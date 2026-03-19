@@ -228,8 +228,11 @@ export function getContainerStyle(
 
     const x = chatbot as any
     const pos = (x.widgetPosition || 'bottom-right') as string
-    const offsetX = x.widgetOffsetX || '20px'
-    const offsetY = x.widgetOffsetY || '20px'
+    // In embed mode, the parent container already accounts for widgetOffsetX/Y.
+    // Inside the iframe, positions are relative to the iframe itself, so use SHADOW_BUFFER
+    // as the base offset (same logic as getPopoverPositionStyle).
+    const offsetX = isEmbed ? `${SHADOW_BUFFER}px` : ensureUnits(x.widgetOffsetX, '20px')
+    const offsetY = isEmbed ? `${SHADOW_BUFFER}px` : ensureUnits(x.widgetOffsetY, '20px')
     const widgetSize = parseFloat(x.widgetSize || '60px') || 60
     const widgetSizePx =
       typeof x.widgetSize === 'string' && x.widgetSize.includes('px') ? parseFloat(x.widgetSize) : widgetSize
