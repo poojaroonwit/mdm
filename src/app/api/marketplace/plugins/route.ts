@@ -232,6 +232,7 @@ async function getHandler(request: NextRequest) {
         rating: row.rating ? parseFloat(row.rating) : null,
         reviewCount: row.review_count,
         verified: row.verified,
+        isCompliance: !!(row.security_audit || capabilities?.isCompliance),
         securityAudit: row.security_audit,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
