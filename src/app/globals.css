@@ -346,5 +346,6 @@ html.chat-embed-mode body {
 }
 
 .card-compliance {
-  border: 2px solid #10b981 !important;
+  outline: 2px solid #10b981;
+  outline-offset: -1px;
 }
