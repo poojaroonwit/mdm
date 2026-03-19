@@ -85,6 +85,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableSystem={!isChatRoute}
         forcedTheme={isChatRoute ? "light" : undefined}
         disableTransitionOnChange
+        enableColorScheme={false}
       >
         <ThemeProvider>
           <QueryProvider>

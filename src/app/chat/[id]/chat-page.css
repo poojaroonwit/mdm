@@ -1,0 +1,23 @@
+/*
+ * Chat page global background override.
+ *
+ * This file is imported by the chat layout so it compiles into the page's
+ * CSS bundle and is delivered as a <link> tag in <head> — loaded BEFORE
+ * any JavaScript (including next-themes' dark-class injection).
+ *
+ * Problem: next-themes adds class="dark" client-side, making
+ *   body { background-color: var(--bg-default) } → #000000 (black).
+ *   Our html.chat-embed-mode override arrived too late (via RSC streaming
+ *   or useEffect), causing a black iframe background in dark OS mode.
+ *
+ * Fix: force transparent body here with !important so it beats the dark
+ *   theme CSS variable regardless of when the dark class is applied.
+ *   color-scheme: light prevents the browser canvas from painting black
+ *   before any CSS loads.
+ *   The chat container component provides its own explicit background colors.
+ */
+html,
+body {
+  background-color: transparent !important;
+  /* color-scheme: light !important; - Removed to prevent style="color-scheme: dark" attributes in iframe */
+}
