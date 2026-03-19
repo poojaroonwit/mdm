@@ -58,7 +58,7 @@ interface AccordionProps {
 export const Accordion = ({ items, className, defaultOpen }: AccordionProps) => {
   return (
     <div className={cn("w-full space-y-3", className)}>
-      {items.map((item) => (
+      {(items ?? []).map((item) => (
         <AccordionItem 
           key={item.id} 
           id={item.id} 

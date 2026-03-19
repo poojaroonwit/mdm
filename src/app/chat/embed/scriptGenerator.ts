@@ -1,6 +1,7 @@
 import { Z_INDEX } from '@/lib/z-index'
 import { ChatbotConfig } from '../[id]/types'
 import { WidgetConfig } from '../[id]/utils/widgetConfigHelper'
+import { SHADOW_BUFFER } from '../[id]/utils/chatStyling'
 
 
 /**
@@ -50,7 +51,7 @@ export function generateEmbedScript(
     // Style the container to be a transparent overlay
     // Initial size is small (standard widget area) to prevent blocking the page before the widget loads/resizes
     // Compute initial position from widgetConfig so non-bottom-right widgets don't flash at the wrong corner
-    var shadowBuffer = 20;
+    var shadowBuffer = ${SHADOW_BUFFER};
     var wPos = widgetConfig.position || 'bottom-right';
     var wOffsetX = parseFloat(widgetConfig.offsetX || '20') || 20;
     var wOffsetY = parseFloat(widgetConfig.offsetY || '20') || 20;
