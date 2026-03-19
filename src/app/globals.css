@@ -2,10 +2,30 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap');
 @import 'tailwindcss';
 
-/* Tailwind v4: bare `border` utility defaults to currentColor — fix globally.
-   Must be outside @layer so it wins over @layer utilities. */
-*, *::before, *::after {
-  border-color: hsl(var(--border));
+/*
+  Map shadcn/ui CSS variables into Tailwind v4's color system.
+  Using @theme inline so Tailwind knows about --color-border etc.
+  and @apply border-border in @layer base sets the default border color.
+*/
+@theme inline {
+  --color-border: hsl(var(--border));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
 }
 
 @layer base {
@@ -148,6 +168,11 @@
     --border: 0 0% 14.9%;
     --input: 0 0% 14.9%;
     --ring: 0 0% 83.1%;
+  }
+
+  /* Fix Tailwind v4: border utility defaults to currentColor — set correct default */
+  * {
+    @apply border-border;
   }
 
   body {
