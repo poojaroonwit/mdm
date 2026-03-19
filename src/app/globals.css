@@ -170,9 +170,10 @@
     --ring: 0 0% 83.1%;
   }
 
-  /* Fix Tailwind v4: border utility defaults to currentColor — set correct default */
-  * {
-    @apply border-border;
+  /* Fix Tailwind v4: border utility defaults to currentColor — set correct default.
+     Direct CSS property (no @apply) — avoids @theme inline build-time resolution issues. */
+  *, *::before, *::after {
+    border-color: hsl(var(--border));
   }
 
   body {
