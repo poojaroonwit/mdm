@@ -1,6 +1,11 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+// Import chat-page.css HERE (not in layout.tsx) so it lands in the static CSS
+// bundle linked in the initial <head>, not in streamed RSC HTML. This ensures
+// the color-scheme: light !important rule is render-blocking and beats next-themes'
+// inline style="color-scheme: dark;" from the very first browser paint.
+import './chat-page.css'
+import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
@@ -145,15 +150,27 @@ export default function ChatPage() {
   }, [isMobile, isEmbed])
   */
 
-  // Set transparent background for embed mode to prevent white page background
-  useEffect(() => {
+  // Set transparent background for embed mode to prevent black iframe in dark OS mode.
+  // useLayoutEffect fires before the browser paints React content. We also directly
+  // override document.documentElement.style.colorScheme so that next-themes' inline
+  // style="color-scheme: dark;" is replaced by our value before the first paint.
+  useLayoutEffect(() => {
     if (isEmbed) {
       document.documentElement.classList.add('chat-embed-mode')
+      // Override next-themes' inline style="color-scheme: dark;" with a JS inline style.
+      // Inline beats inline, so setting it here (after next-themes' blocking script but
+      // before the browser paints React) wins.
+      document.documentElement.style.colorScheme = 'light'
+      document.documentElement.style.backgroundColor = 'transparent'
     } else {
       document.documentElement.classList.remove('chat-embed-mode')
+      document.documentElement.style.colorScheme = ''
+      document.documentElement.style.backgroundColor = ''
     }
     return () => {
       document.documentElement.classList.remove('chat-embed-mode')
+      document.documentElement.style.colorScheme = ''
+      document.documentElement.style.backgroundColor = ''
     }
   }, [isEmbed])
 
