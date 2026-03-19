@@ -186,13 +186,18 @@
 }
 
 /* Embed mode: always transparent to show host website */
-/* color-scheme: light prevents dark-mode browsers from painting a black canvas behind the transparent iframe */
+/* color-scheme: light !important prevents dark-mode browsers (and next-themes inline script)
+   from painting a black canvas behind the transparent iframe.
+   The chat-embed-mode class is applied by an inline <script> in the chat layout <head>
+   so it is present before next-themes runs its own blocking script. */
 html.chat-embed-mode {
   background-color: transparent !important;
-  color-scheme: light;
+  color-scheme: light !important;
 }
 html.chat-embed-mode body {
   background-color: transparent !important;
+  /* Prevent the 0.3s background-color transition from showing a dark flash */
+  transition: none !important;
 }
 
 @layer components {

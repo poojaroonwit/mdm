@@ -173,6 +173,12 @@ export default async function ChatLayout({ children, params }: ChatLayoutProps) 
 
   return (
     <>
+      {/* Inline script: detect embed mode BEFORE React hydration and next-themes runs.
+          next-themes adds class="dark" via its own blocking script, which sets a dark canvas.
+          We need to add chat-embed-mode at the same time so our CSS override wins. */}
+      <script dangerouslySetInnerHTML={{
+        __html: `(function(){try{if(location.search.indexOf('mode=embed')!==-1){document.documentElement.classList.add('chat-embed-mode');}}catch(e){}})()`
+      }} />
       <style dangerouslySetInnerHTML={{
         __html: `
         #pwa-loading-overlay {
