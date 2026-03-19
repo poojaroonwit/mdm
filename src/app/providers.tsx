@@ -20,6 +20,7 @@ import { NotificationProvider } from "@/contexts/notification-context"
 import { QueryProvider } from "@/lib/providers/query-provider"
 import { ThemeProvider } from "@/contexts/theme-context"
 import { useEffect, useState } from "react"
+import { usePathname } from "next/navigation"
 
 
 function ThemedToaster() {
@@ -70,12 +71,19 @@ function ThemedToaster() {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  // Chat pages (/chat/*) manage their own theming. Force light mode so that
+  // next-themes' blocking script does NOT inject class="dark" or
+  // style="color-scheme: dark;" into the iframe's <html> element.
+  const isChatRoute = pathname?.startsWith('/chat/')
+
   return (
     <SessionProvider>
       <NextThemeProvider
         attribute="class"
         defaultTheme="system"
-        enableSystem={true}
+        enableSystem={!isChatRoute}
+        forcedTheme={isChatRoute ? "light" : undefined}
         disableTransitionOnChange
       >
         <ThemeProvider>
