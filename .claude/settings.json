@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"background-color.*#000\\\\|dark\\\\|prefers-color-scheme\" /c/Users/MD3770/Desktop/repo/mdm-1/src/app/chat --include=*.tsx --include=*.ts)",
+      "Bash(grep -rn \"color-scheme\\\\|prefers-color-scheme\" /c/Users/MD3770/Desktop/repo/mdm-1/src/app --include=*.tsx --include=*.ts --include=*.html)",
+      "Bash(find c:/Users/MD3770/Desktop/repo/mdm-1 -name commons-84e8b171*)",
+      "Bash(grep -rn \"items\\\\.map\\\\|filters\\\\.map\\\\|data\\\\.map\\\\|plugins\\\\.map\\\\|cards\\\\.map\" /c/Users/MD3770/Desktop/repo/mdm-1/src/components --include=*.tsx)",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "WebFetch(domain:dev-ncc-udp.qsncc.com)"
+    ]
+  }
+}

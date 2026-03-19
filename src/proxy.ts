@@ -41,6 +41,12 @@ export default withAuth(
     // Create response
     const response = NextResponse.next()
 
+    // Signal to the root layout that we're on a chat route so it can force
+    // light theme in next-themes' blocking script (preventing dark iframe flash).
+    if (path.startsWith('/chat/')) {
+      response.headers.set('x-is-chat-route', '1')
+    }
+
     // Add CORS headers to all API responses (not just preflight)
     if (path.startsWith('/api/') || path.startsWith('/chat-api/')) {
       addCorsHeaders(req, response, {

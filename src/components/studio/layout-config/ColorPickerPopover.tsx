@@ -262,7 +262,8 @@ export function ColorPickerPopover({
     if (typeof window === 'undefined') return []
     try {
       const stored = localStorage.getItem(RECENT_COLORS_KEY)
-      return stored ? JSON.parse(stored) : []
+      const parsed = stored ? JSON.parse(stored) : []
+      return Array.isArray(parsed) ? parsed : []
     } catch {
       return []
     }
@@ -272,7 +273,8 @@ export function ColorPickerPopover({
     if (typeof window === 'undefined') return []
     try {
       const stored = localStorage.getItem(FAVORITE_COLORS_KEY)
-      return stored ? JSON.parse(stored) : []
+      const parsed = stored ? JSON.parse(stored) : []
+      return Array.isArray(parsed) ? parsed : []
     } catch {
       return []
     }

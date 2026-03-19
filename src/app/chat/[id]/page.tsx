@@ -156,6 +156,8 @@ export default function ChatPage() {
   // manage color-scheme via inline styles as next-themes' enableColorScheme={false}
   // prevents it from injecting unwanted attributes.
   useLayoutEffect(() => {
+    // Remove any color-scheme inline style next-themes may have injected before hydration
+    document.documentElement.style.removeProperty('color-scheme')
     if (isEmbed) {
       document.documentElement.classList.add('chat-embed-mode')
       document.documentElement.style.backgroundColor = 'transparent'
