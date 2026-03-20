@@ -1120,34 +1120,6 @@ export function TicketDetailModalEnhanced({
             )}
           </TabsList>
 
-        <div className="mt-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-8">
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="comments">
-              Comments {comments.length > 0 && `(${comments.length})`}
-            </TabsTrigger>
-            <TabsTrigger value="attachments">
-              Files {attachments.length > 0 && `(${attachments.length})`}
-            </TabsTrigger>
-            <TabsTrigger value="subtasks">
-              Subtasks {subtasks.length > 0 && `(${subtasks.length})`}
-            </TabsTrigger>
-            <TabsTrigger value="dependencies">Dependencies</TabsTrigger>
-            <TabsTrigger value="relationships">
-              <Network className="h-4 w-4 mr-1" />
-              Relationships
-            </TabsTrigger>
-            <TabsTrigger value="time">
-              Time {totalHours > 0 && `(${totalHours.toFixed(1)}h)`}
-            </TabsTrigger>
-            {serviceDeskConfig?.isConfigured && (
-              <TabsTrigger value="servicedesk">
-                ServiceDesk {serviceDeskRequestId && `(${serviceDeskRequestId})`}
-              </TabsTrigger>
-            )}
-          </TabsList>
-
           <TabsContent value="details" className="space-y-4 mt-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
