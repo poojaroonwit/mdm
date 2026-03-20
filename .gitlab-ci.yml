@@ -19,6 +19,8 @@ docker-build:
       --destination "${IMAGE_TAG}"
       --destination "${LATEST_TAG}"
       --build-arg NODE_ENV=production
+      --cache=true
+      --cache-copy-layers
   only:
     - master
     - main

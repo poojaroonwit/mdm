@@ -7,9 +7,7 @@ FROM base AS deps
 COPY package.json package-lock.json* ./
 COPY prisma ./prisma
 ENV NODE_ENV=development
-# Cache the npm package store between builds to avoid re-downloading packages
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci --prefer-offline --no-audit --legacy-peer-deps --include=dev 2>/dev/null || \
+RUN npm ci --prefer-offline --no-audit --legacy-peer-deps --include=dev 2>/dev/null || \
     npm install --no-audit --legacy-peer-deps --include=dev
 
 # Build application
@@ -44,10 +42,8 @@ ENV npm_config_maxsockets=2
 # Limit webpack parallelism
 ENV WEBPACK_PARALLELISM=2
 
-# Cache .next/cache between builds for incremental Next.js compilation
 # NEXTAUTH_SECRET passed inline (not as ENV layer) to avoid secret exposure in image history
-RUN --mount=type=cache,target=/app/.next/cache \
-    NEXTAUTH_SECRET="dummy_secret_at_least_32_characters_long_for_build" \
+RUN NEXTAUTH_SECRET="dummy_secret_at_least_32_characters_long_for_build" \
     NEXT_PUBLIC_APP_VERSION=$(node -p "require('./package.json').version") \
     NODE_OPTIONS="--max-old-space-size=${BUILD_MEMORY_LIMIT} --max-semi-space-size=64" \
     npm run build
