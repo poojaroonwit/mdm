@@ -655,7 +655,7 @@ export function ChatKitWrapper({
   const overlayStyle = getOverlayStyle(deploymentType as any, chatbot, isOpen, chatkitOptionsArg)
 
   const widgetButtonStyle = getWidgetButtonStyle(chatbot, chatkitOptionsArg)
-  const widgetPopoverPositionStyle = getPopoverPositionStyle(chatbot, isEmbed)
+  const widgetPopoverPositionStyle = getPopoverPositionStyle(chatbot, isEmbed, isOpen)
 
   // Handler for closing that also notifies parent
   const handleBackdropClose = (e: React.MouseEvent) => {

@@ -33,6 +33,7 @@ import {
   getWidgetButtonStyle,
   ensureUnits,
   SHADOW_BUFFER,
+  BUTTON_SHADOW_BUFFER,
 } from './utils/chatStyling'
 import { Z_INDEX } from '@/lib/z-index'
 import { ChatWidgetButton } from './components/ChatWidgetButton'
@@ -474,11 +475,10 @@ export default function ChatPage() {
 
       if (isPopover) {
         if (!isOpen) {
-          // Closed state: Add shadow buffer to widget size
-          // Standard widget size is usually 60px, button is 120x120 container in old script
-          // Let's use config.widgetSize + 2 * SHADOW_BUFFER
+          // Closed state: use BUTTON_SHADOW_BUFFER (12px) instead of SHADOW_BUFFER (40px)
+          // to minimise the transparent iframe area that blocks host-page interactions.
           const widgetSizeRaw = parseFloat(x.widgetSize || '60') || 60
-          const size = `${widgetSizeRaw + (SHADOW_BUFFER * 2)}px`
+          const size = `${widgetSizeRaw + (BUTTON_SHADOW_BUFFER * 2)}px`
           width = size
           height = size
         } else if (!isMobileRef.current) {
@@ -502,16 +502,13 @@ export default function ChatPage() {
           }
         }
         
-        // Calculate parent positions
-        // We subtract SHADOW_BUFFER from the user's offset because the internal element 
-        // already has a SHADOW_BUFFER gap. 
-        // ParentOffset = UserOffset - SHADOW_BUFFER
-        // Actually, internal element is at (SHADOW_BUFFER, SHADOW_BUFFER).
-        // If we want the internal element to be at (UserOffset, UserOffset) relative to screen:
-        // ParentFrame must be at (UserOffset - SHADOW_BUFFER, UserOffset - SHADOW_BUFFER)
-        
-        const parentOffsetX = `calc(${offsetX} - ${SHADOW_BUFFER}px)`
-        const parentOffsetY = `calc(${offsetY} - ${SHADOW_BUFFER}px)`
+        // Calculate parent positions.
+        // ParentFrame = UserOffset - buffer, internal element at +buffer = UserOffset on screen.
+        // Closed: use BUTTON_SHADOW_BUFFER (button only — small iframe).
+        // Open: use SHADOW_BUFFER (chat window needs full shadow clearance).
+        const activeBuffer = isOpen ? SHADOW_BUFFER : BUTTON_SHADOW_BUFFER
+        const parentOffsetX = `calc(${offsetX} - ${activeBuffer}px)`
+        const parentOffsetY = `calc(${offsetY} - ${activeBuffer}px)`
         
         if (isOpen && isMobileRef.current) {
           // Force top-left anchor for 100% fullscreen on mobile
@@ -733,7 +730,7 @@ export default function ChatPage() {
     (chatbot as any).chatkitOptions
   )
   const overlayStyle = getOverlayStyle(effectiveDeploymentType, chatbot, isOpen, (chatbot as any).chatkitOptions)
-  const popoverPositionStyle = getPopoverPositionStyle(chatbot, isEmbed)
+  const popoverPositionStyle = getPopoverPositionStyle(chatbot, isEmbed, isOpen)
 
   // Render ChatKit only if engine type is chatkit or openai-agent-sdk with agent ID
   // In DESKTOP preview mode, don't force regular style on mobile - allow widget preview

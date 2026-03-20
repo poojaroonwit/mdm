@@ -1,7 +1,7 @@
 import { Z_INDEX } from '@/lib/z-index'
 import { ChatbotConfig } from '../[id]/types'
 import { WidgetConfig } from '../[id]/utils/widgetConfigHelper'
-import { SHADOW_BUFFER } from '../[id]/utils/chatStyling'
+import { SHADOW_BUFFER, BUTTON_SHADOW_BUFFER } from '../[id]/utils/chatStyling'
 
 
 /**
@@ -38,7 +38,8 @@ export function generateEmbedScript(
   
   function initWidget() {
     var Z_INDEX = ${JSON.stringify(Z_INDEX)};
-    
+    var buttonShadowBuffer = ${BUTTON_SHADOW_BUFFER};
+
     // Create a container for the iframe
     var embedContainer = document.getElementById('chatbot-embed-' + chatbotId);
     if (!embedContainer) {
@@ -55,10 +56,11 @@ export function generateEmbedScript(
     var wPos = widgetConfig.position || 'bottom-right';
     var wOffsetX = parseFloat(widgetConfig.offsetX || '20') || 20;
     var wOffsetY = parseFloat(widgetConfig.offsetY || '20') || 20;
-    var initOffsetX = Math.max(0, wOffsetX - shadowBuffer) + 'px';
-    var initOffsetY = Math.max(0, wOffsetY - shadowBuffer) + 'px';
+    // Initial state is always closed (button only) — use buttonShadowBuffer to keep iframe tight
+    var initOffsetX = Math.max(0, wOffsetX - buttonShadowBuffer) + 'px';
+    var initOffsetY = Math.max(0, wOffsetY - buttonShadowBuffer) + 'px';
     var initWidgetSize = parseFloat(widgetConfig.size || '60') || 60;
-    var initSize = (initWidgetSize + shadowBuffer * 2) + 'px';
+    var initSize = (initWidgetSize + buttonShadowBuffer * 2) + 'px';
     var positionCss = 'position: fixed; ';
     if (wPos.indexOf('bottom') !== -1) { positionCss += 'bottom: ' + initOffsetY + '; top: auto; '; }
     else { positionCss += 'top: ' + initOffsetY + '; bottom: auto; '; }

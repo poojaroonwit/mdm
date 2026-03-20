@@ -28,6 +28,8 @@ function hexToRgb(hex: string): string {
 
 // Buffer to prevent shadow clipping in iframes
 export const SHADOW_BUFFER = 40
+// Smaller buffer used for the button-only (closed) state — reduces the transparent iframe area
+export const BUTTON_SHADOW_BUFFER = 12
 
 export function getChatStyle(chatbot: ChatbotConfig, chatkitOptions?: any): React.CSSProperties {
   const options = chatkitOptions || (chatbot as any).chatkitOptions
@@ -49,15 +51,17 @@ export const ensureUnits = (val: string | number | undefined, defaultVal: string
   return /^\d+$/.test(strVal) ? `${strVal}px` : strVal
 }
 
-export function getPopoverPositionStyle(chatbot: ChatbotConfig, isEmbed: boolean = false): React.CSSProperties {
+export function getPopoverPositionStyle(chatbot: ChatbotConfig, isEmbed: boolean = false, isOpen: boolean = true): React.CSSProperties {
   if (!chatbot) return { position: 'fixed' }
   const x = chatbot as any
   const pos = (x.widgetPosition || 'bottom-right') as string
-  
+
   // In embed mode, the parent frame handles the main offset (widgetOffsetX/Y).
-  // The internal container should only use the SHADOW_BUFFER to avoid clipping and double-offset.
-  const offsetX = isEmbed ? `${SHADOW_BUFFER}px` : ensureUnits(x.widgetOffsetX, '20px')
-  const offsetY = isEmbed ? `${SHADOW_BUFFER}px` : ensureUnits(x.widgetOffsetY, '20px')
+  // When closed (button only), use BUTTON_SHADOW_BUFFER to minimize the transparent iframe area.
+  // When open, use SHADOW_BUFFER to match the chat window's iframe sizing.
+  const embedBuffer = isOpen ? SHADOW_BUFFER : BUTTON_SHADOW_BUFFER
+  const offsetX = isEmbed ? `${embedBuffer}px` : ensureUnits(x.widgetOffsetX, '20px')
+  const offsetY = isEmbed ? `${embedBuffer}px` : ensureUnits(x.widgetOffsetY, '20px')
   
   const style: React.CSSProperties = { position: 'fixed' }
   if (pos.includes('bottom')) (style as any).bottom = offsetY
