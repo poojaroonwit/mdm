@@ -36,7 +36,6 @@ ENV NEXT_PUBLIC_WS_PROXY_PORT=${NEXT_PUBLIC_WS_PROXY_PORT}
 ENV NODE_ENV=production
 ENV DOCKER_BUILD=true
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NEXTAUTH_SECRET="dummy_secret_at_least_32_characters_long_for_build"
 ENV LANGFUSE_HOST="http://dummy-langfuse-host.com"
 # Reduce build resource usage
 ENV CI=true
@@ -46,7 +45,9 @@ ENV npm_config_maxsockets=2
 ENV WEBPACK_PARALLELISM=2
 
 # Cache .next/cache between builds for incremental Next.js compilation
+# NEXTAUTH_SECRET passed inline (not as ENV layer) to avoid secret exposure in image history
 RUN --mount=type=cache,target=/app/.next/cache \
+    NEXTAUTH_SECRET="dummy_secret_at_least_32_characters_long_for_build" \
     NEXT_PUBLIC_APP_VERSION=$(node -p "require('./package.json').version") \
     NODE_OPTIONS="--max-old-space-size=${BUILD_MEMORY_LIMIT} --max-semi-space-size=64" \
     npm run build
