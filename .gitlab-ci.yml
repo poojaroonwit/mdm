@@ -1,6 +1,6 @@
 variables:
   # Use the project's registry
-  IMAGE_TAG: $CI_REGISTRY_IMAGE:1.0.0-beta
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:1.0.5-patch4
   LATEST_TAG: $CI_REGISTRY_IMAGE:latest
 
 stages:
