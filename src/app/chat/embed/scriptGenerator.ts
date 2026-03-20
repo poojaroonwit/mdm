@@ -69,8 +69,58 @@ export function generateEmbedScript(
     else { positionCss += 'left: 50%; right: auto; transform: translateX(-50%); '; }
     embedContainer.style.cssText = positionCss + 'width: ' + initSize + '; height: ' + initSize + '; max-width: 100% !important; max-height: 100% !important; box-sizing: border-box; pointer-events: none; z-index: ' + (widgetConfig.zIndex || Z_INDEX.chatWidget) + '; border: none; overflow: visible;';
     
-    // Create the iframe that loads the full chat page
-    // The chat page will render the widget button and container with React components
+    // ── Instant placeholder button ──────────────────────────────────────────
+    // Rendered immediately from pre-calculated widgetConfig so the user sees
+    // the button at once instead of waiting for the full iframe to hydrate.
+    var iframeReady = false;
+    var wantOpen = false;
+
+    var btnSize = initWidgetSize + 'px';
+    var placeholder = document.createElement('div');
+    placeholder.id = 'chatbot-placeholder-' + chatbotId;
+
+    // Position inside the container (mirrors what the React button does)
+    var phPos = 'position:absolute;box-sizing:border-box;';
+    if (wPos.indexOf('bottom') !== -1) phPos += 'bottom:' + buttonShadowBuffer + 'px;top:auto;';
+    else phPos += 'top:' + buttonShadowBuffer + 'px;bottom:auto;';
+    if (wPos.indexOf('right') !== -1) phPos += 'right:' + buttonShadowBuffer + 'px;left:auto;';
+    else if (wPos.indexOf('left') !== -1) phPos += 'left:' + buttonShadowBuffer + 'px;right:auto;';
+    else phPos += 'left:50%;transform:translateX(-50%);';
+
+    var phBg = widgetConfig.backgroundColor || '#3b82f6';
+    var phRadius = widgetConfig.borderRadius || '50%';
+    var phBorder = (widgetConfig.borderWidth && widgetConfig.borderWidth !== '0px')
+      ? widgetConfig.borderWidth + ' solid ' + (widgetConfig.borderColor || 'transparent') : 'none';
+    var phShadow = (widgetConfig.boxShadow && widgetConfig.boxShadow !== 'none') ? widgetConfig.boxShadow : '';
+    var phIconColor = widgetConfig.avatarIconColor || '#ffffff';
+
+    // Icon: image or inline SVG chat-bubble
+    var phIcon = '';
+    if (widgetConfig.avatarType === 'image' && widgetConfig.avatarImageUrl) {
+      phIcon = '<img src="' + widgetConfig.avatarImageUrl + '" style="width:60%;height:60%;object-fit:cover;border-radius:inherit;display:block;" />';
+    } else {
+      // Generic chat-bubble SVG (works without any external resources)
+      phIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="55%" height="55%" viewBox="0 0 24 24" fill="none" stroke="' + phIconColor + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+    }
+
+    placeholder.innerHTML = phIcon;
+    placeholder.style.cssText = phPos +
+      'width:' + btnSize + ';height:' + btnSize + ';' +
+      'background:' + phBg + ';border-radius:' + phRadius + ';border:' + phBorder + ';' +
+      (phShadow ? 'box-shadow:' + phShadow + ';' : '') +
+      'display:flex;align-items:center;justify-content:center;' +
+      'cursor:pointer;pointer-events:auto;z-index:2;overflow:hidden;';
+
+    placeholder.addEventListener('click', function() {
+      if (iframeReady) {
+        iframe.contentWindow.postMessage({ type: 'open-chat' }, '*');
+      } else {
+        wantOpen = true; // Will open as soon as iframe is ready
+      }
+    });
+    embedContainer.appendChild(placeholder);
+
+    // ── iframe (loads invisibly in background) ───────────────────────────────
     var iframe = document.createElement('iframe');
     iframe.id = 'chatbot-iframe-' + chatbotId;
     // Pass parent viewport width so the chat page can correctly detect mobile.
@@ -81,10 +131,10 @@ export function generateEmbedScript(
     iframe.setAttribute('title', 'Chat widget');
     iframe.setAttribute('allow', 'microphone; camera; clipboard-write');
     iframe.setAttribute('sandbox', 'allow-scripts allow-forms allow-popups allow-same-origin');
-    
-    // Style iframe to cover full viewport but be transparent except for widget
-    iframe.style.cssText = 'width: 100%; height: 100%; max-width: 100%; max-height: 100%; border: none; background: transparent; pointer-events: auto;';
-    
+
+    // Hidden until React is ready — pointer-events:none so placeholder click works
+    iframe.style.cssText = 'width:100%;height:100%;max-width:100%;max-height:100%;border:none;background:transparent;pointer-events:none;opacity:0;transition:opacity 0.15s;';
+
     embedContainer.appendChild(iframe);
     
     // Inject responsive CSS for mobile full-screen behavior
@@ -105,9 +155,22 @@ export function generateEmbedScript(
     // Listen for messages from the iframe (e.g., resize, close requests)
     window.addEventListener('message', function(e) {
       if (!e.data) return;
-      
+
       // Handle resizing request from the chat app
       if (e.data.type === 'chat-widget-resize') {
+        // First message means React has hydrated — swap placeholder for iframe
+        if (!iframeReady) {
+          iframeReady = true;
+          var ph = document.getElementById('chatbot-placeholder-' + chatbotId);
+          if (ph) ph.style.display = 'none';
+          iframe.style.opacity = '1';
+          iframe.style.pointerEvents = 'auto';
+          if (wantOpen) {
+            wantOpen = false;
+            iframe.contentWindow.postMessage({ type: 'open-chat' }, '*');
+          }
+        }
+
         var width = e.data.width;
         var height = e.data.height;
         var isOpen = e.data.isOpen;
