@@ -7,15 +7,20 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
-import { 
-  Shield, 
+import {
+  Shield,
   Save,
   RefreshCw,
   CheckCircle,
   XCircle,
   AlertCircle,
   Key,
-  Globe
+  Globe,
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
+  Copy
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { SSOConfig } from '../types'
@@ -38,6 +43,12 @@ export const SSOConfiguration = forwardRef<{ saveConfig: () => Promise<void> }, 
 
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [showGuide, setShowGuide] = useState<'google' | 'azure' | null>(null)
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    toast.success('Copied to clipboard')
+  }
 
   useEffect(() => {
     loadConfig()
@@ -152,14 +163,66 @@ export const SSOConfiguration = forwardRef<{ saveConfig: () => Promise<void> }, 
                 Configure Google OAuth authentication
               </CardDescription>
             </div>
-            <Switch
-              checked={config.googleEnabled}
-              onCheckedChange={(checked) => 
-                setConfig({ ...config, googleEnabled: checked })
-              }
-            />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowGuide(showGuide === 'google' ? null : 'google')}
+                className="text-muted-foreground"
+              >
+                <BookOpen className="h-4 w-4 mr-1" />
+                Setup Guide
+                {showGuide === 'google' ? <ChevronDown className="h-3 w-3 ml-1" /> : <ChevronRight className="h-3 w-3 ml-1" />}
+              </Button>
+              <Switch
+                checked={config.googleEnabled}
+                onCheckedChange={(checked) =>
+                  setConfig({ ...config, googleEnabled: checked })
+                }
+              />
+            </div>
           </div>
         </CardHeader>
+        {showGuide === 'google' && (
+          <CardContent className="border-t bg-muted/30">
+            <div className="space-y-4 py-2">
+              <h4 className="font-semibold text-sm flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                How to set up Google OAuth
+              </h4>
+              <ol className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">1</span>
+                  <span>Go to <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="text-primary underline inline-flex items-center gap-1">Google Cloud Console <ExternalLink className="h-3 w-3" /></a> and select or create a project.</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">2</span>
+                  <span>Navigate to <strong>APIs &amp; Services → OAuth consent screen</strong>. Set the app as <strong>Internal</strong> (for org users) or <strong>External</strong>, then fill in the required fields.</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">3</span>
+                  <span>Go to <strong>APIs &amp; Services → Credentials → Create Credentials → OAuth client ID</strong>. Choose <strong>Web application</strong> as the type.</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">4</span>
+                  <div className="space-y-1">
+                    <p>Under <strong>Authorized redirect URIs</strong>, add your callback URL:</p>
+                    <div className="flex items-center gap-2 bg-background border rounded px-3 py-1.5 font-mono text-xs">
+                      <span className="flex-1">{'{your-domain}'}/api/auth/callback/google</span>
+                      <Button variant="ghost" size="sm" className="h-6 px-1" onClick={() => copyToClipboard('/api/auth/callback/google')}>
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">5</span>
+                  <span>Copy the <strong>Client ID</strong> and <strong>Client Secret</strong> from the created credential and paste them in the fields below.</span>
+                </li>
+              </ol>
+            </div>
+          </CardContent>
+        )}
         {config.googleEnabled && (
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -168,7 +231,7 @@ export const SSOConfiguration = forwardRef<{ saveConfig: () => Promise<void> }, 
                 <Input
                   id="googleClientId"
                   value={config.googleClientId}
-                  onChange={(e) => 
+                  onChange={(e) =>
                     setConfig({ ...config, googleClientId: e.target.value })
                   }
                   placeholder="your-google-client-id.apps.googleusercontent.com"
@@ -180,7 +243,7 @@ export const SSOConfiguration = forwardRef<{ saveConfig: () => Promise<void> }, 
                   id="googleClientSecret"
                   type="password"
                   value={config.googleClientSecret}
-                  onChange={(e) => 
+                  onChange={(e) =>
                     setConfig({ ...config, googleClientSecret: e.target.value })
                   }
                   placeholder="GOCSPX-..."
@@ -189,7 +252,7 @@ export const SSOConfiguration = forwardRef<{ saveConfig: () => Promise<void> }, 
             </div>
             <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-md">
               <p className="text-sm text-blue-900 dark:text-blue-200">
-                <strong>Note:</strong> When enabled, Google SSO will appear on all login pages. 
+                <strong>Note:</strong> When enabled, Google SSO will appear on all login pages.
                 Users can only log in if their email exists in the platform or space.
               </p>
             </div>
@@ -210,14 +273,70 @@ export const SSOConfiguration = forwardRef<{ saveConfig: () => Promise<void> }, 
                 Configure Microsoft Azure Active Directory authentication
               </CardDescription>
             </div>
-            <Switch
-              checked={config.azureEnabled}
-              onCheckedChange={(checked) => 
-                setConfig({ ...config, azureEnabled: checked })
-              }
-            />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowGuide(showGuide === 'azure' ? null : 'azure')}
+                className="text-muted-foreground"
+              >
+                <BookOpen className="h-4 w-4 mr-1" />
+                Setup Guide
+                {showGuide === 'azure' ? <ChevronDown className="h-3 w-3 ml-1" /> : <ChevronRight className="h-3 w-3 ml-1" />}
+              </Button>
+              <Switch
+                checked={config.azureEnabled}
+                onCheckedChange={(checked) =>
+                  setConfig({ ...config, azureEnabled: checked })
+                }
+              />
+            </div>
           </div>
         </CardHeader>
+        {showGuide === 'azure' && (
+          <CardContent className="border-t bg-muted/30">
+            <div className="space-y-4 py-2">
+              <h4 className="font-semibold text-sm flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                How to set up Azure AD OAuth
+              </h4>
+              <ol className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">1</span>
+                  <span>Go to <a href="https://portal.azure.com/" target="_blank" rel="noopener noreferrer" className="text-primary underline inline-flex items-center gap-1">Azure Portal <ExternalLink className="h-3 w-3" /></a> and navigate to <strong>Azure Active Directory → App registrations → New registration</strong>.</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">2</span>
+                  <div className="space-y-1">
+                    <p>Set the name, select supported account types, and add the redirect URI:</p>
+                    <div className="flex items-center gap-2 bg-background border rounded px-3 py-1.5 font-mono text-xs">
+                      <span className="flex-1">{'{your-domain}'}/api/auth/callback/azure-ad</span>
+                      <Button variant="ghost" size="sm" className="h-6 px-1" onClick={() => copyToClipboard('/api/auth/callback/azure-ad')}>
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">3</span>
+                  <span>After registration, copy the <strong>Application (client) ID</strong> — this is your <strong>Client ID</strong>. Copy the <strong>Directory (tenant) ID</strong> — this is your <strong>Tenant ID</strong>.</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">4</span>
+                  <span>Go to <strong>Certificates &amp; secrets → New client secret</strong>. Set a description and expiry, then click <strong>Add</strong>. Copy the secret <strong>Value</strong> immediately — it won&apos;t be shown again.</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">5</span>
+                  <span>Go to <strong>API permissions → Add a permission → Microsoft Graph → Delegated</strong> and add <strong>email</strong>, <strong>openid</strong>, and <strong>profile</strong> permissions. Click <strong>Grant admin consent</strong>.</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">6</span>
+                  <span>Paste the Tenant ID, Client ID, and Client Secret into the fields below.</span>
+                </li>
+              </ol>
+            </div>
+          </CardContent>
+        )}
         {config.azureEnabled && (
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -226,7 +345,7 @@ export const SSOConfiguration = forwardRef<{ saveConfig: () => Promise<void> }, 
                 <Input
                   id="azureTenantId"
                   value={config.azureTenantId}
-                  onChange={(e) => 
+                  onChange={(e) =>
                     setConfig({ ...config, azureTenantId: e.target.value })
                   }
                   placeholder="your-tenant-id"
@@ -237,7 +356,7 @@ export const SSOConfiguration = forwardRef<{ saveConfig: () => Promise<void> }, 
                 <Input
                   id="azureClientId"
                   value={config.azureClientId}
-                  onChange={(e) => 
+                  onChange={(e) =>
                     setConfig({ ...config, azureClientId: e.target.value })
                   }
                   placeholder="your-azure-client-id"
@@ -250,7 +369,7 @@ export const SSOConfiguration = forwardRef<{ saveConfig: () => Promise<void> }, 
                 id="azureClientSecret"
                 type="password"
                 value={config.azureClientSecret}
-                onChange={(e) => 
+                onChange={(e) =>
                   setConfig({ ...config, azureClientSecret: e.target.value })
                 }
                 placeholder="your-azure-client-secret"
@@ -258,7 +377,7 @@ export const SSOConfiguration = forwardRef<{ saveConfig: () => Promise<void> }, 
             </div>
             <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-md">
               <p className="text-sm text-blue-900 dark:text-blue-200">
-                <strong>Note:</strong> When enabled, Azure AD SSO will appear on all login pages. 
+                <strong>Note:</strong> When enabled, Azure AD SSO will appear on all login pages.
                 Users can only log in if their email exists in the platform or space.
               </p>
             </div>
