@@ -345,7 +345,7 @@ export function RoleManagement() {
               ) : (
                 <div className="space-y-2">
                   {roles.map(role => (
-                    <div key={role.id} className="flex items-center justify-between p-4 border rounded hover:bg-muted/50 transition-colors">
+                    <div key={role.id} className="flex items-center justify-between p-4 rounded-md hover:bg-muted/50 transition-colors border-b border-border/50 last:border-0">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{role.name}</span>
@@ -689,7 +689,7 @@ export function RoleManagement() {
                   <CardContent>
                     <div className="space-y-2">
                       {analytics.globalRoles?.map((item: any) => (
-                        <div key={item.role_name} className="flex items-center justify-between p-2 border rounded">
+                        <div key={item.role_name} className="flex items-center justify-between p-2 rounded-md border-b border-border/50 last:border-0">
                           <span className="font-medium">{item.role_name}</span>
                           <Badge>{item.user_count} users</Badge>
                         </div>
@@ -724,7 +724,7 @@ export function RoleManagement() {
                   <CardContent>
                     <div className="space-y-2">
                       {analytics.customRoles?.map((item: any) => (
-                        <div key={item.id} className="flex items-center justify-between p-2 border rounded">
+                        <div key={item.id} className="flex items-center justify-between p-2 rounded-md border-b border-border/50 last:border-0">
                           <div>
                             <span className="font-medium">{item.name}</span>
                             <Badge variant="outline" className="ml-2">{item.level}</Badge>
@@ -746,7 +746,7 @@ export function RoleManagement() {
                   <CardContent>
                     <div className="space-y-2">
                       {analytics.permissionDistribution?.map((item: any) => (
-                        <div key={item.resource} className="flex items-center justify-between p-2 border rounded">
+                        <div key={item.resource} className="flex items-center justify-between p-2 rounded-md border-b border-border/50 last:border-0">
                           <span className="font-medium capitalize">{item.resource}</span>
                           <Badge>{item.role_count || 0} roles</Badge>
                         </div>

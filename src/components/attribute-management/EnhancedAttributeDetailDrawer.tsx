@@ -336,7 +336,7 @@ export function EnhancedAttributeDetailDrawer({
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="details" className="flex-1 overflow-y-auto p-6">
+            <TabsContent value="details" className="flex-1 overflow-y-auto">
               <div className="space-y-6">
                 <Card>
                   <CardHeader>
@@ -608,7 +608,7 @@ export function EnhancedAttributeDetailDrawer({
             </TabsContent>
 
             {isSelectType && (
-              <TabsContent value="options" className="flex-1 overflow-y-auto p-6">
+              <TabsContent value="options" className="flex-1 overflow-y-auto">
                 <div className="space-y-6">
 
                   {/* Attribute Options */}
@@ -750,7 +750,7 @@ export function EnhancedAttributeDetailDrawer({
               </TabsContent>
             )}
 
-            <TabsContent value="quality" className="flex-1 overflow-y-auto p-6">
+            <TabsContent value="quality" className="flex-1 overflow-y-auto">
               <div className="space-y-6">
                 <Card>
                   <CardHeader>
@@ -845,7 +845,7 @@ export function EnhancedAttributeDetailDrawer({
               </div>
             </TabsContent>
 
-            <TabsContent value="activity" className="flex-1 overflow-y-auto p-6">
+            <TabsContent value="activity" className="flex-1 overflow-y-auto">
               <div className="space-y-6">
                 <Card>
                   <CardHeader>

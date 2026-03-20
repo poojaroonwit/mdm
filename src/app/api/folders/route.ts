@@ -14,22 +14,24 @@ async function getHandler(request: NextRequest) {
 
   // Validate query parameters
   const queryValidation = validateQuery(request, z.object({
-    space_id: commonSchemas.id,
+    space_id: commonSchemas.id.optional(),
     type: z.string().optional().default('data_model'),
   }))
-  
+
   if (!queryValidation.success) {
     return queryValidation.response
   }
-  
+
   const { space_id: spaceId, type = 'data_model' } = queryValidation.data
   logger.apiRequest('GET', '/api/folders', { userId: session.user.id, spaceId, type })
 
-  // Check if user has access to the space
-  const accessResult = await requireSpaceAccess(spaceId, session.user.id!)
-  if (!accessResult.success) {
-    logger.warn('Access denied for folders', { spaceId, userId: session.user.id })
-    return accessResult.response
+  // Check space access only if a space_id was provided
+  if (spaceId) {
+    const accessResult = await requireSpaceAccess(spaceId, session.user.id!)
+    if (!accessResult.success) {
+      logger.warn('Access denied for folders', { spaceId, userId: session.user.id })
+      return accessResult.response
+    }
   }
 
   // Folder model doesn't exist in Prisma schema

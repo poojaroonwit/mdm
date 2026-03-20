@@ -12,6 +12,8 @@ import { TimesheetView } from '@/components/project-management/TimesheetView'
 import { SpaceSelector } from '@/components/project-management/SpaceSelector'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -19,7 +21,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, List, Kanban as KanbanIcon, Clock, Loader } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Separator } from '@/components/ui/separator'
+import { Plus, Search, List, Kanban as KanbanIcon, Clock, Loader, Settings } from 'lucide-react'
 import { useSpace } from '@/contexts/space-context'
 
 /**
@@ -47,8 +57,32 @@ export function TicketsList({
   const [kanbanConfig, setKanbanConfig] = useState<KanbanConfig>({
     rows: undefined,
     columns: 'status',
+    ticketDisplayMode: 'modal',
+    cardFields: {
+      description: true,
+      dueDate: true,
+      estimate: true,
+      assignee: true,
+      labels: true,
+      spaces: true,
+      attributes: true,
+    },
   })
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Configure Board dialog state
+  const [isConfigOpen, setIsConfigOpen] = useState(false)
+  const [localConfig, setLocalConfig] = useState<KanbanConfig>(kanbanConfig)
+
+  const openConfig = () => {
+    setLocalConfig(kanbanConfig)
+    setIsConfigOpen(true)
+  }
+
+  const handleConfigSave = () => {
+    setKanbanConfig(localConfig)
+    setIsConfigOpen(false)
+  }
 
   // Determine effective spaceId for filtering
   const effectiveSpaceId = showSpaceSelector
@@ -60,18 +94,17 @@ export function TicketsList({
   // Use tickets with time logs when in timesheet view, regular tickets otherwise
   const ticketsWithTimeLogsResult = useTicketsWithTimeLogs({
     spaceId: effectiveSpaceId,
-    filters: { ...filters, projectId, cycleId }, // Pass project/cycle context
+    filters: { ...filters, projectId, cycleId },
     includeTimeLogs: view === 'timesheet',
     autoFetch: view === 'timesheet',
   })
 
   const regularTicketsResult = useTickets({
     spaceId: effectiveSpaceId,
-    filters: { ...filters, projectId, cycleId }, // Pass project/cycle context
+    filters: { ...filters, projectId, cycleId },
     autoFetch: view !== 'timesheet',
   })
 
-  // Use appropriate hook based on view
   const ticketsData = view === 'timesheet' ? ticketsWithTimeLogsResult : regularTicketsResult
   const { tickets, loading, refetch, spaceFilter } = ticketsData
 
@@ -91,7 +124,7 @@ export function TicketsList({
     }
 
     const newTicket: Partial<any> = {
-      title: 'New Ticket',
+      title: '',
       description: '',
       status,
       priority: 'MEDIUM',
@@ -151,21 +184,13 @@ export function TicketsList({
     description: string,
     loggedAt: Date
   ) => {
-    const result = await addTimeLog(ticketId, {
-      hours,
-      description,
-      loggedAt,
-    })
-    if (result) {
-      refetch()
-    }
+    const result = await addTimeLog(ticketId, { hours, description, loggedAt })
+    if (result) refetch()
   }
 
   const handleDeleteTimeLog = async (ticketId: string, timeLogId: string) => {
     const success = await deleteTimeLog(ticketId, timeLogId)
-    if (success) {
-      refetch()
-    }
+    if (success) refetch()
   }
 
   const filteredTickets = tickets.filter((ticket) => {
@@ -178,6 +203,16 @@ export function TicketsList({
     return true
   })
 
+  const cardFieldOptions: Array<{ key: keyof KanbanConfig['cardFields'] & string; label: string }> = [
+    { key: 'description', label: 'Description' },
+    { key: 'dueDate', label: 'Due Date' },
+    { key: 'estimate', label: 'Estimate' },
+    { key: 'assignee', label: 'Assignee' },
+    { key: 'labels', label: 'Labels' },
+    { key: 'spaces', label: 'Spaces' },
+    { key: 'attributes', label: 'Custom Attributes' },
+  ]
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -187,6 +222,12 @@ export function TicketsList({
           <p className="text-muted-foreground">Manage your tickets and tasks</p>
         </div>
         <div className="flex items-center gap-2">
+          {view === 'kanban' && (
+            <Button variant="outline" onClick={openConfig}>
+              <Settings className="mr-2 h-4 w-4" />
+              Configure Board
+            </Button>
+          )}
           <Button
             onClick={() => handleAddTicket('BACKLOG')}
             disabled={!effectiveSpaceId}
@@ -196,6 +237,126 @@ export function TicketsList({
           </Button>
         </div>
       </div>
+
+      {/* Configure Board Dialog */}
+      <Dialog open={isConfigOpen} onOpenChange={setIsConfigOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Configure Kanban Board</DialogTitle>
+            <DialogDescription>
+              Customize how tickets are grouped, displayed, and what appears on each card.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5 mt-2">
+            {/* Grouping */}
+            <div className="space-y-3">
+              <p className="text-sm font-semibold text-foreground">Grouping</p>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Group by Rows</Label>
+                <Select
+                  value={localConfig.rows || 'none'}
+                  onValueChange={(value) =>
+                    setLocalConfig({ ...localConfig, rows: value === 'none' ? undefined : value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="priority">Priority</SelectItem>
+                    <SelectItem value="assignee">Assignee</SelectItem>
+                    <SelectItem value="tags">Tags</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Group by Columns</Label>
+                <Select
+                  value={localConfig.columns || 'status'}
+                  onValueChange={(value) =>
+                    setLocalConfig({ ...localConfig, columns: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="status">Status</SelectItem>
+                    <SelectItem value="priority">Priority</SelectItem>
+                    <SelectItem value="assignee">Assignee</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Ticket display mode */}
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-foreground">Ticket Detail View</p>
+              <Label className="text-xs text-muted-foreground mb-1 block">Open tickets as</Label>
+              <Select
+                value={localConfig.ticketDisplayMode || 'modal'}
+                onValueChange={(value: 'modal' | 'drawer') =>
+                  setLocalConfig({ ...localConfig, ticketDisplayMode: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="modal">Modal (centered dialog)</SelectItem>
+                  <SelectItem value="drawer">Drawer (side panel)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Separator />
+
+            {/* Card fields */}
+            <div className="space-y-3">
+              <p className="text-sm font-semibold text-foreground">Card Fields</p>
+              <p className="text-xs text-muted-foreground">Choose which fields appear on each ticket card.</p>
+              <div className="grid grid-cols-2 gap-2">
+                {cardFieldOptions.map(({ key, label }) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`field-${key}`}
+                      checked={localConfig.cardFields?.[key as keyof typeof localConfig.cardFields] !== false}
+                      onCheckedChange={(checked) =>
+                        setLocalConfig({
+                          ...localConfig,
+                          cardFields: {
+                            ...localConfig.cardFields,
+                            [key]: !!checked,
+                          },
+                        })
+                      }
+                    />
+                    <label
+                      htmlFor={`field-${key}`}
+                      className="text-sm cursor-pointer"
+                    >
+                      {label}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-2 pt-4 border-t mt-4">
+            <Button onClick={handleConfigSave} className="flex-1">
+              Apply
+            </Button>
+            <Button variant="outline" onClick={() => setIsConfigOpen(false)}>
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Filters and Controls */}
       {showFilters && (
@@ -296,7 +457,7 @@ export function TicketsList({
         <ConfigurableKanbanBoard
           tickets={filteredTickets as any}
           config={kanbanConfig}
-          onConfigChange={(config) => setKanbanConfig(config)}
+          onConfigChange={setKanbanConfig}
           onTicketClick={handleTicketClick}
           onAddTicket={handleAddTicket}
           onTicketMove={handleTicketMove}
@@ -306,7 +467,7 @@ export function TicketsList({
         <TimesheetView
           tickets={(ticketsWithTimeLogsResult.ticketsWithTimeLogs || filteredTickets).map(ticket => ({
             ...ticket,
-            timeLogs: ticket.timeLogs?.map(log => ({
+            timeLogs: ticket.timeLogs?.map((log: any) => ({
               ...log,
               hours: typeof log.hours === 'string' ? parseFloat(log.hours) || 0 : log.hours,
               loggedAt: typeof log.loggedAt === 'string' ? log.loggedAt : log.loggedAt.toISOString(),
@@ -351,15 +512,15 @@ export function TicketsList({
         </div>
       )}
 
-      {/* Ticket Detail Modal */}
+      {/* Ticket Detail Modal / Drawer */}
       <TicketDetailModalEnhanced
         ticket={selectedTicket}
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         onSave={handleSaveTicket}
         onDelete={selectedTicket?.id ? handleDeleteTicket : undefined}
+        displayMode={kanbanConfig.ticketDisplayMode || 'modal'}
       />
     </div>
   )
 }
-

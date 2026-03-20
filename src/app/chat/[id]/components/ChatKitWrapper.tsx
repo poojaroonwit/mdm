@@ -374,16 +374,24 @@ export function ChatKitWrapper({
           // Using /next-api/ prefix to bypass Nginx /api collision with PostgREST
           const apiUrl = `${serverOrigin}/next-api/chatkit/session`
           
+          const commonMeta = {
+            agentId: agentId,
+            chatbotId: chatbot.id,
+            spaceId: (chatbot as any).spaceId || undefined,
+            deploymentType: deploymentType,
+            origin: typeof window !== 'undefined' ? window.location.origin : undefined,
+            referrer: typeof document !== 'undefined' ? document.referrer || undefined : undefined,
+            userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
+            language: typeof navigator !== 'undefined' ? navigator.language : undefined,
+            timezone: typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : undefined,
+          }
+
           if (existing) {
             const res = await fetch(apiUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               credentials: 'omit', // Don't send cookies - this is a public API
-              body: JSON.stringify({
-                agentId: agentId,
-                chatbotId: chatbot.id,
-                existing
-              }),
+              body: JSON.stringify({ ...commonMeta, existing }),
             })
             if (!res.ok) {
               const errorData = await res.json().catch(() => ({ error: 'Unknown error' }))
@@ -401,10 +409,7 @@ export function ChatKitWrapper({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'omit', // Don't send cookies - this is a public API
-            body: JSON.stringify({
-              agentId: agentId,
-              chatbotId: chatbot.id
-            }),
+            body: JSON.stringify(commonMeta),
           })
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({ error: 'Unknown error' }))

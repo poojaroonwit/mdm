@@ -74,7 +74,7 @@ export function RecordDetailDrawer({ open, onOpenChange, record, attributes, onS
         )
       }
     >
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto">
         <div className="space-y-4">
           {attributes.map((attribute) => (
             <div key={attribute.id} className="space-y-2">

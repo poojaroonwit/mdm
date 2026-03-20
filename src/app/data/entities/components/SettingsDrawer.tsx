@@ -85,7 +85,7 @@ export function SettingsDrawer({ open, onOpenChange, renderTrigger, ctx, attribu
       {renderTrigger && <DrawerTrigger asChild>{renderTrigger()}</DrawerTrigger>}
 
       <div className="flex-1 overflow-auto flex flex-col">
-        <div className="p-4 flex-1">
+        <div className="flex-1">
           <Tabs defaultValue="table">
             <TabsList className="mb-4">
               <TabsTrigger value="table">Table Setting</TabsTrigger>

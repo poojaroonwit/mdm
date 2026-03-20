@@ -48,8 +48,8 @@ async function getHandler(request: NextRequest) {
     }
 
     if (!spaceId) {
-      logger.warn('Space ID is required', { userId: session.user.id })
-      return NextResponse.json({ error: 'Space ID is required' }, { status: 400 })
+      logger.warn('No default space found, returning empty data models', { userId: session.user.id })
+      return NextResponse.json({ dataModels: [], pagination: { page, limit, total: 0, pages: 0 } })
     }
   }
 
@@ -126,6 +126,7 @@ async function postHandler(request: NextRequest) {
     display_name: z.string().optional(),
     displayName: z.string().optional(),
     description: z.string().optional(),
+    slug: z.string().optional(),
     space_ids: z.array(commonSchemas.id).optional(),
     spaceIds: z.array(commonSchemas.id).optional(),
   }))
@@ -137,6 +138,23 @@ async function postHandler(request: NextRequest) {
   const { name, description, space_ids, spaceIds, displayName } = bodyValidation.data
   const finalSpaceIds = spaceIds || space_ids || []
   const finalDisplayName = displayName || bodyValidation.data.display_name
+
+  // Generate slug from name if not provided
+  const toSlug = (text: string) => (text || '').toString().toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-+|-+$/g, '')
+  let slug = bodyValidation.data.slug ? toSlug(bodyValidation.data.slug) : toSlug(name)
+  if (!slug) slug = `model-${Date.now()}`
+
+  // Ensure slug uniqueness
+  const { rows: slugConflict } = await query(
+    'SELECT id FROM public.data_models WHERE slug = $1 AND deleted_at IS NULL LIMIT 1',
+    [slug]
+  )
+  if (slugConflict.length > 0) {
+    slug = `${slug}-${Date.now()}`
+  }
   
   if (finalSpaceIds.length === 0) {
     return NextResponse.json({ error: 'At least one space ID is required' }, { status: 400 })
@@ -154,10 +172,12 @@ async function postHandler(request: NextRequest) {
   // Create the data model within a try-catch for better error reporting
   try {
     // Create the data model with ID generation
-    const insertSql = `INSERT INTO public.data_models (id, name, description, created_by, is_active, sort_order)
-                         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5) RETURNING *`
+    const insertSql = `INSERT INTO public.data_models (id, name, display_name, slug, description, created_by, is_active, sort_order)
+                         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7) RETURNING *`
     const { rows } = await query(insertSql, [
       name,
+      finalDisplayName ?? name,
+      slug,
       description ?? null,
       session.user.id,
       true,

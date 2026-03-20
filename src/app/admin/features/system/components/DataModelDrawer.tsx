@@ -36,7 +36,7 @@ export function DataModelDrawer({
                     </DrawerDescription>
                 </DrawerHeader>
 
-                <div className="p-6 space-y-4">
+                <div className="space-y-4">
                     {/* Tabs Header */}
                     <div className="border-b">
                         <div className="flex space-x-8 justify-start">

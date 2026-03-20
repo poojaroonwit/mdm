@@ -18,7 +18,6 @@ import { ChatSidebar } from './components/ChatSidebar'
 import { ChatContent } from './components/ChatContent'
 import { ChatHeader } from './components/ChatHeader'
 import { ThreadSelector } from './components/ThreadSelector'
-import { AnimatePresence } from 'framer-motion'
 import { useChatMessages } from './hooks/useChatMessages'
 import { useChatHistory } from './hooks/useChatHistory'
 import { useChatFileHandling } from './hooks/useChatFileHandling'
@@ -432,19 +431,17 @@ export default function ChatPage() {
     // If not initial load (i.e., config update), preserve current isOpen state
   }, [chatbot, previewDeploymentType, isNativeChatKitMode, isEmbed])
 
-  // Inject greeting message for popover/popup-center modes
-  // This ensures the greeting is shown even if the user hasn't sent a message yet
+  // Inject greeting message for popover/popup-center modes (only once on mount)
+  const greetingInjectedRef = useRef(false)
   useEffect(() => {
-    if (!chatbot || messages.length > 0 || isNativeChatKitMode) return
+    if (!chatbot || greetingInjectedRef.current || isNativeChatKitMode) return
 
-    // Limit to popover/popup-center modes
-    // Fullpage mode handles history/greetings via useChatHistory/useAgentThread logic usually
-    // But for popover, we often start fresh or want an immediate greeting
     const isPopover = previewDeploymentType === 'popover' || previewDeploymentType === 'popup-center'
-    
+
     if (isPopover) {
        const greeting = chatbot.openaiAgentSdkGreeting || chatbot.conversationOpener
        if (greeting) {
+         greetingInjectedRef.current = true
          setMessages([{
            id: 'greeting-' + Date.now(),
            role: 'assistant',
@@ -453,7 +450,7 @@ export default function ChatPage() {
          }])
        }
     }
-  }, [chatbot, previewDeploymentType, isNativeChatKitMode, messages.length])
+  }, [chatbot, previewDeploymentType, isNativeChatKitMode])
 
   // Notify parent window about open/close state for iframe resizing
   // For native ChatKit in embed mode, this sends the INITIAL resize to make the container
@@ -782,6 +779,16 @@ export default function ChatPage() {
     effectiveDeploymentType === 'fullpage' ? true : isOpen
   )
 
+  // Track if the widget has ever been opened so we can keep it mounted (preserving chat history)
+  const hasEverOpenedRef = useRef(false)
+  if (isOpen && !hasEverOpenedRef.current) {
+    hasEverOpenedRef.current = true
+  }
+  // For widget modes: keep container mounted after first open (CSS hides it when closed)
+  const shouldMountContainer = !isNativeChatKit && (
+    effectiveDeploymentType === 'fullpage' ? true : hasEverOpenedRef.current
+  )
+
   const renderChatContent = () => {
     if (!chatbot) return null
 
@@ -982,27 +989,26 @@ export default function ChatPage() {
         </div>
       )}
       {/* Chat container */}
-      <AnimatePresence mode="wait">
-        {shouldShowContainer && (
-          <WidgetChatContainer
-            key={`chat-container-${isOpen}`}
-            chatbot={chatbot}
-            containerStyle={containerStyle}
-            chatStyle={chatStyle}
-            emulatorConfig={emulatorConfig}
-            isMobile={isMobile}
-            isEmbed={isEmbed}
-            isPreview={isPreview}
-            useChatKitInRegularStyle={useChatKitInRegularStyle}
-            shouldRenderChatKit={!!shouldRenderChatKit}
-            effectiveDeploymentType={effectiveDeploymentType}
-            handleClose={handleClose}
-            onClearSession={() => setMessages([])}
-          >
-            {renderChatContent()}
-          </WidgetChatContainer>
-        )}
-      </AnimatePresence>
+      {shouldMountContainer && (
+        <WidgetChatContainer
+          key="chat-container"
+          chatbot={chatbot}
+          containerStyle={containerStyle}
+          chatStyle={chatStyle}
+          emulatorConfig={emulatorConfig}
+          isMobile={isMobile}
+          isEmbed={isEmbed}
+          isPreview={isPreview}
+          useChatKitInRegularStyle={useChatKitInRegularStyle}
+          shouldRenderChatKit={!!shouldRenderChatKit}
+          effectiveDeploymentType={effectiveDeploymentType}
+          handleClose={handleClose}
+          isOpen={shouldShowContainer}
+          onClearSession={() => setMessages([])}
+        >
+          {renderChatContent()}
+        </WidgetChatContainer>
+      )}
 
       {/* PWA Banner for 'Host Website' scope (Overlay) - Renders outside widget container to be visible when closed */}
       {/* If in preview mode (emulator), we still show it here because it's easier to preview in a single frame. */}

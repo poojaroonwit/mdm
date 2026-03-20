@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Message, ChatbotConfig } from '../types'
 
 export interface ChatHistoryItem {
@@ -19,6 +19,33 @@ interface UseChatHistoryOptions {
   setCurrentChatId: (id: string | null) => void
 }
 
+// Returns or creates an anonymous session ID persisted in localStorage
+function getSessionId(): string {
+  try {
+    const key = 'widget_session_id'
+    let id = localStorage.getItem(key)
+    if (!id) {
+      id = crypto.randomUUID()
+      localStorage.setItem(key, id)
+    }
+    return id
+  } catch {
+    return 'anonymous'
+  }
+}
+
+function deserializeConversation(conv: any): ChatHistoryItem {
+  return {
+    id: conv.id,
+    title: conv.title,
+    messages: (conv.messages || []).map((m: any) => ({
+      ...m,
+      timestamp: new Date(m.timestamp),
+    })),
+    createdAt: new Date(conv.createdAt),
+  }
+}
+
 export function useChatHistory({
   chatbotId,
   chatbot,
@@ -30,114 +57,130 @@ export function useChatHistory({
   setCurrentChatId,
 }: UseChatHistoryOptions) {
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([])
+  const sessionId = useRef(getSessionId())
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Load chat history from localStorage
+  const isFullPage = previewDeploymentType === 'fullpage' && !isInIframe
+
+  const apiBase = `/api/public/chatbots/${chatbotId}/conversations`
+
+  // Load conversations from DB on mount
   useEffect(() => {
-    if (previewDeploymentType === 'fullpage' && !isInIframe) {
-      const saved = localStorage.getItem(`chat-history-${chatbotId}`)
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved)
-          const loadedHistory = parsed.map((ch: any) => ({
-            ...ch,
-            messages: ch.messages.map((m: any) => ({
-              ...m,
-              timestamp: new Date(m.timestamp),
-            })),
-            createdAt: new Date(ch.createdAt),
-          }))
-          setChatHistory(loadedHistory)
-          // Select the most recent chat if available
-          if (loadedHistory.length > 0 && !currentChatId) {
-            const mostRecent = loadedHistory[0]
-            setCurrentChatId(mostRecent.id)
-            setMessages(mostRecent.messages)
-          }
-        } catch (e) {
-          console.error('Error loading chat history:', e)
+    if (!isFullPage) return
+
+    const load = async () => {
+      try {
+        const res = await fetch(`${apiBase}?sessionId=${sessionId.current}`)
+        if (!res.ok) return
+        const data = await res.json()
+        const loaded: ChatHistoryItem[] = (data.conversations || []).map(deserializeConversation)
+        setChatHistory(loaded)
+
+        if (loaded.length > 0 && !currentChatId) {
+          setCurrentChatId(loaded[0].id)
+          setMessages(loaded[0].messages)
         }
+      } catch (e) {
+        console.error('Error loading chat history:', e)
       }
     }
-  }, [chatbotId, previewDeploymentType, isInIframe])
 
-  // Save chat history to localStorage
-  useEffect(() => {
-    if (previewDeploymentType === 'fullpage' && !isInIframe && chatHistory.length > 0) {
-      localStorage.setItem(`chat-history-${chatbotId}`, JSON.stringify(chatHistory))
-    }
-  }, [chatHistory, chatbotId, previewDeploymentType, isInIframe])
+    load()
+  }, [chatbotId, isFullPage])
 
-  // Auto-create chat when switching to full page if no current chat
+  // Auto-create first conversation when none exist
   useEffect(() => {
-    if (previewDeploymentType === 'fullpage' && !isInIframe && !currentChatId && chatbot && chatHistory.length === 0) {
-      const newChatId = `chat-${Date.now()}`
+    if (!isFullPage || !chatbot || currentChatId || chatHistory.length > 0) return
+
+    const create = async () => {
       const initialMessages: Message[] = []
-      // Use Agent SDK greeting if available, otherwise use conversationOpener
-      const greetingMessage = chatbot.openaiAgentSdkGreeting || chatbot.conversationOpener
-      if (greetingMessage) {
+      const greeting = chatbot.openaiAgentSdkGreeting || chatbot.conversationOpener
+      if (greeting) {
         initialMessages.push({
           id: 'opener',
           role: 'assistant',
-          content: greetingMessage,
+          content: greeting,
           timestamp: new Date(),
         })
       }
-      const newChat = {
-        id: newChatId,
-        title: 'New Chat',
-        messages: initialMessages,
-        createdAt: new Date(),
-      }
-      setChatHistory([newChat])
-      setCurrentChatId(newChatId)
-      setMessages(initialMessages)
-    }
-  }, [previewDeploymentType, isInIframe, chatbot, currentChatId, chatHistory.length, setMessages])
 
-  // Update current chat title
-  useEffect(() => {
-    if (currentChatId && messages.length > 0) {
-      const firstUserMessage = messages.find((m) => m.role === 'user')
-      if (firstUserMessage) {
-        const title = firstUserMessage.content.substring(0, 50) || 'New Chat'
-        setChatHistory((prev) =>
-          prev.map((ch) => (ch.id === currentChatId ? { ...ch, title, messages } : ch))
-        )
+      try {
+        const res = await fetch(apiBase, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: sessionId.current, title: 'New Chat', messages: initialMessages }),
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        const newConv = deserializeConversation({ ...data.conversation, messages: initialMessages })
+        setChatHistory([newConv])
+        setCurrentChatId(newConv.id)
+        setMessages(initialMessages)
+      } catch (e) {
+        console.error('Error creating initial conversation:', e)
       }
     }
-  }, [messages, currentChatId])
 
-  // Update current chat messages when they change
+    create()
+  }, [isFullPage, chatbot, currentChatId, chatHistory.length])
+
+  // Debounced save of current conversation messages to DB
+  const saveConversation = useCallback((convId: string, convMessages: Message[], title?: string) => {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await fetch(`${apiBase}/${convId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: sessionId.current, messages: convMessages, ...(title && { title }) }),
+        })
+      } catch (e) {
+        console.error('Error saving conversation:', e)
+      }
+    }, 1000)
+  }, [apiBase])
+
+  // Update title from first user message and save messages on change
   useEffect(() => {
-    if (currentChatId && previewDeploymentType === 'fullpage' && !isInIframe) {
-      setChatHistory((prev) =>
-        prev.map((ch) => (ch.id === currentChatId ? { ...ch, messages } : ch))
-      )
-    }
-  }, [messages, currentChatId, previewDeploymentType, isInIframe])
+    if (!currentChatId || !isFullPage || messages.length === 0) return
 
-  const handleNewChat = () => {
-    const newChatId = `chat-${Date.now()}`
+    const firstUserMessage = messages.find((m) => m.role === 'user')
+    const title = firstUserMessage ? (firstUserMessage.content.substring(0, 50) || 'New Chat') : undefined
+
+    setChatHistory((prev) =>
+      prev.map((ch) => (ch.id === currentChatId ? { ...ch, messages, ...(title && { title }) } : ch))
+    )
+
+    saveConversation(currentChatId, messages, title)
+  }, [messages, currentChatId, isFullPage])
+
+  const handleNewChat = async () => {
     const initialMessages: Message[] = []
-    // Use Agent SDK greeting if available, otherwise use conversationOpener
-    const greetingMessage = chatbot?.openaiAgentSdkGreeting || chatbot?.conversationOpener
-    if (greetingMessage) {
+    const greeting = chatbot?.openaiAgentSdkGreeting || chatbot?.conversationOpener
+    if (greeting) {
       initialMessages.push({
         id: 'opener',
         role: 'assistant',
-        content: greetingMessage,
+        content: greeting,
         timestamp: new Date(),
       })
     }
-    const newChat = {
-      id: newChatId,
-      title: 'New Chat',
-      messages: initialMessages,
-      createdAt: new Date(),
+
+    try {
+      const res = await fetch(apiBase, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: sessionId.current, title: 'New Chat', messages: initialMessages }),
+      })
+      if (!res.ok) return
+      const data = await res.json()
+      const newConv = deserializeConversation({ ...data.conversation, messages: initialMessages })
+      setChatHistory((prev) => [newConv, ...prev])
+      setCurrentChatId(newConv.id)
+      setMessages(initialMessages)
+    } catch (e) {
+      console.error('Error creating conversation:', e)
     }
-    setChatHistory((prev) => [newChat, ...prev])
-    setCurrentChatId(newChatId)
-    setMessages(initialMessages)
   }
 
   const handleSelectChat = (chatId: string) => {
@@ -148,8 +191,13 @@ export function useChatHistory({
     }
   }
 
-  const handleDeleteChat = (chatId: string, e: React.MouseEvent) => {
+  const handleDeleteChat = async (chatId: string, e: React.MouseEvent) => {
     e.stopPropagation()
+    try {
+      await fetch(`${apiBase}/${chatId}?sessionId=${sessionId.current}`, { method: 'DELETE' })
+    } catch (e) {
+      console.error('Error deleting conversation:', e)
+    }
     setChatHistory((prev) => prev.filter((ch) => ch.id !== chatId))
     if (currentChatId === chatId) {
       setCurrentChatId(null)
@@ -164,4 +212,3 @@ export function useChatHistory({
     handleDeleteChat,
   }
 }
-

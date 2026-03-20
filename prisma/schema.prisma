@@ -1276,6 +1276,7 @@ model Chatbot {
   creator               User                       @relation("ChatbotCreator", fields: [createdBy], references: [id])
   space                 Space?                     @relation("SpaceChatbots", fields: [spaceId], references: [id])
   threads               OpenAIAgentThread[]        @relation("ChatbotThreads")
+  widgetConversations   WidgetConversation[]       @relation("ChatbotWidgetConversations")
 
   @@map("chatbots")
 }
@@ -1314,6 +1315,20 @@ model OpenAIAgentThread {
   @@index([chatbotId, userId])
   @@index([threadId])
   @@map("openai_agent_threads")
+}
+
+model WidgetConversation {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId String   @map("session_id")
+  chatbotId String   @map("chatbot_id") @db.Uuid
+  title     String   @default("New Chat")
+  messages  Json     @default("[]")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  chatbot   Chatbot  @relation("ChatbotWidgetConversations", fields: [chatbotId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, chatbotId])
+  @@map("widget_conversations")
 }
 
 model ChatbotRateLimit {

@@ -32,7 +32,10 @@ import {
   Search,
   ChevronDown,
   LayoutDashboard,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Loader2,
+  Layout,
+  ChevronRight,
 } from 'lucide-react'
 import { useSpace } from '@/contexts/space-context'
 import { showSuccess, showError, ToastMessages } from '@/lib/toast-utils'
@@ -104,6 +107,13 @@ export function MergedBIReports() {
   const [showEmbedModal, setShowEmbedModal] = useState(false)
   const [showCreateReportDialog, setShowCreateReportDialog] = useState(false)
   const [createReportSpaceId, setCreateReportSpaceId] = useState<string>(selectedSpaceId !== 'all' ? selectedSpaceId : '')
+  const [dialogStep, setDialogStep] = useState<1 | 2>(1)
+  const [spacePages, setSpacePages] = useState<Array<{ id: string; title: string }>>([])
+  const [pagesLoading, setPagesLoading] = useState(false)
+  const [selectedPageId, setSelectedPageId] = useState<string>('')
+  const [pageMode, setPageMode] = useState<'existing' | 'create'>('existing')
+  const [newPageName, setNewPageName] = useState('')
+  const [isCreating, setIsCreating] = useState(false)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [selectedReports, setSelectedReports] = useState<Set<string>>(new Set())
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
@@ -189,6 +199,93 @@ export function MergedBIReports() {
       loadReports()
     } catch (error: any) {
       showError(error.message || ToastMessages.DELETE_ERROR)
+    }
+  }
+
+  const resetCreateDialog = () => {
+    setDialogStep(1)
+    setSpacePages([])
+    setSelectedPageId('')
+    setPageMode('existing')
+    setNewPageName('')
+    setIsCreating(false)
+  }
+
+  const handleNextStep = async () => {
+    if (!createReportSpaceId) return
+    setPagesLoading(true)
+    try {
+      const res = await fetch(`/api/spaces-editor/${createReportSpaceId}`)
+      if (!res.ok) throw new Error('Failed to load pages')
+      const data = await res.json()
+      const pages: Array<{ id: string; title: string }> = (data.pages || []).map((p: any) => ({
+        id: p.id,
+        title: p.title || 'Untitled Page',
+      }))
+      setSpacePages(pages)
+      setSelectedPageId(pages[0]?.id || '')
+      setPageMode(pages.length > 0 ? 'existing' : 'create')
+      setDialogStep(2)
+    } catch (error: any) {
+      showError(error.message || 'Failed to load pages')
+    } finally {
+      setPagesLoading(false)
+    }
+  }
+
+  const handleConfirmCreate = async () => {
+    if (!createReportSpaceId) return
+    const selectedSpace = spaces.find(s => s.id === createReportSpaceId)
+    if (!selectedSpace) return
+
+    setIsCreating(true)
+    try {
+      let pageId = selectedPageId
+
+      if (pageMode === 'create') {
+        const configRes = await fetch(`/api/spaces-editor/${createReportSpaceId}`)
+        if (!configRes.ok) throw new Error('Failed to load space config')
+        const config = await configRes.json()
+        const newPage = {
+          id: crypto.randomUUID(),
+          title: newPageName.trim() || 'New Dashboard',
+          widgets: [],
+        }
+        const updatedConfig = { ...config, pages: [...(config.pages || []), newPage] }
+        const saveRes = await fetch(`/api/spaces-editor/${createReportSpaceId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedConfig),
+        })
+        if (!saveRes.ok) throw new Error('Failed to create page')
+        pageId = newPage.id
+      }
+
+      // Create draft report linked to this page
+      const pageName = pageMode === 'create'
+        ? (newPageName.trim() || 'New Dashboard')
+        : (spacePages.find(p => p.id === pageId)?.title || 'Dashboard')
+
+      await fetch('/api/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: pageName,
+          source: 'BUILT_IN',
+          space_ids: [createReportSpaceId],
+          link: `/${selectedSpace.slug}/studio/page/${pageId}`,
+          is_active: false,
+          metadata: { page_id: pageId, space_id: createReportSpaceId },
+        }),
+      })
+
+      setShowCreateReportDialog(false)
+      resetCreateDialog()
+      router.push(`/${selectedSpace.slug}/studio/page/${pageId}?editMode=true`)
+    } catch (error: any) {
+      showError(error.message || 'Failed to create dashboard')
+    } finally {
+      setIsCreating(false)
     }
   }
 
@@ -412,39 +509,128 @@ export function MergedBIReports() {
         }}
       />
 
-      {/* Create Report Space Selection Dialog */}
-      <Dialog open={showCreateReportDialog} onOpenChange={setShowCreateReportDialog}>
+      {/* Create Dashboard Dialog — multi-step */}
+      <Dialog
+        open={showCreateReportDialog}
+        onOpenChange={(open) => {
+          setShowCreateReportDialog(open)
+          if (!open) resetCreateDialog()
+        }}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Select Space for New Report</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <LayoutDashboard className="h-5 w-5" />
+              Create New Dashboard
+            </DialogTitle>
             <DialogDescription>
-              Choose the space where you want to create your new dashboard/report.
+              {dialogStep === 1
+                ? 'Choose the space where you want to create your dashboard.'
+                : 'Select an existing page or create a new one for your dashboard.'}
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <SpaceSelector
-              value={createReportSpaceId}
-              onValueChange={setCreateReportSpaceId}
-              className="w-full"
-              showAllOption={false}
-            />
+
+          {/* Step indicator */}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span className={dialogStep === 1 ? 'text-foreground font-medium' : ''}>1. Select Space</span>
+            <ChevronRight className="h-4 w-4" />
+            <span className={dialogStep === 2 ? 'text-foreground font-medium' : ''}>2. Select Page</span>
           </div>
+
+          {dialogStep === 1 && (
+            <div className="py-2">
+              <SpaceSelector
+                value={createReportSpaceId}
+                onValueChange={setCreateReportSpaceId}
+                className="w-full"
+                showAllOption={false}
+              />
+            </div>
+          )}
+
+          {dialogStep === 2 && (
+            <div className="py-2 space-y-3 max-h-72 overflow-y-auto">
+              {pagesLoading ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <>
+                  {spacePages.length > 0 && (
+                    <div className="space-y-1">
+                      {spacePages.map((page) => (
+                        <button
+                          key={page.id}
+                          type="button"
+                          onClick={() => { setSelectedPageId(page.id); setPageMode('existing') }}
+                          className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors ${
+                            pageMode === 'existing' && selectedPageId === page.id
+                              ? 'bg-primary text-primary-foreground'
+                              : 'hover:bg-muted'
+                          }`}
+                        >
+                          <Layout className="h-4 w-4 shrink-0" />
+                          {page.title}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setPageMode('create')}
+                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors ${
+                      pageMode === 'create'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'hover:bg-muted border border-dashed border-border'
+                    }`}
+                  >
+                    <Plus className="h-4 w-4 shrink-0" />
+                    Create new page
+                  </button>
+
+                  {pageMode === 'create' && (
+                    <Input
+                      placeholder="Page name"
+                      value={newPageName}
+                      onChange={(e) => setNewPageName(e.target.value)}
+                      autoFocus
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateReportDialog(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                const selectedSpace = spaces.find(s => s.id === createReportSpaceId)
-                if (selectedSpace?.slug) {
-                  router.push(`/${selectedSpace.slug}/studio?pageType=dashboard`)
-                  setShowCreateReportDialog(false)
-                }
-              }}
-              disabled={!createReportSpaceId}
-            >
-              Continue
-            </Button>
+            {dialogStep === 1 ? (
+              <>
+                <Button variant="outline" onClick={() => setShowCreateReportDialog(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleNextStep}
+                  disabled={!createReportSpaceId || pagesLoading}
+                >
+                  {pagesLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => setDialogStep(1)}>
+                  Back
+                </Button>
+                <Button
+                  onClick={handleConfirmCreate}
+                  disabled={isCreating || (pageMode === 'existing' && !selectedPageId) || (pageMode === 'create' && !newPageName.trim())}
+                >
+                  {isCreating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                  Create &amp; Open
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

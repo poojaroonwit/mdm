@@ -18,6 +18,7 @@ interface WidgetChatContainerProps {
     shouldRenderChatKit: boolean
     effectiveDeploymentType: 'popover' | 'fullpage' | 'popup-center'
     handleClose: () => void
+    isOpen?: boolean
     onClearSession: () => void
     children: React.ReactNode
 }
@@ -34,6 +35,7 @@ export function WidgetChatContainer({
     shouldRenderChatKit,
     effectiveDeploymentType,
     handleClose,
+    isOpen = true,
     onClearSession,
     children
 }: WidgetChatContainerProps) {
@@ -116,20 +118,23 @@ export function WidgetChatContainer({
         }
     }
 
+    const animationTransition = animType === 'spring' ? {
+        type: 'spring' as const,
+        duration: duration,
+        damping: 25,
+        stiffness: 200,
+    } : {
+        type: 'tween' as const,
+        duration: duration,
+        ease: "easeOut" as const
+    }
+
     const animationProps = {
         initial: getVariant(entryType, 'initial'),
-        animate: getVariant(entryType, 'animate'),
-        exit: getVariant(exitType, 'exit'),
-        transition: animType === 'spring' ? {
-            type: 'spring' as const,
-            duration: duration,
-            damping: 25,
-            stiffness: 200,
-        } : {
-            type: 'tween' as const,
-            duration: duration,
-            ease: "easeOut" as const
-        }
+        animate: isOpen ? getVariant(entryType, 'animate') : getVariant(exitType, 'exit'),
+        transition: animationTransition,
+        // Prevent interaction when closed (hidden via animation)
+        style: isOpen ? {} : { pointerEvents: 'none' as const }
     }
 
     // Pass border radius and dimensions as CSS variables for the style tag to pick up
@@ -155,6 +160,8 @@ export function WidgetChatContainer({
         chatbotId: chatbot.id
     })
 
+    const { style: animStyle, ...animPropsWithoutStyle } = animationProps
+
     return (
         <motion.div
             id="chatbot-widget-container"
@@ -169,9 +176,10 @@ export function WidgetChatContainer({
                 '--container-min-height': containerMinHeight,
                 '--container-min-width': containerMinWidth,
                 '--container-box-shadow': containerBoxShadow,
+                ...animStyle,
             } as any}
             data-widget-container="true"
-            {...animationProps}
+            {...animPropsWithoutStyle}
         >
             <style>{`
                 /* Use ID selector to achieve maximum specificity */

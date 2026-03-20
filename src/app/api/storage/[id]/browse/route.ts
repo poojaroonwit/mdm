@@ -15,12 +15,12 @@ interface FileItem {
 
 async function getHandler(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const authResult = await requireAuth()
     if (!authResult.success) return authResult.response
 
-    const connectionId = params.id
+    const { id: connectionId } = await params
     const { searchParams } = new URL(request.url)
     const path = searchParams.get('path') || '/'
 

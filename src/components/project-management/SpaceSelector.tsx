@@ -27,6 +27,10 @@ export function SpaceSelector({ value, onValueChange, className, showAllOption =
   const { spaces, currentSpace } = useSpace()
   const selectedValue = value || (showAllOption ? 'all' : currentSpace?.id || 'all')
 
+  const displayLabel = selectedValue === 'all'
+    ? 'All Spaces'
+    : spaces.find((s) => s.id === selectedValue)?.name ?? 'Select a space'
+
   const handleChange = (newSpaceId: string) => {
     onValueChange?.(newSpaceId)
   }
@@ -34,7 +38,7 @@ export function SpaceSelector({ value, onValueChange, className, showAllOption =
   return (
     <Select value={selectedValue} onValueChange={handleChange}>
       <SelectTrigger className={className}>
-        <SelectValue placeholder="Select a space" />
+        <SelectValue placeholder="Select a space">{displayLabel}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {showAllOption && (

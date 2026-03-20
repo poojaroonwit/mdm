@@ -8,6 +8,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -74,6 +81,7 @@ interface TicketDetailModalProps {
   onOpenChange: (open: boolean) => void
   onSave?: (ticket: any) => void
   onDelete?: (ticketId: string) => void
+  displayMode?: 'modal' | 'drawer'
 }
 
 export function TicketDetailModalEnhanced({
@@ -82,7 +90,15 @@ export function TicketDetailModalEnhanced({
   onOpenChange,
   onSave,
   onDelete,
+  displayMode = 'modal',
 }: TicketDetailModalProps) {
+  const [editTitle, setEditTitle] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editStatus, setEditStatus] = useState('BACKLOG')
+  const [editPriority, setEditPriority] = useState('MEDIUM')
+  const [editDueDate, setEditDueDate] = useState('')
+  const [editEstimate, setEditEstimate] = useState('')
+
   const [activeTab, setActiveTab] = useState('details')
   const [comments, setComments] = useState<any[]>([])
   const [attachments, setAttachments] = useState<any[]>([])
@@ -120,6 +136,17 @@ export function TicketDetailModalEnhanced({
   const [selectedMilestone, setSelectedMilestone] = useState<string>('')
   const [releases, setReleases] = useState<Array<{id: string, name: string, projectId: string}>>([])
   const [selectedRelease, setSelectedRelease] = useState<string>('')
+
+  useEffect(() => {
+    if (ticket && open) {
+      setEditTitle(ticket.title || '')
+      setEditDescription(ticket.description || '')
+      setEditStatus(ticket.status || 'BACKLOG')
+      setEditPriority(ticket.priority || 'MEDIUM')
+      setEditDueDate((ticket as any).dueDate || '')
+      setEditEstimate((ticket as any).estimate?.toString() || '')
+    }
+  }, [ticket, open])
 
   useEffect(() => {
     if (ticket?.id && open) {
@@ -865,15 +892,233 @@ export function TicketDetailModalEnhanced({
 
   if (!ticket) return null
 
+  const isNew = !(ticket as any).id
+  const isDrawer = displayMode === 'drawer'
   const totalHours = timeLogs.reduce((sum, log) => sum + Number(log.hours), 0)
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{ticket.title}</DialogTitle>
-          <DialogDescription>Manage ticket details and activities</DialogDescription>
-        </DialogHeader>
+  const handleSave = async () => {
+    const updatedTicket = {
+      ...ticket,
+      title: editTitle,
+      description: editDescription,
+      status: editStatus,
+      priority: editPriority,
+      dueDate: editDueDate || null,
+      estimate: editEstimate ? Number(editEstimate) : null,
+      projectId: selectedProject || null,
+      moduleId: selectedModule || null,
+      milestoneId: selectedMilestone || null,
+      releaseId: selectedRelease || null,
+    }
+
+    if (ticket?.id) {
+      try {
+        const updateData: any = {}
+        if (selectedProject) updateData.projectId = selectedProject
+        else updateData.projectId = null
+        if (selectedModule) updateData.moduleId = selectedModule
+        else updateData.moduleId = null
+        if (selectedMilestone) updateData.milestoneId = selectedMilestone
+        else updateData.milestoneId = null
+        if (selectedRelease) updateData.releaseId = selectedRelease
+        else updateData.releaseId = null
+
+        if (Object.keys(updateData).length > 0) {
+          await fetch(`/api/tickets/${ticket.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updateData)
+          })
+        }
+      } catch (error) {
+        console.error('Error saving project/module:', error)
+      }
+
+      if (ticketType && ticket?.id) {
+        try {
+          const existingAttr = ticket.attributes?.find(attr =>
+            attr.name.toLowerCase() === 'ticket type' ||
+            attr.name.toLowerCase() === 'type' ||
+            attr.name.toLowerCase() === 'tickettype'
+          )
+          if (existingAttr && (existingAttr as any).id) {
+            await fetch(`/api/tickets/${ticket.id}/attributes`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ attributeId: (existingAttr as any).id, value: ticketType })
+            })
+          } else {
+            await fetch(`/api/tickets/${ticket.id}/attributes`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: 'Ticket Type', displayName: 'Ticket Type', type: 'SELECT', value: ticketType })
+            })
+          }
+        } catch (error) {
+          console.error('Error saving ticket type:', error)
+        }
+      }
+    }
+
+    onSave?.(updatedTicket)
+  }
+
+  // Common header content
+  const headerContent = (
+    <>
+      <Input
+        value={editTitle}
+        onChange={(e) => setEditTitle(e.target.value)}
+        placeholder="Ticket title..."
+        className="text-lg font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary bg-transparent h-auto py-1"
+      />
+      <p className="text-sm text-muted-foreground mt-1">
+        {isNew ? 'Fill in the details to create a new ticket.' : 'Manage ticket details and activities.'}
+      </p>
+    </>
+  )
+
+  // Common footer
+  const footerContent = (
+    <div className="flex gap-2 pt-4 border-t">
+      {!isNew && serviceDeskConfig?.isConfigured && (
+        <Button variant="outline" onClick={handlePushToServiceDesk} disabled={pushingToServiceDesk}>
+          {pushingToServiceDesk ? <Loader className="h-4 w-4 mr-2 animate-spin" /> : <ExternalLink className="h-4 w-4 mr-2" />}
+          Push to ServiceDesk
+        </Button>
+      )}
+      {!isNew && gitLabConfig?.isConfigured && (
+        <>
+          {gitLabRepositories.length > 0 && (
+            <Select value={selectedRepository} onValueChange={setSelectedRepository}>
+              <SelectTrigger className="w-48"><SelectValue placeholder="Repository" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Default Repository</SelectItem>
+                {gitLabRepositories.map((repo) => (
+                  <SelectItem key={repo.id} value={repo.projectId}>{repo.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <Button variant="outline" onClick={handlePushToGitLab} disabled={pushingToGitLab || loadingRepositories}>
+            {pushingToGitLab ? <Loader className="h-4 w-4 mr-2 animate-spin" /> : <GitBranch className="h-4 w-4 mr-2" />}
+            {gitLabIssueUrl ? 'Update GitLab Issue' : 'Push to GitLab'}
+          </Button>
+        </>
+      )}
+      {!isNew && gitLabIssueUrl && (
+        <Button variant="outline" onClick={() => window.open(gitLabIssueUrl, '_blank')}>
+          <ExternalLink className="h-4 w-4 mr-2" />
+          View in GitLab
+        </Button>
+      )}
+      <Button onClick={handleSave} className="flex-1">
+        {isNew ? 'Create Ticket' : 'Save Changes'}
+      </Button>
+      {onDelete && !isNew && (
+        <Button variant="destructive" onClick={() => onDelete((ticket as any).id)}>
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete
+        </Button>
+      )}
+    </div>
+  )
+
+  // Body content — simple form for new, full tabs for existing
+  const bodyContent = (
+    <div className="mt-4 flex-1 overflow-y-auto">
+      {isNew ? (
+        // Simple create form — same fields, no inapplicable tabs
+        <div className="space-y-4">
+          <div>
+            <Label>Description</Label>
+            <Textarea
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              placeholder="Describe the ticket..."
+              rows={4}
+              className="mt-1"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>Status</Label>
+              <Select value={editStatus} onValueChange={setEditStatus}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="BACKLOG">Backlog</SelectItem>
+                  <SelectItem value="TODO">To Do</SelectItem>
+                  <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                  <SelectItem value="IN_REVIEW">In Review</SelectItem>
+                  <SelectItem value="DONE">Done</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Priority</Label>
+              <Select value={editPriority} onValueChange={setEditPriority}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="LOW">Low</SelectItem>
+                  <SelectItem value="MEDIUM">Medium</SelectItem>
+                  <SelectItem value="HIGH">High</SelectItem>
+                  <SelectItem value="URGENT">Urgent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>Due Date</Label>
+              <Input
+                type="date"
+                value={editDueDate}
+                onChange={(e) => setEditDueDate(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label>Estimate (hours)</Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.5"
+                placeholder="0"
+                value={editEstimate}
+                onChange={(e) => setEditEstimate(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+          </div>
+        </div>
+      ) : (
+        // Full tabbed view for existing tickets
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-8">
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="comments">
+              Comments {comments.length > 0 && `(${comments.length})`}
+            </TabsTrigger>
+            <TabsTrigger value="attachments">
+              Files {attachments.length > 0 && `(${attachments.length})`}
+            </TabsTrigger>
+            <TabsTrigger value="subtasks">
+              Subtasks {subtasks.length > 0 && `(${subtasks.length})`}
+            </TabsTrigger>
+            <TabsTrigger value="dependencies">Dependencies</TabsTrigger>
+            <TabsTrigger value="relationships">
+              <Network className="h-4 w-4 mr-1" />
+              Relationships
+            </TabsTrigger>
+            <TabsTrigger value="time">
+              Time {totalHours > 0 && `(${totalHours.toFixed(1)}h)`}
+            </TabsTrigger>
+            {serviceDeskConfig?.isConfigured && (
+              <TabsTrigger value="servicedesk">
+                ServiceDesk {serviceDeskRequestId && `(${serviceDeskRequestId})`}
+              </TabsTrigger>
+            )}
+          </TabsList>
 
         <div className="mt-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -907,7 +1152,7 @@ export function TicketDetailModalEnhanced({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Status</Label>
-                <Select defaultValue={ticket.status}>
+                <Select value={editStatus} onValueChange={setEditStatus}>
                   <SelectTrigger className="mt-1">
                     <SelectValue />
                   </SelectTrigger>
@@ -922,7 +1167,7 @@ export function TicketDetailModalEnhanced({
               </div>
               <div>
                 <Label>Priority</Label>
-                <Select defaultValue={ticket.priority}>
+                <Select value={editPriority} onValueChange={setEditPriority}>
                   <SelectTrigger className="mt-1">
                     <SelectValue />
                   </SelectTrigger>
@@ -933,6 +1178,29 @@ export function TicketDetailModalEnhanced({
                     <SelectItem value="URGENT">Urgent</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Due Date</Label>
+                <Input
+                  type="date"
+                  value={editDueDate}
+                  onChange={(e) => setEditDueDate(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Estimate (hours)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  placeholder="0"
+                  value={editEstimate}
+                  onChange={(e) => setEditEstimate(e.target.value)}
+                  className="mt-1"
+                />
               </div>
             </div>
             <div>
@@ -954,12 +1222,16 @@ export function TicketDetailModalEnhanced({
                 This will be mapped to ServiceDesk category when pushing
               </p>
             </div>
-            {ticket.description && (
-              <div>
-                <Label>Description</Label>
-                <p className="mt-1 text-sm text-muted-foreground">{ticket.description}</p>
-              </div>
-            )}
+            <div>
+              <Label>Description</Label>
+              <Textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Describe the ticket..."
+                rows={3}
+                className="mt-1"
+              />
+            </div>
             {ticket.assignees && ticket.assignees.length > 0 && (
               <div>
                 <Label>Assignees</Label>
@@ -1604,167 +1876,37 @@ export function TicketDetailModalEnhanced({
             </TabsContent>
           )}
         </Tabs>
-        </div>
+        )}
+      </div>
+    )
 
-        <div className="flex gap-2 pt-4 border-t">
-          {serviceDeskConfig?.isConfigured && (
-            <Button
-              variant="outline"
-              onClick={handlePushToServiceDesk}
-              disabled={pushingToServiceDesk}
-            >
-              {pushingToServiceDesk ? (
-                <Loader className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <ExternalLink className="h-4 w-4 mr-2" />
-              )}
-              Push to ServiceDesk
-            </Button>
-          )}
-          {gitLabConfig?.isConfigured && (
-            <>
-              {gitLabRepositories.length > 0 && (
-                <Select
-                  value={selectedRepository}
-                  onValueChange={setSelectedRepository}
-                >
-                  <SelectTrigger className="w-64">
-                    <SelectValue placeholder="Select Repository (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Use Default Repository</SelectItem>
-                    {gitLabRepositories.map((repo) => (
-                      <SelectItem key={repo.id} value={repo.projectId}>
-                        {repo.name} ({repo.path})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <Button
-                variant="outline"
-                onClick={handlePushToGitLab}
-                disabled={pushingToGitLab || loadingRepositories}
-              >
-                {pushingToGitLab ? (
-                  <Loader className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <GitBranch className="h-4 w-4 mr-2" />
-                )}
-                {gitLabIssueUrl ? 'Update GitLab Issue' : 'Push to GitLab'}
-              </Button>
-            </>
-          )}
-          {gitLabIssueUrl && (
-            <Button
-              variant="outline"
-              onClick={() => window.open(gitLabIssueUrl, '_blank')}
-            >
-              <ExternalLink className="h-4 w-4 mr-2" />
-              View in GitLab
-            </Button>
-          )}
-          <Button 
-            onClick={async () => {
-              // Save project/module/milestone/release
-              if (ticket?.id) {
-                try {
-                  const updateData: any = {}
-                  if (selectedProject) updateData.projectId = selectedProject
-                  else updateData.projectId = null
-                  if (selectedModule) updateData.moduleId = selectedModule
-                  else updateData.moduleId = null
-                  if (selectedMilestone) updateData.milestoneId = selectedMilestone
-                  else updateData.milestoneId = null
-                  if (selectedRelease) updateData.releaseId = selectedRelease
-                  else updateData.releaseId = null
+  if (isDrawer) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="right" className="w-[700px] sm:max-w-[700px] overflow-y-auto flex flex-col gap-0 p-0">
+          <SheetHeader className="px-6 py-4 border-b">
+            <SheetTitle className="sr-only">Ticket</SheetTitle>
+            {headerContent}
+          </SheetHeader>
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            {bodyContent}
+          </div>
+          <div className="px-6 py-4 border-t">
+            {footerContent}
+          </div>
+        </SheetContent>
+      </Sheet>
+    )
+  }
 
-                  if (Object.keys(updateData).length > 0) {
-                    await fetch(`/api/tickets/${ticket.id}`, {
-                      method: 'PUT',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(updateData)
-                    })
-                  }
-                } catch (error) {
-                  console.error('Error saving project/module:', error)
-                }
-              }
-              // Save ticket type as attribute if set
-              if (ticketType && ticket?.id) {
-                try {
-                  // Check if attribute already exists
-                  const existingAttr = ticket.attributes?.find(attr => 
-                    attr.name.toLowerCase() === 'ticket type' || 
-                    attr.name.toLowerCase() === 'type' ||
-                    attr.name.toLowerCase() === 'tickettype'
-                  )
-                  
-                  if (existingAttr && (existingAttr as any).id) {
-                    // Update existing attribute by ID
-                    await fetch(`/api/tickets/${ticket.id}/attributes`, {
-                      method: 'PUT',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        attributeId: (existingAttr as any).id,
-                        value: ticketType
-                      })
-                    })
-                  } else {
-                    // Create new attribute (check if it already exists first to avoid error)
-                    try {
-                      await fetch(`/api/tickets/${ticket.id}/attributes`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          name: 'Ticket Type',
-                          displayName: 'Ticket Type',
-                          type: 'SELECT',
-                          value: ticketType
-                        })
-                      })
-                    } catch (createError: any) {
-                      // If attribute already exists, try to find and update it
-                      if (createError.message?.includes('already exists')) {
-                        // Reload ticket to get the attribute ID, then update
-                        const ticketRes = await fetch(`/api/tickets/${ticket.id}`)
-                        if (ticketRes.ok) {
-                          const updatedTicket = await ticketRes.json()
-                          const attr = updatedTicket.attributes?.find((a: any) => 
-                            a.name.toLowerCase() === 'ticket type'
-                          )
-                          if (attr?.id) {
-                            await fetch(`/api/tickets/${ticket.id}/attributes`, {
-                              method: 'PUT',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({
-                                attributeId: attr.id,
-                                value: ticketType
-                              })
-                            })
-                          }
-                        }
-                      }
-                    }
-                  }
-                } catch (error) {
-                  console.error('Error saving ticket type:', error)
-                  // Continue with save even if attribute save fails
-                }
-              }
-              onSave?.(ticket)
-            }} 
-            className="flex-1"
-          >
-            Save Changes
-          </Button>
-          {onDelete && (
-            <Button variant="destructive" onClick={() => onDelete(ticket.id)}>
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
-            </Button>
-          )}
-        </div>
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          {headerContent}
+        </DialogHeader>
+        {bodyContent}
+        {footerContent}
       </DialogContent>
     </Dialog>
   )

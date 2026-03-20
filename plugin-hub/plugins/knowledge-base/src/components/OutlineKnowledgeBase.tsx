@@ -145,7 +145,7 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
   // Build document tree
   const buildDocumentTree = (parentId?: string): KnowledgeDocument[] => {
     return documents
-      .filter((doc) => doc.parentId === parentId)
+      .filter((doc) => (doc.parentId ?? undefined) === parentId)
       .sort((a, b) => {
         if (a.isPinned && !b.isPinned) return -1
         if (!a.isPinned && b.isPinned) return 1

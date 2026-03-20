@@ -86,7 +86,7 @@ export function EmulatorConfigDrawer({
       width="w-[480px]"
       floating={true}
     >
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div className="flex-1 overflow-y-auto space-y-6">
         {/* Background Settings */}
         <div className="space-y-4">
           <h4 className="text-sm font-semibold">Page Background</h4>

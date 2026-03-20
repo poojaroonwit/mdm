@@ -582,7 +582,7 @@ export function UserGroupManagement() {
                         {groupMembers.map((member) => (
                           <div
                             key={member.id}
-                            className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors"
+                            className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors"
                           >
                             <Avatar className="h-9 w-9">
                               <AvatarImage src={member.userAvatar} />

@@ -12,14 +12,7 @@ import { logger } from './logger'
  *   'ncc-dev-api-storage-data-product.com:443' → 'ncc-dev-api-storage-data-product.com'
  *   'minio-service'                          → 'minio-service'
  */
-function parseEndpointHostname(endpoint: string): string {
-  try {
-    const url = new URL(endpoint.includes('://') ? endpoint : `http://${endpoint}`)
-    return url.hostname
-  } catch {
-    return endpoint.replace(/^https?:\/\//, '').split(':')[0].split('/')[0]
-  }
-}
+import { minioClient, MINIO_BUCKET } from './minio'
 
 async function uploadToMinio(
   subDir: string,
@@ -27,47 +20,24 @@ async function uploadToMinio(
   buffer: Buffer,
   mimeType: string
 ): Promise<string> {
-  const endpoint = process.env.MINIO_ENDPOINT
-  if (!endpoint) {
-    logger.error('[upload-storage] MINIO_ENDPOINT is not set', undefined, { subDir, filename })
-    throw new Error('MinIO not configured: MINIO_ENDPOINT env var is missing')
-  }
-
-  const port = parseInt(process.env.MINIO_PORT || '9000', 10)
-  const useSSL = port === 443 || process.env.MINIO_USE_SSL === 'true'
-  const accessKey = process.env.MINIO_ACCESS_KEY || ''
-  const secretKey = process.env.MINIO_SECRET_KEY || ''
-  const bucket = process.env.MINIO_UPLOADS_BUCKET || process.env.MINIO_BUCKET || process.env.MINIO_ACCESS_KEY || 'udp'
-
-  // Extract just the hostname (no protocol, no port) for the MinIO SDK
-  const endpointHostname = parseEndpointHostname(endpoint)
+  const bucket = MINIO_BUCKET
+  const objectName = `${subDir}/${filename}`
 
   logger.info('[upload-storage] Uploading to MinIO', {
-    endpointHostname,
-    port,
-    useSSL,
     bucket,
-    object: `${subDir}/${filename}`,
+    object: objectName,
     bytes: buffer.length,
-  })
-
-  // Dynamic import so the minio client is server-only
-  const { Client } = await import('minio')
-
-  const client = new Client({
-    endPoint: endpointHostname,   // hostname only — no embedded port
-    port: useSSL ? 443 : port,
-    useSSL,
-    accessKey,
-    secretKey,
+    mimeType
   })
 
   try {
     try {
       // Ensure bucket exists
-      const exists = await client.bucketExists(bucket)
+      const exists = await minioClient.bucketExists(bucket)
       if (!exists) {
-        await client.makeBucket(bucket, 'us-east-1')
+        logger.info(`[upload-storage] Creating bucket: ${bucket}`)
+        await minioClient.makeBucket(bucket, 'us-east-1')
+        
         // Set public-read policy so images are accessible via URL
         const policy = JSON.stringify({
           Version: '2012-10-17',
@@ -78,20 +48,19 @@ async function uploadToMinio(
             Resource: [`arn:aws:s3:::${bucket}/*`],
           }],
         })
-        await client.setBucketPolicy(bucket, policy)
+        await minioClient.setBucketPolicy(bucket, policy)
       }
     } catch (bucketErr) {
       // If we can't check/create the bucket or set policy (AccessDenied),
       // we still try the putObject call because the user might have write permissions
       // to an existing bucket but not permission to check headers or policies.
-      logger.warn('[upload-storage] Bucket check/creation failed, proceedings with direct upload attempt', {
+      logger.warn('[upload-storage] Bucket check/creation failed, proceeding with direct upload attempt', {
         error: bucketErr instanceof Error ? bucketErr.message : String(bucketErr),
         bucket
       })
     }
 
-    const objectName = `${subDir}/${filename}`
-    await client.putObject(bucket, objectName, buffer, buffer.length, {
+    await minioClient.putObject(bucket, objectName, buffer, buffer.length, {
       'Content-Type': mimeType || 'application/octet-stream',
     })
 
@@ -107,11 +76,8 @@ async function uploadToMinio(
     return url
   } catch (err) {
     logger.error('[upload-storage] MinIO upload failed', err instanceof Error ? err : new Error(String(err)), {
-      endpointHostname,
-      port,
-      useSSL,
       bucket,
-      object: `${subDir}/${filename}`,
+      object: objectName,
     })
     throw err
   }

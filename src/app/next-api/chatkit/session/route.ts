@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   console.log('🔵 ChatKit session API called')
   try {
     const body = await request.json();
-    const { agentId, apiKey: providedApiKey, existing, chatbotId } = body;
+    const { agentId, apiKey: providedApiKey, existing, chatbotId, spaceId, deploymentType, origin: clientOrigin, referrer, userAgent, language, timezone } = body;
 
     console.log('📝 Session request details:', {
       hasAgentId: !!agentId,
@@ -119,11 +119,41 @@ export async function POST(request: NextRequest) {
     // Generate a unique user ID for the session (could be enhanced with real user IDs)
     const userId = body.userId || `user_${chatbotId}_${Date.now()}`;
 
+    // Build metadata for tracking — only include non-empty string values
+    // OpenAI metadata: keys ≤ 64 chars, values ≤ 512 chars, max 16 pairs
+    const requestOrigin = clientOrigin || request.headers.get('origin') || request.headers.get('referer') || ''
+
+    // Extract real client IP from proxy headers (server-side, cannot be set by client JS)
+    const ip =
+      request.headers.get('cf-connecting-ip') ||        // Cloudflare
+      request.headers.get('x-real-ip') ||               // Nginx proxy
+      (request.headers.get('x-forwarded-for') || '').split(',')[0].trim() || // Load balancer chain
+      undefined
+
+    const rawMetadata: Record<string, string | undefined> = {
+      chatbot_id: chatbotId,
+      space_id: spaceId,
+      deployment_type: deploymentType,
+      origin: requestOrigin,
+      referrer: referrer || undefined,
+      ip,
+      user_agent: userAgent ? String(userAgent).substring(0, 512) : undefined,
+      language,
+      timezone,
+      platform: 'mdm',
+    }
+    const metadata: Record<string, string> = Object.fromEntries(
+      Object.entries(rawMetadata).filter((entry): entry is [string, string] =>
+        typeof entry[1] === 'string' && entry[1].length > 0
+      )
+    )
+
     const sessionPayload: any = {
       user: userId,
       workflow: {
         id: agentId,
       },
+      metadata,
     };
 
     // If refreshing an existing session, include session info
@@ -136,7 +166,8 @@ export async function POST(request: NextRequest) {
       url: openaiUrl,
       userId,
       workflowId: agentId?.substring(0, 20) + '...',
-      isRefresh: !!existing
+      isRefresh: !!existing,
+      metadata
     })
 
     const headers: any = {

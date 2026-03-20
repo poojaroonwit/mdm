@@ -216,7 +216,7 @@ export function GlobalStyleDrawer({
       zIndex={Z_INDEX.drawer + 100}
       width="w-full md:w-[720px]"
     >
-      <div className="flex-1 overflow-y-auto px-4 pb-4" style={{ backgroundColor: 'hsl(var(--background))' }}>
+      <div className="flex-1 overflow-y-auto pb-4" style={{ backgroundColor: 'hsl(var(--background))' }}>
         {/* Search Bar */}
         <div className="sticky top-0 z-10 bg-background py-3 mb-4 border-b" style={{ backgroundColor: 'hsl(var(--background))' }}>
           <div className="relative">

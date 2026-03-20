@@ -18,6 +18,7 @@ interface CentralizedDrawerProps {
     width?: string
     zIndex?: number
     className?: string
+    contentClassName?: string
     floating?: boolean
     floatingMargin?: string
 }
@@ -34,6 +35,7 @@ export function CentralizedDrawer({
     width = "w-[720px]",
     zIndex,
     className,
+    contentClassName,
     floating = true,
     floatingMargin = "16px"
 }: CentralizedDrawerProps) {
@@ -70,7 +72,7 @@ export function CentralizedDrawer({
                     )}
                 </DrawerHeader>
 
-                <div className="flex-1 overflow-hidden flex flex-col">
+                <div className={cn("flex-1 overflow-hidden flex flex-col px-6 pb-6", contentClassName)}>
                     {children}
                 </div>
             </DrawerContent>

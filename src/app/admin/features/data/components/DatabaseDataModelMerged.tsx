@@ -1840,7 +1840,7 @@ export function DatabaseDataModelMerged() {
         floating={true}
         floatingMargin="16px"
       >
-        <div className="flex-1 overflow-hidden p-4">
+        <div className="flex-1 overflow-hidden">
           {!selectedAttribute ? (
             /* Attribute/Column List */
             <ScrollArea className="h-[calc(100vh-200px)]">

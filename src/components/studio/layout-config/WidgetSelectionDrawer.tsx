@@ -65,7 +65,7 @@ export function WidgetSelectionContent({
   return (
       <div className="flex flex-col h-full bg-transparent">
         {/* Search Bar */}
-        <div className="p-4 border-b flex-shrink-0 bg-transparent">
+        <div className="py-4 border-b flex-shrink-0 bg-transparent">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
             <Input
@@ -80,7 +80,7 @@ export function WidgetSelectionContent({
 
         {/* Widgets List with category badges */}
         <div className="flex-1 overflow-hidden flex flex-col bg-transparent">
-          <div className="px-4 pt-3 pb-2 bg-transparent">
+          <div className="pt-3 pb-2 bg-transparent">
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => {
                 const Icon = category.icon

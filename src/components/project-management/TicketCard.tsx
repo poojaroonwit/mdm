@@ -3,9 +3,29 @@
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Calendar, Clock, User, MoreHorizontal } from 'lucide-react'
+import { Calendar, Clock, MoreHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
+
+export interface CardFields {
+  description?: boolean
+  dueDate?: boolean
+  estimate?: boolean
+  assignee?: boolean
+  labels?: boolean
+  spaces?: boolean
+  attributes?: boolean
+}
+
+const DEFAULT_FIELDS: CardFields = {
+  description: true,
+  dueDate: true,
+  estimate: true,
+  assignee: true,
+  labels: true,
+  spaces: true,
+  attributes: true,
+}
 
 interface TicketCardProps {
   ticket: {
@@ -41,6 +61,7 @@ interface TicketCardProps {
   }
   onClick?: () => void
   showSpaces?: boolean
+  visibleFields?: CardFields
 }
 
 const priorityColors = {
@@ -57,14 +78,16 @@ const priorityDots = {
   URGENT: 'bg-red-500'
 }
 
-export function TicketCard({ ticket, onClick, showSpaces = false }: TicketCardProps) {
+export function TicketCard({ ticket, onClick, showSpaces = false, visibleFields }: TicketCardProps) {
+  const fields = { ...DEFAULT_FIELDS, ...visibleFields }
+
   return (
     <Card
       className="group cursor-pointer hover:shadow-md transition-all duration-200 border-l-4 border-l-transparent hover:border-l-primary bg-white dark:bg-gray-900"
       onClick={onClick}
     >
       <div className="p-3 space-y-2">
-        {/* Header with priority and menu */}
+        {/* Header with priority dot and title */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <div className={`w-2 h-2 rounded-full flex-shrink-0 ${priorityDots[ticket.priority as keyof typeof priorityDots] || priorityDots.MEDIUM}`} />
@@ -78,7 +101,6 @@ export function TicketCard({ ticket, onClick, showSpaces = false }: TicketCardPr
             className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={(e) => {
               e.stopPropagation()
-              // Handle menu click
             }}
           >
             <MoreHorizontal className="h-3 w-3" />
@@ -86,7 +108,7 @@ export function TicketCard({ ticket, onClick, showSpaces = false }: TicketCardPr
         </div>
 
         {/* Spaces */}
-        {showSpaces && ticket.spaces && ticket.spaces.length > 0 && (
+        {fields.spaces && showSpaces && ticket.spaces && ticket.spaces.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {ticket.spaces.slice(0, 2).map((spaceRelation) => (
               <Badge
@@ -106,14 +128,14 @@ export function TicketCard({ ticket, onClick, showSpaces = false }: TicketCardPr
         )}
 
         {/* Description */}
-        {ticket.description && (
+        {fields.description && ticket.description && (
           <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
             {ticket.description}
           </p>
         )}
 
         {/* Labels */}
-        {ticket.labels && ticket.labels.length > 0 && (
+        {fields.labels && ticket.labels && ticket.labels.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {ticket.labels.slice(0, 3).map((label, idx) => (
               <Badge
@@ -133,7 +155,7 @@ export function TicketCard({ ticket, onClick, showSpaces = false }: TicketCardPr
         )}
 
         {/* Custom attributes preview */}
-        {ticket.attributes && ticket.attributes.length > 0 && (
+        {fields.attributes && ticket.attributes && ticket.attributes.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {ticket.attributes.slice(0, 2).map((attr) => (
               <div
@@ -148,38 +170,39 @@ export function TicketCard({ ticket, onClick, showSpaces = false }: TicketCardPr
         )}
 
         {/* Footer with metadata */}
-        <div className="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-gray-800">
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            {ticket.dueDate && (
-              <div className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                <span>{format(new Date(ticket.dueDate), 'MMM d')}</span>
-              </div>
-            )}
-            {ticket.estimate && (
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                <span>{ticket.estimate}h</span>
-              </div>
+        {(fields.dueDate || fields.estimate || fields.assignee) && (
+          <div className="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+              {fields.dueDate && ticket.dueDate && (
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  <span>{format(new Date(ticket.dueDate), 'MMM d')}</span>
+                </div>
+              )}
+              {fields.estimate && ticket.estimate && (
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  <span>{ticket.estimate}h</span>
+                </div>
+              )}
+            </div>
+
+            {fields.assignee && ticket.assignee && (
+              <Avatar className="h-6 w-6 border-2 border-white dark:border-gray-900">
+                <AvatarImage src={ticket.assignee.avatar || undefined} />
+                <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                  {ticket.assignee.name
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2)}
+                </AvatarFallback>
+              </Avatar>
             )}
           </div>
-
-          {ticket.assignee && (
-            <Avatar className="h-6 w-6 border-2 border-white dark:border-gray-900">
-              <AvatarImage src={ticket.assignee.avatar || undefined} />
-              <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                {ticket.assignee.name
-                  .split(' ')
-                  .map((n) => n[0])
-                  .join('')
-                  .toUpperCase()
-                  .slice(0, 2)}
-              </AvatarFallback>
-            </Avatar>
-          )}
-        </div>
+        )}
       </div>
     </Card>
   )
 }
-

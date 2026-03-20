@@ -1428,6 +1428,17 @@ export default function SpaceSettingsPage() {
                             <span>Login Page Customization</span>
                           </CardTitle>
                           <CardDescription>Customize the appearance of your space's login screen</CardDescription>
+                          <div className="mt-2">
+                            <a
+                              href={`/${selectedSpace?.slug || selectedSpace?.id}/auth/signin`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              {typeof window !== 'undefined' ? `${window.location.origin}/${selectedSpace?.slug || selectedSpace?.id}/auth/signin` : `/${selectedSpace?.slug || selectedSpace?.id}/auth/signin`}
+                            </a>
+                          </div>
                         </CardHeader>
                         <CardContent className="space-y-6">
                           <div className="space-y-2">

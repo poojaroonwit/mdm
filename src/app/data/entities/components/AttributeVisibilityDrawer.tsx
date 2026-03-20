@@ -62,7 +62,7 @@ export function AttributeVisibilityDrawer(props: AttributeVisibilityDrawerProps)
       title={recordLayoutSettings?.customTabs?.find((t: any) => t.id === selectedTabId)?.name || 'Attributes'}
       icon={Eye}
     >
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto">
         {selectedTabId && (() => {
           const tabAttributes = getTabAttributes(selectedTabId)
           const availableAttributes = getAvailableAttributesForTab(selectedTabId)
