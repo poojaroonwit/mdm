@@ -179,6 +179,12 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
                   onCheckedChange={(checked) => setFormData({ ...formData, showNotificationBadge: checked })}
                 />
               </FormRow>
+              <FormRow label="Reset Session on Close" description="Clear chat history when widget is closed">
+                <Switch
+                  checked={formData.resetSessionOnClose || false}
+                  onCheckedChange={(checked) => setFormData({ ...formData, resetSessionOnClose: checked })}
+                />
+              </FormRow>
               {formData.showNotificationBadge && (
                 <FormRow label="Badge Color" description="Color of notification badge">
                   <ColorInput

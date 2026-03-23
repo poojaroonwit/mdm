@@ -535,6 +535,86 @@ export function OpenAIAgentSDKConfig({
           </FormRow>
 
           <FormRow 
+            label="Max Prompt Tokens" 
+            description="Maximum number of tokens to use for the prompt. If not specified, uses default."
+          >
+            <Input
+              type="number"
+              value={formData.openaiAgentSdkMaxPromptTokens || ''}
+              onChange={(e) => setFormData({ ...formData, openaiAgentSdkMaxPromptTokens: e.target.value ? parseInt(e.target.value) : undefined } as any)}
+              placeholder="e.g., 20000"
+            />
+          </FormRow>
+
+          <FormRow 
+            label="Max Completion Tokens" 
+            description="Maximum number of tokens to use for the completion. If not specified, uses default."
+          >
+            <Input
+              type="number"
+              value={formData.openaiAgentSdkMaxCompletionTokens || ''}
+              onChange={(e) => setFormData({ ...formData, openaiAgentSdkMaxCompletionTokens: e.target.value ? parseInt(e.target.value) : undefined } as any)}
+              placeholder="e.g., 1000"
+            />
+          </FormRow>
+
+          <FormRow 
+            label="Truncation Strategy" 
+            description="Strategy for truncating messages when token limits are reached."
+          >
+            <div className="space-y-4">
+              <Select
+                value={formData.openaiAgentSdkTruncationStrategy?.type || 'auto'}
+                onValueChange={(value) => setFormData({ 
+                  ...formData, 
+                  openaiAgentSdkTruncationStrategy: { 
+                    ...formData.openaiAgentSdkTruncationStrategy, 
+                    type: value as 'auto' | 'last_messages' 
+                  } 
+                } as any)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Auto" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">Auto (Managed by OpenAI)</SelectItem>
+                  <SelectItem value="last_messages">Last Messages (Truncate oldest)</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {formData.openaiAgentSdkTruncationStrategy?.type === 'last_messages' && (
+                <div className="pt-2">
+                  <Label className="text-[10px] text-muted-foreground mb-1.5 block uppercase font-bold tracking-wider">Last Messages Count</Label>
+                  <Input
+                    type="number"
+                    value={formData.openaiAgentSdkTruncationStrategy?.last_messages || ''}
+                    onChange={(e) => setFormData({ 
+                      ...formData, 
+                      openaiAgentSdkTruncationStrategy: { 
+                        ...formData.openaiAgentSdkTruncationStrategy, 
+                        last_messages: e.target.value ? parseInt(e.target.value) : undefined 
+                      } 
+                    } as any)}
+                    placeholder="e.g., 10"
+                  />
+                </div>
+              )}
+            </div>
+          </FormRow>
+
+          <FormRow 
+            label="Max Chat Turns" 
+            description="Maximum number of message turns allowed per session. If reached, the user will be notified to start a new chat."
+          >
+            <Input
+              type="number"
+              value={formData.maxChatTurns || ''}
+              onChange={(e) => setFormData({ ...formData, maxChatTurns: e.target.value ? parseInt(e.target.value) : undefined })}
+              placeholder="e.g., 20"
+            />
+          </FormRow>
+
+          <FormRow 
             label="Vector Store ID" 
             description="Vector store ID for file search tool. If provided, enables file search capability for the agent."
           >

@@ -561,7 +561,7 @@ export function SystemIntegrations({ hideHeader = false }: SystemIntegrationsPro
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 py-4 px-6">
             {selectedIntegration && renderConfigForm(getConfigFields(selectedIntegration.type))}
 
             <div className="flex items-center justify-between p-4 bg-muted rounded-md">

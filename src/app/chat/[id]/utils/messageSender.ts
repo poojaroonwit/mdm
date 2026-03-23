@@ -98,7 +98,9 @@ async function sendToOpenAIAgentSDK(
 
     // Create a more descriptive error message
     let errorMessage = `OpenAI Agent SDK API request failed`
-    if (response.status === 400) {
+    if (errorText === 'thread_expired' || errorText === 'session_expired') {
+      errorMessage = errorText
+    } else if (response.status === 400) {
       errorMessage = `Invalid request: ${errorText}`
     } else if (response.status === 401) {
       errorMessage = `Authentication failed: Please check your API key`

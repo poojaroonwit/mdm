@@ -34,6 +34,9 @@ export async function POST(request: NextRequest) {
     let apiKey = providedApiKey;
     let organizationId: string | undefined;
     let projectId: string | undefined;
+    let maxPromptTokens: number | undefined;
+    let maxCompletionTokens: number | undefined;
+    let truncationStrategy: any | undefined;
 
     // If API key is missing but we have chatbotId, fetch it from DB
     if (!apiKey && chatbotId) {
@@ -81,6 +84,9 @@ export async function POST(request: NextRequest) {
           apiKey = isAgentSDK ? config.openaiAgentSdkApiKey : config.chatkitApiKey;
           organizationId = isAgentSDK ? config.openaiAgentSdkOrganizationId : config.openaiChatkitOrganizationId;
           projectId = isAgentSDK ? config.openaiAgentSdkProjectId : config.openaiChatkitProjectId;
+          maxPromptTokens = config.openaiAgentSdkMaxPromptTokens;
+          maxCompletionTokens = config.openaiAgentSdkMaxCompletionTokens;
+          truncationStrategy = config.openaiAgentSdkTruncationStrategy;
 
           console.log('✅ Retrieved API configuration from database', {
             engineType: config.engineType,
@@ -154,6 +160,9 @@ export async function POST(request: NextRequest) {
         id: agentId,
       },
       metadata,
+      max_prompt_tokens: maxPromptTokens || undefined,
+      max_completion_tokens: maxCompletionTokens || undefined,
+      truncation_strategy: truncationStrategy || undefined,
     };
 
     // If refreshing an existing session, include session info
@@ -193,6 +202,13 @@ export async function POST(request: NextRequest) {
     console.log('📡 OpenAI API response status:', response.status, response.statusText)
 
     if (!response.ok) {
+      if (response.status === 404 && existing) {
+        return jsonResponse(
+          { error: 'session_expired', details: 'The ChatKit session has expired or was not found.' },
+          404
+        );
+      }
+
       const errorText = await response.text();
       let errorDetails;
       try {

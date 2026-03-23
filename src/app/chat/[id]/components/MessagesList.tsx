@@ -65,6 +65,8 @@ interface MessagesListProps {
   messagesEndRef: React.RefObject<HTMLDivElement | null>
   chatbotId?: string
   threadId?: string | null
+  isSessionExpired?: boolean
+  resetChat?: () => void
 }
 
 export function MessagesList({
@@ -79,6 +81,8 @@ export function MessagesList({
   messagesEndRef,
   chatbotId,
   threadId,
+  isSessionExpired,
+  resetChat,
 }: MessagesListProps) {
   return (
     <ScrollArea className="flex-1 px-6 py-5 pb-28" ref={scrollAreaRef as any}>
@@ -212,6 +216,27 @@ export function MessagesList({
           />
         ))}
         {isLoading && <TypingIndicator chatbot={chatbot} />}
+        
+        {isSessionExpired && (
+          <div className="flex flex-col items-center justify-center p-6 border rounded-xl animate-in fade-in slide-in-from-bottom-4 duration-500"
+               style={{ 
+                 borderColor: chatbot.borderColor, 
+                 backgroundColor: chatbot.botMessageBackgroundColor + '20', // Add some transparency
+                 borderStyle: 'dashed'
+               }}>
+            <p className="text-sm font-medium mb-4" style={{ color: chatbot.fontColor }}>
+              Your session has expired or was not found.
+            </p>
+            <button
+              onClick={resetChat}
+              className="px-6 py-2 rounded-lg text-white font-semibold transition-all hover:scale-105 active:scale-95 shadow-md"
+              style={{ backgroundColor: chatbot.primaryColor }}
+            >
+              Start New Chat
+            </button>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
     </ScrollArea>

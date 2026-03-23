@@ -216,6 +216,14 @@ export interface Chatbot {
   openaiAgentSdkBackgroundColor?: string // Background color for Agent SDK chat UI
   openaiAgentSdkWorkflowCode?: string // Custom workflow code from Agent Builder (pasted by user)
   openaiAgentSdkWorkflowFile?: string // Workflow file name from src/lib/workflows (e.g., "qsncc-workflow")
+  openaiAgentSdkMaxPromptTokens?: number
+  openaiAgentSdkMaxCompletionTokens?: number
+  openaiAgentSdkTruncationStrategy?: {
+    type: 'auto' | 'last_messages'
+    last_messages?: number
+  }
+  resetSessionOnClose?: boolean
+  maxChatTurns?: number
   // Style config
   logo?: string
   primaryColor: string

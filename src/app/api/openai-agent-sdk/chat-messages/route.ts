@@ -44,7 +44,10 @@ async function postHandler(request: NextRequest) {
     stream: requestStream,
     threadId: existingThreadId,
     chatbotId,
-    spaceId
+    spaceId,
+    maxPromptTokens,
+    maxCompletionTokens,
+    truncationStrategy
   } = body
 
   // Server-side API Key Lookup
@@ -78,6 +81,11 @@ async function postHandler(request: NextRequest) {
         }
 
         apiKey = config.openaiAgentSdkApiKey
+        
+        // Use config values if not provided in body
+        if (maxPromptTokens === undefined) maxPromptTokens = config.openaiAgentSdkMaxPromptTokens
+        if (maxCompletionTokens === undefined) maxCompletionTokens = config.openaiAgentSdkMaxCompletionTokens
+        if (truncationStrategy === undefined) truncationStrategy = config.openaiAgentSdkTruncationStrategy
       }
     } catch (error) {
       console.warn('Failed to lookup API key:', error)
@@ -277,6 +285,9 @@ async function postHandler(request: NextRequest) {
       chatbotId,
       spaceId,
       session,
+      maxPromptTokens,
+      maxCompletionTokens,
+      truncationStrategy
     })
   }
 

@@ -26,6 +26,7 @@ export function useChatMessages({
 }: UseChatMessagesOptions) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isSessionExpired, setIsSessionExpired] = useState(false)
   const [selectedFollowUp, setSelectedFollowUp] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
@@ -115,11 +116,27 @@ export function useChatMessages({
     }
   }, [threadId, chatbotId, chatbot?.engineType, chatbot?.openaiAgentSdkApiKey, setMessages])
 
+  const resetChat = () => {
+    setMessages([])
+    setIsSessionExpired(false)
+    if (onThreadIdChange) {
+      onThreadIdChange(null)
+    }
+  }
+
   const sendMessage = async (
     content: string,
     messageAttachments?: Array<{ type: 'image' | 'video', url: string, name?: string }>
   ) => {
     if ((!content.trim() && (!messageAttachments || messageAttachments.length === 0)) || !chatbot) return
+
+    // Check for max chat turns limit
+    const userMessageCount = messages.filter(m => m.role === 'user').length
+    if (chatbot.maxChatTurns && userMessageCount >= chatbot.maxChatTurns) {
+      toast.error(`You have reached the maximum of ${chatbot.maxChatTurns} message turns for this session. Please start a new chat.`)
+      setIsSessionExpired(true) // Reuse this state to show "Start New Chat" button if applicable
+      return
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -173,9 +190,22 @@ export function useChatMessages({
     } catch (error) {
       console.error('Error sending message:', error)
       
+      const isExpired = error instanceof Error && (error.message === 'thread_expired' || error.message === 'session_expired')
+      
+      if (isExpired) {
+        if (chatbot.autoResetOnTimeout) {
+          toast.success('Session expired. Starting new chat...')
+          resetChat()
+          return
+        }
+        setIsSessionExpired(true)
+      }
+
       // Extract error message details
-      let errorDetails = 'Sorry, I encountered an error. Please try again later.'
-      let toastMessage = 'Failed to send message'
+      let errorDetails = isExpired 
+        ? 'Your session has expired. Please start a new chat.' 
+        : 'Sorry, I encountered an error. Please try again later.'
+      let toastMessage = isExpired ? 'Session expired' : 'Failed to send message'
       
       if (error instanceof Error) {
         errorDetails = error.message || errorDetails
@@ -215,9 +245,11 @@ export function useChatMessages({
     messages,
     setMessages,
     isLoading,
+    isSessionExpired,
     selectedFollowUp,
     setSelectedFollowUp,
     sendMessage,
+    resetChat,
     handleFollowUpClick,
     messagesEndRef,
     scrollAreaRef,

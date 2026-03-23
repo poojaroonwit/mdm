@@ -9,7 +9,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   'Access-Control-Allow-Private-Network': 'true',
-  'Cache-Control': 'no-store, max-age=0',
+  'Cache-Control': 'public, max-age=60, stale-while-revalidate=120',
 }
 
 // Helper function to merge version config (inline removed)

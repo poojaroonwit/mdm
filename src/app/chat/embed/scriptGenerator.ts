@@ -36,6 +36,20 @@ export function generateEmbedScript(
   }
   window['chatbotLoaded_' + chatbotId] = true;
   
+  // DNS preconnect + prefetch so the browser opens a connection and pre-downloads
+  // the chat page before the iframe is even created.
+  (function() {
+    var preconnect = document.createElement('link');
+    preconnect.rel = 'preconnect';
+    preconnect.href = serverOrigin;
+    document.head.appendChild(preconnect);
+
+    var prefetch = document.createElement('link');
+    prefetch.rel = 'prefetch';
+    prefetch.href = serverOrigin + '/chat/' + chatbotId + '?mode=embed&type=' + type;
+    document.head.appendChild(prefetch);
+  })();
+
   function initWidget() {
     var Z_INDEX = ${JSON.stringify(Z_INDEX)};
     var buttonShadowBuffer = ${BUTTON_SHADOW_BUFFER};

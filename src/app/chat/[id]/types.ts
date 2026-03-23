@@ -103,6 +103,14 @@ export interface ChatbotConfig {
   openaiAgentSdkEnableComputerUse?: boolean
   openaiAgentSdkEnableImageGeneration?: boolean
   openaiAgentSdkUseWorkflowConfig?: boolean
+  openaiAgentSdkMaxPromptTokens?: number
+  openaiAgentSdkMaxCompletionTokens?: number
+  openaiAgentSdkTruncationStrategy?: {
+    type: 'auto' | 'last_messages'
+    last_messages?: number
+  }
+  resetSessionOnClose?: boolean
+  maxChatTurns?: number
   logo?: string
   primaryColor: string
   secondaryColor?: string
@@ -376,5 +384,9 @@ export interface ChatbotConfig {
   widgetAnimationExit?: 'slide-down' | 'scale' | 'fade' | 'slide-side'
   widgetAnimationDuration?: number // Animation duration in seconds
   widgetAnimationType?: 'spring' | 'tween' // Animation physics type
+
+  // Session Recovery
+  autoResetOnTimeout?: boolean
+  showNewChatOnTimeout?: boolean
 }
 
