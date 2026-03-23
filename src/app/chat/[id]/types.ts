@@ -110,7 +110,6 @@ export interface ChatbotConfig {
     last_messages?: number
   }
   resetSessionOnClose?: boolean
-  maxChatTurns?: number
   logo?: string
   primaryColor: string
   secondaryColor?: string

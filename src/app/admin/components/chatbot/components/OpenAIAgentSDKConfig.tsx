@@ -603,18 +603,6 @@ export function OpenAIAgentSDKConfig({
           </FormRow>
 
           <FormRow 
-            label="Max Chat Turns" 
-            description="Maximum number of message turns allowed per session. If reached, the user will be notified to start a new chat."
-          >
-            <Input
-              type="number"
-              value={formData.maxChatTurns || ''}
-              onChange={(e) => setFormData({ ...formData, maxChatTurns: e.target.value ? parseInt(e.target.value) : undefined })}
-              placeholder="e.g., 20"
-            />
-          </FormRow>
-
-          <FormRow 
             label="Vector Store ID" 
             description="Vector store ID for file search tool. If provided, enables file search capability for the agent."
           >

@@ -130,14 +130,6 @@ export function useChatMessages({
   ) => {
     if ((!content.trim() && (!messageAttachments || messageAttachments.length === 0)) || !chatbot) return
 
-    // Check for max chat turns limit
-    const userMessageCount = messages.filter(m => m.role === 'user').length
-    if (chatbot.maxChatTurns && userMessageCount >= chatbot.maxChatTurns) {
-      toast.error(`You have reached the maximum of ${chatbot.maxChatTurns} message turns for this session. Please start a new chat.`)
-      setIsSessionExpired(true) // Reuse this state to show "Start New Chat" button if applicable
-      return
-    }
-
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',

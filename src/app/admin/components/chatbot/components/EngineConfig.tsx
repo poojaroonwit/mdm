@@ -254,18 +254,6 @@ export function EngineConfig({ formData, setFormData }: EngineConfigProps) {
                 )}
               </div>
             </FormRow>
-
-            <FormRow 
-              label="Max Chat Turns" 
-              description="Maximum number of message turns allowed per session. If reached, the user will be notified to start a new chat."
-            >
-              <Input
-                type="number"
-                value={formData.maxChatTurns || ''}
-                onChange={(e) => setFormData({ ...formData, maxChatTurns: e.target.value ? parseInt(e.target.value) : undefined })}
-                placeholder="e.g., 20"
-              />
-            </FormRow>
           </div>
         </FormSection>
       )}

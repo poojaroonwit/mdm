@@ -223,7 +223,6 @@ export interface Chatbot {
     last_messages?: number
   }
   resetSessionOnClose?: boolean
-  maxChatTurns?: number
   // Style config
   logo?: string
   primaryColor: string
