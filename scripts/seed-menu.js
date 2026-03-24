@@ -26,6 +26,7 @@ const menuItems = [
     // Tools group - Only built-in items (plugin items will be added on plugin install)
     { groupSlug: 'tools', slug: 'bi', name: 'BI & Reports', icon: 'BarChart3', href: '/tools/bi', section: 'Reporting', priority: 10 },
     { groupSlug: 'tools', slug: 'ai-chat-ui', name: 'Chatbot UI Manager', icon: 'MessageCircle', href: '/tools/ai-chat-ui', section: 'Website Embed widget', priority: 30 },
+    { groupSlug: 'tools', slug: 'vector-store', name: 'Vector Store Database', icon: 'Database', href: '/tools/vector-store', section: 'Website Embed widget', priority: 35 },
     { groupSlug: 'tools', slug: 'pwa', name: 'PWA Manager', icon: 'Monitor', href: '/tools/pwa', section: 'Website Embed widget', priority: 40 },
     // Note: bigquery (SQL Query), ai-analyst, notebook (Data Science) are plugin-dependent
     // They will be added automatically when their plugins are installed

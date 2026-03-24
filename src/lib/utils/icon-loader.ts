@@ -95,14 +95,20 @@ export async function getIconNames(): Promise<string[]> {
         const names: string[] = [];
 
         // 1. Load Lucide icon names
-        const lucideModule = await import('lucide-react')
-        const lucideNames = Object.keys(lucideModule).filter((key) => {
-            return key[0] === key[0]?.toUpperCase() &&
-                key !== 'createLucideIcon' &&
-                key !== 'Icon' &&
-                typeof lucideModule[key as keyof typeof lucideModule] !== 'string'
-        })
-        names.push(...lucideNames);
+        let lucideModule;
+        try {
+            lucideModule = await import('lucide-react');
+            const lucideNames = Object.keys(lucideModule).filter((key) => {
+                return key[0] === key[0]?.toUpperCase() &&
+                    key !== 'createLucideIcon' &&
+                    key !== 'Icon' &&
+                    typeof lucideModule[key as keyof typeof lucideModule] !== 'string'
+            })
+            names.push(...lucideNames);
+        } catch (e) {
+            console.warn('Failed to load lucide-react module for icon names', e);
+        }
+
 
         // 2. Load Heroicons Outline names
         try {
@@ -112,7 +118,7 @@ export async function getIconNames(): Promise<string[]> {
                 .map(name => `ho-${name}`)
             names.push(...hoNames)
         } catch (e) {
-            console.warn('Failed to load Heroicons Outline names')
+            console.warn('Failed to load Heroicons Outline names', e)
         }
 
         // 3. Load Heroicons Solid names
@@ -123,7 +129,7 @@ export async function getIconNames(): Promise<string[]> {
                 .map(name => `hs-${name}`)
             names.push(...hsNames)
         } catch (e) {
-            console.warn('Failed to load Heroicons Solid names')
+            console.warn('Failed to load Heroicons Solid names', e)
         }
 
         iconNames = names;
