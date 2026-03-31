@@ -141,9 +141,9 @@ const nextConfig = {
     if (!isServer && process.env.NODE_ENV === 'production') {
       config.optimization.splitChunks = {
         chunks: 'all',
-        // Reduce max chunk size to lower memory usage
-        maxSize: 100 * 1024, // 100KB per chunk - smaller chunks use less memory
-        minSize: 10 * 1024,  // 10KB minimum
+        // Increase chunk size to reduce the massive number of chunks and memory overhead
+        maxSize: 2048 * 1024, // 2MB per chunk (was 100KB)
+        minSize: 20 * 1024,  // 20KB minimum (was 10KB)
         maxAsyncRequests: 30,
         maxInitialRequests: 30,
         cacheGroups: {
