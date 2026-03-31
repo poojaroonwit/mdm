@@ -38,6 +38,10 @@ const nextConfig = {
     ignoreBuildErrors: true,
     // TypeScript will show all errors, build will continue to collect all errors
   },
+  eslint: {
+    // Skip ESLint during build to save memory in restricted CI environments
+    ignoreDuringBuilds: true,
+  },
 
   // Expose package version to the client
   env: {
@@ -54,7 +58,8 @@ const nextConfig = {
   // Experimental features for better build performance
   experimental: {
     // Reduce memory usage by limiting concurrent workers (Production Only)
-    webpackBuildWorker: true,
+    // Disable webpackBuildWorker to reduce memory usage in restricted CI environments
+    webpackBuildWorker: false,
     // Enable parallel routes for better route optimization (Disable in dev for speed)
     parallelServerBuildTraces: process.env.NODE_ENV === 'production' ? false : true,
     // Optimize package imports to reduce bundle size
@@ -206,9 +211,9 @@ const nextConfig = {
       }
     }
 
-    // Webpack parallelism: balance between speed and RAM usage
+    // Webpack parallelism: set to 1 to minimize RAM usage in restricted environments
     if (process.env.NODE_ENV === 'production') {
-      config.parallelism = 2
+      config.parallelism = 1
     }
 
     // Custom error handling to collect all errors
