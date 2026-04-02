@@ -105,7 +105,7 @@ const AlertDialogOverlay = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "fixed inset-0 bg-background/80 backdrop-blur-sm animate-in fade-in-0",
+        "fixed inset-0 bg-zinc-950/20 dark:bg-black/40 backdrop-blur-md animate-in fade-in-0 duration-300",
         className
       )}
       style={{ zIndex: Z_INDEX.overlay }}
@@ -131,7 +131,7 @@ const AlertDialogContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-border bg-background p-6 shadow-lg duration-200 animate-in fade-in-0 zoom-in-95 sm:rounded-lg [background-color:hsl(var(--background))]",
+          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-6 border border-zinc-100/60 dark:border-zinc-800/60 bg-white/95 dark:bg-zinc-950/95 p-6 shadow-2xl duration-300 animate-in fade-in-0 zoom-in-95 sm:rounded-2xl backdrop-blur-xl",
           className
         )}
         style={{ zIndex: Z_INDEX.dialog }}
@@ -181,7 +181,7 @@ const AlertDialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h2
     ref={ref}
-    className={cn("text-lg font-semibold", className)}
+    className={cn("text-lg font-black uppercase tracking-tight text-zinc-900 dark:text-zinc-100", className)}
     {...props}
   />
 ))
@@ -193,7 +193,7 @@ const AlertDialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-sm font-medium text-zinc-500 dark:text-zinc-400", className)}
     {...props}
   />
 ))

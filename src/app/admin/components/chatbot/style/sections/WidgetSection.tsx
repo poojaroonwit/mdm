@@ -20,6 +20,7 @@ import { Switch } from '@/components/ui/switch'
 import { FormRow, FormSection } from '../components/FormRow'
 
 export function WidgetSection({ formData, setFormData, chatkitOptions }: SectionProps) {
+  console.log('[WidgetSection] rendering', { formData, chatkitOptions })
   const [openItem, setOpenItem] = useState('appearance')
 
   return (

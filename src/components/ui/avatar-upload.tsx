@@ -175,8 +175,8 @@ export function AvatarUpload({
         </Avatar>
         
         {uploading && (
-          <div className={`absolute inset-0 flex items-center justify-center bg-black/50 rounded-full ${sizeClasses[size]}`}>
-            <Loader2 className="h-4 w-4 animate-spin text-white" />
+          <div className={`absolute inset-0 flex items-center justify-center bg-black/40 dark:bg-zinc-950/60 rounded-full backdrop-blur-[2px] ${sizeClasses[size]}`}>
+            <Loader2 className="h-4 w-4 animate-spin text-white dark:text-zinc-100" />
           </div>
         )}
       </div>
@@ -220,7 +220,7 @@ export function AvatarUpload({
             )}
           </div>
           
-          <p className="text-xs text-muted-foreground">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
             Upload image or select from library
           </p>
         </div>
@@ -252,13 +252,13 @@ export function AvatarUpload({
                     key={avatar.id}
                     onClick={() => selectAvatarFromLibrary(avatar.url)}
                     disabled={uploading}
-                    className="relative aspect-square rounded-full overflow-hidden border-2 hover:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="relative aspect-square rounded-full overflow-hidden border border-zinc-100/60 dark:border-zinc-800/60 hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed group shadow-sm bg-zinc-50 dark:bg-zinc-900"
                     title={avatar.name}
                   >
                     <img
                       src={avatar.url}
                       alt={avatar.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   </button>
                 ))}
@@ -272,13 +272,13 @@ export function AvatarUpload({
                     key={avatar.id}
                     onClick={() => selectAvatarFromLibrary(avatar.url)}
                     disabled={uploading}
-                    className="relative aspect-square rounded-full overflow-hidden border-2 hover:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="relative aspect-square rounded-full overflow-hidden border border-zinc-100/60 dark:border-zinc-800/60 hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed group shadow-sm bg-zinc-50 dark:bg-zinc-900"
                     title={avatar.name}
                   >
                     <img
                       src={avatar.url}
                       alt={avatar.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   </button>
                 ))}
@@ -292,13 +292,13 @@ export function AvatarUpload({
                     key={avatar.id}
                     onClick={() => selectAvatarFromLibrary(avatar.url)}
                     disabled={uploading}
-                    className="relative aspect-square rounded-full overflow-hidden border-2 hover:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="relative aspect-square rounded-full overflow-hidden border border-zinc-100/60 dark:border-zinc-800/60 hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed group shadow-sm bg-zinc-50 dark:bg-zinc-900"
                     title={avatar.name}
                   >
                     <img
                       src={avatar.url}
                       alt={avatar.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   </button>
                 ))}
@@ -312,13 +312,13 @@ export function AvatarUpload({
                     key={avatar.id}
                     onClick={() => selectAvatarFromLibrary(avatar.url)}
                     disabled={uploading}
-                    className="relative aspect-square rounded-full overflow-hidden border-2 hover:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="relative aspect-square rounded-full overflow-hidden border border-zinc-100/60 dark:border-zinc-800/60 hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed group shadow-sm bg-zinc-50 dark:bg-zinc-900"
                     title={avatar.name}
                   >
                     <img
                       src={avatar.url}
                       alt={avatar.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   </button>
                 ))}

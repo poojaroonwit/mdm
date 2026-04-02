@@ -67,10 +67,10 @@ function GroupTreeNode({
     <div>
       <div
         className={cn(
-          "flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors",
+          "flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all duration-300 group/node",
           isSelected 
-            ? "bg-primary/10 text-primary border border-primary/20" 
-            : "hover:bg-muted/50"
+            ? "bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-zinc-900 shadow-sm" 
+            : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400"
         )}
         style={{ paddingLeft: `${12 + level * 16}px` }}
         onClick={() => onSelect(group)}
@@ -93,8 +93,19 @@ function GroupTreeNode({
           )}
         </button>
         <FolderTree className="h-4 w-4 text-muted-foreground" />
-        <span className="flex-1 text-sm font-medium truncate">{group.name}</span>
-        <Badge variant="outline" className="text-xs">
+        <span className={cn(
+          "flex-1 text-sm font-semibold truncate",
+          isSelected ? "text-white dark:text-zinc-950" : "text-zinc-700 dark:text-zinc-300"
+        )}>
+          {group.name}
+        </span>
+        <Badge 
+          variant={isSelected ? "outline" : "secondary"} 
+          className={cn(
+            "text-[10px] font-black h-5",
+            isSelected ? "border-white/20 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"
+          )}
+        >
           {group.memberCount || 0}
         </Badge>
         <DropdownMenu>
@@ -582,25 +593,25 @@ export function UserGroupManagement() {
                         {groupMembers.map((member) => (
                           <div
                             key={member.id}
-                            className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors"
+                            className="flex items-center gap-3 p-4 rounded-2xl border border-zinc-100/60 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/20 hover:shadow-lg transition-all duration-300 group"
                           >
-                            <Avatar className="h-9 w-9">
+                            <Avatar className="h-10 w-10 border border-zinc-100 dark:border-zinc-800">
                               <AvatarImage src={member.userAvatar} />
-                              <AvatarFallback className="text-xs">
+                              <AvatarFallback className="text-xs font-black">
                                 {(member.userName || '').split(' ').map(n => n[0]).join('').toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{member.userName}</p>
-                              <p className="text-xs text-muted-foreground truncate">{member.userEmail}</p>
+                              <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">{member.userName}</p>
+                              <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 truncate tracking-tight">{member.userEmail}</p>
                             </div>
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest text-zinc-500 h-5">
                               {member.role}
                             </Badge>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                              className="h-8 w-8 p-0 text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
                               onClick={() => handleRemoveMember(member)}
                             >
                               <X className="h-4 w-4" />

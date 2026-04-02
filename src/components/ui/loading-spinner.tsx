@@ -13,16 +13,16 @@ export function LoadingSpinner({ size = "md", className }: LoadingSpinnerProps) 
   }
 
   return (
-    <div className={cn("animate-spin rounded-full border-2 border-muted border-t-primary", sizeClasses[size], className)} />
+    <div className={cn("animate-spin rounded-full border-2 border-zinc-100 dark:border-zinc-800 border-t-zinc-900 dark:border-t-zinc-100", sizeClasses[size], className)} />
   )
 }
 
 export function LoadingPage() {
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center min-h-screen bg-transparent">
       <div className="text-center">
         <LoadingSpinner size="lg" className="mx-auto mb-4" />
-        <p className="text-muted-foreground">Loading...</p>
+        <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 tracking-widest uppercase">Loading</p>
       </div>
     </div>
   )

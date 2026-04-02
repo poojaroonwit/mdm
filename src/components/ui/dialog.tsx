@@ -105,7 +105,7 @@ const DialogOverlay = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "fixed inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in-0 duration-300",
+        "fixed inset-0 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in-0 duration-300",
         className
       )}
       style={{ zIndex: Z_INDEX.overlay }}
@@ -158,7 +158,7 @@ const DialogContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border border-border/50 bg-background shadow-2xl duration-200 animate-in fade-in-0 zoom-in-95 sm:rounded-2xl overflow-hidden",
+          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border border-zinc-100/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-950/90 shadow-2xl duration-300 animate-in fade-in-0 zoom-in-95 sm:rounded-2xl overflow-hidden backdrop-blur-xl",
           className
         )}
         style={{ zIndex: Z_INDEX.dialog }}
@@ -183,7 +183,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-1.5 text-center sm:text-left p-6 border-b border-border/50",
+      "flex flex-col space-y-2 text-center sm:text-left p-6 border-b border-zinc-100/60 dark:border-zinc-800/60",
       className
     )}
     {...props}
@@ -212,7 +212,7 @@ const DialogTitle = React.forwardRef<
   <h2
     ref={ref}
     className={cn(
-      "text-xl font-semibold leading-none text-foreground",
+      "text-lg font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-50 leading-none",
       className
     )}
     {...props}
@@ -226,7 +226,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-xs text-zinc-400 dark:text-zinc-500 font-medium", className)}
     {...props}
   />
 ))

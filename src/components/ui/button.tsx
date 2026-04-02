@@ -21,71 +21,69 @@ export const Button = forwardRef<HTMLButtonElement | HTMLSpanElement, ButtonProp
     const Element = as === 'span' ? 'span' : 'button'
 
     const baseStyles = [
-      'inline-flex items-center justify-center whitespace-nowrap font-medium',
-      'transition-all duration-200',
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
-      'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
+      'inline-flex items-center justify-center whitespace-nowrap font-bold uppercase tracking-wider',
+      'transition-all duration-300',
+      'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 dark:focus-visible:ring-zinc-500',
+      'disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none',
       'select-none',
     ].join(' ')
 
     const variantStyles: Record<string, string> = {
-      // Solid filled — 100% opaque background + layered shadow with hover lift
+      // Solid Zinc — Professional & High Contrast
       primary:
-        'bg-primary text-primary-foreground border-0 ' +
-        'shadow-[0_2px_8px_rgba(0,0,0,0.18),0_1px_3px_rgba(0,0,0,0.12)] ' +
-        'hover:brightness-110 hover:shadow-[0_4px_14px_rgba(0,0,0,0.22),0_2px_6px_rgba(0,0,0,0.14)] ' +
-        'active:brightness-95 active:scale-[0.98] active:shadow-[0_1px_3px_rgba(0,0,0,0.12)]',
+        'bg-zinc-900 text-zinc-50 dark:bg-zinc-50 dark:text-zinc-900 ' +
+        'hover:bg-zinc-800 dark:hover:bg-zinc-200 hover:scale-[1.02] ' +
+        'active:scale-[0.98]',
       default:
-        'bg-primary text-primary-foreground border-0 ' +
-        'shadow-[0_2px_8px_rgba(0,0,0,0.18),0_1px_3px_rgba(0,0,0,0.12)] ' +
-        'hover:brightness-110 hover:shadow-[0_4px_14px_rgba(0,0,0,0.22),0_2px_6px_rgba(0,0,0,0.14)] ' +
-        'active:brightness-95 active:scale-[0.98] active:shadow-[0_1px_3px_rgba(0,0,0,0.12)]',
+        'bg-zinc-900 text-zinc-50 dark:bg-zinc-50 dark:text-zinc-900 ' +
+        'hover:bg-zinc-800 dark:hover:bg-zinc-200 hover:scale-[1.02] ' +
+        'active:scale-[0.98]',
       secondary:
-        'bg-secondary text-secondary-foreground border-0 ' +
-        'shadow-[0_2px_6px_rgba(0,0,0,0.10),0_1px_3px_rgba(0,0,0,0.08)] ' +
-        'hover:brightness-95 hover:shadow-[0_4px_12px_rgba(0,0,0,0.14),0_2px_5px_rgba(0,0,0,0.10)] ' +
-        'active:brightness-90 active:scale-[0.98] active:shadow-[0_1px_3px_rgba(0,0,0,0.08)]',
+        'bg-zinc-100/80 text-zinc-900 dark:bg-zinc-800/80 dark:text-zinc-50 ' +
+        'border border-zinc-200/50 dark:border-zinc-700/50 backdrop-blur-sm ' +
+        'hover:bg-zinc-200/90 dark:hover:bg-zinc-700/90 ' +
+        'active:scale-[0.98]',
       danger:
-        'bg-destructive text-destructive-foreground border-0 ' +
-        'shadow-[0_2px_8px_rgba(239,68,68,0.30),0_1px_3px_rgba(0,0,0,0.12)] ' +
-        'hover:brightness-110 hover:shadow-[0_4px_14px_rgba(239,68,68,0.38),0_2px_6px_rgba(0,0,0,0.14)] ' +
-        'active:brightness-95 active:scale-[0.98] active:shadow-[0_1px_3px_rgba(0,0,0,0.12)]',
+        'bg-red-500/10 text-red-600 dark:text-red-400 ' +
+        'border border-red-500/20 ' +
+        'hover:bg-red-500 hover:text-white ' +
+        'active:scale-[0.98]',
       destructive:
-        'bg-destructive text-destructive-foreground border-0 ' +
-        'shadow-[0_2px_8px_rgba(239,68,68,0.30),0_1px_3px_rgba(0,0,0,0.12)] ' +
-        'hover:brightness-110 hover:shadow-[0_4px_14px_rgba(239,68,68,0.38),0_2px_6px_rgba(0,0,0,0.14)] ' +
-        'active:brightness-95 active:scale-[0.98] active:shadow-[0_1px_3px_rgba(0,0,0,0.12)]',
+        'bg-red-500/10 text-red-600 dark:text-red-400 ' +
+        'border border-red-500/20 ' +
+        'hover:bg-red-500 hover:text-white ' +
+        'active:scale-[0.98]',
       warning:
-        'bg-yellow-500 text-white border-0 ' +
-        'shadow-[0_2px_8px_rgba(234,179,8,0.35),0_1px_3px_rgba(0,0,0,0.12)] ' +
-        'hover:brightness-110 hover:shadow-[0_4px_14px_rgba(234,179,8,0.42),0_2px_6px_rgba(0,0,0,0.14)] ' +
-        'active:brightness-95 active:scale-[0.98] active:shadow-[0_1px_3px_rgba(0,0,0,0.12)]',
+        'bg-amber-500/10 text-amber-600 dark:text-amber-400 ' +
+        'border border-amber-500/20 ' +
+        'hover:bg-amber-500 hover:text-white ' +
+        'active:scale-[0.98]',
       success:
-        'bg-green-600 text-white border-0 ' +
-        'shadow-[0_2px_8px_rgba(22,163,74,0.30),0_1px_3px_rgba(0,0,0,0.12)] ' +
-        'hover:brightness-110 hover:shadow-[0_4px_14px_rgba(22,163,74,0.38),0_2px_6px_rgba(0,0,0,0.14)] ' +
-        'active:brightness-95 active:scale-[0.98] active:shadow-[0_1px_3px_rgba(0,0,0,0.12)]',
+        'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ' +
+        'border border-emerald-500/20 ' +
+        'hover:bg-emerald-500 hover:text-white ' +
+        'active:scale-[0.98]',
 
-      // Outline — transparent bg, visible border, subtle shadow
+      // Outline — Glassmorphism Lite
       outline:
-        'bg-background text-foreground border border-border ' +
-        'shadow-[0_1px_3px_rgba(0,0,0,0.07),0_1px_2px_rgba(0,0,0,0.05)] ' +
-        'hover:bg-accent hover:text-accent-foreground hover:shadow-[0_2px_6px_rgba(0,0,0,0.10)] ' +
-        'active:scale-[0.98] active:shadow-none',
+        'bg-white/40 dark:bg-zinc-950/40 text-zinc-900 dark:text-zinc-100 ' +
+        'border border-zinc-200/60 dark:border-zinc-800/60 backdrop-blur-md ' +
+        'hover:bg-white/60 dark:hover:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 ' +
+        'active:scale-[0.98]',
 
-      // Ghost — no bg, no border, no shadow
+      // Ghost — Subtle Dock Style
       ghost:
-        'bg-transparent text-foreground border border-transparent ' +
-        'hover:bg-accent hover:text-accent-foreground ' +
+        'bg-transparent text-zinc-500 dark:text-zinc-400 ' +
+        'hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100 ' +
         'active:scale-[0.98]',
     }
 
     const sizeStyles: Record<string, string> = {
-      sm: 'h-8 px-3 text-xs rounded-md gap-1.5',
-      md: 'h-9 px-4 text-sm rounded-md gap-2',
-      default: 'h-9 px-4 text-sm rounded-md gap-2',
-      lg: 'h-11 px-6 text-base rounded-md gap-2',
-      icon: 'h-9 w-9 rounded-full',
+      sm: 'h-8 px-3 text-[9px] rounded-lg gap-1.5',
+      md: 'h-10 px-5 text-[10px] rounded-xl gap-2',
+      default: 'h-10 px-5 text-[10px] rounded-xl gap-2',
+      lg: 'h-12 px-6 text-xs rounded-2xl gap-2.5',
+      icon: 'h-10 w-10 rounded-xl',
     }
 
     const resolvedVariant = (variantStyles[variant] ?? variantStyles.primary)

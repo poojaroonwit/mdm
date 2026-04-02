@@ -104,10 +104,10 @@ export function FaviconUpload({ currentFavicon, onFaviconChange, onRemove }: Fav
       <CardContent className="space-y-4">
         {/* Current Favicon Preview */}
         {preview && (
-          <div className="space-y-2">
-            <Label>Current Favicon</Label>
-            <div className="flex items-center space-x-4 p-4 border rounded-lg">
-              <div className="w-16 h-16 border rounded flex items-center justify-center bg-gray-50">
+          <div className="space-y-3">
+            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Current Favicon</Label>
+            <div className="flex items-center space-x-4 p-4 border border-zinc-100/60 dark:border-zinc-800/60 rounded-2xl bg-white/50 dark:bg-zinc-950/20 backdrop-blur-md shadow-inner-sm">
+              <div className="w-16 h-16 border border-zinc-200/50 dark:border-zinc-700/50 rounded-xl flex items-center justify-center bg-zinc-100/50 dark:bg-zinc-800/30">
                 <img 
                   src={preview} 
                   alt="Favicon preview" 
@@ -116,10 +116,10 @@ export function FaviconUpload({ currentFavicon, onFaviconChange, onRemove }: Fav
                 />
               </div>
               <div className="flex-1">
-                <p className="text-sm text-muted-foreground">
-                  {preview.startsWith('data:') ? 'Uploaded file' : 'External URL'}
+                <p className="text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
+                  {preview.startsWith('data:') ? 'STORAGE' : 'REMOTE'}
                 </p>
-                <p className="text-xs text-muted-foreground break-all">
+                <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 break-all mt-0.5">
                   {preview.length > 50 ? `${preview.substring(0, 50)}...` : preview}
                 </p>
               </div>
@@ -127,7 +127,7 @@ export function FaviconUpload({ currentFavicon, onFaviconChange, onRemove }: Fav
                 variant="outline"
                 size="sm"
                 onClick={handleRemove}
-                className="text-red-600 hover:text-red-700"
+                className="text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 border-rose-100/50 dark:border-rose-900/30"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -137,16 +137,16 @@ export function FaviconUpload({ currentFavicon, onFaviconChange, onRemove }: Fav
 
         {/* Error Display */}
         {error && (
-          <div className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <AlertCircle className="h-4 w-4 text-red-600" />
-            <span className="text-sm text-red-600">{error}</span>
+          <div className="flex items-center space-x-2 p-3 bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100/50 dark:border-rose-900/30 rounded-xl">
+            <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+            <span className="text-xs font-medium text-rose-600 dark:text-rose-400 tracking-tight">{error}</span>
           </div>
         )}
 
         {/* Upload Section */}
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="favicon-upload">Upload Favicon</Label>
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <Label htmlFor="favicon-upload" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Upload Favicon</Label>
             <div className="flex items-center space-x-2">
               <Input
                 ref={fileInputRef}
@@ -167,13 +167,13 @@ export function FaviconUpload({ currentFavicon, onFaviconChange, onRemove }: Fav
                 <span>{isUploading ? 'Uploading...' : 'Choose File'}</span>
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Supported formats: PNG, JPG, GIF, SVG. Max size: 1MB
+            <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 tracking-tight">
+              SUPPORTS: PNG, JPG, GIF, SVG, ICO (MAX 1MB)
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="favicon-url">Or Enter URL</Label>
+          <div className="space-y-3">
+            <Label htmlFor="favicon-url" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Or Enter URL</Label>
             <Input
               id="favicon-url"
               type="url"
@@ -181,8 +181,8 @@ export function FaviconUpload({ currentFavicon, onFaviconChange, onRemove }: Fav
               onChange={(e) => handleUrlChange(e.target.value)}
               disabled={isUploading}
             />
-            <p className="text-xs text-muted-foreground">
-              Enter a direct URL to an image file
+            <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 tracking-tight">
+              SPECIFY A DIRECT URL TO AN IMAGE FILE
             </p>
           </div>
         </div>

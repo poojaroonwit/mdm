@@ -223,7 +223,7 @@ const DropdownMenuContent = React.forwardRef<
       <div
         ref={contentRef}
         className={cn(
-          "min-w-[8rem] rounded-xl border border-border/50 bg-background/80 p-1 text-foreground shadow-2xl outline-none backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-200",
+          "min-w-[8rem] rounded-xl border border-zinc-100/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-950/90 p-1 text-zinc-900 dark:text-white shadow-2xl outline-none backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-300",
           className
         )}
         style={{
@@ -255,7 +255,7 @@ const DropdownMenuItem = React.forwardRef<
     ref={ref}
     role="menuitem"
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-sm outline-none transition-colors duration-150 hover:bg-muted/50 focus:bg-muted/50 disabled:pointer-events-none disabled:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-sm outline-none transition-all duration-200 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 focus:bg-zinc-100/50 dark:focus:bg-zinc-800/50 disabled:pointer-events-none disabled:opacity-40",
       inset && "pl-8",
       className
     )}
@@ -275,7 +275,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
     role="menuitemcheckbox"
     aria-checked={checked}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm outline-none transition-colors duration-150 hover:bg-muted/50 focus:bg-muted/50 disabled:pointer-events-none disabled:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm outline-none transition-all duration-200 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 focus:bg-zinc-100/50 dark:focus:bg-zinc-800/50 disabled:pointer-events-none disabled:opacity-40",
       className
     )}
     {...props}
@@ -299,7 +299,7 @@ const DropdownMenuRadioItem = React.forwardRef<
     role="menuitemradio"
     aria-checked={checked}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm outline-none transition-colors duration-150 hover:bg-muted/50 focus:bg-muted/50 disabled:pointer-events-none disabled:opacity-50",
+      "relative flex cursor-default select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm outline-none transition-all duration-200 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 focus:bg-zinc-100/50 dark:focus:bg-zinc-800/50 disabled:pointer-events-none disabled:opacity-40",
       className
     )}
     {...props}
@@ -321,7 +321,7 @@ const DropdownMenuLabel = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "px-2 py-1.5 text-sm font-semibold",
+      "px-2 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500",
       inset && "pl-8",
       className
     )}
@@ -336,7 +336,7 @@ const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-muted", className)}
+    className={cn("-mx-1 my-1 h-px bg-zinc-100 dark:bg-zinc-800", className)}
     {...props}
   />
 ))
@@ -364,7 +364,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent",
+      "flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-sm outline-none transition-all duration-200 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 focus:bg-zinc-100/50 dark:focus:bg-zinc-800/50",
       inset && "pl-8",
       className
     )}
@@ -383,7 +383,7 @@ const DropdownMenuSubContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "min-w-[8rem] rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg outline-none backdrop-blur-xl",
+      "min-w-[8rem] rounded-xl border border-zinc-100/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-950/90 p-1 text-zinc-900 dark:text-white shadow-2xl outline-none backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-300",
       className
     )}
     style={{

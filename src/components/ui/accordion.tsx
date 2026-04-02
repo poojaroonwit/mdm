@@ -72,16 +72,16 @@ export const Accordion = ({
             };
             return (
               <AccordionItemContext.Provider key={item.id} value={{ isOpen, onToggle }}>
-                <div className="border border-border/50 rounded-2xl overflow-hidden bg-card/50 shadow-sm">
+                <div className="border border-zinc-100/60 dark:border-zinc-800/60 rounded-2xl overflow-hidden bg-zinc-50/30 dark:bg-zinc-950/20 backdrop-blur-sm">
                   <button
                     type="button"
                     onClick={onToggle}
-                    className="flex w-full justify-between items-center px-5 py-4 text-left text-sm font-bold text-foreground hover:bg-muted/50 transition-colors"
+                    className="flex w-full justify-between items-center px-5 py-4 text-left text-[10px] font-black uppercase tracking-[0.2em] text-zinc-900 dark:text-white hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-all duration-300 group"
                   >
                     <span>{item.title}</span>
                     <ChevronDown
                       className={cn(
-                        "h-5 w-5 text-muted-foreground transition-transform duration-300",
+                        "h-4 w-4 text-zinc-400 transition-transform duration-300",
                         isOpen && "rotate-180"
                       )}
                     />
@@ -93,7 +93,7 @@ export const Accordion = ({
                     )}
                   >
                     <div className="overflow-hidden">
-                      <div className="px-5 pb-4 pt-0 text-sm text-muted-foreground leading-relaxed">
+                      <div className="px-5 pb-5 pt-0 text-sm text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
                         {item.content}
                       </div>
                     </div>
@@ -135,7 +135,7 @@ export const AccordionItem = React.forwardRef<
 
   return (
     <AccordionItemContext.Provider value={{ isOpen, onToggle }}>
-      <div ref={ref} className={cn("", className)} {...props}>
+      <div ref={ref} className={cn("border-b border-zinc-100 dark:border-zinc-800", className)} {...props}>
         {children}
       </div>
     </AccordionItemContext.Provider>
@@ -156,7 +156,7 @@ export const AccordionTrigger = React.forwardRef<
       type="button"
       onClick={context?.onToggle}
       className={cn(
-        "flex flex-1 w-full items-center justify-between py-4 font-medium transition-all",
+        "flex flex-1 w-full items-center justify-between py-4 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-900 dark:text-white transition-all duration-300 hover:text-zinc-600 dark:hover:text-zinc-400 group",
         className
       )}
       {...props}
@@ -164,7 +164,7 @@ export const AccordionTrigger = React.forwardRef<
       {children}
       <ChevronDown
         className={cn(
-          "h-4 w-4 shrink-0 transition-transform duration-200",
+          "h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-transform duration-300",
           context?.isOpen && "rotate-180"
         )}
       />
@@ -188,11 +188,11 @@ export const AccordionContent = React.forwardRef<
       )}
     >
       <div className="overflow-hidden">
-        <div ref={ref} className={cn("pb-4 pt-0 text-sm", className)} {...props}>
+        <div ref={ref} className={cn("pb-5 pt-0 text-sm text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed", className)} {...props}>
           {children}
         </div>
       </div>
     </div>
-  );
-});
+  )
+})
 AccordionContent.displayName = "AccordionContent";

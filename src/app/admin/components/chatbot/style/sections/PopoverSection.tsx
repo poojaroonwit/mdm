@@ -12,7 +12,8 @@ import { FormRow, FormSection } from '../components/FormRow'
 import type { SectionProps } from './types'
 
 export function PopoverSection({ formData, setFormData, chatkitOptions }: SectionProps) {
-  const [openItem, setOpenItem] = useState('basic-settings')
+  console.log('[PopoverSection] rendering', { formData, chatkitOptions })
+  const [openItem, setOpenItem] = useState('appearance')
 
   return (
     <div className="py-2 w-full">

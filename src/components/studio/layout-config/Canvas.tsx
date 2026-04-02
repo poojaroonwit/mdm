@@ -6,8 +6,7 @@ import { CanvasWidget } from './CanvasWidget'
 import { FloatingToolbar } from './FloatingToolbar'
 import { useCanvasDrag } from './useCanvasDrag'
 import { useCanvasResize } from './useCanvasResize'
-import { PlacedWidget, WidgetType } from './widgets'
-import { widgetsPalette } from './widgets'
+import { PlacedWidget, WidgetType, getDefaultWidgetProperties, widgetsPalette } from './widgets'
 import toast from 'react-hot-toast'
 import { Z_INDEX } from '@/lib/z-index'
 
@@ -373,7 +372,7 @@ export function Canvas({
             y: Math.max(0, boundedY),
             width: finalWidth,
             height: finalHeight,
-            properties: {}
+            properties: getDefaultWidgetProperties(widgetType)
           }
           
           setPlacedWidgets((prev) => [...prev, newWidget])

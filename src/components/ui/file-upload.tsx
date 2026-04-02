@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Upload, X, File, AlertCircle } from 'lucide-react'
+import { Upload, X, File, AlertCircle, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useFileDragDrop } from '@/hooks/use-file-drag-drop'
 
@@ -122,9 +122,13 @@ export function FileUpload({
       {/* Upload Area */}
       <div
         className={`
-          border-2 border-dashed rounded-lg p-6 text-center transition-colors
-          ${dragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}
-          ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-gray-400'}
+          border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300
+          ${dragOver 
+            ? 'border-zinc-500 bg-zinc-500/10' 
+            : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-900/10'}
+          ${disabled 
+            ? 'opacity-30 cursor-not-allowed' 
+            : 'cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/20'}
         `}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -140,41 +144,41 @@ export function FileUpload({
           disabled={disabled}
         />
         
-        <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-        <p className="text-sm text-gray-600 mb-1">
+        <Upload className="h-8 w-8 mx-auto mb-3 text-zinc-400 dark:text-zinc-500 opacity-60" />
+        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
           {dragOver ? 'Drop files here' : 'Click to upload or drag and drop'}
         </p>
-        <p className="text-xs text-gray-500">
-          Max file size: {maxFileSize}MB
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+          MAX {maxFileSize}MB
           {allowedFileTypes.length > 0 && (
-            <span> • Allowed types: {allowedFileTypes.join(', ')}</span>
+            <span> • {allowedFileTypes.join(', ')}</span>
           )}
         </p>
       </div>
 
       {/* Upload Progress */}
       {uploading && (
-        <div className="flex items-center space-x-2 text-sm text-blue-600">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-          <span>Uploading files...</span>
+        <div className="flex items-center space-x-3 text-xs font-semibold text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-100/60 dark:border-zinc-800/60 shadow-sm animate-pulse">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span className="uppercase tracking-widest">Uploading files</span>
         </div>
       )}
 
       {/* Uploaded Files */}
       {uploadedFiles.length > 0 && (
-        <div className="space-y-2">
-          <Label>Uploaded Files</Label>
+        <div className="space-y-3">
+          <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Uploaded Files</Label>
           <div className="space-y-2">
             {uploadedFiles.map((file) => (
               <div
                 key={file.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-3 bg-white/50 dark:bg-zinc-900/50 border border-zinc-100/60 dark:border-zinc-800/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
               >
                 <div className="flex items-center space-x-3">
-                  <File className="h-4 w-4 text-gray-500" />
+                  <File className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
                   <div>
-                    <p className="text-sm font-medium">{file.originalName}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{file.originalName}</p>
+                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                       {(file.fileSize / 1024 / 1024).toFixed(2)} MB
                     </p>
                   </div>

@@ -463,14 +463,14 @@ const PopoverContent = React.forwardRef<
     }
 
     // Fallback
-    return isDark ? 'rgba(17, 24, 39, 0.50)' : 'rgba(255, 255, 255, 0.50)'
+    return isDark ? 'rgba(9, 9, 11, 0.9)' : 'rgba(255, 255, 255, 0.9)'
   }
 
   const content = (
     <div
       ref={contentRef}
       className={cn(
-        "rounded-xl border border-border/50 text-foreground shadow-2xl outline-none backdrop-blur-xl flex flex-col overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200",
+        "rounded-xl border border-zinc-100/60 dark:border-zinc-800/60 text-zinc-900 dark:text-white shadow-2xl outline-none backdrop-blur-xl flex flex-col overflow-hidden animate-in fade-in-0 zoom-in-95 duration-300",
         className
       )}
       style={{

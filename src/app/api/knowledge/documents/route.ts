@@ -73,8 +73,6 @@ async function getHandler(request: NextRequest) {
     whereConditions.push(`kd.parent_id::text = $${paramIndex}`)
     queryParams.push(parentId)
     paramIndex++
-  } else {
-    whereConditions.push('kd.parent_id IS NULL')
   }
 
   // Search

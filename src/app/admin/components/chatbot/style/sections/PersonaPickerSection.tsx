@@ -11,6 +11,7 @@ import type { SectionProps } from './types'
 
 export function PersonaPickerSection({ formData, setFormData, chatkitOptions }: SectionProps) {
   const personas = chatkitOptions?.personaPicker?.personas || []
+  console.log('[PersonaPickerSection] rendering', { chatkitOptions, personas })
 
   return (
     <div className="py-4 px-4 space-y-4">

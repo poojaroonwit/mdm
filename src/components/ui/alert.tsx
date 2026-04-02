@@ -11,10 +11,10 @@ const Alert = React.forwardRef<
     ref={ref}
     role="alert"
     className={clsx(
-      'relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground',
+      'relative w-full rounded-xl border border-zinc-100/60 dark:border-zinc-800/60 p-4 backdrop-blur-md [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4',
       {
-        'bg-background text-foreground': variant === 'default',
-        'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive':
+        'bg-white/50 dark:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100': variant === 'default',
+        'bg-red-50/50 dark:bg-red-900/10 border-red-200/50 dark:border-red-900/50 text-red-600 dark:text-red-400 [&>svg]:text-red-600 dark:[&>svg]:text-red-400':
           variant === 'destructive',
       },
       className
@@ -30,7 +30,7 @@ const AlertTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h5
     ref={ref}
-    className={clsx('mb-1 font-medium leading-none tracking-tight', className)}
+    className={clsx('mb-1.5 text-[10px] font-black uppercase tracking-[0.2em] leading-none', className)}
     {...props}
   />
 ))
@@ -42,7 +42,7 @@ const AlertDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={clsx('text-sm [&_p]:leading-relaxed', className)}
+    className={clsx('text-xs font-medium text-zinc-500 dark:text-zinc-400 [&_p]:leading-relaxed', className)}
     {...props}
   />
 ))

@@ -102,7 +102,7 @@ export function Tooltip({
   const contentElement = isVisible && (
     <div
       ref={tooltipRef}
-      className="macos-tooltip"
+      className="bg-zinc-900/90 dark:bg-white/95 text-white dark:text-zinc-900 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border border-zinc-800/50 dark:border-zinc-200/50 shadow-2xl backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-200"
       style={{
         position: 'fixed',
         top: `${tooltipPosition.top}px`,
@@ -277,7 +277,7 @@ const TooltipContent = React.forwardRef<
     <div
       ref={contentRef}
       className={cn(
-        "z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95",
+        "z-50 overflow-hidden rounded-lg bg-zinc-900/90 dark:bg-white/95 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white dark:text-zinc-900 border border-zinc-800/50 dark:border-zinc-200/50 shadow-2xl backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-300",
         className
       )}
       style={{

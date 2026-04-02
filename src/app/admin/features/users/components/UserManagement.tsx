@@ -471,23 +471,23 @@ export function UserManagement() {
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'SUPER_ADMIN':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+        return 'border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-400'
       case 'ADMIN':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+        return 'border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-400'
       case 'MANAGER':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+        return 'border-sky-200 bg-sky-50 text-sky-600 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-400'
       case 'USER':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+        return 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400'
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+        return 'border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-400'
     }
   }
 
   const getStatusIcon = (isActive: boolean) => {
     return isActive ? (
-      <CheckCircle className="h-4 w-4 text-green-500" />
+      <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
     ) : (
-      <XCircle className="h-4 w-4 text-red-500" />
+      <XCircle className="h-3.5 w-3.5 text-rose-500" />
     )
   }
 
@@ -509,8 +509,9 @@ export function UserManagement() {
                   onClick={() => {
                     setShowBulkDialog(true)
                   }}
+                  className="h-8 text-[10px] font-black uppercase tracking-widest border-zinc-200/60 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/20 backdrop-blur-xl"
                 >
-                  <Users className="h-4 w-4 mr-2" />
+                  <Users className="h-3 w-3 mr-2" />
                   Bulk Actions ({selectedUserIds.length})
                 </Button>
               )}
@@ -518,27 +519,27 @@ export function UserManagement() {
             <div className="flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <MoreHorizontal className="h-4 w-4 mr-2" />
+                  <Button variant="outline" size="sm" className="h-8 text-[10px] font-black uppercase tracking-widest border-zinc-200/60 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/20 backdrop-blur-xl">
+                    <MoreHorizontal className="h-3 w-3 mr-2" />
                     More
-                    <ChevronDown className="h-4 w-4 ml-2" />
+                    <ChevronDown className="h-3 w-3 ml-2" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuContent align="end" className="w-48 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-2xl border-zinc-200/50 dark:border-zinc-800/50">
                   <DropdownMenuItem onClick={() => {
                     const url = new URL(window.location.href)
                     url.searchParams.set('tab', 'roles')
                     window.location.href = url.toString()
-                  }}>
-                    <Shield className="h-4 w-4 mr-2" />
+                  }} className="text-xs font-medium">
+                    <Shield className="h-3.5 w-3.5 mr-2" />
                     Manage Roles
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setShowSyncSettingsDialog(true)}>
-                    <Settings className="h-4 w-4 mr-2" />
+                  <DropdownMenuItem onClick={() => setShowSyncSettingsDialog(true)} className="text-xs font-medium">
+                    <Settings className="h-3.5 w-3.5 mr-2" />
                     Sync Settings
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setShowImportDialog(true)}>
-                    <Upload className="h-4 w-4 mr-2" />
+                  <DropdownMenuItem onClick={() => setShowImportDialog(true)} className="text-xs font-medium">
+                    <Upload className="h-3.5 w-3.5 mr-2" />
                     Import Users
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={async () => {
@@ -568,18 +569,18 @@ export function UserManagement() {
                       console.error('Error exporting users:', error)
                       toast.error('Failed to export users')
                     }
-                  }}>
-                    <Download className="h-4 w-4 mr-2" />
+                  }} className="text-xs font-medium">
+                    <Download className="h-3.5 w-3.5 mr-2" />
                     Export Users
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button onClick={handleSyncAd} disabled={isSyncing} variant="outline" size="sm">
-                <Cloud className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+              <Button onClick={handleSyncAd} disabled={isSyncing} variant="outline" size="sm" className="h-8 text-[10px] font-black uppercase tracking-widest border-zinc-200/60 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/20 backdrop-blur-xl">
+                <Cloud className={`h-3 w-3 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
                 {isSyncing ? 'Syncing...' : 'Sync AD'}
               </Button>
-              <Button onClick={openCreateDialog} size="sm">
-                <UserPlus className="h-4 w-4 mr-2" />
+              <Button onClick={openCreateDialog} size="sm" className="h-8 text-[10px] font-black uppercase tracking-widest bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-lg shadow-zinc-900/10 dark:shadow-zinc-100/10">
+                <UserPlus className="h-3 w-3 mr-2" />
                 Add User
               </Button>
             </div>
@@ -588,45 +589,45 @@ export function UserManagement() {
           {/* Search and Filters row */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by name or email..."
-                className="pl-9 h-9 bg-background"
+                className="pl-9 h-10 text-xs font-medium bg-white/50 dark:bg-zinc-950/20 border-zinc-200/60 dark:border-zinc-800/60 rounded-xl placeholder:text-zinc-400 backdrop-blur-xl"
               />
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-[140px] h-9 bg-background">
+                <SelectTrigger className="w-[140px] h-10 text-[10px] font-black uppercase tracking-widest bg-white/50 dark:bg-zinc-950/20 border-zinc-200/60 dark:border-zinc-800/60 rounded-xl backdrop-blur-xl">
                   <SelectValue placeholder="All Roles" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                  <SelectItem value="MANAGER">Manager</SelectItem>
-                  <SelectItem value="USER">User</SelectItem>
+                <SelectContent className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-2xl border-zinc-200/50 dark:border-zinc-800/50">
+                  <SelectItem value="all" className="text-xs font-medium">All Roles</SelectItem>
+                  <SelectItem value="SUPER_ADMIN" className="text-xs font-medium text-rose-500">Super Admin</SelectItem>
+                  <SelectItem value="ADMIN" className="text-xs font-medium text-amber-500">Admin</SelectItem>
+                  <SelectItem value="MANAGER" className="text-xs font-medium text-sky-500">Manager</SelectItem>
+                  <SelectItem value="USER" className="text-xs font-medium text-emerald-500">User</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={activeFilter} onValueChange={setActiveFilter}>
-                <SelectTrigger className="w-[130px] h-9 bg-background">
+                <SelectTrigger className="w-[130px] h-10 text-[10px] font-black uppercase tracking-widest bg-white/50 dark:bg-zinc-950/20 border-zinc-200/60 dark:border-zinc-800/60 rounded-xl backdrop-blur-xl">
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="true">Active</SelectItem>
-                  <SelectItem value="false">Inactive</SelectItem>
+                <SelectContent className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-2xl border-zinc-200/50 dark:border-zinc-800/50">
+                  <SelectItem value="all" className="text-xs font-medium">All Status</SelectItem>
+                  <SelectItem value="true" className="text-xs font-medium text-emerald-500">Active</SelectItem>
+                  <SelectItem value="false" className="text-xs font-medium text-rose-500">Inactive</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={spaceFilter} onValueChange={setSpaceFilter}>
-                <SelectTrigger className="w-[160px] h-9 bg-background">
+                <SelectTrigger className="w-[160px] h-10 text-[10px] font-black uppercase tracking-widest bg-white/50 dark:bg-zinc-950/20 border-zinc-200/60 dark:border-zinc-800/60 rounded-xl backdrop-blur-xl">
                   <SelectValue placeholder="All Spaces" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Spaces</SelectItem>
+                <SelectContent className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-2xl border-zinc-200/50 dark:border-zinc-800/50">
+                  <SelectItem value="all" className="text-xs font-medium">All Spaces</SelectItem>
                   {spaces.map(space => (
-                    <SelectItem key={space.id} value={space.id}>
+                    <SelectItem key={space.id} value={space.id} className="text-xs font-medium">
                       {space.name}
                     </SelectItem>
                   ))}
@@ -642,9 +643,9 @@ export function UserManagement() {
                     setActiveFilter('all')
                     setSpaceFilter('all')
                   }}
-                  className="h-9"
+                  className="h-10 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-all"
                 >
-                  <X className="h-4 w-4 mr-1" />
+                  <X className="h-3 w-3 mr-1" />
                   Clear
                 </Button>
               )}
@@ -653,19 +654,19 @@ export function UserManagement() {
         </div>
 
         {/* Users Table - Supabase Style */}
-        <div className="bg-card border border-border rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-border bg-muted/30">
+        <div className="bg-white/50 dark:bg-zinc-950/20 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl overflow-hidden backdrop-blur-xl shadow-sm">
+          <div className="px-6 py-4 border-b border-zinc-200/60 dark:border-zinc-800/60 bg-zinc-50/30 dark:bg-zinc-900/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <h2 className="text-sm font-semibold text-foreground">Users</h2>
+                <h2 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">User Directory</h2>
                 {selectedUserIds.length > 0 && (
-                  <Badge variant="secondary" className="text-xs">
-                    {selectedUserIds.length} selected
+                  <Badge variant="secondary" className="text-[10px] font-black bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-zinc-900 h-5">
+                    {selectedUserIds.length} SELECTED
                   </Badge>
                 )}
               </div>
-              <span className="text-xs text-muted-foreground">
-                Showing {users.length} of {total}
+              <span className="text-[10px] font-bold text-zinc-400">
+                {users.length} OF {total} TOTAL
               </span>
             </div>
           </div>
@@ -707,7 +708,7 @@ export function UserManagement() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-b border-border hover:bg-transparent">
+                  <TableRow className="border-b border-zinc-200/60 dark:border-zinc-800/60 hover:bg-transparent">
                     <TableHead className="w-12 h-12">
                       <input
                         type="checkbox"
@@ -719,18 +720,18 @@ export function UserManagement() {
                             setSelectedUserIds([])
                           }
                         }}
-                        className="rounded border-border cursor-pointer"
+                        className="rounded-md border-zinc-300 dark:border-zinc-700 cursor-pointer"
                       />
                     </TableHead>
-                    <TableHead className="h-12 text-xs font-semibold text-muted-foreground uppercase tracking-wider">User</TableHead>
-                    <TableHead className="h-12 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email</TableHead>
-                    <TableHead className="h-12 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role</TableHead>
-                    <TableHead className="h-12 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Department</TableHead>
-                    <TableHead className="h-12 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</TableHead>
-                    <TableHead className="h-12 text-xs font-semibold text-muted-foreground uppercase tracking-wider">2FA</TableHead>
-                    <TableHead className="h-12 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Spaces</TableHead>
-                    <TableHead className="h-12 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Last Login</TableHead>
-                    <TableHead className="h-12 w-[100px] text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</TableHead>
+                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Profile</TableHead>
+                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Email Address</TableHead>
+                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Global Role</TableHead>
+                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Demographics</TableHead>
+                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account Status</TableHead>
+                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Security</TableHead>
+                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Spaces</TableHead>
+                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Pulse</TableHead>
+                    <TableHead className="h-12 w-[80px] text-right text-[10px] font-black text-zinc-400 uppercase tracking-widest">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -738,8 +739,8 @@ export function UserManagement() {
                     <TableRow
                       key={user.id}
                       className={cn(
-                        "border-b border-border hover:bg-muted/30 transition-colors",
-                        selectedUserIds.includes(user.id) && "bg-primary/5",
+                        "border-b border-zinc-100/60 dark:border-zinc-800/60 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-all duration-300 group/row",
+                        selectedUserIds.includes(user.id) && "bg-zinc-100/50 dark:bg-zinc-800/30",
                         index === users.length - 1 && "border-b-0"
                       )}
                     >
@@ -754,21 +755,21 @@ export function UserManagement() {
                               setSelectedUserIds(selectedUserIds.filter(id => id !== user.id))
                             }
                           }}
-                          className="rounded border-border cursor-pointer"
+                          className="rounded-md border-zinc-300 dark:border-zinc-700 cursor-pointer"
                           onClick={(e) => e.stopPropagation()}
                         />
                       </TableCell>
                       <TableCell className="h-16">
                         <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8 border border-border">
+                          <Avatar className="h-9 w-9 border border-zinc-100 dark:border-zinc-800">
                             <AvatarImage src={user.avatar} />
-                            <AvatarFallback className="text-xs font-medium">
+                            <AvatarFallback className="text-[10px] font-black">
                               {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <div className="font-medium text-sm text-foreground">{user.name}</div>
-                            <div className="text-xs text-muted-foreground">
+                            <div className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{user.name}</div>
+                            <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 tracking-tight">
                               Joined {new Date(user.createdAt).toLocaleDateString()}
                             </div>
                           </div>
@@ -776,26 +777,29 @@ export function UserManagement() {
                       </TableCell>
                       <TableCell className="h-16">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-foreground">{user.email}</span>
+                          <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{user.email}</span>
                         </div>
                       </TableCell>
                       <TableCell className="h-16">
-                        <Badge className={cn("text-xs font-medium", getRoleColor(user.role))} variant="default">
+                        <Badge 
+                          variant="outline" 
+                          className={cn("text-[10px] font-black uppercase tracking-widest h-5", getRoleColor(user.role))}
+                        >
                           {user.role.replace('_', ' ')}
                         </Badge>
                       </TableCell>
                       <TableCell className="h-16">
                         <div className="flex flex-col">
-                           <span className="text-sm font-medium">{user.department || '-'}</span>
-                           <span className="text-xs text-muted-foreground">{user.jobTitle || ''}</span>
+                           <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300">{user.department || '-'}</span>
+                           <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">{user.jobTitle || ''}</span>
                         </div>
                       </TableCell>
                       <TableCell className="h-16">
                         <div className="flex items-center gap-2">
                           {getStatusIcon(user.isActive)}
                           <span className={cn(
-                            "text-sm font-medium",
-                            user.isActive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                            "text-[10px] font-black uppercase tracking-widest",
+                            user.isActive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
                           )}>
                             {user.isActive ? 'Active' : 'Inactive'}
                           </span>
@@ -820,12 +824,12 @@ export function UserManagement() {
                         {user.spaces && user.spaces.length > 0 ? (
                           <div className="flex items-center gap-1.5 flex-wrap">
                             {user.spaces.slice(0, 2).map((space, idx) => (
-                              <Badge key={idx} variant="outline" className="text-xs font-normal">
+                              <Badge key={idx} variant="outline" className="text-[10px] font-black uppercase tracking-widest border-zinc-200 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-900/30 text-zinc-500 h-5">
                                 {space.spaceName}
                               </Badge>
                             ))}
                             {user.spaces.length > 2 && (
-                              <Badge variant="outline" className="text-xs font-normal">
+                              <Badge variant="outline" className="text-[10px] font-black uppercase border-zinc-200 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-900/30 text-zinc-400 h-5">
                                 +{user.spaces.length - 2}
                               </Badge>
                             )}
@@ -836,7 +840,7 @@ export function UserManagement() {
                       </TableCell>
                       <TableCell className="h-16">
                         {user.lastLoginAt ? (
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
                             {new Date(user.lastLoginAt).toLocaleDateString()}
                           </div>
                         ) : (
@@ -844,15 +848,15 @@ export function UserManagement() {
                         )}
                       </TableCell>
                       <TableCell className="h-16">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1.5">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 border-zinc-200/60 dark:border-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-all"
                             onClick={() => openEditDialog(user)}
                             title="Edit User"
                           >
-                            <Edit className="h-4 w-4" />
+                            <Edit className="h-3.5 w-3.5 text-zinc-500" />
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -878,9 +882,7 @@ export function UserManagement() {
                               }}>
                                 <Key className="h-4 w-4 mr-2" />
                                 Reset Password
-                              </DropdownMenuItem>
-
-                              <DropdownMenuItem onClick={async () => {
+                              </DropdownMenuItem>                               <DropdownMenuItem onClick={async () => {
                                   if (!confirm(`Are you sure you want to disable 2FA for ${user.name}?`)) return
                                   try {
                                       const res = await fetch(`/api/admin/users/${user.id}/reset-2fa`, { method: 'POST' });
@@ -893,10 +895,11 @@ export function UserManagement() {
                                   } catch (e) {
                                       toast.error('Failed to disable 2FA');
                                   }
-                              }}>
-                                <Smartphone className="h-4 w-4 mr-2" />
+                              }} className="text-xs font-medium opacity-70">
+                                <Smartphone className="h-3.5 w-3.5 mr-2" />
                                 Reset 2FA
                               </DropdownMenuItem>
+m>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 onClick={() => deleteUser(user.id)}

@@ -20,10 +20,10 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'rounded-xl border bg-card text-card-foreground shadow-sm transition-all duration-300',
-          variant === 'frosted' && 'backdrop-blur-md bg-white/50 dark:bg-zinc-900/50',
-          variant === 'elevated' && 'shadow-md border-border/50',
-          hoverable && 'hover:shadow-md hover:border-primary/20 cursor-pointer',
+          'rounded-2xl border border-zinc-100/60 dark:border-zinc-800/60 bg-zinc-50/30 dark:bg-zinc-950/20 backdrop-blur-sm transition-all duration-300',
+          variant === 'frosted' && 'backdrop-blur-md bg-white/40 dark:bg-zinc-900/40',
+          variant === 'elevated' && 'shadow-xl border-zinc-200/50 dark:border-zinc-700/50',
+          hoverable && 'hover:bg-zinc-100/40 dark:hover:bg-zinc-900/40 cursor-pointer',
           className
         )}
         {...props}
@@ -40,7 +40,7 @@ export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEleme
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('flex flex-col space-y-1.5 p-6', className)}
+      className={cn('flex flex-col space-y-2 p-6', className)}
       {...props}
     />
   )
@@ -51,7 +51,7 @@ export const CardTitle = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLHea
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn('font-semibold leading-none tracking-tight', className)}
+      className={cn('text-base font-black uppercase tracking-wider text-zinc-900 dark:text-white leading-none', className)}
       {...props}
     />
   )
@@ -62,7 +62,7 @@ export const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<H
   ({ className, ...props }, ref) => (
     <p
       ref={ref}
-      className={cn('text-sm text-muted-foreground', className)}
+      className={cn('text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500', className)}
       {...props}
     />
   )

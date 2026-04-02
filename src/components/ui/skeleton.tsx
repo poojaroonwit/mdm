@@ -7,9 +7,7 @@ function Skeleton({
   return (
     <div
       className={cn(
-        'animate-shimmer rounded-xl bg-muted/30 dark:bg-muted/10',
-        'bg-gradient-to-r from-transparent via-black/5 dark:via-white/5 to-transparent',
-        '[background-size:1000px_100%]',
+        'animate-pulse rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50',
         className
       )}
       {...props}

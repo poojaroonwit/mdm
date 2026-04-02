@@ -1,6 +1,21 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import {
+  BarChart as RechartsBarChart,
+  Bar,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart as RechartsLineChart,
+  Pie,
+  PieChart as RechartsPieChart,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+  XAxis,
+  YAxis
+} from 'recharts'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -93,7 +108,12 @@ interface ChatSession {
   updatedAt: Date
 }
 
-export function AIAnalyst() {
+interface AIAnalystProps {
+  installationId?: string
+  config?: Record<string, any>
+}
+
+export function AIAnalyst({ installationId, config = {} }: AIAnalystProps) {
   // Authentication
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -115,7 +135,7 @@ export function AIAnalyst() {
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [selectedExport, setSelectedExport] = useState<AnalysisResult | null>(null)
   const [availableModels, setAvailableModels] = useState<any[]>([])
-  const [selectedModel, setSelectedModel] = useState<string>('')
+  const [selectedModel, setSelectedModel] = useState<string>(config.defaultModelId || '')
   const [configuredProviders, setConfiguredProviders] = useState<any[]>([])
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([])
   const [currentChatId, setCurrentChatId] = useState<string>('')
@@ -145,8 +165,16 @@ export function AIAnalyst() {
     enabled: boolean
     toolFilter?: string[]
     cache?: boolean
-  }>>>({})
+  }>>>(config.mcpServersByModel || {})
   const [showMcpConfig, setShowMcpConfig] = useState(false)
+  const [showPluginConfig, setShowPluginConfig] = useState(false)
+  const [databaseConnections, setDatabaseConnections] = useState<any[]>([])
+  const [isLoadingConnections, setIsLoadingConnections] = useState(false)
+  const [selectedDatabaseConnectionId, setSelectedDatabaseConnectionId] = useState<string>(config.databaseConnectionId || '')
+  const [preferGraphResponses, setPreferGraphResponses] = useState<boolean>(config.preferGraphResponses !== false)
+  const [pluginApiKey, setPluginApiKey] = useState('')
+  const [hasStoredApiKey, setHasStoredApiKey] = useState<boolean>(!!config.hasApiKey)
+  const [isSavingPluginConfig, setIsSavingPluginConfig] = useState(false)
 
   // Get MCP servers for current model
   const mcpServers = selectedModel ? (mcpServersByModel[selectedModel] || []) : []
@@ -225,6 +253,16 @@ export function AIAnalyst() {
     }
   }, [messages, currentView, session])
 
+  useEffect(() => {
+    if (!selectedSpace || !session) return
+    loadDatabaseConnections(selectedSpace)
+  }, [selectedSpace, session])
+
+  useEffect(() => {
+    if (!installationId) return
+    loadInstallationSettings()
+  }, [installationId])
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -261,10 +299,11 @@ export function AIAnalyst() {
       const response = await fetch('/api/admin/ai-models')
       if (response.ok) {
         const data = await response.json()
-        setAvailableModels(data.models || [])
+        const models = data.models || []
+        setAvailableModels(models)
         // Set default model if none selected
-        if (!selectedModel && data.models?.length > 0) {
-          setSelectedModel(data.models[0].id)
+        if (!selectedModel && models.length > 0) {
+          setSelectedModel(config.defaultModelId || models[0].id)
         }
       } else if (response.status === 401) {
         toast.error('Please sign in to view AI models')
@@ -280,6 +319,60 @@ export function AIAnalyst() {
     }
   }
 
+  const loadDatabaseConnections = async (spaceId: string) => {
+    setIsLoadingConnections(true)
+    try {
+      const response = await fetch(`/api/external-connections?space_id=${spaceId}`)
+      if (response.ok) {
+        const data = await response.json()
+        const connections = (data.connections || []).filter((connection: any) => connection.connection_type === 'database')
+        setDatabaseConnections(connections)
+
+        if (!selectedDatabaseConnectionId && config.databaseConnectionId) {
+          setSelectedDatabaseConnectionId(config.databaseConnectionId)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading database connections:', error)
+      toast.error('Failed to load database connections')
+    } finally {
+      setIsLoadingConnections(false)
+    }
+  }
+
+  const loadInstallationSettings = async () => {
+    if (!installationId) return
+
+    try {
+      const response = await fetch(`/api/marketplace/installations/${installationId}`)
+      if (!response.ok) return
+
+      const data = await response.json()
+      const installation = data.installation
+      const installationConfig = installation?.config || {}
+
+      if (installationConfig.defaultModelId) {
+        setSelectedModel((prev) => prev || installationConfig.defaultModelId)
+      }
+
+      if (installationConfig.databaseConnectionId) {
+        setSelectedDatabaseConnectionId(installationConfig.databaseConnectionId)
+      }
+
+      if (installationConfig.preferGraphResponses !== undefined) {
+        setPreferGraphResponses(installationConfig.preferGraphResponses !== false)
+      }
+
+      if (installationConfig.mcpServersByModel) {
+        setMcpServersByModel(installationConfig.mcpServersByModel)
+      }
+
+      setHasStoredApiKey(!!installation?.credentials?.configured || !!installationConfig.hasApiKey)
+    } catch (error) {
+      console.error('Error loading installation settings:', error)
+    }
+  }
+
   const loadConfiguredProviders = async () => {
     try {
       const response = await fetch('/api/admin/ai-providers')
@@ -289,6 +382,55 @@ export function AIAnalyst() {
       }
     } catch (error) {
       console.error('Error loading configured providers:', error)
+    }
+  }
+
+  const savePluginSettings = async () => {
+    if (!installationId) {
+      toast.error('This settings panel is only available for marketplace installations')
+      return
+    }
+
+    setIsSavingPluginConfig(true)
+    try {
+      const nextConfig = {
+        ...config,
+        defaultModelId: selectedModel || null,
+        databaseConnectionId: selectedDatabaseConnectionId || null,
+        preferGraphResponses,
+        mcpServersByModel,
+        hasApiKey: hasStoredApiKey || !!pluginApiKey.trim(),
+      }
+
+      const payload: Record<string, any> = {
+        config: nextConfig,
+        mergeConfig: false,
+      }
+
+      if (pluginApiKey.trim()) {
+        payload.credentials = { apiKey: pluginApiKey.trim() }
+      }
+
+      const response = await fetch(`/api/marketplace/installations/${installationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Failed to save plugin settings')
+      }
+
+      const data = await response.json()
+      setHasStoredApiKey(!!data.installation?.credentials?.configured || hasStoredApiKey || !!pluginApiKey.trim())
+      setPluginApiKey('')
+      toast.success('Plugin settings saved')
+    } catch (error) {
+      console.error('Error saving plugin settings:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to save plugin settings')
+    } finally {
+      setIsSavingPluginConfig(false)
     }
   }
 
@@ -535,9 +677,12 @@ export function AIAnalyst() {
       path: att.uploadedFile?.path
     }))
     // Check if we have configured providers
-    if (configuredProviders.length === 0) {
+    const hasPluginApiKey = hasStoredApiKey || !!pluginApiKey.trim()
+    const hasAvailableAiConfiguration = configuredProviders.length > 0 || hasPluginApiKey
+
+    if (!hasAvailableAiConfiguration) {
       return {
-        response: 'No AI providers are configured. Please configure at least one AI provider in the Integrations section to use AI features.',
+        response: 'No AI configuration is available yet. Save an API key in this plugin or configure an AI provider in Admin Integrations to use AI features.',
         title: 'Configuration Required',
         analysis: null,
         insights: ['Configure AI providers in Admin → Integrations → AI Configuration']
@@ -576,6 +721,9 @@ export function AIAnalyst() {
           modelId,
           model: selectedModelData,
           attachments: attachmentsData,
+          installationId,
+          databaseConnectionId: selectedDatabaseConnectionId || undefined,
+          preferGraphResponses,
           mcpServers: mcpServers.map(server => ({
             name: server.name,
             url: server.url,
@@ -684,6 +832,7 @@ export function AIAnalyst() {
           id: result.id,
           title: result.title,
           type: result.type,
+          data: result.data,
           insights: result.insights,
           exportable: result.exportable
         })),
@@ -768,6 +917,116 @@ export function AIAnalyst() {
       toast.success('Report exported successfully')
     } catch (error) {
       toast.error('Export failed. Please try again.')
+    }
+  }
+
+  const downloadFile = (filename: string, content: string, mimeType: string) => {
+    const blob = new Blob([content], { type: mimeType })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  const toCsvRow = (values: Array<unknown>) => values.map((value) => {
+    const normalized = value == null ? '' : String(value)
+    return `"${normalized.replace(/"/g, '""')}"`
+  }).join(',')
+
+  const exportAnalysisResult = async (
+    result: Pick<AnalysisResult, 'title' | 'type' | 'data'>,
+    format: 'csv' | 'json' | 'png',
+    chartElement?: HTMLElement | null
+  ) => {
+    try {
+      const baseName = result.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'analysis'
+
+      if (format === 'json') {
+        downloadFile(`${baseName}.json`, JSON.stringify(result, null, 2), 'application/json')
+        toast.success('Analysis exported as JSON')
+        return
+      }
+
+      if (format === 'csv') {
+        if (result.type === 'chart') {
+          const labels = Array.isArray(result.data?.labels) ? result.data.labels : []
+          const datasets = Array.isArray(result.data?.datasets) ? result.data.datasets : []
+          const header = ['Label', ...datasets.map((dataset: any, index: number) => dataset.label || `Series ${index + 1}`)]
+          const rows = labels.map((label: string, rowIndex: number) => ([
+            label,
+            ...datasets.map((dataset: any) => dataset?.data?.[rowIndex] ?? ''),
+          ]))
+          const csv = [toCsvRow(header), ...rows.map((row) => toCsvRow(row))].join('\n')
+          downloadFile(`${baseName}.csv`, csv, 'text/csv;charset=utf-8')
+          toast.success('Chart data exported as CSV')
+          return
+        }
+
+        if (result.type === 'table') {
+          const columns = Array.isArray(result.data?.columns) ? result.data.columns : []
+          const rows = Array.isArray(result.data?.rows) ? result.data.rows : []
+          const csv = [toCsvRow(columns), ...rows.map((row: unknown[]) => toCsvRow(row))].join('\n')
+          downloadFile(`${baseName}.csv`, csv, 'text/csv;charset=utf-8')
+          toast.success('Table exported as CSV')
+          return
+        }
+
+        toast.error('CSV export is available for chart and table results only')
+        return
+      }
+
+      if (format === 'png') {
+        const svg = chartElement?.querySelector('svg')
+        if (!svg) {
+          toast.error('Chart image is not available for export')
+          return
+        }
+
+        const svgMarkup = new XMLSerializer().serializeToString(svg)
+        const svgBlob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' })
+        const svgUrl = URL.createObjectURL(svgBlob)
+        const image = new window.Image()
+
+        await new Promise<void>((resolve, reject) => {
+          image.onload = () => resolve()
+          image.onerror = () => reject(new Error('Failed to render chart image'))
+          image.src = svgUrl
+        })
+
+        const viewBox = svg.viewBox.baseVal
+        const width = svg.clientWidth || viewBox.width || 960
+        const height = svg.clientHeight || viewBox.height || 540
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const context = canvas.getContext('2d')
+
+        if (!context) {
+          URL.revokeObjectURL(svgUrl)
+          throw new Error('Canvas export is not supported in this browser')
+        }
+
+        context.fillStyle = '#ffffff'
+        context.fillRect(0, 0, width, height)
+        context.drawImage(image, 0, 0, width, height)
+        URL.revokeObjectURL(svgUrl)
+
+        const pngUrl = canvas.toDataURL('image/png')
+        const link = document.createElement('a')
+        link.href = pngUrl
+        link.download = `${baseName}.png`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        toast.success('Chart exported as PNG')
+      }
+    } catch (error) {
+      console.error('Error exporting analysis result:', error)
+      toast.error(error instanceof Error ? error.message : 'Export failed. Please try again.')
     }
   }
 
@@ -919,6 +1178,14 @@ export function AIAnalyst() {
                   </Button>
                 </>
               )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPluginConfig(!showPluginConfig)}
+                className="h-8 text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 ease-out hover:scale-110 active:scale-95"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
               <Select value={selectedSpace} onValueChange={setSelectedSpace}>
                 <SelectTrigger className="h-8 w-32 text-xs bg-muted border-border text-foreground" disabled={isLoadingSpaces}>
                   <SelectValue placeholder="Space" />
@@ -933,6 +1200,77 @@ export function AIAnalyst() {
               </Select>
             </div>
           </div>
+
+          {showPluginConfig && (
+            <div className="border-b border-border bg-muted/20 px-6 py-4">
+              <div className="grid gap-4 lg:grid-cols-4">
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Plugin API Key</Label>
+                  <Input
+                    type="password"
+                    value={pluginApiKey}
+                    onChange={(e) => setPluginApiKey(e.target.value)}
+                    placeholder={hasStoredApiKey ? 'Stored key configured' : 'sk-...'}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {hasStoredApiKey ? 'A key is already stored securely. Enter a new one only to replace it.' : 'Used by marketplace AI analysis if Admin API Configuration is not set.'}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Database Connection</Label>
+                  <Select value={selectedDatabaseConnectionId || '__none__'} onValueChange={(value) => setSelectedDatabaseConnectionId(value === '__none__' ? '' : value)}>
+                    <SelectTrigger disabled={isLoadingConnections || !selectedSpace}>
+                      <SelectValue placeholder="Select database" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">No database</SelectItem>
+                      {databaseConnections.map((connection) => (
+                        <SelectItem key={connection.id} value={connection.id}>
+                          {connection.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Lets the AI inspect schema and run read-only SQL for this space.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Chart Preference</Label>
+                  <div className="flex h-10 items-center justify-between rounded-md border border-border bg-background px-3">
+                    <span className="text-sm">Prefer graphs in responses</span>
+                    <Switch checked={preferGraphResponses} onCheckedChange={setPreferGraphResponses} />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Helps the AI return chart-ready output for trends, comparisons, and distributions.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Persist Settings</Label>
+                  <Button
+                    onClick={savePluginSettings}
+                    disabled={!installationId || isSavingPluginConfig}
+                    className="w-full"
+                  >
+                    {isSavingPluginConfig ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      'Save Plugin Settings'
+                    )}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Saves model defaults, MCP server setup, database connection, and optional API key for this marketplace install.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Chat Content */}
           {currentView === 'sessions' ? (
@@ -969,6 +1307,7 @@ export function AIAnalyst() {
               setSelectedExport={setSelectedExport}
               showExportDialog={showExportDialog}
               setShowExportDialog={setShowExportDialog}
+              onExportAnalysis={exportAnalysisResult}
               attachments={attachments}
               onFileSelect={handleFileSelect}
               removeAttachment={removeAttachment}
@@ -1160,6 +1499,7 @@ function ChatView({
   setSelectedExport,
   showExportDialog,
   setShowExportDialog,
+  onExportAnalysis,
   attachments,
   onFileSelect,
   removeAttachment,
@@ -1189,6 +1529,11 @@ function ChatView({
   setSelectedExport: (selectedExport: AnalysisResult | null) => void
   showExportDialog: boolean
   setShowExportDialog: (show: boolean) => void
+  onExportAnalysis: (
+    result: Pick<AnalysisResult, 'title' | 'type' | 'data'>,
+    format: 'csv' | 'json' | 'png',
+    chartElement?: HTMLElement | null
+  ) => Promise<void>
   attachments: Array<{ id: string; file: File; url: string; name: string; type: string; size: number; uploadedFile?: any }>
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void
   removeAttachment: (id: string) => void
@@ -1303,7 +1648,11 @@ function ChatView({
                         )}
                         {message.analysis && (
                           <div className="mt-4">
-                            <AnalysisVisualization analysis={message.analysis} />
+                            <AnalysisVisualization
+                              analysis={message.analysis}
+                              title={message.analysis.type === 'chart' ? 'chart_analysis' : 'table_analysis'}
+                              onExport={onExportAnalysis}
+                            />
                           </div>
                         )}
                         <div className={cn(
@@ -1628,9 +1977,26 @@ function ChatView({
                         <div key={index} className="bg-muted/50 border border-border p-3 rounded-lg">
                           <div className="flex items-center justify-between mb-2">
                             <h6 className="font-medium text-sm text-foreground">{result.title}</h6>
-                            <Badge variant="outline" className="text-xs border-border text-muted-foreground">
-                              {result.type}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-xs border-border text-muted-foreground">
+                                {result.type}
+                              </Badge>
+                              {(result.type === 'chart' || result.type === 'table') && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2"
+                                  onClick={() => onExportAnalysis(
+                                    { title: result.title, type: result.type, data: result.data },
+                                    result.type === 'chart' ? 'csv' : 'csv'
+                                  )}
+                                >
+                                  <Download className="mr-1.5 h-3.5 w-3.5" />
+                                  Export
+                                </Button>
+                              )}
+                            </div>
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {result.insights.join(', ')}
@@ -1698,31 +2064,121 @@ function ChatView({
 }
 
 // Analysis Visualization Component
-function AnalysisVisualization({ analysis }: { analysis: any }) {
+function AnalysisVisualization({
+  analysis,
+  title,
+  onExport,
+}: {
+  analysis: any
+  title: string
+  onExport: (
+    result: Pick<AnalysisResult, 'title' | 'type' | 'data'>,
+    format: 'csv' | 'json' | 'png',
+    chartElement?: HTMLElement | null
+  ) => Promise<void>
+}) {
   const { type, data, visualization } = analysis
+  const chartContainerRef = useRef<HTMLDivElement>(null)
 
   if (type === 'chart') {
+    const chartType = data?.chartType || 'bar'
+    const labels = Array.isArray(data?.labels) ? data.labels : []
+    const datasets = Array.isArray(data?.datasets) ? data.datasets : []
+    const chartData = labels.map((label: string, index: number) => {
+      const point: Record<string, any> = { label }
+      datasets.forEach((dataset: any, datasetIndex: number) => {
+        point[dataset.label || `Series ${datasetIndex + 1}`] = dataset?.data?.[index] ?? 0
+      })
+      return point
+    })
+
+    const palette = ['#2563eb', '#16a34a', '#dc2626', '#d97706', '#7c3aed']
+
     return (
       <div className="space-y-3 mt-4">
-        <div className="flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-primary" />
-          <span className="font-medium text-foreground">Chart Visualization</span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-primary" />
+            <span className="font-medium text-foreground">Chart Visualization</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onExport({ title, type: 'chart', data }, 'csv', chartContainerRef.current)}
+            >
+              <Download className="mr-2 h-3.5 w-3.5" />
+              CSV
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onExport({ title, type: 'chart', data }, 'png', chartContainerRef.current)}
+            >
+              <Image className="mr-2 h-3.5 w-3.5" />
+              PNG
+            </Button>
+          </div>
         </div>
-        <div className="bg-muted/50 border border-border rounded-lg p-4">
-          <div className="text-sm text-muted-foreground mb-2">Sample Chart Data:</div>
-          <div className="space-y-2">
-            {data.labels.map((label: string, idx: number) => (
-              <div key={idx} className="flex items-center gap-2">
-                <div className="w-16 text-xs text-foreground">{label}</div>
-                <div className="flex-1 bg-muted rounded h-4 relative">
-                  <div
-                    className="bg-primary h-4 rounded"
-                    style={{ width: `${(data.datasets[0].data[idx] / Math.max(...data.datasets[0].data)) * 100}%` }}
-                  />
-                </div>
-                <div className="w-16 text-xs text-right text-foreground">{data.datasets[0].data[idx]}</div>
-              </div>
-            ))}
+        <div ref={chartContainerRef} className="bg-muted/50 border border-border rounded-lg p-4">
+          <div className="h-72 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              {chartType === 'line' ? (
+                <RechartsLineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#d4d4d8" />
+                  <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <RechartsTooltip />
+                  <Legend />
+                  {datasets.map((dataset: any, index: number) => (
+                    <Line
+                      key={`${dataset.label}-${index}`}
+                      type="monotone"
+                      dataKey={dataset.label || `Series ${index + 1}`}
+                      stroke={palette[index % palette.length]}
+                      strokeWidth={2}
+                    />
+                  ))}
+                </RechartsLineChart>
+              ) : chartType === 'pie' && datasets[0] ? (
+                <RechartsPieChart>
+                  <RechartsTooltip />
+                  <Legend />
+                  <Pie
+                    data={labels.map((label: string, index: number) => ({
+                      name: label,
+                      value: datasets[0]?.data?.[index] ?? 0,
+                    }))}
+                    dataKey="value"
+                    nameKey="name"
+                    outerRadius={100}
+                    label
+                  >
+                    {labels.map((label: string, index: number) => (
+                      <Cell key={`${label}-${index}`} fill={palette[index % palette.length]} />
+                    ))}
+                  </Pie>
+                </RechartsPieChart>
+              ) : (
+                <RechartsBarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#d4d4d8" />
+                  <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <RechartsTooltip />
+                  <Legend />
+                  {datasets.map((dataset: any, index: number) => (
+                    <Bar
+                      key={`${dataset.label}-${index}`}
+                      dataKey={dataset.label || `Series ${index + 1}`}
+                      fill={palette[index % palette.length]}
+                      radius={[4, 4, 0, 0]}
+                    />
+                  ))}
+                </RechartsBarChart>
+              )}
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
@@ -1732,9 +2188,31 @@ function AnalysisVisualization({ analysis }: { analysis: any }) {
   if (type === 'table') {
     return (
       <div className="space-y-3 mt-4">
-        <div className="flex items-center gap-2">
-          <Table className="h-4 w-4 text-primary" />
-          <span className="font-medium text-foreground">Data Table</span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Table className="h-4 w-4 text-primary" />
+            <span className="font-medium text-foreground">Data Table</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onExport({ title, type: 'table', data }, 'csv')}
+            >
+              <Download className="mr-2 h-3.5 w-3.5" />
+              CSV
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onExport({ title, type: 'table', data }, 'json')}
+            >
+              <FileText className="mr-2 h-3.5 w-3.5" />
+              JSON
+            </Button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm border border-border rounded-lg">

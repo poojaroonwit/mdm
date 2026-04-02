@@ -2,7 +2,7 @@
 // force refresh
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -151,6 +151,8 @@ export function PlatformSidebar({
   const searchValue = searchQuery !== undefined ? searchQuery : localSearchQuery
   const handleSearchChange = onSearchChange || ((query: string) => setLocalSearchQuery(query))
   const router = useRouter()
+  const pathname = usePathname()
+  const params = useParams()
 
   // Fetch installed plugins with navigation data
   const { plugins: installedPlugins } = useMarketplacePlugins({
@@ -301,8 +303,16 @@ export function PlatformSidebar({
   const handleTabClick = useCallback((tabId: string, href?: string) => {
     // Always use href if available, otherwise construct from tabId
     const targetHref = href || `/${tabId}`
+    const currentSpaceSlug = typeof params?.space === 'string' ? params.space : ''
+    const isSpaceScopedPath = !!currentSpaceSlug && !!pathname?.startsWith(`/${currentSpaceSlug}/`)
+
+    if (targetHref === '/knowledge' && isSpaceScopedPath) {
+      router.push(`/${currentSpaceSlug}/knowledge`)
+      return
+    }
+
     router.push(targetHref)
-  }, [router])
+  }, [router, params, pathname])
 
   const handleGroupClick = useCallback((groupName: string) => {
     const tabs = groupedTabs[groupName as keyof typeof groupedTabs]
@@ -376,15 +386,18 @@ export function PlatformSidebar({
 
   return (
     <div
-      className={`h-full flex flex-col w-full`}
+      className={cn(
+        "h-full flex flex-col transition-all duration-300",
+        mode === 'primary' ? (collapsed ? "w-16" : "w-64") : "w-full lg:w-[320px]"
+      )}
       data-sidebar={mode}
       data-component="platform-sidebar"
       style={{
         position: 'relative',
         zIndex: Z_INDEX.sidebar,
         pointerEvents: 'auto',
-        backgroundColor: sidebarBg,
-        color: sidebarText
+        backgroundColor: 'transparent',
+        borderRight: mode === 'primary' ? '1px solid var(--border-default)' : 'none'
       }}
     >
 
@@ -416,10 +429,10 @@ export function PlatformSidebar({
                       <Button
                         variant="ghost"
                         className={cn(
-                          "platform-sidebar-menu-button w-full justify-center h-10 transition-all duration-200 cursor-pointer",
+                          "platform-sidebar-menu-button w-full justify-center h-10 transition-all duration-300 cursor-pointer group",
                           (selectedGroup === groupId || (groupId === 'data-management' && (activeTab === 'space-selection' || selectedGroup === 'data-management')) || (groupId === 'infrastructure' && activeTab === 'infrastructure'))
-                            ? "platform-sidebar-menu-button-active bg-primary/10 text-primary rounded-lg"
-                            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground rounded-lg"
+                            ? "platform-sidebar-menu-button-active bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white rounded-xl shadow-sm"
+                            : "text-zinc-500 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-xl"
                         )}
                         onClick={() => handleGroupClick(groupId)}
                         onMouseEnter={() => {
@@ -466,10 +479,10 @@ export function PlatformSidebar({
                       <Button
                         variant="ghost"
                         className={cn(
-                          "platform-sidebar-menu-button w-full justify-start text-sm font-medium h-10 px-4 transition-all duration-200 cursor-pointer group",
+                          "platform-sidebar-menu-button w-full justify-start text-sm font-bold h-11 px-4 transition-all duration-300 cursor-pointer group",
                           (selectedGroup === groupId || (groupId === 'data-management' && activeTab === 'space-selection') || (groupId === 'infrastructure' && activeTab === 'infrastructure'))
-                            ? "platform-sidebar-menu-button-active bg-primary/10 text-primary rounded-lg"
-                            : "text-foreground hover:bg-muted/50 hover:text-foreground rounded-lg"
+                            ? "platform-sidebar-menu-button-active bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white rounded-xl shadow-sm"
+                            : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-xl"
                         )}
                         onClick={() => handleGroupClick(groupId)}
                         onMouseEnter={() => {
@@ -524,11 +537,11 @@ export function PlatformSidebar({
 
                 {/* Group Header Label */}
                 {selectedGroup && groupMetadata[selectedGroup] && (
-                  <div className="px-4 py-3 border-b border-border/50 mb-2">
-                    <h3 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'inherit' }}>
+                  <div className="px-4 py-6 border-b border-zinc-100/60 dark:border-zinc-800/60 mb-4">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 flex items-center gap-3">
                       {(() => {
                         const Icon = groupMetadata[selectedGroup].icon
-                        return <Icon className="h-4 w-4 stroke-2" />
+                        return <Icon className="h-4 w-4 stroke-[2.5]" />
                       })()}
                       {groupMetadata[selectedGroup].name}
                     </h3>
@@ -543,19 +556,19 @@ export function PlatformSidebar({
 
                     return (
                       <div key={sectionName} className="py-2 px-2">
-                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] mb-3 px-3">
+                        <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-4 px-4">
                           {sectionName}
                         </div>
                         <div className="space-y-1">
                           {filteredItems.map((tab: any) => (
                             <Button
                               key={tab.id}
-                              variant={activeTab === tab.id ? "secondary" : "ghost"}
+                              variant="ghost"
                               className={cn(
-                                "platform-sidebar-menu-button w-full justify-start items-center text-sm font-medium h-9 px-3 transition-colors duration-150 cursor-pointer rounded-lg",
+                                "platform-sidebar-menu-button w-full justify-start items-center text-sm font-bold h-10 px-4 transition-all duration-200 cursor-pointer rounded-xl group",
                                 activeTab === tab.id
-                                  ? "platform-sidebar-menu-button-active bg-primary/10 text-primary"
-                                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                                  ? "platform-sidebar-menu-button-active bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white shadow-sm"
+                                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 hover:text-zinc-900 dark:hover:text-zinc-100"
                               )}
                               onClick={() => handleTabClick(tab.id, (tab as any).href)}
                               style={{
@@ -593,57 +606,41 @@ export function PlatformSidebar({
         </div>
       </ScrollArea>
 
-      {/* GCP-style Footer */}
+      {/* Zinc Footer */}
       {mode === 'primary' && onToggleCollapse && (
         <div
-          className={`px-4 py-3 border-t border-border/50 bg-background ${collapsed ? 'px-2' : ''}`}
+          className={cn(
+            "px-4 py-4 border-t border-zinc-100/60 dark:border-zinc-800/60 bg-transparent flex flex-col gap-4",
+            collapsed && "px-2 items-center"
+          )}
           style={{ pointerEvents: 'auto' }}
         >
-          {collapsed ? (
-            <div className="flex flex-col items-center justify-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={onToggleCollapse}
-                title="Expand sidebar"
-                style={{
-                  pointerEvents: 'auto',
-                  position: 'relative',
-                  zIndex: 101,
-                  color: 'var(--brand-platform-sidebar-text)'
-                }}
-              >
-                <ChevronRightIcon className="h-4 w-4" />
-              </Button>
-              <span className="text-xs text-muted-foreground" style={{ color: 'var(--brand-platform-sidebar-text)', opacity: 0.7 }}>
-                v{APP_VERSION}
-              </span>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onToggleCollapse}
-                className="w-full justify-start flex items-center gap-2"
-                style={{
-                  pointerEvents: 'auto',
-                  position: 'relative',
-                  zIndex: 101,
-                  color: 'var(--brand-platform-sidebar-text)',
-                  borderColor: 'hsl(var(--border))',
-                  opacity: 0.8
-                }}
-              >
-                <ChevronLeftIcon className="h-4 w-4" />
-                Collapse
-              </Button>
-              <div className="text-xs text-muted-foreground text-center" style={{ color: 'var(--brand-platform-sidebar-text)', opacity: 0.7 }}>
-                Version {APP_VERSION}
-              </div>
-            </div>
-          )}
+          <Button
+            variant="ghost"
+            size={collapsed ? "icon" : "sm"}
+            onClick={onToggleCollapse}
+            className={cn(
+              "w-full transition-all duration-300 rounded-xl font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 hover:text-zinc-900 dark:hover:text-zinc-100",
+              collapsed ? "h-10 w-10 justify-center" : "h-10 justify-start px-3 gap-3"
+            )}
+            style={{ pointerEvents: 'auto' }}
+          >
+            {collapsed ? (
+              <ChevronRightIcon className="h-4 w-4 stroke-2" />
+            ) : (
+              <>
+                <ChevronLeftIcon className="h-4 w-4 stroke-2" />
+                <span className="text-xs uppercase tracking-widest font-black text-[11px]">Collapse</span>
+              </>
+            )}
+          </Button>
+
+          <div className={cn(
+            "text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400/60 dark:text-zinc-500/60",
+            collapsed ? "text-center" : "px-1"
+          )}>
+            {collapsed ? `v${APP_VERSION}` : `Version ${APP_VERSION}`}
+          </div>
         </div>
       )}
     </div>

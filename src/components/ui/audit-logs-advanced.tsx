@@ -153,21 +153,21 @@ export function AuditLogsAdvanced({ className }: AuditLogsAdvancedProps) {
 
   const getActionIcon = (action: string) => {
     switch (action) {
-      case 'CREATE': return <Activity className="h-4 w-4 text-green-600" />
-      case 'UPDATE': return <Settings className="h-4 w-4 text-blue-600" />
-      case 'DELETE': return <Database className="h-4 w-4 text-red-600" />
-      case 'LOGIN': return <User className="h-4 w-4 text-purple-600" />
-      default: return <FileText className="h-4 w-4 text-muted-foreground" />
+      case 'CREATE': return <Activity className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+      case 'UPDATE': return <Settings className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400" />
+      case 'DELETE': return <Database className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
+      case 'LOGIN': return <User className="h-3.5 w-3.5 text-zinc-900 dark:text-zinc-100" />
+      default: return <FileText className="h-3.5 w-3.5 text-zinc-500" />
     }
   }
 
   const getActionColor = (action: string) => {
     switch (action) {
-      case 'CREATE': return 'bg-green-100 text-green-800'
-      case 'UPDATE': return 'bg-blue-100 text-blue-800'
-      case 'DELETE': return 'bg-red-100 text-red-800'
-      case 'LOGIN': return 'bg-purple-100 text-purple-800'
-      default: return 'bg-muted text-foreground'
+      case 'CREATE': return 'bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border-emerald-100/50 dark:border-emerald-900/30'
+      case 'UPDATE': return 'bg-zinc-100/50 dark:bg-zinc-800/20 text-zinc-700 dark:text-zinc-300 border-zinc-200/50 dark:border-zinc-700/30'
+      case 'DELETE': return 'bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 border-rose-100/50 dark:border-rose-900/30'
+      case 'LOGIN': return 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
+      default: return 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
     }
   }
 
@@ -274,9 +274,9 @@ export function AuditLogsAdvanced({ className }: AuditLogsAdvancedProps) {
 
             {/* Advanced Filters */}
             {showFilters && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 border border-border rounded-lg bg-muted/50">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 border border-zinc-100/60 dark:border-zinc-800/60 rounded-2xl bg-white/50 dark:bg-zinc-950/20 backdrop-blur-xl shadow-xl">
                 <div>
-                  <Label htmlFor="entityType">Entity Type</Label>
+                  <Label htmlFor="entityType" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-2 block">Entity Type</Label>
                   <Select value={filters.entityType} onValueChange={(value) => handleFilterChange('entityType', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="All entities" />
@@ -294,7 +294,7 @@ export function AuditLogsAdvanced({ className }: AuditLogsAdvancedProps) {
                 </div>
 
                 <div>
-                  <Label htmlFor="action">Action</Label>
+                  <Label htmlFor="action" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-2 block">Action</Label>
                   <Select value={filters.action} onValueChange={(value) => handleFilterChange('action', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="All actions" />
@@ -311,7 +311,7 @@ export function AuditLogsAdvanced({ className }: AuditLogsAdvancedProps) {
                 </div>
 
                 <div>
-                  <Label htmlFor="userSearch">User</Label>
+                  <Label htmlFor="userSearch" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-2 block">User</Label>
                   <Input
                     placeholder="Search by user name or email"
                     value={filters.userSearch}
@@ -320,7 +320,7 @@ export function AuditLogsAdvanced({ className }: AuditLogsAdvancedProps) {
                 </div>
 
                 <div>
-                  <Label htmlFor="startDate">Start Date</Label>
+                  <Label htmlFor="startDate" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-2 block">Start Date</Label>
                   <Input
                     type="date"
                     value={filters.startDate}
@@ -329,7 +329,7 @@ export function AuditLogsAdvanced({ className }: AuditLogsAdvancedProps) {
                 </div>
 
                 <div>
-                  <Label htmlFor="endDate">End Date</Label>
+                  <Label htmlFor="endDate" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-2 block">End Date</Label>
                   <Input
                     type="date"
                     value={filters.endDate}
@@ -380,19 +380,19 @@ export function AuditLogsAdvanced({ className }: AuditLogsAdvancedProps) {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">{log.entity_type}</div>
-                          <div className="text-sm text-muted-foreground">ID: {log.entity_id}</div>
+                        <div className="space-y-0.5">
+                          <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{log.entity_type}</div>
+                          <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 tracking-tight uppercase">ID: {log.entity_id}</div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">{log.user_name || 'Unknown'}</div>
-                          <div className="text-sm text-muted-foreground">{log.user_email}</div>
+                        <div className="space-y-0.5">
+                          <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{log.user_name || 'Unknown'}</div>
+                          <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 tracking-tight uppercase">{log.user_email}</div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm">
+                        <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
                           {formatDateTime(log.created_at)}
                         </div>
                       </TableCell>

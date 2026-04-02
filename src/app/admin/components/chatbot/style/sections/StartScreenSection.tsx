@@ -51,6 +51,8 @@ function ChatKitIconSelect({ value, onValueChange }: { value: string; onValueCha
 }
 
 export function StartScreenSection({ formData, setFormData, chatkitOptions }: SectionProps) {
+  const prompts = chatkitOptions?.startScreen?.prompts || []
+  console.log('[StartScreenSection] rendering', { chatkitOptions, prompts })
   return (
     <div className="py-4 px-4 space-y-4">
       <div className="space-y-4">

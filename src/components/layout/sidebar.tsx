@@ -24,6 +24,7 @@ import {
   FileText,
   Smartphone,
   Database,
+  Store,
 } from 'lucide-react'
 import { AnimatedIcon } from '@/components/ui/animated-icon'
 import {
@@ -92,8 +93,8 @@ const getMenuItems = (
 
   // Channels / Tools
   items.push({
-    title: 'Channels', icon: Smartphone, children: [
-      { title: 'PWA Studio', href: `/tools/pwa`, icon: Smartphone },
+    title: 'Channels', icon: Store, children: [
+      { title: 'Marketplace', href: `/marketplace`, icon: Store },
     ]
   })
 

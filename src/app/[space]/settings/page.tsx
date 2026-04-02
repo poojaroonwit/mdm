@@ -51,11 +51,54 @@ function EffectRedirect({ to }: { to: string }) {
   return null
 }
 
+const DEFAULT_LOGIN_PAGE_CONFIG = {
+  backgroundType: 'gradient',
+  backgroundColor: '#f8fafc',
+  backgroundImage: '',
+  gradient: {
+    from: '#eff6ff',
+    to: '#dbeafe',
+    angle: 135,
+  },
+  leftPanelWidth: '60%',
+  rightPanelWidth: '40%',
+  title: 'Welcome back',
+  description: 'Sign in to access this workspace.',
+  heroTitle: 'Your space, ready when you are',
+  heroDescription: 'Secure access for your team, data, and workflows in one place.',
+  signInButtonLabel: 'Sign in',
+  helpText: '',
+  showLogo: true,
+  logoUrl: '',
+  cardStyle: {
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    textColor: '#111827',
+    borderColor: 'rgba(226, 232, 240, 0.9)',
+    borderRadius: 24,
+    shadow: true,
+  },
+}
+
+function normalizeLoginPageConfig(config: any) {
+  return {
+    ...DEFAULT_LOGIN_PAGE_CONFIG,
+    ...(config || {}),
+    gradient: {
+      ...DEFAULT_LOGIN_PAGE_CONFIG.gradient,
+      ...(config?.gradient || {}),
+    },
+    cardStyle: {
+      ...DEFAULT_LOGIN_PAGE_CONFIG.cardStyle,
+      ...(config?.cardStyle || {}),
+    },
+  }
+}
+
 export default function SpaceSettingsPage() {
   const router = useRouter()
   const params = useParams() as { space: string }
   const searchParams = useSearchParams()
-  const allowedTabs = ['details', 'members', 'data-model', 'attachments', 'restore', 'danger']
+  const allowedTabs = ['details', 'members', 'data-model', 'data-sync', 'attachments', 'danger']
   const initialTabRaw = (searchParams.get('tab') as string) || 'details'
   const initialTab = allowedTabs.includes(initialTabRaw) ? initialTabRaw : 'details'
   const fromDataManagement = searchParams.get('from') === 'data-management'
@@ -147,23 +190,32 @@ export default function SpaceSettingsPage() {
           showError(error.error || 'Failed to add user')
         }
       } else {
-        // New user - send invitation email
-        const res = await fetch(`/api/spaces/${selectedSpace.id}/invite`, {
+        // Create a real platform user first, then assign it to the space.
+        const res = await fetch(`/api/spaces/${selectedSpace.id}/members`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: user.email, role })
+          body: JSON.stringify({
+            role,
+            create_user: {
+              name: user.name,
+              email: user.email,
+              system_role: user.system_role || 'USER',
+            },
+          })
         })
 
         if (res.ok) {
-          showSuccess('Invitation sent successfully')
+          const data = await res.json().catch(() => ({}))
+          showSuccess(data.message || 'Platform user created and added to space')
+          await loadMembers(selectedSpace.id)
         } else {
           const error = await res.json()
-          showError(error.error || 'Failed to send invitation')
+          showError(error.error || 'Failed to create platform user')
         }
       }
     } catch (error) {
       console.error('Error inviting user:', error)
-      showError('Failed to invite user')
+      showError('Failed to add user')
     }
   }
 
@@ -343,7 +395,8 @@ export default function SpaceSettingsPage() {
   const [folderForm, setFolderForm] = useState({ name: '', parent_id: '' })
   const [shareForm, setShareForm] = useState({ space_ids: [] as string[] })
   const [spaceDetails, setSpaceDetails] = useState<any | null>(null)
-  const [savingLoginImage, setSavingLoginImage] = useState(false)
+  const [loginPageConfig, setLoginPageConfig] = useState<any>(DEFAULT_LOGIN_PAGE_CONFIG)
+  const [savingLoginConfig, setSavingLoginConfig] = useState(false)
   const [expandedFolders, setExpandedFolders] = useState<string[]>([])
   const [showEditFolderDialog, setShowEditFolderDialog] = useState(false)
   const [editingFolder, setEditingFolder] = useState<any | null>(null)
@@ -437,11 +490,17 @@ export default function SpaceSettingsPage() {
     const loadSpaceDetails = async () => {
       if (!selectedSpace?.id) return
       try {
-        const res = await fetch(`/api/spaces/${selectedSpace.id}`)
-        const json = await res.json().catch(() => ({}))
-        setSpaceDetails(json.space || null)
+        const [spaceRes, loginConfigRes] = await Promise.all([
+          fetch(`/api/spaces/${selectedSpace.id}`),
+          fetch(`/api/spaces/${selectedSpace.id}/login-config`),
+        ])
+        const spaceJson = await spaceRes.json().catch(() => ({}))
+        const loginConfigJson = await loginConfigRes.json().catch(() => ({}))
+        setSpaceDetails(spaceJson.space || null)
+        setLoginPageConfig(normalizeLoginPageConfig(loginConfigJson.loginPageConfig))
       } catch {
         setSpaceDetails(null)
+        setLoginPageConfig(DEFAULT_LOGIN_PAGE_CONFIG)
       }
     }
     loadSpaceDetails()
@@ -487,6 +546,33 @@ export default function SpaceSettingsPage() {
       console.error('Error loading members:', e)
       showError(e.message || 'Failed to load members')
       setMembers([]) // Ensure members is always an array
+    }
+  }
+
+  const saveLoginPageSettings = async () => {
+    if (!selectedSpace?.id) return
+
+    setSavingLoginConfig(true)
+    try {
+      const normalizedConfig = normalizeLoginPageConfig(loginPageConfig)
+      const res = await fetch(`/api/spaces/${selectedSpace.id}/login-config`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ loginPageConfig: normalizedConfig }),
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Failed to save login page settings')
+      }
+
+      setLoginPageConfig(normalizedConfig)
+      showSuccess('Login page customization saved')
+    } catch (error: any) {
+      console.error('Error saving login page settings:', error)
+      showError(error.message || 'Failed to save login page settings')
+    } finally {
+      setSavingLoginConfig(false)
     }
   }
 
@@ -1304,8 +1390,8 @@ export default function SpaceSettingsPage() {
         />
       )}
 
-      <div className="flex flex-1 overflow-hidden">
-        <Tabs value={tab} onValueChange={handleTabChange}>
+      <div className="flex flex-1 overflow-hidden min-h-0">
+        <Tabs value={tab} onValueChange={handleTabChange} className="flex flex-1 min-h-0 w-full">
           {/* Only show sidebar in body if NOT accessed from data management (where it's shown in secondary sidebar) */}
           {!fromDataManagement && !fromSpaceSidebar && (
             <SpaceSettingsSidebar
@@ -1316,9 +1402,9 @@ export default function SpaceSettingsPage() {
           )}
 
           {/* Main Content Area */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="space-y-6 px-6 pt-6">
-              <TabsContent value="details" className="space-y-6 w-full">
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="min-h-full space-y-6 px-6 py-6">
+              <TabsContent value="details" className="mt-0 space-y-6 w-full">
                 {/* Space Detail Header */}
                 <div className="mb-6">
                   <h2 className="text-2xl font-bold text-foreground">Space Detail</h2>
@@ -1422,94 +1508,328 @@ export default function SpaceSettingsPage() {
 
                     <TabsContent value="login" className="space-y-6 mt-6">
                       <Card className="border-0 shadow-sm bg-card">
-                        <CardHeader className="pb-4">
-                          <CardTitle className="flex items-center space-x-2 text-lg">
-                            <Layout className="h-5 w-5" />
-                            <span>Login Page Customization</span>
-                          </CardTitle>
-                          <CardDescription>Customize the appearance of your space's login screen</CardDescription>
-                          <div className="mt-2">
-                            <a
-                              href={`/${selectedSpace?.slug || selectedSpace?.id}/auth/signin`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-                            >
-                              <ExternalLink className="h-3.5 w-3.5" />
-                              {typeof window !== 'undefined' ? `${window.location.origin}/${selectedSpace?.slug || selectedSpace?.id}/auth/signin` : `/${selectedSpace?.slug || selectedSpace?.id}/auth/signin`}
-                            </a>
+                        <CardHeader className="gap-4 pb-2 md:flex-row md:items-start md:justify-between">
+                          <div className="space-y-2">
+                            <CardTitle className="flex items-center space-x-2 text-lg">
+                              <Layout className="h-5 w-5" />
+                              <span>Login Page Customization</span>
+                            </CardTitle>
+                            <CardDescription>
+                              Configure the actual space login experience, not just the artwork. These settings drive the live sign-in page.
+                            </CardDescription>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Button variant="outline" asChild>
+                              <a
+                                href={`/${selectedSpace?.slug || selectedSpace?.id}/auth/signin`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                                Open Login Page
+                              </a>
+                            </Button>
+                            <Button onClick={saveLoginPageSettings} disabled={savingLoginConfig}>
+                              {savingLoginConfig ? 'Saving...' : 'Save Login Page'}
+                            </Button>
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                          <div className="space-y-2">
-                            <Label className="text-sm font-medium">Login Background</Label>
-                            <ColorPickerPopover
-                              value={(() => {
-                                const features = spaceDetails?.features || null
-                                try {
-                                  const parsed = typeof features === 'string' ? JSON.parse(features) : features
-                                  return parsed?.login_image_url || parsed?.login_background || ''
-                                } catch {
-                                  return ''
-                                }
-                              })()}
-                              onChange={async (value) => {
-                                setSavingLoginImage(true)
-                                try {
-                                  // Merge into existing features JSON
-                                  let features: any = {}
-                                  if (spaceDetails?.features) {
-                                    if (typeof spaceDetails.features === 'string') {
-                                      try { features = JSON.parse(spaceDetails.features) || {} } catch { features = {} }
-                                    } else {
-                                      features = spaceDetails.features || {}
-                                    }
-                                  }
-                                  features.login_image_url = value || null
-                                  features.login_background = value || null
-                                  const res = await fetch(`/api/spaces/${selectedSpace.id}`, {
-                                    method: 'PUT',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ features })
-                                  })
-                                  if (res.ok) {
-                                    showSuccess('Login background saved')
-                                    const j = await res.json().catch(() => ({}))
-                                    setSpaceDetails(j.space || { ...spaceDetails, features })
-                                  } else {
-                                    showError('Failed to save login background')
-                                  }
-                                } finally {
-                                  setSavingLoginImage(false)
-                                }
-                              }}
-                              allowImageVideo={true}
-                            >
-                              <div className="flex items-center gap-2">
+                          <div className="rounded-2xl border border-border/60 bg-muted/30 p-5">
+                            <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+                              <div className="space-y-4">
+                                <div>
+                                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Hero Preview</p>
+                                  <h3 className="mt-2 text-3xl font-semibold text-foreground">
+                                    {loginPageConfig.heroTitle || DEFAULT_LOGIN_PAGE_CONFIG.heroTitle}
+                                  </h3>
+                                  <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                                    {loginPageConfig.heroDescription || DEFAULT_LOGIN_PAGE_CONFIG.heroDescription}
+                                  </p>
+                                </div>
                                 <div
-                                  className="w-10 h-10 rounded border border-border cursor-pointer"
+                                  className="min-h-[180px] rounded-2xl border border-white/40 p-5"
                                   style={{
-                                    background: (() => {
-                                      const features = spaceDetails?.features || null
-                                      try {
-                                        const parsed = typeof features === 'string' ? JSON.parse(features) : features
-                                        const bg = parsed?.login_image_url || parsed?.login_background || ''
-                                        if (bg.startsWith('url(') || bg.startsWith('http') || bg.startsWith('video(')) {
-                                          return `url(${bg.replace('url(', '').replace(')', '').replace('video(', '').replace(')', '')})`
-                                        }
-                                        return bg || '#ffffff'
-                                      } catch {
-                                        return '#ffffff'
-                                      }
-                                    })(),
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center'
+                                    background:
+                                      loginPageConfig.backgroundType === 'color'
+                                        ? loginPageConfig.backgroundColor
+                                        : loginPageConfig.backgroundType === 'image' && loginPageConfig.backgroundImage
+                                          ? `url(${loginPageConfig.backgroundImage}) center / cover no-repeat`
+                                          : `linear-gradient(${loginPageConfig.gradient?.angle || 135}deg, ${loginPageConfig.gradient?.from || '#eff6ff'}, ${loginPageConfig.gradient?.to || '#dbeafe'})`,
                                   }}
-                                />
-                                <span className="text-sm text-muted-foreground">Click to choose solid color, gradient, image, or video</span>
+                                >
+                                  <div
+                                    className="ml-auto flex max-w-sm flex-col gap-3 rounded-2xl border p-4"
+                                    style={{
+                                      backgroundColor: loginPageConfig.cardStyle?.backgroundColor || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.backgroundColor,
+                                      borderColor: loginPageConfig.cardStyle?.borderColor || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.borderColor,
+                                      color: loginPageConfig.cardStyle?.textColor || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.textColor,
+                                      borderRadius: loginPageConfig.cardStyle?.borderRadius || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.borderRadius,
+                                      boxShadow: loginPageConfig.cardStyle?.shadow === false ? 'none' : '0 20px 45px rgba(15, 23, 42, 0.12)',
+                                    }}
+                                  >
+                                    <div className="space-y-1">
+                                      <p className="text-lg font-semibold">{loginPageConfig.title || DEFAULT_LOGIN_PAGE_CONFIG.title}</p>
+                                      <p className="text-sm opacity-80">{loginPageConfig.description || DEFAULT_LOGIN_PAGE_CONFIG.description}</p>
+                                    </div>
+                                    <div className="rounded-md border bg-background/70 px-3 py-2 text-sm text-muted-foreground">name@example.com</div>
+                                    <div className="rounded-md border bg-background/70 px-3 py-2 text-sm text-muted-foreground">Password</div>
+                                    <div className="rounded-md bg-primary px-3 py-2 text-center text-sm font-medium text-primary-foreground">
+                                      {loginPageConfig.signInButtonLabel || DEFAULT_LOGIN_PAGE_CONFIG.signInButtonLabel}
+                                    </div>
+                                    {loginPageConfig.helpText ? (
+                                      <p className="text-xs opacity-80">{loginPageConfig.helpText}</p>
+                                    ) : null}
+                                  </div>
+                                </div>
                               </div>
-                            </ColorPickerPopover>
-                            <p className="text-xs text-muted-foreground">Shown on the left side of the space-specific login page. Choose from solid color, gradient, image, or video.</p>
+
+                              <div className="grid gap-4">
+                                <Card className="border border-border/60 shadow-none">
+                                  <CardHeader className="pb-3">
+                                    <CardTitle className="text-base">Content</CardTitle>
+                                    <CardDescription>Headline, helper copy, and call-to-action text.</CardDescription>
+                                  </CardHeader>
+                                  <CardContent className="grid gap-4">
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                      <div className="space-y-2">
+                                        <Label>Sign-in Title</Label>
+                                        <Input
+                                          value={loginPageConfig.title || ''}
+                                          onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, title: e.target.value }))}
+                                          placeholder="Welcome back"
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label>Button Label</Label>
+                                        <Input
+                                          value={loginPageConfig.signInButtonLabel || ''}
+                                          onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, signInButtonLabel: e.target.value }))}
+                                          placeholder="Sign in"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label>Sign-in Description</Label>
+                                      <Textarea
+                                        value={loginPageConfig.description || ''}
+                                        onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, description: e.target.value }))}
+                                        rows={2}
+                                        placeholder="Sign in to access this workspace."
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label>Hero Title</Label>
+                                      <Input
+                                        value={loginPageConfig.heroTitle || ''}
+                                        onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, heroTitle: e.target.value }))}
+                                        placeholder="Your space, ready when you are"
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label>Hero Description</Label>
+                                      <Textarea
+                                        value={loginPageConfig.heroDescription || ''}
+                                        onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, heroDescription: e.target.value }))}
+                                        rows={3}
+                                        placeholder="Secure access for your team, data, and workflows in one place."
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label>Helper Text</Label>
+                                      <Textarea
+                                        value={loginPageConfig.helpText || ''}
+                                        onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, helpText: e.target.value }))}
+                                        rows={2}
+                                        placeholder="Optional support text shown under the form."
+                                      />
+                                    </div>
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                      <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+                                        <div>
+                                          <p className="text-sm font-medium">Show Logo</p>
+                                          <p className="text-xs text-muted-foreground">Display a space-specific mark above the hero title.</p>
+                                        </div>
+                                        <Select
+                                          value={loginPageConfig.showLogo === false ? 'hide' : 'show'}
+                                          onValueChange={(value) => setLoginPageConfig((prev: any) => ({ ...prev, showLogo: value === 'show' }))}
+                                        >
+                                          <SelectTrigger className="w-[110px]">
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="show">Show</SelectItem>
+                                            <SelectItem value="hide">Hide</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label>Logo URL</Label>
+                                        <Input
+                                          value={loginPageConfig.logoUrl || ''}
+                                          onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, logoUrl: e.target.value }))}
+                                          placeholder="https://example.com/logo.svg"
+                                        />
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+
+                                <Card className="border border-border/60 shadow-none">
+                                  <CardHeader className="pb-3">
+                                    <CardTitle className="text-base">Visual Style</CardTitle>
+                                    <CardDescription>Background, layout split, and card appearance.</CardDescription>
+                                  </CardHeader>
+                                  <CardContent className="grid gap-4">
+                                    <div className="grid gap-4 md:grid-cols-3">
+                                      <div className="space-y-2">
+                                        <Label>Background Type</Label>
+                                        <Select
+                                          value={loginPageConfig.backgroundType || 'gradient'}
+                                          onValueChange={(value) => setLoginPageConfig((prev: any) => ({ ...prev, backgroundType: value }))}
+                                        >
+                                          <SelectTrigger>
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="gradient">Gradient</SelectItem>
+                                            <SelectItem value="color">Solid Color</SelectItem>
+                                            <SelectItem value="image">Image</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label>Left Panel Width</Label>
+                                        <Input
+                                          value={loginPageConfig.leftPanelWidth || ''}
+                                          onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, leftPanelWidth: e.target.value }))}
+                                          placeholder="60%"
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label>Right Panel Width</Label>
+                                        <Input
+                                          value={loginPageConfig.rightPanelWidth || ''}
+                                          onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, rightPanelWidth: e.target.value }))}
+                                          placeholder="40%"
+                                        />
+                                      </div>
+                                    </div>
+
+                                    {loginPageConfig.backgroundType === 'color' ? (
+                                      <div className="space-y-2">
+                                        <Label>Background Color</Label>
+                                        <ColorInput
+                                          value={loginPageConfig.backgroundColor || '#f8fafc'}
+                                          onChange={(value) => setLoginPageConfig((prev: any) => ({ ...prev, backgroundColor: value }))}
+                                          allowImageVideo={false}
+                                        />
+                                      </div>
+                                    ) : null}
+
+                                    {loginPageConfig.backgroundType === 'gradient' ? (
+                                      <div className="grid gap-4 md:grid-cols-3">
+                                        <div className="space-y-2">
+                                          <Label>Gradient From</Label>
+                                          <ColorInput
+                                            value={loginPageConfig.gradient?.from || '#eff6ff'}
+                                            onChange={(value) => setLoginPageConfig((prev: any) => ({
+                                              ...prev,
+                                              gradient: { ...(prev.gradient || {}), from: value },
+                                            }))}
+                                            allowImageVideo={false}
+                                          />
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label>Gradient To</Label>
+                                          <ColorInput
+                                            value={loginPageConfig.gradient?.to || '#dbeafe'}
+                                            onChange={(value) => setLoginPageConfig((prev: any) => ({
+                                              ...prev,
+                                              gradient: { ...(prev.gradient || {}), to: value },
+                                            }))}
+                                            allowImageVideo={false}
+                                          />
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label>Angle</Label>
+                                          <Input
+                                            type="number"
+                                            value={loginPageConfig.gradient?.angle || 135}
+                                            onChange={(e) => setLoginPageConfig((prev: any) => ({
+                                              ...prev,
+                                              gradient: { ...(prev.gradient || {}), angle: Number(e.target.value) || 135 },
+                                            }))}
+                                            min="0"
+                                            max="360"
+                                          />
+                                        </div>
+                                      </div>
+                                    ) : null}
+
+                                    {loginPageConfig.backgroundType === 'image' ? (
+                                      <div className="space-y-2">
+                                        <Label>Background Image URL</Label>
+                                        <Input
+                                          value={loginPageConfig.backgroundImage || ''}
+                                          onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, backgroundImage: e.target.value }))}
+                                          placeholder="https://example.com/background.jpg"
+                                        />
+                                      </div>
+                                    ) : null}
+
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                      <div className="space-y-2">
+                                        <Label>Card Background</Label>
+                                        <ColorInput
+                                          value={loginPageConfig.cardStyle?.backgroundColor || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.backgroundColor}
+                                          onChange={(value) => setLoginPageConfig((prev: any) => ({
+                                            ...prev,
+                                            cardStyle: { ...(prev.cardStyle || {}), backgroundColor: value },
+                                          }))}
+                                          allowImageVideo={false}
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label>Card Text Color</Label>
+                                        <ColorInput
+                                          value={loginPageConfig.cardStyle?.textColor || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.textColor}
+                                          onChange={(value) => setLoginPageConfig((prev: any) => ({
+                                            ...prev,
+                                            cardStyle: { ...(prev.cardStyle || {}), textColor: value },
+                                          }))}
+                                          allowImageVideo={false}
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label>Card Border Color</Label>
+                                        <ColorInput
+                                          value={loginPageConfig.cardStyle?.borderColor || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.borderColor}
+                                          onChange={(value) => setLoginPageConfig((prev: any) => ({
+                                            ...prev,
+                                            cardStyle: { ...(prev.cardStyle || {}), borderColor: value },
+                                          }))}
+                                          allowImageVideo={false}
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label>Card Radius</Label>
+                                        <Input
+                                          type="number"
+                                          value={loginPageConfig.cardStyle?.borderRadius || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.borderRadius}
+                                          onChange={(e) => setLoginPageConfig((prev: any) => ({
+                                            ...prev,
+                                            cardStyle: { ...(prev.cardStyle || {}), borderRadius: Number(e.target.value) || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.borderRadius },
+                                          }))}
+                                          min="0"
+                                        />
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -1518,7 +1838,7 @@ export default function SpaceSettingsPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="members" className="space-y-6 w-full">
+              <TabsContent value="members" className="mt-0 space-y-6 w-full">
                 {/* Members Header */}
                 <div className="mb-6">
                   <h2 className="text-2xl font-bold text-foreground">Members</h2>
@@ -1620,62 +1940,18 @@ export default function SpaceSettingsPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="data-model" className="space-y-6 w-full mt-6">
+              <TabsContent value="data-model" className="mt-0 space-y-6 w-full min-h-full">
                 <DataModelBrowser spaceId={selectedSpace?.id || ''} />
               </TabsContent>
-              <TabsContent value="data-sync" className="space-y-6 w-full">
+              <TabsContent value="data-sync" className="mt-0 space-y-6 w-full min-h-full">
                 <DataSyncManagement spaceId={selectedSpace?.id || ''} />
               </TabsContent>
 
-              <TabsContent value="restore" className="space-y-6 w-full">
-                <Card className="bg-card">
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <History className="h-5 w-5" />
-                      <span>Restore</span>
-                    </CardTitle>
-                    <CardDescription>Import, export, or restore space data</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <Button onClick={async () => {
-                        try {
-                          const res = await fetch(`/api/spaces/${selectedSpace.id}/export`)
-                          if (!res.ok) throw new Error('Export failed')
-                          const blob = await res.blob()
-                          const url = URL.createObjectURL(blob)
-                          const a = document.createElement('a')
-                          a.href = url
-                          a.download = `${selectedSpace.slug || selectedSpace.id}-export.json`
-                          a.click()
-                          URL.revokeObjectURL(url)
-                        } catch (e) {
-                          showError('Failed to export')
-                        }
-                      }}>Export Space Data</Button>
-                      <label className="inline-flex items-center gap-2">
-                        <Input type="file" accept="application/json" onChange={async (e: any) => {
-                          const file = e.target?.files?.[0]
-                          if (!file) return
-                          const fd = new FormData()
-                          fd.append('file', file)
-                          try {
-                            const res = await fetch(`/api/spaces/${selectedSpace.id}/import`, { method: 'POST', body: fd })
-                            if (res.ok) { showSuccess('Import started') } else { throw new Error('Import failed') }
-                          } catch (err) { showError('Failed to import') }
-                        }} />
-                        <span className="text-sm">Import from JSON</span>
-                      </label>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="attachments" className="space-y-6 w-full">
+              <TabsContent value="attachments" className="mt-0 space-y-6 w-full min-h-full">
                 <AttachmentBrowser spaceId={selectedSpace?.id || ''} />
               </TabsContent>
 
-              <TabsContent value="danger" className="space-y-6 w-full">
+              <TabsContent value="danger" className="mt-0 space-y-6 w-full">
                 <Card className="border-destructive/30">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2 text-destructive">

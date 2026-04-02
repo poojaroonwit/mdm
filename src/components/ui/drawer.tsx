@@ -184,8 +184,8 @@ const DrawerOverlay = React.forwardRef<
       ref={ref}
       className={cn(
         "fixed inset-0",
-        !backgroundColor && "bg-background/80",
-        !blurValue && "backdrop-blur-sm",
+        !backgroundColor && "bg-zinc-950/20 dark:bg-black/40",
+        !blurValue && "backdrop-blur-md",
         className
       )}
       style={{ 
@@ -276,7 +276,7 @@ const DrawerContent = React.forwardRef<
 
   // Determine styling based on drawer type
   const getDrawerClasses = () => {
-    const baseClasses = "fixed border border-border/50 shadow-2xl outline-none transition-all duration-300 ease-out"
+    const baseClasses = "fixed border border-zinc-100/60 dark:border-zinc-800/60 shadow-2xl outline-none transition-all duration-300 ease-out backdrop-blur-xl"
     
     switch (drawerType) {
       case 'modern':
@@ -307,7 +307,7 @@ const DrawerContent = React.forwardRef<
       ...(widthValue && !widthClassName ? { width: widthValue } : {}),
       backdropFilter: `blur(${backgroundBlur})`,
       WebkitBackdropFilter: `blur(${backgroundBlur})`,
-      backgroundColor: `hsl(var(--background) / ${backgroundOpacity / 100})`,
+      backgroundColor: `rgba(${typeof window !== 'undefined' ? (document.documentElement.classList.contains('dark') ? '9, 9, 11' : '255, 255, 255') : '255, 255, 255'}, ${backgroundOpacity / 100})`,
       // Animation transform
       transform: isAnimating ? 'translateX(0)' : 'translateX(100%)',
       opacity: isAnimating ? 1 : 0,
@@ -355,7 +355,7 @@ const DrawerContent = React.forwardRef<
             opacity: isAnimating ? 1 : 0,
             transition: 'opacity 300ms ease-out',
           }}
-          className="bg-slate-900/40 backdrop-blur-sm"
+          className="bg-zinc-950/20 dark:bg-black/40 backdrop-blur-md"
         />
       )}
       <div
@@ -385,7 +385,7 @@ const DrawerHeader = ({ className, style, ...props }: React.HTMLAttributes<HTMLD
   
   return (
     <div 
-      className={cn("border-b border-border/50 px-6 py-6", className)} 
+      className={cn("border-b border-zinc-100/60 dark:border-zinc-800/60 px-6 py-6 bg-white/50 dark:bg-zinc-950/20 backdrop-blur-md", className)} 
       style={{
         borderTopLeftRadius: borderRadius,
         borderTopRightRadius: borderRadius,
@@ -396,11 +396,11 @@ const DrawerHeader = ({ className, style, ...props }: React.HTMLAttributes<HTMLD
   )
 }
 const DrawerTitle = ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
-  <h2 className={cn("text-lg font-black uppercase tracking-tight text-foreground", className)} {...props} />
+  <h2 className={cn("text-lg font-black uppercase tracking-tight text-zinc-900 dark:text-zinc-100", className)} {...props} />
 )
 
 const DrawerDescription = ({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (
-  <p className={cn("text-sm text-muted-foreground", className)} {...props} />
+  <p className={cn("text-sm font-medium text-zinc-500 dark:text-zinc-400", className)} {...props} />
 )
 
 export { Drawer, DrawerTrigger, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription }

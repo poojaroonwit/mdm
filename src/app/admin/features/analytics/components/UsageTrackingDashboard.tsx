@@ -106,8 +106,8 @@ export function UsageTrackingDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Usage Tracking</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-xl font-black uppercase tracking-[0.2em] text-zinc-900 dark:text-zinc-100">Usage Tracking</h2>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
             Track resource usage and user activity across the platform
           </p>
         </div>
@@ -151,8 +151,8 @@ export function UsageTrackingDashboard() {
         {usageStats.tickets && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tickets</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Tickets</CardTitle>
+              <FileText className="h-4 w-4 text-zinc-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{usageStats.tickets.total}</div>
@@ -170,8 +170,8 @@ export function UsageTrackingDashboard() {
         {usageStats.reports && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Reports</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Reports</CardTitle>
+              <BarChart3 className="h-4 w-4 text-zinc-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{usageStats.reports.total}</div>
@@ -189,8 +189,8 @@ export function UsageTrackingDashboard() {
         {usageStats.dashboards && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Dashboards</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Dashboards</CardTitle>
+              <BarChart3 className="h-4 w-4 text-zinc-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{usageStats.dashboards.total}</div>
@@ -207,8 +207,8 @@ export function UsageTrackingDashboard() {
         {usageStats.workflows && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Workflows</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Workflows</CardTitle>
+              <Activity className="h-4 w-4 text-zinc-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{usageStats.workflows.total}</div>
@@ -251,27 +251,29 @@ export function UsageTrackingDashboard() {
                     {userActivity.map((user) => (
                       <div
                         key={user.userId}
-                        className="flex items-center justify-between p-3 border rounded-lg"
+                        className="flex items-center justify-between p-4 border border-zinc-100/60 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/20 rounded-2xl hover:shadow-lg transition-all duration-300"
                       >
-                        <div className="flex items-center gap-3">
-                          <Users className="h-5 w-5 text-muted-foreground" />
+                        <div className="flex items-center gap-4">
+                          <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-xl">
+                            <Users className="h-5 w-5 text-zinc-500" />
+                          </div>
                           <div>
-                            <p className="font-medium">{user.name || user.email}</p>
-                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                            <p className="font-semibold text-zinc-900 dark:text-zinc-100">{user.name || user.email}</p>
+                            <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{user.email}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-6">
                           <div className="text-right">
-                            <p className="text-sm font-medium">{user.totalActions}</p>
-                            <p className="text-xs text-muted-foreground">actions</p>
+                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{user.totalActions}</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">ACTIONS</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-medium">{user.activeDays}</p>
-                            <p className="text-xs text-muted-foreground">active days</p>
+                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{user.activeDays}</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">DAYS</p>
                           </div>
-                          <Badge variant="outline">
+                          <div className="px-3 py-1 bg-zinc-50 dark:bg-zinc-900 border border-zinc-100/60 dark:border-zinc-800/60 rounded-full text-[10px] font-black uppercase tracking-widest text-zinc-500">
                             {new Date(user.lastActivity).toLocaleDateString()}
-                          </Badge>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -301,27 +303,29 @@ export function UsageTrackingDashboard() {
                     {spaceUsage.map((space) => (
                       <div
                         key={space.spaceId}
-                        className="flex items-center justify-between p-3 border rounded-lg"
+                        className="flex items-center justify-between p-4 border border-zinc-100/60 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/20 rounded-2xl hover:shadow-lg transition-all duration-300"
                       >
-                        <div className="flex items-center gap-3">
-                          <Database className="h-5 w-5 text-muted-foreground" />
+                        <div className="flex items-center gap-4">
+                          <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-xl">
+                            <Database className="h-5 w-5 text-zinc-500" />
+                          </div>
                           <div>
-                            <p className="font-medium">{space.name}</p>
-                            <p className="text-sm text-muted-foreground">Space ID: {space.spaceId}</p>
+                            <p className="font-semibold text-zinc-900 dark:text-zinc-100">{space.name}</p>
+                            <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">ID: {space.spaceId}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-6">
                           <div className="text-right">
-                            <p className="text-sm font-medium">{space.ticketCount}</p>
-                            <p className="text-xs text-muted-foreground">tickets</p>
+                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{space.ticketCount}</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">TICKETS</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-medium">{space.reportCount}</p>
-                            <p className="text-xs text-muted-foreground">reports</p>
+                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{space.reportCount}</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">REPORTS</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-medium">{space.memberCount}</p>
-                            <p className="text-xs text-muted-foreground">members</p>
+                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{space.memberCount}</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">MEMBERS</p>
                           </div>
                         </div>
                       </div>

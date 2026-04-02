@@ -159,11 +159,11 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
 
   return (
     <header
-      className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-border px-4"
+      className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-zinc-100/60 dark:border-zinc-800/60 px-4 backdrop-blur-md transition-all duration-300"
       data-component="top-menu-bar"
       style={{
         zIndex: Z_INDEX.navigation,
-        backgroundColor: headerBg,
+        backgroundColor: headerBg.includes('var(--background)') ? 'transparent' : headerBg,
         color: headerColor,
       }}
     >
@@ -171,17 +171,20 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
       <div className="flex items-center gap-2 min-w-0">
         {/* Logo */}
         {displayLogo ? (
-          <img
-            src={displayLogo}
-            alt={displayName}
-            className="h-5 w-5 object-contain flex-shrink-0"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none'
-            }}
-          />
+          <div className="relative group cursor-pointer">
+            <div className="absolute -inset-1 bg-gradient-to-r from-zinc-200 to-zinc-100 dark:from-zinc-800 dark:to-zinc-900 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+            <img
+              src={displayLogo}
+              alt={displayName}
+              className="relative h-6 w-6 object-contain flex-shrink-0"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none'
+              }}
+            />
+          </div>
         ) : (
-          <div className="h-6 w-6 rounded-md bg-primary flex items-center justify-center flex-shrink-0">
-            <span className="text-primary-foreground text-[10px] font-bold">
+          <div className="h-7 w-7 rounded-lg bg-zinc-900 dark:bg-white flex items-center justify-center flex-shrink-0 shadow-lg">
+            <span className="text-white dark:text-zinc-900 text-[10px] font-black uppercase">
               {displayName.charAt(0)}
             </span>
           </div>
@@ -189,31 +192,31 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
 
         {/* Space Name or Application Name */}
         {showSpaceName && spaceName ? (
-          <div className="flex flex-col min-w-0">
-            <span className="font-semibold text-sm whitespace-nowrap leading-none">
+          <div className="flex flex-col min-w-0 ml-1">
+            <span className="font-black text-xs uppercase tracking-widest text-zinc-900 dark:text-white whitespace-nowrap leading-none">
               {spaceName}
             </span>
-            <span className="text-xs whitespace-nowrap leading-none mt-0.5 opacity-60">
+            <span className="text-[9px] font-medium uppercase tracking-[0.1em] text-zinc-400 dark:text-zinc-500 whitespace-nowrap leading-none mt-1">
               {displayName}
             </span>
           </div>
         ) : displayName && (
-          <>
-            <span className="font-semibold text-sm whitespace-nowrap">
+          <div className="flex items-center gap-2 ml-1">
+            <span className="font-black text-xs uppercase tracking-widest text-zinc-900 dark:text-white whitespace-nowrap">
               {displayName}
             </span>
 
             {!showSpaceName && (
               <>
-                <span className="text-sm opacity-30 select-none">/</span>
+                <span className="text-zinc-300 dark:text-zinc-700 select-none">/</span>
 
                 {/* Selected Feature */}
-                <span className="text-sm truncate opacity-70">
+                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500 truncate">
                   {featureName}
                 </span>
               </>
             )}
-          </>
+          </div>
         )}
       </div>
 
@@ -225,16 +228,12 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
             <Button
               variant="ghost"
               size="icon"
-              className="relative h-9 w-9 rounded-full bg-background border border-border shadow-[0_2px_8px_rgba(0,0,0,0.10),0_1px_3px_rgba(0,0,0,0.07)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.14)] hover:bg-muted active:scale-[0.96] active:shadow-none"
+              className="relative h-9 w-9 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 border border-zinc-100/60 dark:border-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-95 group"
               title="Notifications"
             >
-              <Bell className="h-4 w-4" />
+              <Bell className="h-4 w-4 text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors" />
               {notifications.length > 0 && unreadCount > 0 && (
-                <Badge
-                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] bg-red-500 text-white border-2 border-background"
-                >
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </Badge>
+                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-zinc-950 dark:bg-white border border-white dark:border-zinc-950 animate-pulse" />
               )}
             </Button>
           </PopoverTrigger>
@@ -362,24 +361,24 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
         {/* User Avatar with Popover */}
         <Popover open={profilePopoverOpen} onOpenChange={setProfilePopoverOpen}>
           <PopoverTrigger asChild>
-            <button className="flex items-center space-x-3 p-1 rounded-full hover:bg-muted/50 transition-all duration-200 group outline-none ml-2">
-              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-blue-600/25 group-hover:shadow-blue-600/40 transition-all duration-300 overflow-hidden">
+            <button className="flex items-center gap-3 p-1 rounded-xl hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-all duration-300 group outline-none ml-2 border border-transparent hover:border-zinc-100 dark:hover:border-zinc-800">
+              <div className="h-8 w-8 rounded-lg bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-zinc-900 font-black text-xs shadow-sm group-hover:shadow-md transition-all duration-300 overflow-hidden">
                 {userImage ? (
                   <img src={userImage} alt={userName} className="h-full w-full object-cover" />
                 ) : userInitial}
               </div>
-              <div className="hidden sm:block text-left pr-1">
-                <p className="text-xs font-semibold text-foreground leading-none">
+              <div className="hidden sm:block text-left">
+                <p className="text-[11px] font-black text-zinc-900 dark:text-white leading-none uppercase tracking-wider">
                   {userName}
                 </p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase mt-0.5 tracking-wider">
+                <p className="text-[9px] text-zinc-400 dark:text-zinc-500 font-bold uppercase mt-1 tracking-[0.2em]">
                   {userRole}
                 </p>
               </div>
-              <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors duration-200" />
+              <ChevronDown className="h-3 w-3 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors duration-300" />
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-72 mt-2 rounded-2xl border-border/50 glass p-0" align="end">
+          <PopoverContent className="w-72 mt-2 rounded-xl border border-zinc-100/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl shadow-2xl p-0 overflow-hidden" align="end">
             <div className="px-5 py-4 border-b border-border/50">
               <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1">Signed in as</p>
               <p className="text-sm font-semibold truncate mt-1">{userEmail}</p>

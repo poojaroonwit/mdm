@@ -17,6 +17,7 @@ import { AddVMDialog } from '@/features/infrastructure/components/AddVMDialog'
 import { AddServiceDialog } from '@/features/infrastructure/components/AddServiceDialog'
 import { useInfrastructureContext } from '@/contexts/infrastructure-context'
 import { useSpace } from '@/contexts/space-context'
+import { cn } from '@/lib/utils'
 import { SpaceSettingsSidebar } from '@/components/space-management/SpaceSettingsSidebar'
 import { SpaceSidebar } from '@/components/space-management/SpaceSidebar'
 
@@ -447,7 +448,7 @@ export function PlatformLayout({
         <div className="flex flex-shrink-0">
           {/* Primary Sidebar - Groups */}
           <div
-            className={`transition-all duration-150 ease-in-out ${sidebarCollapsed ? 'w-16' : 'w-52'} flex-shrink-0 border-r border-border/50`}
+            className={`transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'w-16' : 'w-52'} flex-shrink-0 border-r border-zinc-100/60 dark:border-zinc-800/60`}
             data-sidebar="primary"
             style={{
               position: 'relative',
@@ -493,7 +494,7 @@ export function PlatformLayout({
           {/* Show secondary sidebar when hovering over a group or when a group is selected */}
           {showSpaceSidebar ? (
             <div
-              className={`${secondarySidebarCollapsed ? 'w-0' : 'w-56'} flex-shrink-0 transition-all duration-150 ease-in-out overflow-hidden border-r border-border/50`}
+              className={`${secondarySidebarCollapsed ? 'w-0' : 'w-56'} flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden border-r border-zinc-100/60 dark:border-zinc-800/60`}
               data-sidebar="secondary"
               style={{
                 position: 'relative',
@@ -516,7 +517,7 @@ export function PlatformLayout({
             </div>
           ) : showSpaceSettingsSidebar ? (
             <div
-              className={`${secondarySidebarCollapsed ? 'w-0' : 'w-56'} flex-shrink-0 transition-all duration-150 ease-in-out overflow-hidden border-r border-border/50`}
+              className={`${secondarySidebarCollapsed ? 'w-0' : 'w-56'} flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden border-r border-zinc-100/60 dark:border-zinc-800/60`}
               data-sidebar="secondary"
               style={{
                 position: 'relative',
@@ -544,7 +545,7 @@ export function PlatformLayout({
             </div>
           ) : displayGroup && displayGroup !== '' && (
             <div
-              className={`${secondarySidebarCollapsed ? 'w-0' : 'w-56'} flex-shrink-0 transition-all duration-150 ease-in-out overflow-hidden border-r border-border/50`}
+              className={`${secondarySidebarCollapsed ? 'w-0' : 'w-56'} flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden border-r border-zinc-100/60 dark:border-zinc-800/60`}
               data-sidebar="secondary"
               style={{
                 position: 'relative',
@@ -596,10 +597,10 @@ export function PlatformLayout({
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Breadcrumb Bar */}
-          <div className="h-10 bg-background flex items-center justify-between px-4 border-b border-border/50 tracking-tight">
-            <div className="flex items-center gap-2 text-sm flex-1 min-w-0">
-              <nav aria-label="Breadcrumb" className="truncate text-muted-foreground min-w-0">
+          {/* Anchor System (Page Header) */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-zinc-100/60 dark:border-zinc-800/60 px-6 py-8 bg-zinc-50/30 dark:bg-zinc-950/20 backdrop-blur-sm transition-all duration-300">
+            <div className="flex flex-col gap-3 min-w-0">
+              <nav aria-label="Breadcrumb" className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 min-w-0">
                 <ol className="flex items-center space-x-2">
                   {(() => {
                     // Generate breadcrumbs, filtering out any items that contain "admin"
@@ -607,7 +608,6 @@ export function PlatformLayout({
                       ? breadcrumbItems
                       : generateBreadcrumbs(activeTab)
 
-                    // Filter out any breadcrumb items that contain "admin" (case-insensitive)
                     return crumbs.filter(item => {
                       const label = typeof item === 'string' ? item : item.label
                       return label && !label.toLowerCase().includes('admin')
@@ -621,20 +621,17 @@ export function PlatformLayout({
 
                     return (
                       <Fragment key={`breadcrumb-${idx}`}>
-                        <li className={`truncate ${isLast ? 'font-medium text-foreground' : 'whitespace-nowrap'}`}>
+                        <li className={cn(
+                          "truncate transition-colors",
+                          isLast ? "text-zinc-900 dark:text-zinc-100 font-black" : "text-zinc-400 dark:text-zinc-500"
+                        )}>
                           {isClickable ? (
                             href ? (
-                              <Link
-                                href={href}
-                                className="hover:text-foreground hover:underline transition-colors"
-                              >
+                              <Link href={href} className="hover:text-zinc-900 dark:hover:text-zinc-100">
                                 {label}
                               </Link>
                             ) : (
-                              <button
-                                onClick={onClick}
-                                className="hover:text-foreground hover:underline transition-colors text-left"
-                              >
+                              <button onClick={onClick} className="hover:text-zinc-900 dark:hover:text-zinc-100 text-left">
                                 {label}
                               </button>
                             )
@@ -642,15 +639,26 @@ export function PlatformLayout({
                             <span>{label}</span>
                           )}
                         </li>
-                        {!isLast && <li className="text-muted-foreground">/</li>}
+                        {!isLast && <li className="text-zinc-300 dark:text-zinc-700">/</li>}
                       </Fragment>
                     )
                   })}
                 </ol>
               </nav>
+              
+              <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-zinc-950 to-zinc-500 dark:from-white dark:to-zinc-500 tracking-tighter sm:text-4xl">
+                {(() => {
+                  const crumbs = breadcrumbItems && breadcrumbItems.length
+                    ? breadcrumbItems
+                    : generateBreadcrumbs(activeTab)
+                  const lastCrumb = crumbs[crumbs.length - 1]
+                  return typeof lastCrumb === 'string' ? lastCrumb : lastCrumb?.label || activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+                })()}
+              </h1>
             </div>
+            
             {breadcrumbActions && (
-              <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+              <div className="flex items-center gap-3 flex-shrink-0 pb-1">
                 {breadcrumbActions}
               </div>
             )}

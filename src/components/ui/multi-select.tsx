@@ -57,12 +57,12 @@ export function MultiSelect({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between min-h-10 h-auto"
+            className="w-full justify-between min-h-10 h-auto border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-sm transition-all duration-200 focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-500"
             disabled={disabled}
           >
             <div className="flex flex-wrap gap-1 flex-1">
               {selectedOptions.length === 0 ? (
-                <span className="text-muted-foreground">{placeholder}</span>
+                <span className="text-zinc-400 dark:text-zinc-500 font-medium">{placeholder}</span>
               ) : (
                 selectedOptions.map((option) => (
                   <Badge
@@ -84,7 +84,7 @@ export function MultiSelect({
                       }}
                       onClick={() => handleRemove(option.value)}
                     >
-                      <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                      <X className="h-3 w-3 text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-100" />
                     </button>
                   </Badge>
                 ))
