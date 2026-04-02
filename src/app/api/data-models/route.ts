@@ -7,6 +7,7 @@ import { addSecurityHeaders } from '@/lib/security-headers'
 import { z } from 'zod'
 import { requireAnySpaceAccess } from '@/lib/space-access'
 import { createAuditLog } from '@/lib/audit'
+import { assignResourceFolder, getFolderState } from '@/lib/folder-state'
 
 async function getHandler(request: NextRequest) {
   const startTime = Date.now()
@@ -89,6 +90,8 @@ async function getHandler(request: NextRequest) {
     `
 
   try {
+    const folderState = await getFolderState(spaceId, 'data_model')
+    const assignments = folderState.assignments || {}
     const [{ rows: dataModels }, { rows: totalRows }] = await Promise.all([
       query(listSql, params),
       query(countSql, params),
@@ -98,7 +101,11 @@ async function getHandler(request: NextRequest) {
     const duration = Date.now() - startTime
     logger.apiResponse('GET', '/api/data-models', 200, duration, { total })
     return NextResponse.json({
-      dataModels: dataModels || [],
+      dataModels: (dataModels || []).map((model: any) => ({
+        ...model,
+        folder_id: assignments[model.id] || null,
+      })),
+      spaceId,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     })
   } catch (error: any) {
@@ -129,6 +136,10 @@ async function postHandler(request: NextRequest) {
     slug: z.string().optional(),
     space_ids: z.array(commonSchemas.id).optional(),
     spaceIds: z.array(commonSchemas.id).optional(),
+    folder_id: commonSchemas.id.optional().nullable(),
+    folderId: commonSchemas.id.optional().nullable(),
+    folder_space_id: commonSchemas.id.optional().nullable(),
+    folderSpaceId: commonSchemas.id.optional().nullable(),
   }))
 
   if (!bodyValidation.success) {
@@ -138,6 +149,12 @@ async function postHandler(request: NextRequest) {
   const { name, description, space_ids, spaceIds, displayName } = bodyValidation.data
   const finalSpaceIds = spaceIds || space_ids || []
   const finalDisplayName = displayName || bodyValidation.data.display_name
+  const folderId = bodyValidation.data.folderId ?? bodyValidation.data.folder_id ?? null
+  const folderSpaceId =
+    bodyValidation.data.folderSpaceId ??
+    bodyValidation.data.folder_space_id ??
+    finalSpaceIds[0] ??
+    null
 
   // Generate slug from name if not provided
   const toSlug = (text: string) => (text || '').toString().toLowerCase()
@@ -158,6 +175,13 @@ async function postHandler(request: NextRequest) {
   
   if (finalSpaceIds.length === 0) {
     return NextResponse.json({ error: 'At least one space ID is required' }, { status: 400 })
+  }
+
+  if (folderId && folderSpaceId) {
+    const folderState = await getFolderState(folderSpaceId, 'data_model')
+    if (!folderState.folders.some((folder) => folder.id === folderId)) {
+      return NextResponse.json({ error: 'Selected folder was not found in the active space' }, { status: 400 })
+    }
   }
 
   logger.apiRequest('POST', '/api/data-models', { userId: session.user.id, name, spaceIds: finalSpaceIds })
@@ -194,13 +218,17 @@ async function postHandler(request: NextRequest) {
       )
     }
 
+    if (folderSpaceId) {
+      await assignResourceFolder(folderSpaceId, 'data_model', dataModel.id, folderId)
+    }
+
     // Audit Log
     await createAuditLog({
       action: 'CREATE',
       entityType: 'DataModel',
       entityId: dataModel.id,
       oldValue: null,
-      newValue: { ...dataModel, spaceIds: finalSpaceIds },
+      newValue: { ...dataModel, spaceIds: finalSpaceIds, folder_id: folderId, folder_space_id: folderSpaceId },
       userId: session.user.id,
       ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
       userAgent: request.headers.get('user-agent') || 'unknown'

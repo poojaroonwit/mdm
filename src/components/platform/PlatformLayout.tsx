@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { PlatformSidebar } from './PlatformSidebar'
+import { MobilePlatformNav } from './MobilePlatformNav'
 import { TopMenuBar } from './TopMenuBar'
 import { Z_INDEX } from '@/lib/z-index'
 import { InfrastructureInstance } from '@/features/infrastructure/types'
@@ -445,7 +446,7 @@ export function PlatformLayout({
       {/* Content Area with Sidebars */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebars Container */}
-        <div className="flex flex-shrink-0">
+        <div className="hidden flex-shrink-0 md:flex">
           {/* Primary Sidebar - Groups */}
           <div
             className={`transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'w-16' : 'w-52'} flex-shrink-0 border-r border-zinc-100/60 dark:border-zinc-800/60`}
@@ -596,7 +597,7 @@ export function PlatformLayout({
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex min-w-0 flex-col overflow-hidden">
           {/* Anchor System (Page Header) */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-zinc-100/60 dark:border-zinc-800/60 px-6 py-8 bg-zinc-50/30 dark:bg-zinc-950/20 backdrop-blur-sm transition-all duration-300">
             <div className="flex flex-col gap-3 min-w-0">
@@ -665,7 +666,7 @@ export function PlatformLayout({
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto pb-24 md:pb-0">
             {selectedVm && activeTab === 'infrastructure' ? (
               vmCredentials ? (
                 <VMTerminal
@@ -700,6 +701,12 @@ export function PlatformLayout({
           </div>
         </div>
       </div>
+
+      <MobilePlatformNav
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        selectedSpace={selectedSpace}
+      />
 
       {/* Edit VM Dialog */}
       <EditVMDialog

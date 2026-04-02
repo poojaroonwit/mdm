@@ -26,6 +26,7 @@ type DataModel = {
   display_name: string
   slug?: string
   description?: string | null
+  folder_id?: string | null
   created_at: string
   is_active: boolean
   data_model_attributes?: any
@@ -48,10 +49,11 @@ type Attribute = {
 export default function DataModelsPage() {
   const [loading, setLoading] = useState(false)
   const [models, setModels] = useState<DataModel[]>([])
+  const [activeSpaceId, setActiveSpaceId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [showModelDialog, setShowModelDialog] = useState(false)
   const [editingModel, setEditingModel] = useState<DataModel | null>(null)
-  const [form, setForm] = useState({ name: '', display_name: '', description: '', source_type: 'INTERNAL', slug: '' })
+  const [form, setForm] = useState({ name: '', display_name: '', description: '', source_type: 'INTERNAL', slug: '', folder_id: '' })
   const [slugEdited, setSlugEdited] = useState(false)
   const [spaces, setSpaces] = useState<any[]>([])
   const [spacesLoading, setSpacesLoading] = useState(false)
@@ -100,6 +102,7 @@ export default function DataModelsPage() {
       const res = await fetch(`/api/data-models`)
       const json = await res.json()
       setModels(json.dataModels || [])
+      setActiveSpaceId(json.spaceId || null)
     } finally {
       setLoading(false)
     }
@@ -108,19 +111,24 @@ export default function DataModelsPage() {
   useEffect(() => {
     loadModels()
     loadSpaces()
-    loadFolders()
   }, [])
 
-  const loadFolders = async () => {
+  useEffect(() => {
+    loadFolders(activeSpaceId)
+  }, [activeSpaceId])
+
+  const loadFolders = async (spaceId?: string | null) => {
     try {
-      const res = await fetch('/api/folders?type=data_model')
-      if (res.status === 503) {
-        // Folders feature not available yet
-        setFolders([])
-        return
+      const params = new URLSearchParams({ type: 'data_model' })
+      if (spaceId) {
+        params.set('space_id', spaceId)
       }
+      const res = await fetch(`/api/folders?${params}`)
       const json = await res.json().catch(() => ({}))
       setFolders(json.folders || [])
+      if (!activeSpaceId && json.spaceId) {
+        setActiveSpaceId(json.spaceId)
+      }
     } catch (e) {
       setFolders([])
     }
@@ -136,20 +144,19 @@ export default function DataModelsPage() {
         body: JSON.stringify({
           name: folderForm.name,
           type: 'data_model',
+          space_id: activeSpaceId || undefined,
           parent_id: folderForm.parent_id || null
         })
       })
-      
-      if (res.status === 503) {
-        alert('Folders feature not yet available. Please run database migrations.')
-        return
-      }
-      
+
       if (!res.ok) throw new Error('Failed to create folder')
-      
+      const json = await res.json().catch(() => ({}))
       setShowCreateFolderDialog(false)
       setFolderForm({ name: '', parent_id: '' })
-      await loadFolders()
+      if (json.folder?.id) {
+        setSelectedFolder(json.folder.id)
+      }
+      await loadFolders(activeSpaceId || json.spaceId || null)
     } catch (e) {
       alert('Failed to create folder')
     }
@@ -157,7 +164,7 @@ export default function DataModelsPage() {
 
   function openCreate() {
     setEditingModel(null)
-    setForm({ name: '', display_name: '', description: '', source_type: 'INTERNAL', slug: '' })
+    setForm({ name: '', display_name: '', description: '', source_type: 'INTERNAL', slug: '', folder_id: selectedFolder || '' })
     setSlugEdited(false)
     setSelectedSpaceIds([])
     setShowModelDialog(true)
@@ -165,7 +172,14 @@ export default function DataModelsPage() {
 
   async function openEdit(model: DataModel) {
     setEditingModel(model)
-    setForm({ name: model.name, display_name: model.display_name, description: model.description || '', source_type: (model as any).source_type || 'INTERNAL', slug: (model as any).slug || '' })
+    setForm({
+      name: model.name,
+      display_name: model.display_name,
+      description: model.description || '',
+      source_type: (model as any).source_type || 'INTERNAL',
+      slug: (model as any).slug || '',
+      folder_id: model.folder_id || '',
+    })
     setSlugEdited(true)
     
     // Load attributes for this model BEFORE opening dialog
@@ -239,10 +253,13 @@ export default function DataModelsPage() {
   async function saveModel() {
     const method = editingModel ? 'PUT' : 'POST'
     const url = editingModel ? `/api/data-models/${editingModel.id}` : '/api/data-models'
+    const payload = editingModel
+      ? { ...form, folder_id: form.folder_id || null, folder_space_id: activeSpaceId || undefined }
+      : { ...form, folder_id: form.folder_id || null, folder_space_id: activeSpaceId || selectedSpaceIds[0] || null, space_ids: selectedSpaceIds }
     const res = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editingModel ? form : { ...form, space_ids: selectedSpaceIds }),
+      body: JSON.stringify(payload),
     })
     if (res.ok) {
       // If editing, update spaces associations separately
@@ -610,6 +627,26 @@ export default function DataModelsPage() {
                             className="w-full"
                           />
                         )}
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Folder</label>
+                        <p className="text-xs text-muted-foreground">Organize this model within the currently active space.</p>
+                        <Select
+                          value={form.folder_id || '__root__'}
+                          onValueChange={(value) => setForm({ ...form, folder_id: value === '__root__' ? '' : value })}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select folder" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__root__">No folder</SelectItem>
+                            {folders.map((folder: any) => (
+                              <SelectItem key={folder.id} value={folder.id}>
+                                {folder.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>

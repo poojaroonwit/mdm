@@ -96,7 +96,7 @@ const ICON_MAP: Record<string, any> = {
   ChevronRight: ChevronRightIcon
 }
 
-const getIcon = (name: string) => ICON_MAP[name] || DocumentTextIcon
+export const getPlatformIcon = (name: string) => ICON_MAP[name] || DocumentTextIcon
 
 
 
@@ -221,7 +221,7 @@ export function PlatformSidebar({
         tabs[group.slug] = allowedItems.map(item => ({
           id: item.slug,
           name: item.name,
-          icon: getIcon(item.icon),
+          icon: getPlatformIcon(item.icon),
           href: item.href,
           section: item.section,
           priority: item.priority,
@@ -237,7 +237,7 @@ export function PlatformSidebar({
             const newItem = {
               id: plugin.slug,
               name: label,
-              icon: getIcon(icon),
+              icon: getPlatformIcon(icon),
               href: href || `/tools/${plugin.slug}`,
               priority: priority || 100
             }
@@ -268,7 +268,7 @@ export function PlatformSidebar({
       for (const group of menuConfig.groups) {
         meta[group.slug] = {
           name: group.name,
-          icon: getIcon(group.icon)
+          icon: getPlatformIcon(group.icon)
         }
       }
       return meta

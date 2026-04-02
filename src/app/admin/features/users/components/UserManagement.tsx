@@ -217,6 +217,13 @@ export function UserManagement() {
     return methods
   }
 
+  const formatLoginMethod = (method: string) => {
+    if (method === 'email') return 'Email/Password'
+    if (method === 'azure-ad') return 'Azure AD'
+    if (method === 'google') return 'Google'
+    return method
+  }
+
   const pages = useMemo(() => Math.ceil(total / limit), [total, limit])
 
   useEffect(() => {
@@ -307,7 +314,7 @@ export function UserManagement() {
       isActive: true,
       defaultSpaceId: '',
       spaces: [],
-      allowedLoginMethods: [],
+      allowedLoginMethods: getAvailableLoginMethods(),
       groupIds: []
     })
     setShowCreateDialog(true)
@@ -365,7 +372,7 @@ export function UserManagement() {
           isActive: true,
           defaultSpaceId: '',
           spaces: [],
-          allowedLoginMethods: ['email'],
+          allowedLoginMethods: getAvailableLoginMethods(),
           groupIds: []
         })
         loadUsers()
@@ -806,7 +813,7 @@ export function UserManagement() {
                         </div>
                       </TableCell>
                       <TableCell className="h-16">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                            {user.isTwoFactorEnabled ? (
                                <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-400 gap-1 pr-2">
                                    <Smartphone className="h-3 w-3" />
@@ -818,6 +825,16 @@ export function UserManagement() {
                                    Off
                                </Badge>
                            )}
+                           {(user.allowedLoginMethods && user.allowedLoginMethods.length > 0 ? user.allowedLoginMethods : ['all']).map((method) => (
+                             <Badge
+                               key={method}
+                               variant="outline"
+                               className="border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900 dark:bg-sky-950 dark:text-sky-300 gap-1 pr-2"
+                             >
+                               <Shield className="h-3 w-3" />
+                               {method === 'all' ? 'All Methods' : formatLoginMethod(method)}
+                             </Badge>
+                           ))}
                         </div>
                       </TableCell>
                       <TableCell className="h-16">
@@ -882,7 +899,8 @@ export function UserManagement() {
                               }}>
                                 <Key className="h-4 w-4 mr-2" />
                                 Reset Password
-                              </DropdownMenuItem>                               <DropdownMenuItem onClick={async () => {
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={async () => {
                                   if (!confirm(`Are you sure you want to disable 2FA for ${user.name}?`)) return
                                   try {
                                       const res = await fetch(`/api/admin/users/${user.id}/reset-2fa`, { method: 'POST' });
@@ -899,7 +917,6 @@ export function UserManagement() {
                                 <Smartphone className="h-3.5 w-3.5 mr-2" />
                                 Reset 2FA
                               </DropdownMenuItem>
-m>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 onClick={() => deleteUser(user.id)}
@@ -1076,7 +1093,7 @@ m>
                               })
                             }}
                           >
-                            {method === 'email' ? 'Email/Password' : method === 'azure-ad' ? 'Azure AD' : 'Google'}
+                            {formatLoginMethod(method)}
                           </div>
                         )
                       })}
@@ -1396,7 +1413,7 @@ m>
                           })
                         }}
                       >
-                        {method === 'email' ? 'Email/Password' : method === 'azure-ad' ? 'Azure AD' : 'Google'}
+                        {formatLoginMethod(method)}
                       </div>
                     )
                   })}
@@ -1716,6 +1733,19 @@ m>
                       <p className="text-sm">{spaces.find(s => s.id === selectedUser.defaultSpaceId)?.name || 'N/A'}</p>
                     </div>
                   )}
+                  <div className="col-span-2">
+                    <Label className="text-xs text-muted-foreground">Allowed Login Methods</Label>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {(selectedUser.allowedLoginMethods && selectedUser.allowedLoginMethods.length > 0
+                        ? selectedUser.allowedLoginMethods
+                        : ['all']
+                      ).map((method) => (
+                        <Badge key={method} variant="outline">
+                          {method === 'all' ? 'All Configured Methods' : formatLoginMethod(method)}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 {selectedUser.spaces && selectedUser.spaces.length > 0 && (

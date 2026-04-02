@@ -169,7 +169,7 @@ export default function SpaceSignInPage() {
   }
 
   return (
-    <div className="h-screen w-full flex flex-col md:flex-row relative overflow-hidden" style={getBackgroundStyle()}>
+    <div className="relative flex min-h-screen w-full flex-col overflow-hidden md:h-screen md:flex-row" style={getBackgroundStyle()}>
       {/* Animated background blobs for default style - Removed to match clean white/pink/blue design */}
       {/* {!bgType && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -180,43 +180,42 @@ export default function SpaceSignInPage() {
       )} */}
 
       {/* Left Column - App Name & Description */}
-      <div className="flex-1 flex flex-col justify-center p-8 md:p-12 lg:p-20 relative z-10">
-        <div className="max-w-3xl space-y-6">
-          <div className="flex items-center space-x-4 mb-2">
-            <div className="p-3 bg-white/50 backdrop-blur-sm rounded-xl border border-gray-200 shadow-sm">
+      <div className="relative z-10 flex flex-col justify-start px-6 pb-6 pt-12 md:flex-1 md:justify-center md:p-12 lg:p-20">
+        <div className="max-w-3xl space-y-4 md:space-y-6">
+          <div className="mb-2 flex items-center space-x-4">
+            <div className="rounded-2xl border border-gray-200 bg-white/60 p-3 shadow-sm backdrop-blur-sm">
               {branding?.applicationLogo ? (
                 <img src={branding.applicationLogo} alt="Logo" className="h-10 w-10 object-contain" />
               ) : (
                 <Layers className="h-10 w-10 text-primary fill-primary/10" />
               )}
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 drop-shadow-sm">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 drop-shadow-sm md:text-5xl lg:text-6xl">
               {branding?.applicationName || 'Unified Data Platform'}
             </h1>
           </div>
-          <p className="text-xl md:text-2xl text-gray-600 font-light max-w-lg leading-relaxed ml-1">
+          <p className="ml-1 max-w-lg text-base font-light leading-relaxed text-gray-600 md:text-2xl">
             {branding?.applicationDescription || 'Experience the future of data management. Secure, scalable, and simple.'}
           </p>
         </div>
       </div>
 
       {/* Right Column - Login Panel (40% width on Desktop) */}
-      <div className="w-full md:w-[40%] min-w-[320px] p-4 md:p-6 flex flex-col justify-center relative z-10 h-full">
+      <div className="relative z-10 mt-auto flex h-auto w-full min-w-[320px] flex-col justify-end px-0 pt-2 md:h-full md:w-[40%] md:p-6 md:justify-center">
         <Card
-          className="w-full h-full relative border border-gray-200 shadow-2xl backdrop-blur-xl flex flex-col justify-center rounded-2xl"
+          className="relative flex min-h-[68vh] w-full flex-col justify-center rounded-t-[32px] border-x-0 border-b-0 border-t border-gray-200 shadow-[0_-24px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl md:h-full md:min-h-0 md:rounded-2xl md:border md:shadow-2xl"
           style={{
             backgroundColor: config.cardStyle?.backgroundColor || 'rgba(255, 255, 255, 0.8)',
             color: config.cardStyle?.textColor || '#1f2937',
             borderColor: config.cardStyle?.borderColor || 'rgba(229, 231, 235, 0.5)',
-            borderRadius: config.cardStyle?.borderRadius !== undefined ? config.cardStyle.borderRadius : 16,
             boxShadow: config.cardStyle?.shadow !== false ? '0 4px 6px -1px rgb(0 0 0 / 0.1)' : 'none'
           }}
         >
-          <CardHeader className="space-y-1 text-center pb-2 flex flex-col items-center">
+          <CardHeader className="flex flex-col items-center space-y-1 px-6 pb-2 pt-8 text-center md:pt-6">
             <CardTitle className="text-3xl font-bold tracking-tight">{title}</CardTitle>
             <CardDescription className="text-muted-foreground/80 text-lg">{description}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6 px-8 md:px-12">
+          <CardContent className="space-y-6 px-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] md:px-12 md:pb-6">
             {showTwoFactorInput ? (
                 <form onSubmit={handle2FASubmit} className="space-y-4">
                      <div className="flex flex-col items-center space-y-2 mb-4">

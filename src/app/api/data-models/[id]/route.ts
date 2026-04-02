@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger'
 import { validateParams, validateBody, commonSchemas } from '@/lib/api-validation'
 import { z } from 'zod'
 import { addSecurityHeaders } from '@/lib/security-headers'
+import { assignResourceFolder, clearResourceFolderAssignments, getFolderState } from '@/lib/folder-state'
 
 async function getHandler(
   request: NextRequest,
@@ -88,6 +89,10 @@ async function putHandler(
     external_primary_key: z.string().optional().nullable(),
     externalPrimaryKey: z.string().optional().nullable(),
     slug: z.string().optional(),
+    folder_id: commonSchemas.id.optional().nullable(),
+    folderId: commonSchemas.id.optional().nullable(),
+    folder_space_id: commonSchemas.id.optional().nullable(),
+    folderSpaceId: commonSchemas.id.optional().nullable(),
   })
 
   const bodyValidation = await validateBody(request, bodySchema)
@@ -111,11 +116,20 @@ async function putHandler(
   const external_schema = bodyValidation.data.externalSchema ?? bodyValidation.data.external_schema
   const external_table = bodyValidation.data.externalTable ?? bodyValidation.data.external_table
   const external_primary_key = bodyValidation.data.externalPrimaryKey ?? bodyValidation.data.external_primary_key
+  const folder_id = bodyValidation.data.folderId ?? bodyValidation.data.folder_id
+  const folder_space_id = bodyValidation.data.folderSpaceId ?? bodyValidation.data.folder_space_id
 
   let slug = slugInput
 
-  if (!name && !display_name && description === undefined && is_active === undefined && icon === undefined && sort_order === undefined && is_pinned === undefined && source_type === undefined && external_connection_id === undefined && external_schema === undefined && external_table === undefined && external_primary_key === undefined && slug === undefined) {
+  if (!name && !display_name && description === undefined && is_active === undefined && icon === undefined && sort_order === undefined && is_pinned === undefined && source_type === undefined && external_connection_id === undefined && external_schema === undefined && external_table === undefined && external_primary_key === undefined && slug === undefined && folder_id === undefined && folder_space_id === undefined) {
     return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
+  }
+
+  if (folder_id && folder_space_id) {
+    const folderState = await getFolderState(folder_space_id, 'data_model')
+    if (!folderState.folders.some((folder) => folder.id === folder_id)) {
+      return NextResponse.json({ error: 'Selected folder was not found in the active space' }, { status: 400 })
+    }
   }
 
   const fields: string[] = []
@@ -189,6 +203,9 @@ async function putHandler(
 
   const duration = Date.now() - startTime
   logger.apiResponse('PUT', `/api/data-models/${id}`, 200, duration)
+  if (folder_space_id !== undefined) {
+    await assignResourceFolder(folder_space_id, 'data_model', id, folder_id ?? null)
+  }
   return NextResponse.json({ dataModel: rows[0] })
 }
 
@@ -242,6 +259,7 @@ async function deleteHandler(
 
   const duration = Date.now() - startTime
   logger.apiResponse('DELETE', `/api/data-models/${id}`, 200, duration)
+  await clearResourceFolderAssignments('data_model', id)
   return NextResponse.json({ ok: true })
 }
 

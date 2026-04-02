@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { requireSpaceAccess } from '@/lib/space-access'
-import { db } from '@/lib/db'
 import { logger } from '@/lib/logger'
 import { validateQuery, validateBody, commonSchemas } from '@/lib/api-validation'
 import { z } from 'zod'
+import {
+  createFolderStateEntry,
+  getFolderState,
+  resolveFolderSpaceId,
+  type SupportedFolderType,
+} from '@/lib/folder-state'
+
+const folderTypeSchema = z.enum(['data_model'])
 
 async function getHandler(request: NextRequest) {
   const startTime = Date.now()
@@ -15,15 +22,20 @@ async function getHandler(request: NextRequest) {
   // Validate query parameters
   const queryValidation = validateQuery(request, z.object({
     space_id: commonSchemas.id.optional(),
-    type: z.string().optional().default('data_model'),
+    type: folderTypeSchema.optional().default('data_model'),
   }))
 
   if (!queryValidation.success) {
     return queryValidation.response
   }
 
-  const { space_id: spaceId, type = 'data_model' } = queryValidation.data
+  const { space_id: requestedSpaceId, type = 'data_model' } = queryValidation.data
+  const spaceId = await resolveFolderSpaceId(session.user.id!, requestedSpaceId)
   logger.apiRequest('GET', '/api/folders', { userId: session.user.id, spaceId, type })
+
+  if (!spaceId) {
+    return NextResponse.json({ folders: [], spaceId: null })
+  }
 
   // Check space access only if a space_id was provided
   if (spaceId) {
@@ -34,10 +46,15 @@ async function getHandler(request: NextRequest) {
     }
   }
 
-  // Folder model doesn't exist in Prisma schema
+  const state = await getFolderState(spaceId, type as SupportedFolderType)
   const duration = Date.now() - startTime
-  logger.apiResponse('GET', '/api/folders', 200, duration, { count: 0 })
-  return NextResponse.json({ folders: [] })
+  logger.apiResponse('GET', '/api/folders', 200, duration, { count: state.folders.length })
+  return NextResponse.json({
+    folders: state.folders
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    spaceId,
+  })
 }
 
 export const GET = withErrorHandling(getHandler, 'GET /api/folders')
@@ -51,8 +68,8 @@ async function postHandler(request: NextRequest) {
   // Validate request body
   const bodyValidation = await validateBody(request, z.object({
     name: z.string().min(1, 'Name is required'),
-    type: z.string().optional().default('data_model'),
-    space_id: commonSchemas.id,
+    type: folderTypeSchema.optional().default('data_model'),
+    space_id: commonSchemas.id.optional(),
     parent_id: commonSchemas.id.optional().nullable(),
   }))
   
@@ -60,8 +77,13 @@ async function postHandler(request: NextRequest) {
     return bodyValidation.response
   }
   
-  const { name, type = 'data_model', space_id, parent_id } = bodyValidation.data
+  const { name, type = 'data_model', parent_id } = bodyValidation.data
+  const space_id = await resolveFolderSpaceId(session.user.id!, bodyValidation.data.space_id)
   logger.apiRequest('POST', '/api/folders', { userId: session.user.id, name, space_id })
+
+  if (!space_id) {
+    return NextResponse.json({ error: 'No accessible space available for folder creation' }, { status: 400 })
+  }
 
   // Check if user has access to the space (requireSpaceAccess checks member or owner)
   const accessResult = await requireSpaceAccess(space_id, session.user.id!)
@@ -70,16 +92,19 @@ async function postHandler(request: NextRequest) {
     return accessResult.response
   }
 
-  // Note: Additional role check (admin/owner) would need to be added to requireSpaceAccess
-  // or checked separately if needed. For now, space access is sufficient.
+  try {
+    const folder = await createFolderStateEntry(space_id, type as SupportedFolderType, {
+      name,
+      parent_id,
+      created_by: session.user.id,
+    })
 
-  // Folder model doesn't exist in Prisma schema
-  const duration = Date.now() - startTime
-  logger.apiResponse('POST', '/api/folders', 501, duration)
-  return NextResponse.json(
-    { error: 'Folder model not implemented' },
-    { status: 501 }
-  )
+    const duration = Date.now() - startTime
+    logger.apiResponse('POST', '/api/folders', 201, duration, { folderId: folder.id })
+    return NextResponse.json({ folder, spaceId: space_id }, { status: 201 })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Failed to create folder' }, { status: 400 })
+  }
 }
 
 export const POST = withErrorHandling(postHandler, 'POST /api/folders')

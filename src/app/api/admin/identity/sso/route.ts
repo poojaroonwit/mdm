@@ -2,19 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { SignJWT } from 'jose';
 import { randomUUID } from 'crypto';
+import bcrypt from 'bcryptjs';
+import { getResolvedSSOProvider, normalizeSSOProviderName } from '@/lib/sso';
+import {
+  isDomainAllowed,
+  mapOAuthProfile,
+  resolveAzureGroupIds,
+  resolveMappedRoleFromGroups,
+} from '@/lib/identity-utils';
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'fallback-secret-key-for-development'
 );
 
-/**
- * GET /api/admin/identity/sso
- * Generate OAuth authorization URL
- */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const provider = searchParams.get('provider');
+    const provider = normalizeSSOProviderName(searchParams.get('provider'));
     const redirectUriParam = searchParams.get('redirect_uri');
     const state = searchParams.get('state');
 
@@ -22,18 +26,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Provider is required' }, { status: 400 });
     }
 
-    const oauthProvider = await db.oAuthProvider.findFirst({
-      where: {
-        providerName: provider,
-        isEnabled: true,
-      },
-    });
-
+    const oauthProvider = await getResolvedSSOProvider(provider);
     if (!oauthProvider) {
       return NextResponse.json({ error: 'OAuth provider not found or disabled' }, { status: 404 });
     }
 
-    const scopes = Array.isArray(oauthProvider.scopes) ? (oauthProvider.scopes as string[]) : [];
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
     const oauthUrls = {
@@ -43,7 +40,7 @@ export async function GET(request: NextRequest) {
           client_id: oauthProvider.clientId,
           redirect_uri: redirectUriParam || `${siteUrl}/auth/callback/google`,
           response_type: 'code',
-          scope: scopes.length > 0 ? scopes.join(' ') : 'openid email profile',
+          scope: oauthProvider.scopes.length > 0 ? oauthProvider.scopes.join(' ') : 'openid email profile',
           state: state || `google-${Date.now()}`,
           access_type: 'offline',
           prompt: 'consent',
@@ -54,23 +51,28 @@ export async function GET(request: NextRequest) {
         params: new URLSearchParams({
           client_id: oauthProvider.clientId,
           redirect_uri: redirectUriParam || `${siteUrl}/auth/callback/github`,
-          scope: scopes.length > 0 ? scopes.join(' ') : 'user:email',
+          scope: oauthProvider.scopes.length > 0 ? oauthProvider.scopes.join(' ') : 'user:email',
           state: state || `github-${Date.now()}`,
         }),
       },
-      microsoft: {
-        authUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+      'azure-ad': {
+        authUrl:
+          oauthProvider.authorizationUrl ||
+          `https://login.microsoftonline.com/${oauthProvider.tenantId || 'common'}/oauth2/v2.0/authorize`,
         params: new URLSearchParams({
           client_id: oauthProvider.clientId,
-          redirect_uri: redirectUriParam || `${siteUrl}/auth/callback/microsoft`,
+          redirect_uri: redirectUriParam || `${siteUrl}/auth/callback/azure-ad`,
           response_type: 'code',
-          scope: scopes.length > 0 ? scopes.join(' ') : 'openid email profile',
-          state: state || `microsoft-${Date.now()}`,
+          scope:
+            oauthProvider.scopes.length > 0
+              ? oauthProvider.scopes.join(' ')
+              : 'openid email profile offline_access User.Read',
+          state: state || `azure-ad-${Date.now()}`,
         }),
       },
     };
 
-    const oauthConfig = oauthUrls[provider as keyof typeof oauthUrls];
+    const oauthConfig = oauthUrls[provider];
     if (!oauthConfig) {
       return NextResponse.json({ error: 'Unsupported provider' }, { status: 400 });
     }
@@ -89,36 +91,27 @@ export async function GET(request: NextRequest) {
   }
 }
 
-/**
- * POST /api/admin/identity/sso
- * Handle OAuth callback / exchange code
- */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { provider, code, state, redirectUri } = body;
+    const { code, redirectUri } = body;
+    const provider = normalizeSSOProviderName(body.provider);
 
     if (!provider || !code) {
       return NextResponse.json({ error: 'Provider and authorization code are required' }, { status: 400 });
     }
 
-    const oauthProvider = await db.oAuthProvider.findFirst({
-      where: {
-        providerName: provider,
-        isEnabled: true,
-      },
-    });
-
+    const oauthProvider = await getResolvedSSOProvider(provider);
     if (!oauthProvider) {
       return NextResponse.json({ error: 'OAuth provider not found or disabled' }, { status: 404 });
     }
 
     let tokenResponse;
     let userInfo;
+    let azureAccessToken: string | null = null;
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
     if (provider === 'google') {
-      const tokenUrl = 'https://oauth2.googleapis.com/token';
       const googleTokenData = new URLSearchParams({
         client_id: oauthProvider.clientId,
         client_secret: oauthProvider.clientSecret,
@@ -127,7 +120,7 @@ export async function POST(request: NextRequest) {
         redirect_uri: redirectUri || `${siteUrl}/auth/callback/google`,
       });
 
-      tokenResponse = await fetch(tokenUrl, {
+      tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: googleTokenData.toString(),
@@ -141,7 +134,6 @@ export async function POST(request: NextRequest) {
       });
       userInfo = await userInfoResponse.json();
     } else if (provider === 'github') {
-      const tokenUrl = 'https://github.com/login/oauth/access_token';
       const githubTokenData = new URLSearchParams({
         client_id: oauthProvider.clientId,
         client_secret: oauthProvider.clientSecret,
@@ -149,7 +141,7 @@ export async function POST(request: NextRequest) {
         redirect_uri: redirectUri || `${siteUrl}/auth/callback/github`,
       });
 
-      tokenResponse = await fetch(tokenUrl, {
+      tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
         method: 'POST',
         headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
         body: githubTokenData.toString(),
@@ -168,27 +160,34 @@ export async function POST(request: NextRequest) {
           headers: { Authorization: `token ${tokenData.access_token}` },
         });
         const emails = await emailsResponse.json();
-        userInfo.email = emails.find((e: any) => e.primary)?.email || emails[0]?.email;
+        userInfo.email = emails.find((entry: any) => entry.primary)?.email || emails[0]?.email;
       }
-    } else if (provider === 'microsoft') {
-      const tokenUrl = 'https://login.microsoftonline.com/common/oauth2/v2.0/token';
+    } else if (provider === 'azure-ad') {
       const microsoftTokenData = new URLSearchParams({
         client_id: oauthProvider.clientId,
         client_secret: oauthProvider.clientSecret,
         code,
         grant_type: 'authorization_code',
-        redirect_uri: redirectUri || `${siteUrl}/auth/callback/microsoft`,
-        scope: 'openid email profile',
+        redirect_uri: redirectUri || `${siteUrl}/auth/callback/azure-ad`,
+        scope:
+          oauthProvider.scopes.length > 0
+            ? oauthProvider.scopes.join(' ')
+            : 'openid email profile offline_access User.Read',
       });
 
-      tokenResponse = await fetch(tokenUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: microsoftTokenData.toString(),
-      });
+      tokenResponse = await fetch(
+        oauthProvider.tokenUrl ||
+          `https://login.microsoftonline.com/${oauthProvider.tenantId || 'common'}/oauth2/v2.0/token`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: microsoftTokenData.toString(),
+        }
+      );
 
       const tokenData = await tokenResponse.json();
       if (!tokenResponse.ok) throw new Error(tokenData.error_description || 'Microsoft token exchange failed');
+      azureAccessToken = tokenData.access_token || null;
 
       const userInfoResponse = await fetch('https://graph.microsoft.com/v1.0/me', {
         headers: { Authorization: `Bearer ${tokenData.access_token}` },
@@ -199,12 +198,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unsupported provider' }, { status: 400 });
     }
 
-    if (!userInfo?.email) {
+    const mappedProfile = mapOAuthProfile(userInfo, provider);
+    const resolvedEmail = mappedProfile.email?.toLowerCase()
+
+    if (!resolvedEmail) {
       return NextResponse.json({ error: 'Could not retrieve user email from provider' }, { status: 400 });
     }
 
+    if (!isDomainAllowed(resolvedEmail, oauthProvider.allowedDomains)) {
+      return NextResponse.json({ error: 'This email domain is not allowed for this provider' }, { status: 403 });
+    }
+
+    if (oauthProvider.requireEmailVerified && mappedProfile.emailVerified === false) {
+      return NextResponse.json({ error: 'This provider did not return a verified email address' }, { status: 403 });
+    }
+
+    const mappedRole =
+      provider === 'azure-ad'
+        ? resolveMappedRoleFromGroups(
+            await resolveAzureGroupIds(userInfo, azureAccessToken),
+            oauthProvider.groupRoleMappings
+          )
+        : null
+
     let user = await db.user.findFirst({
-      where: { email: userInfo.email.toLowerCase() },
+      where: { email: resolvedEmail },
     });
 
     if (!user) {
@@ -214,13 +232,23 @@ export async function POST(request: NextRequest) {
 
       user = await db.user.create({
         data: {
-          email: userInfo.email.toLowerCase(),
-          name: userInfo.name || userInfo.login || userInfo.given_name || 'SSO User',
-          password: randomUUID(), // SSO users don't need a password but schema might require it
-          role: oauthProvider.defaultRole || 'USER',
+          email: resolvedEmail,
+          name: mappedProfile.name || userInfo.login || userInfo.given_name || 'SSO User',
+          password: await bcrypt.hash(randomUUID(), 12),
+          role: mappedRole || oauthProvider.defaultRole || 'USER',
           isActive: true,
+          allowedLoginMethods: [provider],
         },
       });
+    } else if (mappedRole && user.role !== mappedRole) {
+      user = await db.user.update({
+        where: { id: user.id },
+        data: { role: mappedRole },
+      });
+    }
+
+    if (user.allowedLoginMethods.length > 0 && !user.allowedLoginMethods.includes(provider)) {
+      return NextResponse.json({ error: 'This user is not allowed to sign in with this provider' }, { status: 403 });
     }
 
     const token = await new SignJWT({
