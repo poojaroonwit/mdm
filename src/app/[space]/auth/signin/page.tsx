@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-import { signIn } from 'next-auth/react'
+import { getSession, signIn } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -26,6 +26,19 @@ export default function SpaceSignInPage() {
   const [totpCode, setTotpCode] = useState('')
   const [loginPageConfig, setLoginPageConfig] = useState<any>(null)
   const [branding, setBranding] = useState<any>(null)
+
+  const waitForSession = async () => {
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const session = await getSession()
+      if (session?.user) {
+        return true
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 250))
+    }
+
+    return false
+  }
 
   const readJsonIfAvailable = async (response: Response) => {
     const contentType = response.headers.get('content-type') || ''
@@ -98,6 +111,12 @@ export default function SpaceSignInPage() {
           setError(result.error)
         }
       } else {
+        const hasSession = await waitForSession()
+        if (!hasSession) {
+          setError('Sign-in succeeded, but session was not established. Please check site auth configuration.')
+          return
+        }
+
         window.location.assign(result?.url || callbackUrl)
       }
     } catch {
@@ -131,6 +150,12 @@ export default function SpaceSignInPage() {
         if (result?.error) {
             setError(result.error)
         } else {
+            const hasSession = await waitForSession()
+            if (!hasSession) {
+              setError('Verification succeeded, but session was not established. Please check site auth configuration.')
+              return
+            }
+
             window.location.assign(result?.url || callbackUrl)
         }
       } catch (error) {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { signIn } from 'next-auth/react'
+import { getSession, signIn } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,6 +28,19 @@ export default function SignInPage() {
   const searchParams = useSearchParams()
   const [appName, setAppName] = useState(settings?.siteName || 'Unified Data Platform')
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
+
+  const waitForSession = async () => {
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const session = await getSession()
+      if (session?.user) {
+        return true
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 250))
+    }
+
+    return false
+  }
   // Update appName when settings load
   useEffect(() => {
     if (settings?.siteName) {
@@ -122,6 +135,12 @@ export default function SignInPage() {
           setError(result.error)
         }
       } else {
+        const hasSession = await waitForSession()
+        if (!hasSession) {
+          setError('Sign-in succeeded, but session was not established. Please check site auth configuration.')
+          return
+        }
+
         window.location.assign(result?.url || callbackUrl)
       }
     } catch (error) {
@@ -154,6 +173,12 @@ export default function SignInPage() {
         if (result?.error) {
             setError(result.error)
         } else {
+             const hasSession = await waitForSession()
+             if (!hasSession) {
+               setError('Verification succeeded, but session was not established. Please check site auth configuration.')
+               return
+             }
+
              window.location.assign(result?.url || callbackUrl)
         }
       } catch (error) {
