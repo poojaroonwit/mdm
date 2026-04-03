@@ -49,7 +49,10 @@ export default function SignInPage() {
 
       // Fetch security settings for other UI needs if any
       fetch('/api/settings')
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) return null // Silently fail for branding UI if not available
+          return res.json()
+        })
         .then(settings => {
           // Setting parsing is handled by SecurityProvider globally, 
           // but we can still use settings here if needed for specific login UI

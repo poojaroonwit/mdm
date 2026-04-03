@@ -17,41 +17,28 @@ export function DynamicFavicon({ faviconUrl }: DynamicFaviconProps) {
     } else {
       // Load favicon from settings
       const loadFavicon = async () => {
-        // Don't fetch if user is not authenticated
         // Skip if session is still loading
         if (status === 'loading') {
-          return
-        }
-        
-        if (status === 'unauthenticated' || !session?.user?.id) {
-          // Expected behavior when not authenticated - use default favicon silently
           return
         }
 
         try {
           const response = await fetch('/api/settings')
-          if (response.ok) {
-            // Check if response is HTML (likely a redirect to login page)
-            const contentType = response.headers.get('content-type')
-            if (contentType && !contentType.includes('application/json')) {
-              // Expected behavior when not authenticated - use default favicon silently
-              return
-            }
-            
-            let settings
-            try {
-              settings = await response.json()
-            } catch (jsonError) {
-              console.error('Failed to parse JSON response:', jsonError)
-              return
-            }
-            
-            if (settings.faviconUrl) {
-              setCurrentFavicon(settings.faviconUrl)
-            }
+          if (!response.ok) return
+
+          // Check if response is JSON
+          const contentType = response.headers.get('content-type')
+          if (!contentType || !contentType.includes('application/json')) {
+            return
+          }
+          
+          const settings = await response.json()
+          
+          if (settings.faviconUrl) {
+            setCurrentFavicon(settings.faviconUrl)
           }
         } catch (error) {
-          console.error('Error loading favicon from settings:', error)
+          // Silently fail for dynamic favicon
         }
       }
       loadFavicon()

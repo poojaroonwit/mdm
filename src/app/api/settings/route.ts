@@ -8,14 +8,27 @@ import { z } from 'zod'
 
 async function getHandler(request: NextRequest) {
   const startTime = Date.now()
-  const authResult = await requireAuth()
-  if (!authResult.success) return authResult.response
-  const { session } = authResult
+  // Check for session but don't require it for GET
+  const session = await getServerSession(authOptions)
+  const isAuthenticated = !!session?.user
+  const isAdmin = (session?.user as any)?.role === 'ADMIN' || (session?.user as any)?.role === 'SUPER_ADMIN'
 
-  logger.apiRequest('GET', '/api/settings', { userId: session.user.id })
+  logger.apiRequest('GET', '/api/settings', { userId: session?.user?.id || 'anonymous' })
 
   const { rows } = await query('SELECT key, value FROM system_settings ORDER BY key ASC')
+  
+  // Define sensitive keys that should only be visible to admins
+  const sensitiveKeys = [
+    'dbPassword', 'smtpPassword', 'dbUser', 'smtpUser', 'dbHost', 'dbPort', 'dbName',
+    'smtpHost', 'smtpPort', 'smtpSecure'
+  ]
+
   const settingsObject = (rows || []).reduce((acc: Record<string, any>, setting: any) => {
+    // Skip sensitive keys if not authenticated as admin
+    if (!isAdmin && sensitiveKeys.includes(setting.key)) {
+      return acc
+    }
+
     const value = setting.value
     // Parse boolean strings
     if (value === 'true') acc[setting.key] = true
@@ -25,7 +38,7 @@ async function getHandler(request: NextRequest) {
       acc[setting.key] = Number(value)
     }
     // Try to parse JSON for objects/arrays
-    else if (value.startsWith('{') || value.startsWith('[')) {
+    else if (value && (value.startsWith('{') || value.startsWith('['))) {
       try {
         acc[setting.key] = JSON.parse(value)
       } catch {
@@ -40,9 +53,12 @@ async function getHandler(request: NextRequest) {
 
   const duration = Date.now() - startTime
   logger.apiResponse('GET', '/api/settings', 200, duration, {
-    settingCount: Object.keys(settingsObject).length
+    settingCount: Object.keys(settingsObject).length,
+    isPublic: !isAuthenticated
   })
-  return NextResponse.json(settingsObject)
+  
+  const response = NextResponse.json(settingsObject)
+  return addSecurityHeaders(response)
 }
 
 

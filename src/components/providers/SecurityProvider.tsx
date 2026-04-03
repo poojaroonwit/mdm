@@ -8,7 +8,12 @@ export function SecurityProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Fetch security settings on mount
     fetch('/api/settings')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch settings: ${res.status} ${res.statusText}`)
+        }
+        return res.json()
+      })
       .then(data => {
         // Fix: Properly parse boolean strings if they exist
         const isEnabled = data.uiProtectionEnabled === true || 
@@ -19,7 +24,14 @@ export function SecurityProvider({ children }: { children: React.ReactNode }) {
           setUiProtectionEnabled(true)
         }
       })
-      .catch(err => console.error('Error fetching security settings:', err))
+      .catch(err => {
+        // If it's a SyntaxError, it likely means we got HTML instead of JSON
+        if (err instanceof SyntaxError) {
+          console.error('Error parsing security settings JSON (likely received HTML):', err)
+        } else {
+          console.error('Error fetching security settings:', err)
+        }
+      })
   }, [])
 
   useEffect(() => {
