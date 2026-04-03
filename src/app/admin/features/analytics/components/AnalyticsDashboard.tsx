@@ -89,17 +89,17 @@ export function AnalyticsDashboard() {
     return `${value.toFixed(1)}%`
   }
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
+  const COLORS = ['#18181b', '#3f3f46', '#71717a', '#a1a1aa', '#d4d4d8']
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <BarChart3 className="h-6 w-6" />
+          <h2 className="text-xl font-black uppercase tracking-[0.2em] flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+            <BarChart3 className="h-5 w-5" />
             Analytics Dashboard
           </h2>
-          <p className="text-muted-foreground">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
             Real-time system metrics and performance monitoring
           </p>
         </div>
@@ -137,8 +137,8 @@ export function AnalyticsDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-zinc-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{metrics.totalUsers.toLocaleString()}</div>
@@ -150,8 +150,8 @@ export function AnalyticsDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Storage Used</CardTitle>
-              <HardDrive className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Storage Used</CardTitle>
+              <HardDrive className="h-4 w-4 text-zinc-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatBytes(metrics.storageUsed)}</div>
@@ -163,8 +163,8 @@ export function AnalyticsDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Response Time</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Response Time</CardTitle>
+              <Activity className="h-4 w-4 text-zinc-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{metrics.responseTime}ms</div>
@@ -179,7 +179,7 @@ export function AnalyticsDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">System Health</CardTitle>
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">System Health</CardTitle>
               {metrics.errorsToday === 0 ? (
                 <CheckCircle className="h-4 w-4 text-green-500" />
               ) : (
@@ -215,11 +215,25 @@ export function AnalyticsDashboard() {
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <AreaChart data={activityData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="users" stroke="#8884d8" fill="#8884d8" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
+                    <XAxis dataKey="date" fontSize={10} axisLine={false} tickLine={false} />
+                    <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'var(--zinc-50)', 
+                        borderColor: 'var(--zinc-200)',
+                        borderRadius: '12px',
+                        fontSize: '10px',
+                        fontWeight: '600'
+                      }} 
+                    />
+                    <Area type="monotone" dataKey="users" stroke="#18181b" fill="url(#colorUsers)" fillOpacity={1} />
+                    <defs>
+                      <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#18181b" stopOpacity={0.1}/>
+                        <stop offset="95%" stopColor="#18181b" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
                   </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -264,14 +278,21 @@ export function AnalyticsDashboard() {
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
                 <LineChart data={activityData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="users" stroke="#8884d8" strokeWidth={2} />
-                  <Line type="monotone" dataKey="queries" stroke="#82ca9d" strokeWidth={2} />
-                  <Line type="monotone" dataKey="uploads" stroke="#ffc658" strokeWidth={2} />
-                  <Line type="monotone" dataKey="errors" stroke="#ff7300" strokeWidth={2} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
+                  <XAxis dataKey="date" fontSize={10} axisLine={false} tickLine={false} />
+                  <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'var(--zinc-50)', 
+                      borderColor: 'var(--zinc-200)',
+                      borderRadius: '12px',
+                      fontSize: '10px'
+                    }} 
+                  />
+                  <Line type="monotone" dataKey="users" stroke="#18181b" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="queries" stroke="#71717a" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="uploads" stroke="#a1a1aa" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="errors" stroke="#ef4444" strokeWidth={1} strokeDasharray="5 5" dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -288,11 +309,18 @@ export function AnalyticsDashboard() {
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={storageData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="provider" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="usage" fill="#8884d8" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
+                    <XAxis dataKey="provider" fontSize={10} axisLine={false} tickLine={false} />
+                    <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'var(--zinc-50)', 
+                        borderColor: 'var(--zinc-200)',
+                        borderRadius: '12px',
+                        fontSize: '10px'
+                      }} 
+                    />
+                    <Bar dataKey="usage" fill="#18181b" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>

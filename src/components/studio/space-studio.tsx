@@ -185,18 +185,15 @@ export function SpaceStudio({
 
   const handleResetLayout = useCallback(() => {
     setComponentConfigs(defaultConfigs)
-    try {
-      const key = `spaces_editor_layout_${spaceId}`
-      localStorage.removeItem(key)
-    } catch {}
+    SpacesEditorManager.saveLayoutConfig(spaceId, defaultConfigs).catch((error) => {
+      console.error('Failed to persist reset layout', error)
+    })
     toast.success('Layout reset to defaults')
-  }, [spaceId])
+  }, [defaultConfigs, spaceId])
 
   const handleSaveLayoutAsNewPage = useCallback(async () => {
     try {
-      // Persist current layout locally as well
-      const key = `spaces_editor_layout_${spaceId}`
-      try { localStorage.setItem(key, JSON.stringify(componentConfigs)) } catch {}
+      await SpacesEditorManager.saveLayoutConfig(spaceId, componentConfigs)
 
       // Create a new page using the current layout name/preset
       const newPage = await createPage({

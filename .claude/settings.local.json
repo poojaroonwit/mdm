@@ -8,7 +8,27 @@
       "Bash(find /c/Users/MD3770/Desktop/repo/mdm-1/src/app/chat/[id] -type f -name \"page.tsx\" -o -name \"layout.tsx\")",
       "Bash(find /c/Users/MD3770/Desktop/repo/mdm-1/src/app/chat/[id]/components -type f -name \"*.tsx\")",
       "Bash(find /c/Users/MD3770/Desktop/repo/mdm-1/src/app/chat/[id] -name \"chatStyling.ts\" -o -name \"*Styling*\")",
-      "Bash(find /c/Users/MD3770/Desktop/repo/mdm-1/src/app/chat/[id]/components -type f -name \"*WidgetChat*\" -o -name \"*Container*\")"
+      "Bash(find /c/Users/MD3770/Desktop/repo/mdm-1/src/app/chat/[id]/components -type f -name \"*WidgetChat*\" -o -name \"*Container*\")",
+      "Bash(grep -n \"AnimatePresence\\\\|shouldShowContainer\\\\|key=\" /c/Users/MD3770/Desktop/repo/mdm-1/src/app/chat/[id]/page.tsx)",
+      "Bash(grep -n \"close-chat\\\\|clear-session\\\\|setMessages\\(\\\\[\\\\]\\)\" /c/Users/MD3770/Desktop/repo/mdm-1/src/app/chat/[id]/page.tsx)",
+      "Bash(xargs grep:*)",
+      "Bash(find c:/Users/MD3770/Desktop/repo/mdm-1/src/app -path */chat-handler* -name *.ts)",
+      "Bash(mkdir -p \"c:/Users/MD3770/Desktop/repo/mdm-1/src/app/api/public/chatbots/[chatbotId]/conversations\")",
+      "Bash(mkdir -p \"c:/Users/MD3770/Desktop/repo/mdm-1/src/app/api/public/chatbots/[chatbotId]/conversations/[conversationId]\")",
+      "Bash(npx prisma:*)",
+      "Bash(grep -r \"sessionTimeout\\\\|signOut\\\\|useSession\\\\|session.*exp\\\\|expires\" c:/Users/MD3770/Desktop/repo/mdm-1/src --include=*.tsx --include=*.ts -l)",
+      "Bash(grep -r \"useSession\\\\|signOut\\\\|session.*exp\\\\|SessionProvider\" c:/Users/MD3770/Desktop/repo/mdm-1/src --include=*.tsx -l)",
+      "Bash(awk 'NR>=170 && NR<=185')",
+      "Bash(head -10 grep -rn \"createMany\\\\|data_models\\\\|DataModel\" c:/Users/MD3770/Desktop/repo/mdm-1/prisma/seed-themes.ts)",
+      "Bash(find c:/Users/MD3770/Desktop/repo/mdm-1/src/lib -name *studio* -o -name *space*)",
+      "Bash(find c:/Users/MD3770/Desktop/repo/mdm-1 -name *.sql)",
+      "Bash(grep -n \"type: ''page''\" \"c:/Users/MD3770/Desktop/repo/mdm-1/src/app/api/spaces-editor/[spaceId]/route.ts\")",
+      "Bash(find c:/Users/MD3770/Desktop/repo/mdm-1/src/app/api/storage -name *.ts)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(sed -i '0,/\"\"version\"\": \"\"1.0.3\"\"/{s/\"\"version\"\": \"\"1.0.3\"\"/\"\"version\"\": \"\"1.0.5-patch4\"\"/}' package-lock.json)",
+      "Bash(sed -i '0,/\"\"version\"\": \"\"1.0.5-patch4\"\"/{n; s/\"\"version\"\": \"\"1.0.3\"\"/\"\"version\"\": \"\"1.0.5-patch4\"\"/}' package-lock.json)",
+      "Bash(grep -m 3 '\"\"version\"\"' package-lock.json)"
     ]
   }
 }

@@ -9,7 +9,7 @@ export default function UsersPage() {
   const [activeTab, setActiveTab] = useState('users')
 
   return (
-    <div className="p-6">
+    <div className="px-8 py-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <div className="flex items-center justify-between">
           <TabsList>

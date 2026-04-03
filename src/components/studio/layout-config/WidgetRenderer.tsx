@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
-import { PlacedWidget } from './widgets'
+import { PlacedWidget, getDefaultWidgetProperties } from './widgets'
 import { useDataSource } from './useDataSource'
 import { computeWidgetStyle } from './widgetStyles'
 import { TextWidget, ImageWidget, VideoWidget, IframeWidget, LinkWidget, ButtonWidget, HtmlWidget, ContainerWidget, EmbedWidget } from './BasicWidgets'
@@ -18,7 +18,13 @@ interface WidgetRendererProps {
 }
 
 export const WidgetRenderer = React.memo(function WidgetRenderer({ widget, isMobile = false, spaceId }: WidgetRendererProps) {
-  const props = widget.properties || {}
+  const props = useMemo(
+    () => ({
+      ...getDefaultWidgetProperties(widget.type),
+      ...(widget.properties || {}),
+    }),
+    [widget.type, widget.properties]
+  )
   // Dynamically load Google Font if a custom Google font is specified
   React.useEffect(() => {
     const family = String(props.googleFontFamily || '')

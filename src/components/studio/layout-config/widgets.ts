@@ -95,3 +95,80 @@ export type PlacedWidget = {
   properties?: Record<string, any>
 }
 
+export function getDefaultWidgetProperties(type: WidgetType): Record<string, any> {
+  const sharedChartDefaults = {
+    dataSource: 'sample',
+    sampleData: [],
+    dimensions: [],
+    measures: [],
+    chartDimensions: {},
+    chartDimensionAggregations: {},
+    chartDimensionsEffectiveTypes: {},
+    chartDimensionTypeSettings: {},
+    chartDimensionDisplayNames: {},
+    chartDimensionStyles: {},
+    seriesStyles: {},
+    conditionalFormattingRules: [],
+    rowFilters: null,
+    showHeader: true,
+    showLegend: true,
+    showGrid: true,
+  }
+
+  if (type.includes('chart')) {
+    return {
+      ...sharedChartDefaults,
+      title: widgetsPalette.find(widget => widget.type === type)?.label || 'Chart',
+    }
+  }
+
+  if (type === 'table' || type === 'pivot-table') {
+    return {
+      ...sharedChartDefaults,
+      stripedRows: false,
+      pagination: false,
+      rowsPerPage: 10,
+    }
+  }
+
+  if (type === 'time-series') {
+    return {
+      ...sharedChartDefaults,
+      chartDimensions: {
+        time: [],
+        values: [],
+      },
+    }
+  }
+
+  if (type === 'text') {
+    return {
+      text: 'Text Widget',
+    }
+  }
+
+  if (type === 'button') {
+    return {
+      buttonText: 'Button',
+    }
+  }
+
+  if (type === 'link') {
+    return {
+      linkText: 'Link',
+      linkUrl: '#',
+      target: '_self',
+    }
+  }
+
+  if (type.includes('filter')) {
+    return {
+      placeholder: 'Filter...',
+      min: 0,
+      max: 100,
+    }
+  }
+
+  return {}
+}
+

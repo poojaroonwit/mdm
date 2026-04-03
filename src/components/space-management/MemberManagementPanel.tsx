@@ -237,16 +237,16 @@ export function MemberManagementPanel({
                 </Select>
                 <Dialog open={showInviteDialog} onOpenChange={setShowInviteDialog}>
                   <DialogTrigger asChild>
-                    <Button>
+                    <Button disabled={!canManageMembers}>
                       <UserPlus className="h-4 w-4 mr-2" />
-                      Invite Member
+                      Add Member
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Invite New Member</DialogTitle>
+                      <DialogTitle>Add Member</DialogTitle>
                       <DialogDescription>
-                        Invite existing users or send email invitations to new users.
+                        Select an existing platform user, or create a platform user first and assign them to this space.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="mt-4">

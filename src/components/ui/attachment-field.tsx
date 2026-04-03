@@ -113,9 +113,9 @@ export function AttachmentField({
 
       {/* File Limit Warning */}
       {!canUploadMore && (
-        <div className="flex items-center space-x-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <AlertCircle className="h-4 w-4 text-yellow-600" />
-          <span className="text-sm text-yellow-800">
+        <div className="flex items-center space-x-2 p-3 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-900/50 rounded-xl">
+          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          <span className="text-xs font-medium text-amber-800 dark:text-amber-300">
             Maximum number of files ({maxFiles}) reached
           </span>
         </div>
@@ -123,19 +123,19 @@ export function AttachmentField({
 
       {/* Attachments List */}
       {attachments.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium">Attached Files ({attachments.length})</h4>
+        <div className="space-y-3">
+          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Attached Files ({attachments.length})</h4>
           <div className="space-y-2">
             {attachments.map((attachment) => (
               <div
                 key={attachment.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-3 bg-white/50 dark:bg-zinc-900/50 border border-zinc-100/60 dark:border-zinc-800/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
               >
                 <div className="flex items-center space-x-3">
-                  <File className="h-4 w-4 text-gray-500" />
+                  <File className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
                   <div>
-                    <p className="text-sm font-medium">{attachment.originalName}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{attachment.originalName}</p>
+                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                       {(attachment.fileSize / 1024 / 1024).toFixed(2)} MB
                     </p>
                   </div>
@@ -166,10 +166,10 @@ export function AttachmentField({
 
       {/* Empty State */}
       {attachments.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          <File className="h-12 w-12 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">No files attached</p>
-          <p className="text-xs">Upload files using the area above</p>
+        <div className="text-center py-12 text-zinc-400 dark:text-zinc-500 bg-zinc-50/30 dark:bg-zinc-900/10 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl">
+          <File className="h-10 w-10 mx-auto mb-3 opacity-20" />
+          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">No files attached</p>
+          <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-1">Upload files using the area above</p>
         </div>
       )}
     </div>

@@ -27,6 +27,17 @@ export interface SSOConfig {
   azureTenantId: string
   azureClientId: string
   azureClientSecret: string
+  azureAllowedDomains: string[]
+  azureAllowSignup: boolean
+  azureRequireEmailVerified: boolean
+  azureDefaultRole: string
+  azureGroupRoleMappings: AzureGroupRoleMapping[]
+}
+
+export interface AzureGroupRoleMapping {
+  groupId: string
+  name?: string
+  role: string
 }
 
 export interface AuditLog {

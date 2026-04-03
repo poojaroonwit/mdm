@@ -7,6 +7,7 @@ FROM base AS deps
 COPY package.json package-lock.json* ./
 COPY prisma ./prisma
 ENV NODE_ENV=development
+ENV PRISMA_SKIP_POSTINSTALL_GENERATE=true
 RUN npm ci --prefer-offline --no-audit --legacy-peer-deps --include=dev 2>/dev/null || \
     npm install --no-audit --legacy-peer-deps --include=dev
 
@@ -21,12 +22,15 @@ COPY src ./src
 COPY prisma ./prisma
 COPY scripts ./scripts
 COPY sql ./sql
-COPY plugin-hub ./plugin-hub
+COPY middleware.ts next-env.d.ts ./
+COPY plugin-hub/plugins ./plugin-hub/plugins
 
 ARG NEXT_PUBLIC_API_URL=http://localhost:8302
 ARG NEXT_PUBLIC_WS_PROXY_URL=ws://localhost:3002/api/openai-realtime
 ARG NEXT_PUBLIC_WS_PROXY_PORT=3002
-ARG BUILD_MEMORY_LIMIT=8192
+ARG BUILD_MEMORY_LIMIT=4096
+ARG BUILD_COMMIT=unknown
+ARG BUILD_VERSION=0.0.0
 
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_WS_PROXY_URL=${NEXT_PUBLIC_WS_PROXY_URL}
@@ -46,18 +50,25 @@ ENV WEBPACK_PARALLELISM=2
 RUN NEXTAUTH_SECRET="dummy_secret_at_least_32_characters_long_for_build" \
     NEXT_PUBLIC_APP_VERSION=$(node -p "require('./package.json').version") \
     NODE_OPTIONS="--max-old-space-size=${BUILD_MEMORY_LIMIT} --max-semi-space-size=64" \
-    npm run build
+    npx prisma generate && npm run build:docker
 
 # Production image
 FROM node:20-alpine AS runner
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
+ARG BUILD_COMMIT=unknown
+ARG BUILD_VERSION=0.0.0
+
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=8301 \
     HOSTNAME="0.0.0.0" \
     NODE_OPTIONS="--max-old-space-size=2048"
+
+LABEL org.opencontainers.image.version="${BUILD_VERSION}" \
+      org.opencontainers.image.revision="${BUILD_COMMIT}" \
+      org.opencontainers.image.title="unified-data-platform"
 
 RUN apk add --no-cache postgresql-client dos2unix openssl && \
     addgroup --system --gid 1001 nodejs && \

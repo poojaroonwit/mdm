@@ -1,6 +1,6 @@
 {
   "name": "mdm-plugin-hub",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "description": "Plugin Hub for MDM Marketplace",
   "private": true,
   "scripts": {

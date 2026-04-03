@@ -3,6 +3,47 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db as prisma } from '@/lib/db'
 import { createAuditLog } from '@/lib/audit'
 import { encryptApiKey } from '@/lib/encryption'
+import { clearSSOProviderCache, SSO_SECRET_MASK } from '@/lib/sso'
+
+const PLATFORM_ROLES = new Set(['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'USER'])
+
+function parseStringArray(value: unknown) {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value
+    .filter((item): item is string => typeof item === 'string')
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean)
+}
+
+function parseAzureGroupRoleMappings(value: unknown) {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== 'object') {
+        return null
+      }
+
+      const groupId = typeof (item as any).groupId === 'string' ? (item as any).groupId.trim() : ''
+      const role = typeof (item as any).role === 'string' ? (item as any).role.trim().toUpperCase() : ''
+      const name = typeof (item as any).name === 'string' ? (item as any).name.trim() : ''
+      if (!groupId || !PLATFORM_ROLES.has(role)) {
+        return null
+      }
+
+      return {
+        groupId,
+        role,
+        ...(name ? { name } : {}),
+      }
+    })
+    .filter(Boolean)
+}
 
 async function getHandler(request: NextRequest) {
   try {
@@ -13,18 +54,30 @@ async function getHandler(request: NextRequest) {
       where: { providerName: 'google' }
     })
     const azureProvider = await (prisma as any).oAuthProvider.findFirst({
-      where: { providerName: 'azure-ad' }
+      where: { providerName: { in: ['azure-ad', 'microsoft'] } }
     })
+    const azurePlatformConfig =
+      azureProvider?.platformConfig && typeof azureProvider.platformConfig === 'object'
+        ? azureProvider.platformConfig as Record<string, any>
+        : {}
 
     return NextResponse.json({
       config: {
         googleEnabled: googleProvider?.isEnabled ?? false,
         azureEnabled: azureProvider?.isEnabled ?? false,
         googleClientId: googleProvider?.clientId || '',
-        googleClientSecret: googleProvider?.clientSecret ? '••••••••' : '',
-        azureTenantId: (azureProvider?.platformConfig as any)?.tenantId || '',
+        googleClientSecret: googleProvider?.clientSecret ? SSO_SECRET_MASK : '',
+        azureTenantId: azurePlatformConfig.tenantId || '',
         azureClientId: azureProvider?.clientId || '',
-        azureClientSecret: azureProvider?.clientSecret ? '••••••••' : '',
+        azureClientSecret: azureProvider?.clientSecret ? SSO_SECRET_MASK : '',
+        azureAllowedDomains: Array.isArray(azureProvider?.allowedDomains) ? azureProvider.allowedDomains : [],
+        azureAllowSignup: azureProvider?.allowSignup ?? false,
+        azureRequireEmailVerified: azureProvider?.requireEmailVerified ?? true,
+        azureDefaultRole:
+          typeof azureProvider?.defaultRole === 'string' && PLATFORM_ROLES.has(azureProvider.defaultRole)
+            ? azureProvider.defaultRole
+            : 'USER',
+        azureGroupRoleMappings: parseAzureGroupRoleMappings(azurePlatformConfig.groupRoleMappings),
       }
     })
   } catch (error) {
@@ -49,6 +102,11 @@ async function putHandler(request: NextRequest) {
         azureTenantId: string
         azureClientId: string
         azureClientSecret: string
+        azureAllowedDomains?: string[]
+        azureAllowSignup?: boolean
+        azureRequireEmailVerified?: boolean
+        azureDefaultRole?: string
+        azureGroupRoleMappings?: Array<{ groupId: string; role: string; name?: string }>
       }
     }
 
@@ -56,13 +114,12 @@ async function putHandler(request: NextRequest) {
       return NextResponse.json({ error: 'Config object is required' }, { status: 400 })
     }
 
-    // --- Google OAuth ---
     if (config.googleClientId) {
       const existing = await (prisma as any).oAuthProvider.findFirst({
         where: { providerName: 'google' }
       })
 
-      const secretRaw = config.googleClientSecret && config.googleClientSecret !== '••••••••'
+      const secretRaw = config.googleClientSecret && config.googleClientSecret !== SSO_SECRET_MASK
         ? encryptApiKey(config.googleClientSecret)
         : (existing?.clientSecret || '')
 
@@ -87,17 +144,26 @@ async function putHandler(request: NextRequest) {
       }
     }
 
-    // --- Azure AD SSO ---
     if (config.azureClientId) {
       const existing = await (prisma as any).oAuthProvider.findFirst({
-        where: { providerName: 'azure-ad' }
+        where: { providerName: { in: ['azure-ad', 'microsoft'] } }
       })
 
-      const secretRaw = config.azureClientSecret && config.azureClientSecret !== '••••••••'
+      const secretRaw = config.azureClientSecret && config.azureClientSecret !== SSO_SECRET_MASK
         ? encryptApiKey(config.azureClientSecret)
         : (existing?.clientSecret || '')
 
       const tenantId = config.azureTenantId || ''
+      const azureAllowedDomains = parseStringArray(config.azureAllowedDomains)
+      const azureGroupRoleMappings = parseAzureGroupRoleMappings(config.azureGroupRoleMappings)
+      const azureDefaultRole =
+        config.azureDefaultRole && PLATFORM_ROLES.has(config.azureDefaultRole)
+          ? config.azureDefaultRole
+          : 'USER'
+      const existingPlatformConfig =
+        existing?.platformConfig && typeof existing.platformConfig === 'object'
+          ? existing.platformConfig as Record<string, any>
+          : {}
       const azureData = {
         providerName: 'azure-ad',
         displayName: 'Microsoft Azure',
@@ -110,10 +176,17 @@ async function putHandler(request: NextRequest) {
         tokenUrl: tenantId
           ? `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`
           : null,
-        scopes: ['openid', 'email', 'profile'],
-        allowedDomains: [],
+        scopes: ['openid', 'email', 'profile', 'offline_access', 'User.Read'],
+        allowedDomains: azureAllowedDomains,
+        allowSignup: config.azureAllowSignup ?? false,
+        requireEmailVerified: config.azureRequireEmailVerified ?? true,
+        defaultRole: azureDefaultRole,
         displayOrder: 2,
-        platformConfig: tenantId ? { tenantId } : {},
+        platformConfig: {
+          ...existingPlatformConfig,
+          ...(tenantId ? { tenantId } : {}),
+          groupRoleMappings: azureGroupRoleMappings,
+        },
       }
 
       if (existing) {
@@ -126,11 +199,24 @@ async function putHandler(request: NextRequest) {
       }
     }
 
+    clearSSOProviderCache()
+
     await createAuditLog({
       action: 'UPDATE',
       entityType: 'SSOConfig',
       entityId: 'system',
-      newValue: { googleEnabled: config.googleEnabled, azureEnabled: config.azureEnabled },
+      newValue: {
+        googleEnabled: config.googleEnabled,
+        azureEnabled: config.azureEnabled,
+        azureAllowedDomains: parseStringArray(config.azureAllowedDomains),
+        azureAllowSignup: config.azureAllowSignup ?? false,
+        azureRequireEmailVerified: config.azureRequireEmailVerified ?? true,
+        azureDefaultRole:
+          config.azureDefaultRole && PLATFORM_ROLES.has(config.azureDefaultRole)
+            ? config.azureDefaultRole
+            : 'USER',
+        azureGroupRoleMappings: parseAzureGroupRoleMappings(config.azureGroupRoleMappings),
+      },
       userId: session.user.id,
       ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
       userAgent: request.headers.get('user-agent') || 'unknown'

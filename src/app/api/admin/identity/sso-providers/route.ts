@@ -3,6 +3,8 @@ import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/api-middleware';
 import { z } from 'zod';
 import { createAuditLog } from '@/lib/audit';
+import { encryptApiKey } from '@/lib/encryption';
+import { clearSSOProviderCache, normalizeSSOProviderName, SSO_SECRET_MASK } from '@/lib/sso';
 
 const providerSchema = z.object({
   id: z.string().uuid().optional(),
@@ -39,7 +41,13 @@ export async function GET(req: NextRequest) {
       const providers = await db.oAuthProvider.findMany({
         orderBy: { displayOrder: 'asc' },
       });
-      return NextResponse.json(providers);
+      return NextResponse.json(
+        providers.map((provider) => ({
+          ...provider,
+          providerName: normalizeSSOProviderName(provider.providerName) || provider.providerName,
+          clientSecret: provider.clientSecret ? SSO_SECRET_MASK : '',
+        }))
+      );
     } catch (error) {
       console.error('[SSO_PROVIDERS_GET]', error);
       return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -57,7 +65,8 @@ export async function POST(req: NextRequest) {
       const body = await req.json();
       const validatedData = providerSchema.parse(body);
 
-      const { id, ...data } = validatedData;
+      const normalizedProviderName = normalizeSSOProviderName(validatedData.providerName) || validatedData.providerName
+      const { id, clientSecret, ...data } = validatedData;
 
       let result;
       let action: 'CREATE' | 'UPDATE';
@@ -72,9 +81,18 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
         }
 
+        const resolvedSecret =
+          clientSecret === SSO_SECRET_MASK
+            ? existing.clientSecret
+            : encryptApiKey(clientSecret)
+
         result = await db.oAuthProvider.update({
           where: { id },
-          data,
+          data: {
+            ...data,
+            providerName: normalizedProviderName,
+            clientSecret: resolvedSecret,
+          },
         });
 
         action = 'UPDATE';
@@ -89,9 +107,15 @@ export async function POST(req: NextRequest) {
           status: 'success',
         });
       } else {
+        const resolvedSecret = encryptApiKey(clientSecret)
+
         // Create new provider
         result = await db.oAuthProvider.create({
-          data,
+          data: {
+            ...data,
+            providerName: normalizedProviderName,
+            clientSecret: resolvedSecret!,
+          },
         });
 
         action = 'CREATE';
@@ -106,7 +130,11 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      return NextResponse.json(result);
+      clearSSOProviderCache()
+      return NextResponse.json({
+        ...result,
+        clientSecret: result.clientSecret ? SSO_SECRET_MASK : '',
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return NextResponse.json({ error: 'Validation Error', details: error.errors }, { status: 400 });
@@ -143,6 +171,7 @@ export async function DELETE(req: NextRequest) {
         where: { id },
       });
 
+      clearSSOProviderCache()
       await createAuditLog({
         userId: admin.id,
         action: 'SSO_PROVIDER_DELETE',

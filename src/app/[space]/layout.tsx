@@ -111,13 +111,14 @@ export default function SpaceLayout({
 
   // Map tab IDs to their new route paths
   const getRouteForTab = (tab: string): string => {
+    const spaceBase = `/${currentSpace?.slug || currentSpace?.id || spaceSlug}`
     const routeMap: Record<string, string> = {
       'overview': '/',
       'bigquery': '/tools/bigquery',
       'notebook': '/tools/notebook',
       'ai-analyst': '/tools/ai-analyst',
       'ai-chat-ui': '/tools/ai-chat-ui',
-      'knowledge-base': '/knowledge',
+      'knowledge-base': `${spaceBase}/knowledge`,
       'marketplace': '/marketplace',
       'infrastructure': '/infrastructure',
       'projects': '/tools/projects',
@@ -154,6 +155,24 @@ export default function SpaceLayout({
     }
     return routeMap[tab] || '/'
   }
+
+  useEffect(() => {
+    if (!pathname) return
+
+    if (pathname.includes('/knowledge')) {
+      setActiveTab('knowledge-base')
+      return
+    }
+
+    if (pathname.includes('/module') || pathname.includes('/page/')) {
+      setActiveTab('space-module')
+      return
+    }
+
+    if (pathname.includes('/settings')) {
+      setActiveTab('space-settings')
+    }
+  }, [pathname])
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab)
@@ -239,8 +258,7 @@ export default function SpaceLayout({
 
   // For space settings, use PlatformLayout to show platform sidebar
   if (isSpaceSettings) {
-    // If coming from data management or space sidebar, set activeTab to space-selection to show data management as selected
-    const tabForLayout = (fromDataManagement || fromSpaceSidebar) ? 'space-selection' : activeTab
+    const tabForLayout = fromDataManagement ? 'space-selection' : activeTab
 
     return (
       <PlatformLayout
@@ -256,7 +274,7 @@ export default function SpaceLayout({
         }}
         breadcrumbItems={[
           { label: 'Unified Data Platform', href: '/' },
-          (fromDataManagement || fromSpaceSidebar)
+          fromDataManagement
             ? { label: 'Data Management', href: '/data-management/space-selection' }
             : { label: 'System', href: '/system/space-settings' },
           { label: 'Space Settings', href: `/${spaceSlug}/settings${(fromDataManagement || fromSpaceSidebar) ? `?from=${fromDataManagement ? 'data-management' : 'space-sidebar'}` : ''}` },

@@ -65,19 +65,19 @@ export function IconPicker({ value, onChange, placeholder = "Search icons...", g
         type="button"
         onClick={() => onChange(name)}
         className={
-          "relative flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-left text-xs transition-colors cursor-pointer select-none " +
+          "relative flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer select-none " +
           (selected
-            ? "bg-blue-50 text-blue-900 font-semibold"
-            : "text-gray-900 hover:bg-gray-50")
+            ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold shadow-sm"
+            : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900")
         }
         title={name}
       >
         <div
           className={
-            "h-7 w-7 rounded-md flex items-center justify-center shrink-0 transition-colors border " +
+            "h-7 w-7 rounded-lg flex items-center justify-center shrink-0 transition-colors border " +
             (selected
-              ? "bg-blue-100 border-blue-200 text-blue-700"
-              : "bg-white border-gray-200 text-gray-500")
+              ? "bg-white/10 border-white/20 text-white dark:bg-black/10 dark:border-black/20 dark:text-zinc-900"
+              : "bg-white dark:bg-zinc-950 border-zinc-100/60 dark:border-zinc-800/60 text-zinc-500")
           }
         >
           {animated ? (
@@ -98,7 +98,7 @@ export function IconPicker({ value, onChange, placeholder = "Search icons...", g
         </div>
         <span className="truncate">{name}</span>
         {selected && (
-          <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+          <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-white dark:text-zinc-900 opacity-60">
             <Check className="h-4 w-4" aria-hidden="true" />
           </span>
         )}
@@ -138,9 +138,9 @@ export function IconPicker({ value, onChange, placeholder = "Search icons...", g
   return (
     <div className="space-y-2">
       {/* Search input — AppKit style with search icon */}
-      <div className="relative border-b border-gray-100 pb-2">
+      <div className="relative border-b border-zinc-100/60 dark:border-zinc-800/60 pb-2">
         <Search
-          className="pointer-events-none absolute top-2.5 left-3 h-4 w-4 text-gray-400"
+          className="pointer-events-none absolute top-2.5 left-3 h-4 w-4 text-zinc-400"
           aria-hidden="true"
         />
         <input
@@ -154,16 +154,16 @@ export function IconPicker({ value, onChange, placeholder = "Search icons...", g
             }
           }}
           placeholder={placeholder}
-          className="w-full border border-gray-200 hover:border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-lg py-2 pl-9 pr-3 text-xs leading-5 text-gray-900 focus:outline-none transition-colors"
+          className="w-full border border-zinc-100/60 dark:border-zinc-800/60 hover:border-zinc-300 dark:hover:border-zinc-700 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-500/10 rounded-xl py-2 pl-9 pr-3 text-xs leading-5 text-zinc-900 dark:text-zinc-100 bg-white/50 dark:bg-zinc-950/50 focus:outline-none transition-all duration-200"
           autoComplete="off"
         />
       </div>
       {filtered.length === 0 ? (
-        <div className="text-center text-xs text-muted-foreground py-6 border border-gray-100 rounded-lg">No icons found</div>
+        <div className="text-center text-xs text-zinc-400 dark:text-zinc-500 py-6 border border-zinc-100/60 dark:border-zinc-800/60 rounded-xl">No icons found</div>
       ) : grouped && groupedIcons && Array.isArray(groupedIcons) && groupedIcons.length > 0 ? (
-        <div className="flex border border-gray-100 rounded-lg overflow-hidden bg-background" style={{ height: 'calc(min(70vh, 450px))' }}>
+        <div className="flex border border-zinc-100/60 dark:border-zinc-800/60 rounded-2xl overflow-hidden bg-white/50 dark:bg-zinc-950/50 backdrop-blur-xl shadow-inner-sm" style={{ height: 'calc(min(70vh, 450px))' }}>
           {/* Left: Category list — AppKit-aligned styling */}
-          <div className="w-1/3 min-w-[120px] max-w-[200px] border-r border-gray-100 overflow-auto p-1.5 bg-gray-50/50">
+          <div className="w-1/3 min-w-[120px] max-w-[200px] border-r border-zinc-100/60 dark:border-zinc-800/60 overflow-auto p-1.5 bg-zinc-50/30 dark:bg-zinc-900/30">
             <ul className="space-y-0.5">
               {groupedIcons?.map(([category, items]) => {
                 if (!items || !Array.isArray(items)) return null
@@ -173,14 +173,14 @@ export function IconPicker({ value, onChange, placeholder = "Search icons...", g
                       type="button"
                       onClick={() => setActiveCategory(category)}
                       className={
-                        "w-full text-left px-2.5 py-1.5 rounded-md text-xs transition-colors " +
+                        "w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-all duration-200 " +
                         (activeCategory === category
-                          ? "bg-white shadow-sm border border-gray-100 font-medium text-gray-900"
-                          : "text-gray-600 hover:bg-white/60 hover:text-gray-900 border border-transparent")
+                          ? "bg-white dark:bg-zinc-900 shadow-sm border border-zinc-100/60 dark:border-zinc-800/60 font-semibold text-zinc-900 dark:text-zinc-100"
+                          : "text-zinc-500 dark:text-zinc-400 hover:bg-white/60 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-zinc-100 border border-transparent")
                       }
                     >
                       {category}
-                      <span className="text-[10px] text-gray-400 ml-1">({items.length})</span>
+                      <span className="text-[10px] text-zinc-400 dark:text-zinc-500 ml-1.5 font-black uppercase tracking-tighter">({items.length})</span>
                     </button>
                   </li>
                 )
@@ -202,7 +202,7 @@ export function IconPicker({ value, onChange, placeholder = "Search icons...", g
           </div>
         </div>
       ) : (
-        <div className="max-h-72 overflow-auto border border-gray-100 rounded-lg p-1.5 space-y-0.5">
+        <div className="max-h-72 overflow-auto border border-zinc-100/60 dark:border-zinc-800/60 rounded-xl p-1.5 space-y-0.5 shadow-inner-sm">
           {filtered?.map((name) => renderIconButton(name))}
         </div>
       )}

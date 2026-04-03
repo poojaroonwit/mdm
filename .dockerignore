@@ -6,12 +6,15 @@ yarn-error.log*
 
 # Next.js
 .next
+.swc
 out
 dist
 
 # Testing
 coverage
 .nyc_output
+playwright-report
+test-results
 
 # Misc
 .DS_Store
@@ -71,4 +74,10 @@ Thumbs.db
 *.temp
 .tmp
 .temp
+tmp
+
+# Nested workspaces / generated artifacts
+**/.next
+**/node_modules
+plugin-hub/.swc
 

@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 // Force restart - triggered update 23
+const isProductionBuild = process.env.NODE_ENV === 'production'
+const isCiBuild = process.env.CI === 'true' || process.env.DOCKER_BUILD === 'true'
+const isBuildDiagnosticsEnabled = process.env.NEXT_BUILD_DEBUG === 'true'
+
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -38,6 +42,10 @@ const nextConfig = {
     ignoreBuildErrors: true,
     // TypeScript will show all errors, build will continue to collect all errors
   },
+  eslint: {
+    // Skip ESLint during build to save memory in restricted CI environments
+    ignoreDuringBuilds: true,
+  },
 
   // Expose package version to the client
   env: {
@@ -54,9 +62,10 @@ const nextConfig = {
   // Experimental features for better build performance
   experimental: {
     // Reduce memory usage by limiting concurrent workers (Production Only)
-    webpackBuildWorker: true,
+    // Disable webpackBuildWorker to reduce memory usage in restricted CI environments
+    webpackBuildWorker: false,
     // Enable parallel routes for better route optimization (Disable in dev for speed)
-    parallelServerBuildTraces: process.env.NODE_ENV === 'production' ? false : true,
+    parallelServerBuildTraces: isProductionBuild ? false : true,
     // Optimize package imports to reduce bundle size
     optimizePackageImports: [
       'lucide-react',
@@ -101,49 +110,52 @@ const nextConfig = {
       ...config.watchOptions,
       ignored: [
         ...(Array.isArray(config.watchOptions?.ignored) ? config.watchOptions.ignored : []),
-        // '**/plugin-hub/**', // ALLOW PLUGIN HUB FOR EXTERNAL PLUGINS
+        '**/.next/**',
+        '**/.swc/**',
+        '**/test-results/**',
+        '**/playwright-report/**',
+        '**/tmp/**',
       ],
     }
 
-    // CRITICAL: Don't bail on first error - show all errors
-    config.bail = false
+    if (isBuildDiagnosticsEnabled) {
+      // CRITICAL: Don't bail on first error - show all errors
+      config.bail = false
 
-    // Configure stats to show all errors and warnings with full details
-    if (!config.stats) {
-      config.stats = {}
+      if (!config.stats) {
+        config.stats = {}
+      }
+      config.stats.errors = true
+      config.stats.warnings = true
+      config.stats.errorDetails = true
+      config.stats.errorStack = true
+      config.stats.warningsFilter = []
+      config.stats.colors = true
+      config.stats.modules = false
+      config.stats.chunks = false
+      config.stats.assets = false
+      config.stats.all = false
+      config.stats.preset = false
+
+      config.infrastructureLogging = {
+        level: 'error',
+      }
+
+      config.optimization = config.optimization || {}
+      config.optimization.removeAvailableModules = false
+      config.optimization.removeEmptyChunks = false
     }
-    config.stats.errors = true
-    config.stats.warnings = true
-    config.stats.errorDetails = true
-    config.stats.errorStack = true
-    config.stats.warningsFilter = [] // Show all warnings
-    config.stats.colors = true
-    config.stats.modules = false
-    config.stats.chunks = false
-    config.stats.assets = false
-    config.stats.all = false // Don't show everything, just errors/warnings
-    config.stats.preset = false // Disable presets to use custom config
-
-    // Enhanced error reporting - show all errors
-    config.infrastructureLogging = {
-      level: 'error',
-    }
-
-    // Collect all errors before failing
-    config.optimization = config.optimization || {}
-    config.optimization.removeAvailableModules = false
-    config.optimization.removeEmptyChunks = false
 
 
     // ========== CHUNKING CONFIGURATION FOR LOWER RAM/CPU USAGE ==========
     // Split large bundles into smaller chunks to reduce memory during build
     // ONLY APPLY IN PRODUCTION - Development needs faster HMR
-    if (!isServer && process.env.NODE_ENV === 'production') {
+    if (!isServer && isProductionBuild && !isCiBuild) {
       config.optimization.splitChunks = {
         chunks: 'all',
-        // Reduce max chunk size to lower memory usage
-        maxSize: 100 * 1024, // 100KB per chunk - smaller chunks use less memory
-        minSize: 10 * 1024,  // 10KB minimum
+        // Increase chunk size to reduce the massive number of chunks and memory overhead
+        maxSize: 2048 * 1024, // 2MB per chunk (was 100KB)
+        minSize: 20 * 1024,  // 20KB minimum (was 10KB)
         maxAsyncRequests: 30,
         maxInitialRequests: 30,
         cacheGroups: {
@@ -206,14 +218,14 @@ const nextConfig = {
       }
     }
 
-    // Webpack parallelism: balance between speed and RAM usage
-    if (process.env.NODE_ENV === 'production') {
-      config.parallelism = 2
+    // Webpack parallelism: set to 1 to minimize RAM usage in restricted environments
+    if (isProductionBuild) {
+      config.parallelism = isCiBuild ? 2 : 1
     }
 
     // Custom error handling to collect all errors
     const originalEmit = config.plugins?.find(p => p.constructor.name === 'ForkTsCheckerWebpackPlugin')
-    if (originalEmit) {
+    if (isBuildDiagnosticsEnabled && originalEmit) {
       // If ForkTsCheckerWebpackPlugin exists, configure it to collect all errors
       originalEmit.options = originalEmit.options || {}
       originalEmit.options.async = true // Don't block build, collect all errors
@@ -227,8 +239,7 @@ const nextConfig = {
     }
 
     // Override webpack's error handling to collect all errors
-    const originalOnError = config.infrastructureLogging
-    if (config.plugins) {
+    if (isBuildDiagnosticsEnabled && config.plugins) {
       // Add a plugin to collect all compilation errors
       config.plugins.push({
         apply: (compiler) => {

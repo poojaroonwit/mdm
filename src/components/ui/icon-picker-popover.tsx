@@ -51,10 +51,10 @@ export default function IconPickerPopover({ value, onChange, animated = false, a
           setAnchorRect(rect)
           setOpen((v) => !v)
         }}
-        className="p-2 rounded-md inline-flex items-center gap-3 border border-gray-200 hover:bg-gray-50"
+        className="p-2 rounded-xl inline-flex items-center gap-3 border border-zinc-100/60 dark:border-zinc-800/60 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-all duration-200 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-sm shadow-sm"
         title={value || "Choose icon"}
       >
-        <div className="h-10 w-10 rounded-full flex items-center justify-center bg-gray-100 text-gray-700">
+        <div className="h-10 w-10 rounded-full flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-200/50 dark:border-zinc-700/50 shadow-inner-sm">
           {CurrentIcon ? (
             animated ? (
               <AnimatedIcon
@@ -71,7 +71,7 @@ export default function IconPickerPopover({ value, onChange, animated = false, a
             <span className="text-xs">?</span>
           )}
         </div>
-        <span className="text-xs text-muted-foreground max-w-[160px] truncate">{value || "None"}</span>
+        <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium max-w-[160px] truncate">{value || "None"}</span>
       </button>
 
       {open && anchorRect && createPortal(
@@ -83,7 +83,7 @@ export default function IconPickerPopover({ value, onChange, animated = false, a
             onClick={() => setOpen(false)}
           />
           <div
-            className="fixed bg-white border rounded-md shadow-xl"
+            className="fixed bg-white/95 dark:bg-zinc-950/95 border border-zinc-100/60 dark:border-zinc-800/60 rounded-2xl shadow-2xl backdrop-blur-xl"
             style={{
               zIndex: zIndex || Z_INDEX.popover,
               top: anchorRect.bottom + window.scrollY + 8,

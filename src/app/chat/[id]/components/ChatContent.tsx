@@ -20,6 +20,8 @@ interface ChatContentProps {
   setMessageFeedback: React.Dispatch<React.SetStateAction<Record<string, 'liked' | 'disliked' | null>>>
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
   sendMessage: (content: string, attachments?: Array<{ type: 'image' | 'video', url: string, name?: string }>) => Promise<void>
+  resetChat?: () => void
+  isSessionExpired?: boolean
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void
   onFollowUpClick: (question: string) => void
   removeAttachment: (index: number) => void
@@ -71,6 +73,8 @@ export function ChatContent({
   threadId,
   hideHeader = false,
   isMobile = false,
+  resetChat,
+  isSessionExpired,
 }: ChatContentProps) {
   // Check if wave UI should be shown
   const showWaveUI = chatbot.enableVoiceAgent && chatbot.voiceUIStyle === 'wave'
@@ -152,7 +156,7 @@ export function ChatContent({
       {!hideHeader && (
         <ChatHeader
           chatbot={chatbot}
-          onClearSession={() => setMessages([])}
+          onClearSession={resetChat || (() => setMessages([]))}
           isMobile={isMobile}
         />
       )}
@@ -169,6 +173,8 @@ export function ChatContent({
         messagesEndRef={messagesEndRef}
         chatbotId={chatbotId}
         threadId={threadId}
+        isSessionExpired={isSessionExpired}
+        resetChat={resetChat}
       />
 
       {/* Follow-up Questions */}

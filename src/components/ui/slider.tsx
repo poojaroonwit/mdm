@@ -40,9 +40,9 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
           className
         )}
       >
-        <div className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-muted">
+        <div className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
           <div
-            className="absolute h-full bg-primary transition-all duration-200"
+            className="absolute h-full bg-zinc-900 dark:bg-zinc-100 transition-all duration-300"
             style={{ width: `${percentage}%` }}
           />
         </div>
@@ -58,8 +58,8 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
           {...props}
         />
         <div
-          className="absolute block h-5 w-5 rounded-full border-2 border-primary bg-white shadow-md transition-all duration-150 pointer-events-none z-0"
-          style={{ left: `calc(${percentage}% - 10px)` }}
+          className="absolute block h-4 w-4 rounded-full border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-lg transition-all duration-150 scale-110 hover:scale-125 active:scale-95 pointer-events-none z-0"
+          style={{ left: `calc(${percentage}% - 8px)` }}
         />
       </div>
     )

@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Z_INDEX } from '@/lib/z-index'
-import { Building2, Layout, Users as UsersIcon, Database, FolderPlus, Archive, AlertTriangle, RefreshCw } from 'lucide-react'
+import { Building2, Layout, Users as UsersIcon, Database, FolderPlus, AlertTriangle, RefreshCw } from 'lucide-react'
 
 interface SidebarItem {
   id: string
@@ -45,12 +45,6 @@ const SIDEBAR_ITEMS: readonly SidebarItem[] = [
     label: 'Attachments',
     icon: FolderPlus,
     tooltip: 'Manage file storage and attachments'
-  },
-  {
-    id: 'restore',
-    label: 'Restore',
-    icon: Archive,
-    tooltip: 'Backup and restore data'
   },
   {
     id: 'danger',
@@ -134,7 +128,7 @@ export const SpaceSettingsSidebar = memo(function SpaceSettingsSidebar({
 
   const visibleItems = showAllTabs 
     ? SIDEBAR_ITEMS 
-    : SIDEBAR_ITEMS.filter(item => !['restore', 'danger'].includes(item.id))
+    : SIDEBAR_ITEMS.filter(item => item.id !== 'danger')
 
   return (
     <TooltipProvider>

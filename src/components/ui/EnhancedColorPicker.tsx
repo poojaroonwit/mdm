@@ -74,11 +74,11 @@ export function EnhancedColorPicker({
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <Label className="text-xs font-medium text-foreground">{label}</Label>
+      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">{label}</Label>
       
       <div className="flex items-center gap-2">
         {/* Color Type Toggle */}
-        <div className="flex border border-border rounded">
+        <div className="flex border border-zinc-100/60 dark:border-zinc-800/60 rounded-xl overflow-hidden shadow-sm">
           <Button
             variant={colorType === 'solid' ? 'default' : 'ghost'}
             size="sm"
@@ -99,7 +99,7 @@ export function EnhancedColorPicker({
 
         {/* Color Swatch */}
         <div
-          className="w-8 h-8 border border-border rounded cursor-pointer"
+          className="w-8 h-8 border border-zinc-100/60 dark:border-zinc-800/60 rounded-xl cursor-pointer shadow-sm"
           style={{ background: getSwatchBackground() }}
           onClick={handleSwatchClick}
         />
@@ -120,7 +120,7 @@ export function EnhancedColorPicker({
 
       {/* Color Picker */}
       {showPicker && (
-        <div className="mt-2 p-3 border border-border rounded-lg bg-popover shadow-lg">
+        <div className="mt-2 p-3 border border-zinc-100/60 dark:border-zinc-800/60 rounded-2xl bg-white/95 dark:bg-zinc-950/95 shadow-2xl backdrop-blur-xl">
           {colorType === 'solid' ? (
             <div>
               <div className="space-y-3">
@@ -131,10 +131,10 @@ export function EnhancedColorPicker({
                 />
                 <div className="flex items-center gap-2">
                   <div 
-                    className="w-6 h-6 rounded border-2 border-gray-300" 
+                    className="w-6 h-6 rounded-lg border border-zinc-100/60 dark:border-zinc-800/60 shadow-sm" 
                     style={{ backgroundColor: pendingValue }}
                   />
-                  <span className="text-sm font-mono text-gray-600">{pendingValue}</span>
+                  <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-tighter">{pendingValue}</span>
                 </div>
               </div>
               {showApplyCancel && (

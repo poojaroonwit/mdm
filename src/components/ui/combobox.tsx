@@ -60,8 +60,8 @@ export function Combobox({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "w-full justify-between",
-              !selectedOption && "text-muted-foreground",
+              "w-full justify-between font-medium",
+              !selectedOption && "text-zinc-400 dark:text-zinc-500",
               triggerClassName
             )}
             disabled={disabled}
@@ -161,8 +161,8 @@ export function MultiCombobox({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "w-full justify-between",
-              selectedOptions.length === 0 && "text-muted-foreground",
+              "w-full justify-between font-medium",
+              selectedOptions.length === 0 && "text-zinc-400 dark:text-zinc-500",
               triggerClassName
             )}
             disabled={disabled}

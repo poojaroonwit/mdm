@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { cn } from '@/lib/utils'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -244,18 +245,12 @@ export function LogManagement() {
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case 'DEBUG':
-        return 'bg-blue-100 text-blue-800'
-      case 'INFO':
-        return 'bg-green-100 text-green-800'
-      case 'WARN':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'ERROR':
-        return 'bg-red-100 text-red-800'
-      case 'FATAL':
-        return 'bg-red-200 text-red-900'
-      default:
-        return 'bg-gray-100 text-gray-800'
+      case 'DEBUG': return 'bg-zinc-100/50 dark:bg-zinc-800/20 text-zinc-700 dark:text-zinc-300 border-zinc-200/50 dark:border-zinc-700/30'
+      case 'INFO': return 'bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border-emerald-100/50 dark:border-emerald-900/30'
+      case 'WARN': return 'bg-amber-50/50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border-amber-100/50 dark:border-amber-900/30'
+      case 'ERROR': return 'bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 border-rose-100/50 dark:border-rose-900/30'
+      case 'FATAL': return 'bg-rose-900 dark:bg-rose-100 text-white dark:text-rose-950 border-transparent'
+      default: return 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200/50 dark:border-zinc-700/30'
     }
   }
 
@@ -284,11 +279,11 @@ export function LogManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <FileText className="h-6 w-6" />
+          <h2 className="text-xl font-black uppercase tracking-[0.2em] flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+            <FileText className="h-5 w-5" />
             Log Management
           </h2>
-          <p className="text-muted-foreground">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
             Centralized log management, analysis, and retention policies
           </p>
         </div>
@@ -309,8 +304,8 @@ export function LogManagement() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Logs</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Total Logs</CardTitle>
+              <FileText className="h-4 w-4 text-zinc-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.total.toLocaleString()}</div>
@@ -322,8 +317,8 @@ export function LogManagement() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Error Rate</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Error Rate</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-zinc-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.errorRate.toFixed(1)}%</div>
@@ -335,8 +330,8 @@ export function LogManagement() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg Response</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Avg Response</CardTitle>
+              <Clock className="h-4 w-4 text-zinc-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatDuration(stats.avgResponseTime)}</div>
@@ -348,8 +343,8 @@ export function LogManagement() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Services</CardTitle>
-              <Server className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Services</CardTitle>
+              <Server className="h-4 w-4 text-zinc-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{Object.keys(stats.byService).length}</div>
@@ -375,59 +370,75 @@ export function LogManagement() {
           <Card>
             <CardContent className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 block px-1">Search</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+                    <Input
+                      value={filters.search}
+                      onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                      placeholder="Search messages, services..."
+                      className="pl-9 h-9 text-xs font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 block px-1">Level</Label>
+                  <Select value={filters.level} onValueChange={(value) => setFilters({ ...filters, level: value })}>
+                    <SelectTrigger className="h-9 text-xs font-semibold">
+                      <SelectValue placeholder="Level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all" className="text-xs">All Levels</SelectItem>
+                      <SelectItem value="DEBUG" className="text-xs">DEBUG</SelectItem>
+                      <SelectItem value="INFO" className="text-xs">INFO</SelectItem>
+                      <SelectItem value="WARN" className="text-xs">WARN</SelectItem>
+                      <SelectItem value="ERROR" className="text-xs">ERROR</SelectItem>
+                      <SelectItem value="FATAL" className="text-xs">FATAL</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 block px-1">Service</Label>
+                  <Select value={filters.service} onValueChange={(value) => setFilters({ ...filters, service: value })}>
+                    <SelectTrigger className="h-9 text-xs font-semibold">
+                      <SelectValue placeholder="Service" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all" className="text-xs">All Services</SelectItem>
+                      {Object.keys(stats?.byService || {}).map(service => (
+                        <SelectItem key={service} value={service} className="text-xs">{service}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 block px-1">Range</Label>
+                  <Select value={filters.dateRange} onValueChange={(value) => setFilters({ ...filters, dateRange: value })}>
+                    <SelectTrigger className="h-9 text-xs font-semibold">
+                      <SelectValue placeholder="Time Range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1h" className="text-xs">Last Hour</SelectItem>
+                      <SelectItem value="24h" className="text-xs">Last 24 Hours</SelectItem>
+                      <SelectItem value="7d" className="text-xs">Last 7 Days</SelectItem>
+                      <SelectItem value="30d" className="text-xs">Last 30 Days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 block px-1">User ID</Label>
                   <Input
-                    value={filters.search}
-                    onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                    placeholder="Search logs..."
-                    className="pl-8"
+                    value={filters.userId || ''}
+                    onChange={(e) => setFilters({ ...filters, userId: e.target.value })}
+                    placeholder="User correlation ID"
+                    className="h-9 text-xs font-medium"
                   />
                 </div>
-                
-                <Select value={filters.level} onValueChange={(value) => setFilters({ ...filters, level: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Levels</SelectItem>
-                    <SelectItem value="DEBUG">DEBUG</SelectItem>
-                    <SelectItem value="INFO">INFO</SelectItem>
-                    <SelectItem value="WARN">WARN</SelectItem>
-                    <SelectItem value="ERROR">ERROR</SelectItem>
-                    <SelectItem value="FATAL">FATAL</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={filters.service} onValueChange={(value) => setFilters({ ...filters, service: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Service" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Services</SelectItem>
-                    {Object.keys(stats?.byService || {}).map(service => (
-                      <SelectItem key={service} value={service}>{service}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={filters.dateRange} onValueChange={(value) => setFilters({ ...filters, dateRange: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Time Range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1h">Last Hour</SelectItem>
-                    <SelectItem value="24h">Last 24 Hours</SelectItem>
-                    <SelectItem value="7d">Last 7 Days</SelectItem>
-                    <SelectItem value="30d">Last 30 Days</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Input
-                  value={filters.userId || ''}
-                  onChange={(e) => setFilters({ ...filters, userId: e.target.value })}
-                  placeholder="User ID"
-                />
               </div>
             </CardContent>
           </Card>
@@ -464,19 +475,19 @@ export function LogManagement() {
                     {filteredLogs.map(log => (
                       <div
                         key={log.id}
-                        className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer"
+                        className="flex items-start gap-4 p-4 border border-zinc-100/60 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/20 rounded-2xl hover:shadow-lg transition-all duration-300 cursor-pointer group"
                         onClick={() => setSelectedLog(log)}
                       >
-                        <div className="flex-shrink-0">
+                        <div className="flex-shrink-0 mt-1">
                           {getLevelIcon(log.level)}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium">{log.service}</span>
-                            <Badge className={getLevelColor(log.level)}>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-zinc-100">{log.service}</span>
+                            <Badge className={cn("text-[8px] h-4 py-0 font-black", getLevelColor(log.level))}>
                               {log.level}
                             </Badge>
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 ml-auto">
                               {log.timestamp.toLocaleString()}
                             </span>
                           </div>
@@ -527,11 +538,18 @@ export function LogManagement() {
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={Object.entries(stats.byLevel).map(([level, count]) => ({ level, count }))}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="level" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="count" fill="#8884d8" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
+                      <XAxis dataKey="level" fontSize={10} axisLine={false} tickLine={false} />
+                      <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'var(--zinc-50)', 
+                          borderColor: 'var(--zinc-200)',
+                          borderRadius: '12px',
+                          fontSize: '10px'
+                        }} 
+                      />
+                      <Bar dataKey="count" fill="#18181b" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>

@@ -4,6 +4,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db, query } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 
+function normalizeAllowedLoginMethods(value: unknown) {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  const allowedMethods = new Set(['email', 'google', 'azure-ad'])
+  return Array.from(
+    new Set(
+      value
+        .filter((item): item is string => typeof item === 'string')
+        .map((item) => item.trim().toLowerCase())
+        .filter((item) => allowedMethods.has(item))
+    )
+  )
+}
+
 async function postHandler(request: NextRequest) {
   const authResult = await requireAdmin()
   if (!authResult.success) return authResult.response
@@ -20,6 +36,7 @@ async function postHandler(request: NextRequest) {
     const { email, name, password, role, isActive, is_active, defaultSpaceId, default_space_id, spaces } = body
     const finalIsActive = isActive !== undefined ? isActive : (is_active !== undefined ? is_active : true)
     const finalDefaultSpaceId = defaultSpaceId || default_space_id
+    const allowedLoginMethods = normalizeAllowedLoginMethods(body.allowedLoginMethods)
 
     // Validate required fields
     if (!email || !name || !password) {
@@ -67,7 +84,7 @@ async function postHandler(request: NextRequest) {
           password: hashedPassword,
           role: userRole,
           isActive: finalIsActive,
-          allowedLoginMethods: body.allowedLoginMethods || [],
+          allowedLoginMethods,
           // created_at and updated_at are usually handled by @default(now()) and @updatedAt
         }
       })
@@ -183,6 +200,7 @@ async function getHandler(request: NextRequest) {
         u.role,
         u.is_active as "isActive",
         u.is_two_factor_enabled as "isTwoFactorEnabled",
+        u.allowed_login_methods as "allowedLoginMethods",
         u.created_at as "createdAt",
         COALESCE(
           json_agg(
@@ -210,7 +228,7 @@ async function getHandler(request: NextRequest) {
       LEFT JOIN user_group_members ugm ON u.id = ugm.user_id
       LEFT JOIN user_groups ug ON ugm.group_id = ug.id
       ${whereClause}
-      GROUP BY u.id, u.email, u.name, u.role, u.is_active, u.is_two_factor_enabled, u.created_at
+      GROUP BY u.id, u.email, u.name, u.role, u.is_active, u.is_two_factor_enabled, u.allowed_login_methods, u.created_at
       ORDER BY u.created_at DESC
       LIMIT $${limitParamIndex} OFFSET $${offsetParamIndex}
     `, usersQueryParams)

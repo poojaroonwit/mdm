@@ -27,6 +27,12 @@ interface AssistantHandlerOptions {
   spaceId?: string
   session?: any
   threadMessages?: any[]
+  maxPromptTokens?: number
+  maxCompletionTokens?: number
+  truncationStrategy?: {
+    type: 'auto' | 'last_messages'
+    last_messages?: number
+  }
 }
 
 export async function handleAssistantRequest(options: AssistantHandlerOptions) {
@@ -38,18 +44,20 @@ export async function handleAssistantRequest(options: AssistantHandlerOptions) {
     conversationHistory = [],
     model,
     instructions,
+    reasoningEffort,
+    store,
     requestStream,
     existingThreadId,
     chatbotId,
     spaceId,
     session,
     threadMessages,
+    maxPromptTokens,
+    maxCompletionTokens,
+    truncationStrategy,
   } = options
 
-  const requestBody: any = {
-    assistant_id: agentId,
-    stream: true,
-  }
+  const startTime = Date.now()
 
   // Initialize Langfuse tracing
   const langfuse = (await isLangfuseEnabled()) ? await getLangfuseClient() : null
@@ -67,7 +75,23 @@ export async function handleAssistantRequest(options: AssistantHandlerOptions) {
   })
   
   const traceId = trace?.id || undefined
-  const startTime = Date.now()
+
+  const requestBody: any = {
+    assistant_id: agentId,
+    stream: true,
+    model: model || undefined,
+    instructions: instructions || undefined,
+    reasoning_effort: (reasoningEffort as any) || undefined,
+    store: store !== undefined ? store : undefined,
+    metadata: {
+      chatbotId,
+      spaceId: spaceId || undefined,
+      traceId: traceId || startTime.toString(),
+    },
+    max_prompt_tokens: maxPromptTokens || undefined,
+    max_completion_tokens: maxCompletionTokens || undefined,
+    truncation_strategy: truncationStrategy || undefined,
+  }
 
   // Thread management
   let threadId: string | null = null
@@ -156,6 +180,9 @@ export async function handleAssistantRequest(options: AssistantHandlerOptions) {
     })
 
     if (!addMessageResponse.ok) {
+      if (addMessageResponse.status === 404) {
+        return NextResponse.json({ error: 'thread_expired', details: 'The conversation thread has expired or was not found.' }, { status: 404 })
+      }
       const errorText = await addMessageResponse.text()
       try {
         const errorData = JSON.parse(errorText)
@@ -172,7 +199,7 @@ export async function handleAssistantRequest(options: AssistantHandlerOptions) {
       try {
         await prisma.openAIAgentThread.updateMany({
           where: {
-            threadId,
+            threadId: threadId ?? undefined,
             chatbotId,
             userId: session.user.id,
           },
@@ -233,6 +260,9 @@ export async function handleAssistantRequest(options: AssistantHandlerOptions) {
       }))
 
   if (!runResponse.ok) {
+    if (runResponse.status === 404) {
+      return NextResponse.json({ error: 'thread_expired', details: 'The conversation thread has expired or was not found.' }, { status: 404 })
+    }
     const errorText = await runResponse.text()
     const latency = Date.now() - startTime
     
@@ -263,7 +293,7 @@ export async function handleAssistantRequest(options: AssistantHandlerOptions) {
     if (threadId && chatbotId && session?.user?.id) {
       prisma.openAIAgentThread.updateMany({
         where: {
-          threadId,
+          threadId: threadId ?? undefined,
           chatbotId,
           userId: session.user.id,
         },
@@ -290,8 +320,8 @@ export async function handleAssistantRequest(options: AssistantHandlerOptions) {
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
         'X-Accel-Buffering': 'no',
-        ...(threadId && { 'X-Thread-Id': threadId }),
-        ...(traceId && { 'X-Trace-Id': traceId }),
+        ...(threadId ? { 'X-Thread-Id': threadId } : {}),
+        ...(traceId ? { 'X-Trace-Id': traceId } : {}),
       },
     })
   } else {
@@ -373,7 +403,7 @@ export async function handleAssistantRequest(options: AssistantHandlerOptions) {
       try {
         await prisma.openAIAgentThread.updateMany({
           where: {
-            threadId,
+            threadId: threadId ?? undefined,
             chatbotId,
             userId: session.user.id,
           },

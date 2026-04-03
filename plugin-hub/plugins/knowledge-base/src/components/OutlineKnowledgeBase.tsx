@@ -59,6 +59,11 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
   const [newCollectionDescription, setNewCollectionDescription] = useState('')
   const [expandedDocuments, setExpandedDocuments] = useState<Set<string>>(new Set())
   const [showSearchDialog, setShowSearchDialog] = useState(false)
+  const [showCollectionSettingsDialog, setShowCollectionSettingsDialog] = useState(false)
+  const [collectionSettingsName, setCollectionSettingsName] = useState('')
+  const [collectionSettingsDescription, setCollectionSettingsDescription] = useState('')
+  const [collectionSettingsIcon, setCollectionSettingsIcon] = useState('')
+  const [collectionSettingsColor, setCollectionSettingsColor] = useState('')
 
   const [showNewDocumentDialog, setShowNewDocumentDialog] = useState(false)
   const [newDocumentTitle, setNewDocumentTitle] = useState('')
@@ -70,6 +75,7 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
     createCollection,
     updateCollection,
     deleteCollection,
+    refetch: refetchCollections,
   } = useKnowledgeCollections({ spaceId, search: searchQuery })
 
   const {
@@ -78,10 +84,12 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
     createDocument,
     updateDocument,
     deleteDocument,
+    refetch: refetchDocuments,
   } = useKnowledgeDocuments({
     collectionId: selectedCollection?.id || '',
     spaceId,
     parentId: undefined,
+    limit: 1000,
   })
 
   const handleCreateCollection = async () => {
@@ -110,6 +118,47 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
     setShowNewDocumentDialog(true)
   }
 
+  const openCollectionSettingsDialog = () => {
+    if (!selectedCollection) return
+
+    setCollectionSettingsName(selectedCollection.name)
+    setCollectionSettingsDescription(selectedCollection.description || '')
+    setCollectionSettingsIcon(selectedCollection.icon || '')
+    setCollectionSettingsColor(selectedCollection.color || '')
+    setShowCollectionSettingsDialog(true)
+  }
+
+  const handleSaveCollectionSettings = async () => {
+    if (!selectedCollection) return
+
+    const nextName = collectionSettingsName.trim()
+    if (!nextName) {
+      toast.error('Collection name is required')
+      return
+    }
+
+    const success = await updateCollection(selectedCollection.id, {
+      name: nextName,
+      description: collectionSettingsDescription.trim() || undefined,
+      icon: collectionSettingsIcon.trim() || undefined,
+      color: collectionSettingsColor.trim() || undefined,
+      spaceId,
+    })
+
+    if (!success) {
+      return
+    }
+
+    setSelectedCollection({
+      ...selectedCollection,
+      name: nextName,
+      description: collectionSettingsDescription.trim() || undefined,
+      icon: collectionSettingsIcon.trim() || undefined,
+      color: collectionSettingsColor.trim() || undefined,
+    })
+    setShowCollectionSettingsDialog(false)
+  }
+
   const handleCreateDocument = async () => {
     if (!selectedCollection) return
 
@@ -125,11 +174,27 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
     })
 
     if (document) {
+      if (newDocumentParentId) {
+        setExpandedDocuments((prev) => new Set(prev).add(newDocumentParentId))
+      }
       setShowNewDocumentDialog(false)
       setNewDocumentTitle('')
       setNewDocumentParentId(undefined)
       setSelectedDocument(document)
+      await Promise.all([refetchDocuments(), refetchCollections()])
     }
+  }
+
+  const handleDeleteDocument = async (id: string) => {
+    const success = await deleteDocument(id)
+    if (!success) return false
+
+    if (selectedDocument?.id === id) {
+      setSelectedDocument(null)
+    }
+
+    await Promise.all([refetchDocuments(), refetchCollections()])
+    return true
   }
 
   const toggleDocumentExpanded = (docId: string) => {
@@ -374,7 +439,7 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
             <Plus className="h-4 w-4 mr-2" />
             New Document
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={openCollectionSettingsDialog}>
             <Settings className="h-4 w-4 mr-2" />
             Settings
           </Button>
@@ -413,7 +478,7 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
                   onSelectDocument={setSelectedDocument}
                   onToggleExpanded={toggleDocumentExpanded}
                   onCreateDocument={openCreateDocumentDialog}
-                  onDeleteDocument={deleteDocument}
+                  onDeleteDocument={handleDeleteDocument}
                 />
               )}
             </div>
@@ -456,6 +521,61 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
         }}
         spaceId={spaceId}
       />
+
+      <Dialog open={showCollectionSettingsDialog} onOpenChange={setShowCollectionSettingsDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Collection Settings</DialogTitle>
+            <DialogDescription>
+              Update the collection details shown in the knowledge base.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Name</label>
+              <Input
+                value={collectionSettingsName}
+                onChange={(e) => setCollectionSettingsName(e.target.value)}
+                placeholder="Collection name..."
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Description</label>
+              <Input
+                value={collectionSettingsDescription}
+                onChange={(e) => setCollectionSettingsDescription(e.target.value)}
+                placeholder="Brief description..."
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Icon</label>
+                <Input
+                  value={collectionSettingsIcon}
+                  onChange={(e) => setCollectionSettingsIcon(e.target.value)}
+                  placeholder="e.g. 📚"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Color</label>
+                <Input
+                  value={collectionSettingsColor}
+                  onChange={(e) => setCollectionSettingsColor(e.target.value)}
+                  placeholder="e.g. #2563eb"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCollectionSettingsDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveCollectionSettings} className="bg-blue-600 hover:bg-blue-700 text-white">
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
 
 

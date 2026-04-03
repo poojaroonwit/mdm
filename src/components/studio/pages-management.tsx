@@ -230,7 +230,7 @@ export function PagesManagement({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
-                      {getPageIcon(page)}
+                      <PageIcon page={page} templates={templates} />
                     </div>
 
                     <div className="flex-1 min-w-0">

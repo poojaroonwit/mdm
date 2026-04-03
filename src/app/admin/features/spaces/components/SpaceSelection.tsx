@@ -18,7 +18,7 @@ export function SpaceSelection() {
   const [spaces, setSpaces] = useState<Space[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [search, setSearch] = useState('')
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards')
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('table')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'archive'>('all')
   const [showCreateDialog, setShowCreateDialog] = useState(false)

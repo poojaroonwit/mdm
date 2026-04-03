@@ -178,7 +178,7 @@ export default function SignInPage() {
   const hasCustomBg = Object.keys(loginBgStyle).length > 0 && !loginBgStyle.background?.toString().includes('radial-gradient')
 
   return (
-    <div className="h-screen w-full flex flex-col md:flex-row relative overflow-hidden text-foreground" style={loginBgStyle}>
+    <div className="relative flex min-h-screen w-full flex-col overflow-hidden text-foreground md:h-screen md:flex-row" style={loginBgStyle}>
 
       {/* Helper for video background */}
       {loginBgVideo && (
@@ -196,37 +196,37 @@ export default function SignInPage() {
       )}
 
       {/* Left Column - App Name & Description */}
-      <div className="flex-1 flex flex-col justify-center p-8 md:p-12 lg:p-20 relative z-10">
-        <div className="max-w-3xl space-y-6">
-          <div className="flex items-center space-x-4 mb-2">
-            <div className="p-3 bg-card/50 backdrop-blur-sm rounded-xl border border-border shadow-sm">
+      <div className="relative z-10 flex flex-col justify-start px-6 pb-6 pt-12 md:flex-1 md:justify-center md:p-12 lg:p-20">
+        <div className="max-w-3xl space-y-4 md:space-y-6">
+          <div className="mb-2 flex items-center space-x-4">
+            <div className="rounded-2xl border border-border bg-card/60 p-3 shadow-sm backdrop-blur-sm">
               {logoUrl ? (
-                <img src={logoUrl} alt="Logo" className="h-10 w-10 object-contain" />
+                <img src={logoUrl} alt="Logo" className="h-10 w-10 object-contain md:h-10 md:w-10" />
               ) : (
                 <Layers className="h-10 w-10 text-primary fill-primary/10" />
               )}
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 drop-shadow-sm">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 drop-shadow-sm md:text-5xl lg:text-6xl">
               {appName}
             </h1>
           </div>
-          <p className="text-xl md:text-2xl text-gray-600 font-light max-w-lg leading-relaxed ml-1">
+          <p className="ml-1 max-w-lg text-base font-light leading-relaxed text-gray-600 md:text-2xl">
             Experience the future of data management. Secure, scalable, and simple.
           </p>
         </div>
       </div>
 
       {/* Right Column - Login Panel (40% width on Desktop) */}
-      <div className="w-full md:w-[40%] min-w-[320px] p-4 md:p-6 flex flex-col justify-center relative z-10 h-full">
+      <div className="relative z-10 mt-auto flex h-auto w-full min-w-[320px] flex-col justify-end px-0 pt-2 md:h-full md:w-[40%] md:p-6 md:justify-center">
         <Card
-          className="w-full h-full relative border border-gray-200 shadow-2xl backdrop-blur-xl flex flex-col justify-center rounded-2xl"
+          className="relative flex min-h-[68vh] w-full flex-col justify-center rounded-t-[32px] border-x-0 border-b-0 border-t border-gray-200 shadow-[0_-24px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl md:h-full md:min-h-0 md:rounded-2xl md:border md:shadow-2xl"
           style={{
             backgroundColor: 'rgba(255, 255, 255, 0.8)',
             color: '#1f2937',
             borderColor: 'rgba(229, 231, 235, 0.5)',
           }}
         >
-          <CardHeader className="space-y-1 pb-2 flex flex-col items-center">
+          <CardHeader className="flex flex-col items-center space-y-1 px-6 pb-2 pt-8 md:px-6 md:pt-6">
             <CardTitle className="text-3xl font-bold tracking-tight text-center">
               Sign in
             </CardTitle>
@@ -234,7 +234,7 @@ export default function SignInPage() {
               {appName === 'Unified Data Platform' ? 'Access your account' : `Welcome to ${appName}`}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6 px-8 md:px-12">
+          <CardContent className="space-y-6 px-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] md:px-12 md:pb-6">
             {showTwoFactorInput ? (
                 <form onSubmit={handle2FASubmit} className="space-y-4">
                      <div className="flex flex-col items-center space-y-2 mb-4">

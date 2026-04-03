@@ -15,6 +15,7 @@ const pathToTabMap: Record<string, string> = {
   '/tools/storage': 'storage',
   '/tools/data-governance': 'data-governance',
   '/tools/api-client': 'api-client',
+  '/tools/vector-store': 'vector-store', // Vector Store Management
 }
 
 export default function ToolsLayout({

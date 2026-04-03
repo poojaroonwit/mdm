@@ -45,6 +45,10 @@ const SectionWrapper = ({ children }: { children: React.ReactNode }) => {
 export function ChatKitStyleConfig({ formData, setFormData, chatkitOptions }: ChatKitStyleConfigProps) {
   const [activeTab, setActiveTab] = useState('popover')
   
+  console.log('[ChatKitStyleConfig] Rendering with activeTab:', activeTab)
+  console.log('[ChatKitStyleConfig] formData:', formData)
+  console.log('[ChatKitStyleConfig] chatkitOptions:', chatkitOptions)
+
   const handleChange = (field: keyof ChatbotConfig, value: any) => {
     setFormData((prev) => ({
       ...prev,

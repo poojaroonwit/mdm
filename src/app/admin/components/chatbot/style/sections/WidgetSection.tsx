@@ -20,6 +20,7 @@ import { Switch } from '@/components/ui/switch'
 import { FormRow, FormSection } from '../components/FormRow'
 
 export function WidgetSection({ formData, setFormData, chatkitOptions }: SectionProps) {
+  console.log('[WidgetSection] rendering', { formData, chatkitOptions })
   const [openItem, setOpenItem] = useState('appearance')
 
   return (
@@ -177,6 +178,12 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
                 <Switch
                   checked={formData.showNotificationBadge || false}
                   onCheckedChange={(checked) => setFormData({ ...formData, showNotificationBadge: checked })}
+                />
+              </FormRow>
+              <FormRow label="Reset Session on Close" description="Clear chat history when widget is closed">
+                <Switch
+                  checked={formData.resetSessionOnClose || false}
+                  onCheckedChange={(checked) => setFormData({ ...formData, resetSessionOnClose: checked })}
                 />
               </FormRow>
               {formData.showNotificationBadge && (

@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -29,7 +30,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
-import { Plus, Search, List, Kanban as KanbanIcon, Clock, Loader, Settings } from 'lucide-react'
+import { Plus, Search, List, Kanban as KanbanIcon, Clock, Loader, Settings, Filter } from 'lucide-react'
 import { useSpace } from '@/contexts/space-context'
 
 /**
@@ -212,6 +213,7 @@ export function TicketsList({
     { key: 'spaces', label: 'Spaces' },
     { key: 'attributes', label: 'Custom Attributes' },
   ]
+  const activeFilterCount = Number(Boolean(filters.status)) + Number(Boolean(filters.priority))
 
   return (
     <div className="space-y-6">
@@ -381,42 +383,79 @@ export function TicketsList({
               />
             </div>
 
-            <Select
-              value={filters.status || 'all'}
-              onValueChange={(value) =>
-                setFilters({ ...filters, status: value === 'all' ? undefined : (value as any) })
-              }
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="BACKLOG">Backlog</SelectItem>
-                <SelectItem value="TODO">To Do</SelectItem>
-                <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                <SelectItem value="IN_REVIEW">In Review</SelectItem>
-                <SelectItem value="DONE">Done</SelectItem>
-              </SelectContent>
-            </Select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="min-w-[140px] justify-between">
+                  <span className="flex items-center gap-2">
+                    <Filter className="h-4 w-4" />
+                    All Filters
+                  </span>
+                  {activeFilterCount > 0 ? (
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                      {activeFilterCount}
+                    </span>
+                  ) : null}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-80">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold">Filters</p>
+                      <p className="text-xs text-muted-foreground">Refine the ticket list from one place.</p>
+                    </div>
+                    {activeFilterCount > 0 ? (
+                      <Button variant="ghost" size="sm" onClick={() => setFilters({})}>
+                        Clear
+                      </Button>
+                    ) : null}
+                  </div>
 
-            <Select
-              value={filters.priority || 'all'}
-              onValueChange={(value) =>
-                setFilters({ ...filters, priority: value === 'all' ? undefined : (value as any) })
-              }
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Priority" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Priority</SelectItem>
-                <SelectItem value="LOW">Low</SelectItem>
-                <SelectItem value="MEDIUM">Medium</SelectItem>
-                <SelectItem value="HIGH">High</SelectItem>
-                <SelectItem value="URGENT">Urgent</SelectItem>
-              </SelectContent>
-            </Select>
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select
+                      value={filters.status || 'all'}
+                      onValueChange={(value) =>
+                        setFilters({ ...filters, status: value === 'all' ? undefined : (value as any) })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="BACKLOG">Backlog</SelectItem>
+                        <SelectItem value="TODO">To Do</SelectItem>
+                        <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                        <SelectItem value="IN_REVIEW">In Review</SelectItem>
+                        <SelectItem value="DONE">Done</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Priority</Label>
+                    <Select
+                      value={filters.priority || 'all'}
+                      onValueChange={(value) =>
+                        setFilters({ ...filters, priority: value === 'all' ? undefined : (value as any) })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Priority</SelectItem>
+                        <SelectItem value="LOW">Low</SelectItem>
+                        <SelectItem value="MEDIUM">Medium</SelectItem>
+                        <SelectItem value="HIGH">High</SelectItem>
+                        <SelectItem value="URGENT">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
 
             <div className="flex items-center border rounded-md">
               <Button

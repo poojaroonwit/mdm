@@ -2,6 +2,22 @@ import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 
+function normalizeAllowedLoginMethods(value: unknown) {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  const allowedMethods = new Set(['email', 'google', 'azure-ad'])
+  return Array.from(
+    new Set(
+      value
+        .filter((item): item is string => typeof item === 'string')
+        .map((item) => item.trim().toLowerCase())
+        .filter((item) => allowedMethods.has(item))
+    )
+  )
+}
+
 async function putHandler(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -42,7 +58,11 @@ async function putHandler(
     const finalRequiresPasswordChange = requiresPasswordChange !== undefined ? requiresPasswordChange : requires_password_change
     const finalLockoutUntil = lockoutUntil !== undefined ? lockoutUntil : lockout_until
     const finalGroupIds = groupIds || group_ids
-    const finalAllowedLoginMethods = allowedLoginMethods || allowed_login_methods
+    const finalAllowedLoginMethodsRaw = allowedLoginMethods || allowed_login_methods
+    const finalAllowedLoginMethods =
+      finalAllowedLoginMethodsRaw !== undefined
+        ? normalizeAllowedLoginMethods(finalAllowedLoginMethodsRaw)
+        : undefined
 
 
     const sets: string[] = []

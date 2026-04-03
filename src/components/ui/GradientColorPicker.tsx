@@ -164,7 +164,7 @@ export function GradientColorPicker({
     <div className={`space-y-4 ${className}`}>
       {/* Gradient Type */}
       <div>
-        <Label className="text-xs font-medium text-gray-700 mb-2 block">Gradient Type</Label>
+        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-2 block">Gradient Type</Label>
         <div className="flex gap-2">
           <Button
             variant={gradientType === 'linear' ? 'default' : 'outline'}
@@ -188,7 +188,7 @@ export function GradientColorPicker({
       {/* Angle (for linear gradients) */}
       {gradientType === 'linear' && (
         <div>
-          <Label className="text-xs font-medium text-gray-700 mb-2 block">Angle</Label>
+          <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-2 block">Angle</Label>
           <div className="flex items-center gap-2">
             <Input
               type="number"
@@ -213,7 +213,7 @@ export function GradientColorPicker({
       {/* Color Stops */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <Label className="text-xs font-medium text-gray-700">Color Stops</Label>
+          <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Color Stops</Label>
           {colorStops.length < 3 && (
             <Button
               variant="outline"
@@ -230,8 +230,8 @@ export function GradientColorPicker({
           {colorStops.map((stop) => (
             <div key={stop.id} className="flex items-center gap-2">
               <div
-                className={`w-6 h-6 border-2 rounded cursor-pointer ${
-                  selectedStopId === stop.id ? 'border-blue-500' : 'border-gray-300'
+                className={`w-6 h-6 border rounded-lg cursor-pointer shadow-sm transition-all duration-200 ${
+                  selectedStopId === stop.id ? 'ring-2 ring-zinc-400 dark:ring-zinc-500 border-transparent' : 'border-zinc-100/60 dark:border-zinc-800/60'
                 }`}
                 style={{ backgroundColor: stop.color }}
                 onClick={() => setSelectedStopId(stop.id)}
@@ -244,7 +244,7 @@ export function GradientColorPicker({
                 onChange={(e) => handlePositionChange(stop.id, parseInt(e.target.value) || 0)}
                 className="h-6 w-16 text-xs"
               />
-              <span className="text-xs text-gray-500">%</span>
+              <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-black">%</span>
               {colorStops.length > 2 && (
                 <Button
                   variant="outline"
@@ -262,9 +262,9 @@ export function GradientColorPicker({
 
       {/* Color Picker */}
       {selectedStop && (
-        <div>
-          <Label className="text-xs font-medium text-gray-700 mb-2 block">
-            Color for Stop {selectedStop.position}%
+        <div className="space-y-2">
+          <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 block">
+            Stop: {selectedStop.position}%
           </Label>
           <HexColorPicker
             color={selectedStop.color}
@@ -275,10 +275,10 @@ export function GradientColorPicker({
       )}
 
       {/* Preview */}
-      <div>
-        <Label className="text-xs font-medium text-gray-700 mb-2 block">Preview</Label>
+      <div className="pt-2">
+        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-2 block">Preview</Label>
         <div
-          className="w-full h-12 border border-gray-300 rounded"
+          className="w-full h-12 border border-zinc-100/60 dark:border-zinc-800/60 rounded-xl shadow-inner-sm"
           style={{ background: pendingValue }}
         />
       </div>

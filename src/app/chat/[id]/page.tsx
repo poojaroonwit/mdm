@@ -83,6 +83,7 @@ export default function ChatPage() {
 
   const [showGetStarted, setShowGetStarted] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const prevIsOpenRef = useRef(isOpen)
   const [messageFeedback, setMessageFeedback] = useState<Record<string, 'liked' | 'disliked' | null>>({})
   const [input, setInput] = useState('')
   const [currentTranscript, setCurrentTranscript] = useState('') // Separate state for voice transcript display
@@ -250,8 +251,10 @@ export default function ChatPage() {
     messages,
     setMessages,
     isLoading,
+    isSessionExpired,
     selectedFollowUp,
     sendMessage,
+    resetChat,
     handleFollowUpClick,
     messagesEndRef,
     scrollAreaRef,
@@ -273,6 +276,20 @@ export default function ChatPage() {
       }
     },
   })
+
+  // Reset chat session when widget is closed (if configured)
+  useEffect(() => {
+    if (!chatbot || !chatbot.resetSessionOnClose) {
+      prevIsOpenRef.current = isOpen
+      return
+    }
+
+    if (prevIsOpenRef.current && !isOpen) {
+      console.log('[ChatPage] Resetting session on widget close')
+      resetChat()
+    }
+    prevIsOpenRef.current = isOpen
+  }, [isOpen, chatbot, resetChat])
 
   // Chat history management (only for non-OpenAI Agent SDK chatbots)
   const {
@@ -844,6 +861,8 @@ export default function ChatPage() {
         setMessageFeedback={setMessageFeedback}
         setMessages={setMessages}
         sendMessage={sendMessage}
+        resetChat={resetChat}
+        isSessionExpired={isSessionExpired}
         onFileSelect={handleFileSelect}
         onFollowUpClick={handleFollowUpClick}
         removeAttachment={removeAttachment}
@@ -1001,7 +1020,7 @@ export default function ChatPage() {
           effectiveDeploymentType={effectiveDeploymentType}
           handleClose={handleClose}
           isOpen={shouldShowContainer}
-          onClearSession={() => setMessages([])}
+          onClearSession={resetChat}
         >
           {renderChatContent()}
         </WidgetChatContainer>

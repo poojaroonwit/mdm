@@ -190,8 +190,17 @@ export function Preview({
 
   return (
     <div className="flex-1 bg-muted/30 relative overflow-hidden min-h-0 h-full" style={{ zIndex: Z_INDEX.content }}>
-      <div className={`w-full h-full flex items-center justify-center overflow-auto ${isMobileViewport ? 'p-2' : 'p-6'}`} style={{ position: 'relative', zIndex: Z_INDEX.content }}>
-        <div className={`bg-background border relative shrink-0`} style={{ width: `${dims.width}px`, height: `${canvasHeight}px`, transform: `scale(${previewScale})`, transformOrigin: 'center center', margin: '0 auto' }}>
+      <div className={`w-full h-full overflow-auto ${isMobileViewport ? 'p-2' : 'p-4'}`} style={{ position: 'relative', zIndex: Z_INDEX.content }}>
+        <div
+          className="bg-background border relative shrink-0"
+          style={{
+            width: `${dims.width}px`,
+            height: `${canvasHeight}px`,
+            transform: `scale(${previewScale})`,
+            transformOrigin: 'top center',
+            margin: '0 auto',
+          }}
+        >
           <div className="absolute inset-0">
             {/* Main Content Area - Sidebar, top, and footer removed - pages now use secondary platform sidebar */}
             <div className="w-full h-full relative overflow-auto bg-muted/30">
