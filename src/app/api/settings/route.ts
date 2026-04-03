@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
 import { requireAuth, requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { query, prisma } from '@/lib/db'
 import { createAuditLog } from '@/lib/audit'
 import { logger } from '@/lib/logger'
 import { validateBody } from '@/lib/api-validation'
+import { authOptions } from '@/lib/auth'
+import { addSecurityHeaders } from '@/lib/security-headers'
 import { z } from 'zod'
 
 async function getHandler(request: NextRequest) {

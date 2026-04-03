@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -27,8 +26,6 @@ export default function SignInPage() {
   const { settings } = useSystemSettingsSafe()
   const [appName, setAppName] = useState(settings?.siteName || 'Unified Data Platform')
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
-  const router = useRouter()
-
   // Update appName when settings load
   useEffect(() => {
     if (settings?.siteName) {
@@ -46,18 +43,6 @@ export default function SignInPage() {
       if (branding?.applicationLogo) {
         setLogoUrl(branding.applicationLogo)
       }
-
-      // Fetch security settings for other UI needs if any
-      fetch('/api/settings')
-        .then(res => {
-          if (!res.ok) return null // Silently fail for branding UI if not available
-          return res.json()
-        })
-        .then(settings => {
-          // Setting parsing is handled by SecurityProvider globally, 
-          // but we can still use settings here if needed for specific login UI
-        })
-        .catch(console.error)
 
       if (branding?.loginBackground) {
         const bg = branding.loginBackground
@@ -89,11 +74,25 @@ export default function SignInPage() {
   }, [])
 
   useEffect(() => {
-    // Fetch enabled SSO providers
-    fetch('/api/auth/sso-providers')
-      .then(res => res.json())
-      .then(data => setSsoProviders(data))
-      .catch(err => console.error('Error fetching SSO providers:', err))
+    const loadSsoProviders = async () => {
+      try {
+        const response = await fetch('/api/auth/sso-providers')
+        const contentType = response.headers.get('content-type') || ''
+        if (!response.ok || !contentType.includes('application/json')) {
+          return
+        }
+
+        const data = await response.json()
+        setSsoProviders({
+          google: !!data?.google,
+          azure: !!data?.azure,
+        })
+      } catch (err) {
+        console.error('Error fetching SSO providers:', err)
+      }
+    }
+
+    loadSsoProviders()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -119,8 +118,7 @@ export default function SignInPage() {
           setError(result.error)
         }
       } else {
-        // Platform login - redirect to overview page
-        router.push('/')
+        window.location.assign('/')
       }
     } catch (error) {
       setError('An error occurred. Please try again.')
@@ -150,7 +148,7 @@ export default function SignInPage() {
         if (result?.error) {
             setError(result.error)
         } else {
-             router.push('/')
+             window.location.assign('/')
         }
       } catch (error) {
           setError('An error occurred. Please try again.')

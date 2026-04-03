@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,7 +14,6 @@ import { loadBrandingConfig } from '@/lib/branding'
 
 export default function SpaceSignInPage() {
   const params = useParams() as { space: string }
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -27,6 +26,19 @@ export default function SpaceSignInPage() {
   const [loginPageConfig, setLoginPageConfig] = useState<any>(null)
   const [branding, setBranding] = useState<any>(null)
 
+  const readJsonIfAvailable = async (response: Response) => {
+    const contentType = response.headers.get('content-type') || ''
+    if (!response.ok || !contentType.includes('application/json')) {
+      return null
+    }
+
+    try {
+      return await response.json()
+    } catch {
+      return null
+    }
+  }
+
   useEffect(() => {
     loadBrandingConfig().then(setBranding)
   }, [])
@@ -35,7 +47,7 @@ export default function SpaceSignInPage() {
     const loadSpace = async () => {
       try {
         const res = await fetch(`/api/spaces/${params.space}`)
-        const json = await res.json().catch(() => ({}))
+        const json = (await readJsonIfAvailable(res)) || {}
         const space = json.space || null
         let features = space?.features || null
         if (typeof features === 'string') {
@@ -50,14 +62,20 @@ export default function SpaceSignInPage() {
 
     // Fetch enabled SSO providers
     fetch('/api/auth/sso-providers')
-      .then(res => res.json())
-      .then(data => setSsoProviders(data))
+      .then(readJsonIfAvailable)
+      .then(data => {
+        if (!data) return
+        setSsoProviders({
+          google: !!data.google,
+          azure: !!data.azure,
+        })
+      })
       .catch(err => console.error('Error fetching SSO providers:', err))
 
     // Fetch login page config
     fetch(`/api/spaces/${params.space}/login-config`)
-      .then(res => res.json())
-      .then(data => setLoginPageConfig(data.loginPageConfig))
+      .then(readJsonIfAvailable)
+      .then(data => setLoginPageConfig(data?.loginPageConfig || null))
       .catch(err => console.error('Error fetching login config:', err))
   }, [params.space])
 
@@ -83,15 +101,12 @@ export default function SpaceSignInPage() {
           if (spaceRes.ok) {
             const data = await spaceRes.json()
             const defaultPath = data.path || '/dashboard'
-            // Redirect to space-specific path
-            router.push(`/${params.space}${defaultPath}`)
+            window.location.assign(`/${params.space}${defaultPath}`)
           } else {
-            // Fallback to dashboard
-            router.push(`/${params.space}/dashboard`)
+            window.location.assign(`/${params.space}/dashboard`)
           }
         } catch {
-          // Fallback to dashboard
-          router.push(`/${params.space}/dashboard`)
+          window.location.assign(`/${params.space}/dashboard`)
         }
       }
     } catch {
@@ -128,12 +143,12 @@ export default function SpaceSignInPage() {
               if (spaceRes.ok) {
                 const data = await spaceRes.json()
                 const defaultPath = data.path || '/dashboard'
-                router.push(`/${params.space}${defaultPath}`)
+                window.location.assign(`/${params.space}${defaultPath}`)
               } else {
-                router.push(`/${params.space}/dashboard`)
+                window.location.assign(`/${params.space}/dashboard`)
               }
             } catch {
-              router.push(`/${params.space}/dashboard`)
+              window.location.assign(`/${params.space}/dashboard`)
             }
         }
       } catch (error) {
