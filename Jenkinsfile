@@ -14,8 +14,11 @@ pipeline {
         // Computed tags
         FULL_IMAGE_NAME = "${REGISTRY}/${REGISTRY_PROJECT}/${IMAGE_NAME}"
         
-        // Enable BuildKit for layer caching, cache mounts, and parallel stages
-        DOCKER_BUILDKIT = '1'
+        // GitLab registry is more reliable with classic Docker v2 image manifests.
+        // BuildKit can publish manifest/index formats that some GitLab registry setups
+        // surface as "Invalid tag: missing manifest digest".
+        DOCKER_BUILDKIT = '0'
+        COMPOSE_DOCKER_CLI_BUILD = '0'
     }
 
     stages {
@@ -81,6 +84,7 @@ pipeline {
                                     sh "docker pull ${env.FULL_IMAGE_NAME}:latest || true"
                                     sh """
                                         docker build \
+                                            --pull \
                                             --cache-from ${env.FULL_IMAGE_NAME}:latest \
                                             -t ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG} \
                                             -t ${env.FULL_IMAGE_NAME}:latest \
@@ -88,6 +92,8 @@ pipeline {
                                     """
                                     sh "docker push ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG}"
                                     sh "docker push ${env.FULL_IMAGE_NAME}:latest"
+                                    sh "docker manifest inspect ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG} >/dev/null"
+                                    sh "docker manifest inspect ${env.FULL_IMAGE_NAME}:latest >/dev/null"
                                 }
                             }
                             post {
@@ -107,6 +113,7 @@ pipeline {
                                     sh "docker pull ${hubImage}:latest || true"
                                     sh """
                                         docker build \
+                                            --pull \
                                             --cache-from ${hubImage}:latest \
                                             -t ${hubImage}:${env.IMAGE_TAG} \
                                             -t ${hubImage}:latest \
@@ -114,6 +121,8 @@ pipeline {
                                     """
                                     sh "docker push ${hubImage}:${env.IMAGE_TAG}"
                                     sh "docker push ${hubImage}:latest"
+                                    sh "docker manifest inspect ${hubImage}:${env.IMAGE_TAG} >/dev/null"
+                                    sh "docker manifest inspect ${hubImage}:latest >/dev/null"
                                 }
                             }
                             post {

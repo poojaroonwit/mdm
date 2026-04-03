@@ -2,25 +2,25 @@ variables:
   # Use the project's registry
   IMAGE_TAG: $CI_REGISTRY_IMAGE:1.0.5-patch4
   LATEST_TAG: $CI_REGISTRY_IMAGE:latest
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_BUILDKIT: "0"
 
 stages:
   - build
 
 docker-build:
   stage: build
-  image:
-    name: gcr.io/kaniko-project/executor:v1.14.0-debug
-    entrypoint: [""]
+  image: docker:27-cli
+  services:
+    - name: docker:27-dind
+      alias: docker
   script:
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor
-      --context "${CI_PROJECT_DIR}"
-      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination "${IMAGE_TAG}"
-      --destination "${LATEST_TAG}"
-      --build-arg NODE_ENV=production
-      --cache=true
-      --cache-copy-layers
+    - echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" --password-stdin
+    - docker pull "${LATEST_TAG}" || true
+    - docker build --pull --cache-from "${LATEST_TAG}" --build-arg NODE_ENV=production --tag "${IMAGE_TAG}" --tag "${LATEST_TAG}" .
+    - docker push "${IMAGE_TAG}"
+    - docker push "${LATEST_TAG}"
   only:
     - master
     - main
