@@ -23,6 +23,8 @@ COPY . .
 
 # Build arguments
 ARG NEXT_PUBLIC_API_URL=http://localhost:8302
+ARG BUILD_COMMIT=unknown
+ARG BUILD_VERSION=0.0.0
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -34,8 +36,15 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
+ARG BUILD_COMMIT=unknown
+ARG BUILD_VERSION=0.0.0
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+
+LABEL org.opencontainers.image.version="${BUILD_VERSION}" \
+      org.opencontainers.image.revision="${BUILD_COMMIT}" \
+      org.opencontainers.image.title="unified-data-platform-plugin-hub"
 
 # Install wget for healthcheck
 RUN apk add --no-cache wget

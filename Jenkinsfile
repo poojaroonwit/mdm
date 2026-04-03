@@ -13,12 +13,14 @@ pipeline {
         
         // Computed tags
         FULL_IMAGE_NAME = "${REGISTRY}/${REGISTRY_PROJECT}/${IMAGE_NAME}"
-        
-        // GitLab registry is more reliable with classic Docker v2 image manifests.
-        // BuildKit can publish manifest/index formats that some GitLab registry setups
-        // surface as "Invalid tag: missing manifest digest".
-        DOCKER_BUILDKIT = '0'
-        COMPOSE_DOCKER_CLI_BUILD = '0'
+
+        // Buildx is still used, but we disable default attestations and load a
+        // single-platform image into the local daemon before pushing so GitLab
+        // receives a plain image manifest instead of an OCI index/attestation set.
+        DOCKER_BUILDKIT = '1'
+        COMPOSE_DOCKER_CLI_BUILD = '1'
+        BUILDX_NO_DEFAULT_ATTESTATIONS = '1'
+        BUILDKIT_PROGRESS = 'plain'
     }
 
     stages {
@@ -36,22 +38,24 @@ pipeline {
                         // Use sed to extract and TR -d to remove carriage returns (CRITICAL for Windows/Linux mix)
                         def version = sh(script: "grep '\"version\":' package.json | head -n 1 | sed -E 's/.*\"version\":[[:space:]]*\"([^\"]+)\".*/\\1/' | tr -d '\\r'", returnStdout: true).trim()
                         if (version) {
-                            env.IMAGE_TAG = version
+                            env.VERSION_TAG = version
                         } else {
                             error "Version extraction returned empty string"
                         }
                     } catch (Exception e) {
                         echo "Version extraction failed: ${e.message}. Using default."
-                        env.IMAGE_TAG = "0.0.1"
+                        env.VERSION_TAG = "0.0.1"
                     }
                     
                     env.GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                     
                     // VALIDATE TAG
-                    if (!env.IMAGE_TAG || env.IMAGE_TAG == "") {
-                         env.IMAGE_TAG = "0.0.1-fallback"
+                    if (!env.VERSION_TAG || env.VERSION_TAG == "") {
+                         env.VERSION_TAG = "0.0.1-fallback"
                     }
-                    echo "DEBUG: Build Tag Cleaned: '[${env.IMAGE_TAG}]'"
+                    env.IMAGE_TAG = "${env.VERSION_TAG}-${env.GIT_COMMIT_SHORT}"
+                    echo "DEBUG: Version Tag: '[${env.VERSION_TAG}]'"
+                    echo "DEBUG: Immutable Build Tag: '[${env.IMAGE_TAG}]'"
                     echo "DEBUG: Commit Hash: '[${env.GIT_COMMIT_SHORT}]'"
                 }
             }
@@ -74,6 +78,13 @@ pipeline {
                         }
                     }
                 }
+                stage('Prepare Builder') {
+                    steps {
+                        script {
+                            sh "docker buildx inspect --bootstrap"
+                        }
+                    }
+                }
                 stage('Build Images') {
                     parallel {
                         stage('Main App') {
@@ -83,16 +94,27 @@ pipeline {
                                     // Pull previous image to use as cache source (fails silently on first build)
                                     sh "docker pull ${env.FULL_IMAGE_NAME}:latest || true"
                                     sh """
-                                        docker build \
+                                        docker buildx build \
+                                            --platform linux/amd64 \
+                                            --progress=plain \
+                                            --provenance=false \
+                                            --sbom=false \
+                                            --load \
                                             --pull \
-                                            --cache-from ${env.FULL_IMAGE_NAME}:latest \
+                                            --no-cache-filter builder \
+                                            --build-arg BUILD_COMMIT=${env.GIT_COMMIT_SHORT} \
+                                            --build-arg BUILD_VERSION=${env.VERSION_TAG} \
                                             -t ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG} \
+                                            -t ${env.FULL_IMAGE_NAME}:${env.VERSION_TAG} \
                                             -t ${env.FULL_IMAGE_NAME}:latest \
                                             -f Dockerfile .
                                     """
+                                    sh "docker image inspect ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG} >/dev/null"
                                     sh "docker push ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG}"
+                                    sh "docker push ${env.FULL_IMAGE_NAME}:${env.VERSION_TAG}"
                                     sh "docker push ${env.FULL_IMAGE_NAME}:latest"
                                     sh "docker manifest inspect ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG} >/dev/null"
+                                    sh "docker manifest inspect ${env.FULL_IMAGE_NAME}:${env.VERSION_TAG} >/dev/null"
                                     sh "docker manifest inspect ${env.FULL_IMAGE_NAME}:latest >/dev/null"
                                 }
                             }
@@ -100,6 +122,7 @@ pipeline {
                                 always {
                                     script {
                                         sh "docker rmi ${env.FULL_IMAGE_NAME}:${env.IMAGE_TAG} || true"
+                                        sh "docker rmi ${env.FULL_IMAGE_NAME}:${env.VERSION_TAG} || true"
                                         sh "docker rmi ${env.FULL_IMAGE_NAME}:latest || true"
                                     }
                                 }
@@ -112,16 +135,27 @@ pipeline {
                                     echo "Building plugin-hub: ${hubImage}:${env.IMAGE_TAG}"
                                     sh "docker pull ${hubImage}:latest || true"
                                     sh """
-                                        docker build \
+                                        docker buildx build \
+                                            --platform linux/amd64 \
+                                            --progress=plain \
+                                            --provenance=false \
+                                            --sbom=false \
+                                            --load \
                                             --pull \
-                                            --cache-from ${hubImage}:latest \
+                                            --no-cache-filter builder \
+                                            --build-arg BUILD_COMMIT=${env.GIT_COMMIT_SHORT} \
+                                            --build-arg BUILD_VERSION=${env.VERSION_TAG} \
                                             -t ${hubImage}:${env.IMAGE_TAG} \
+                                            -t ${hubImage}:${env.VERSION_TAG} \
                                             -t ${hubImage}:latest \
                                             -f plugin-hub/Dockerfile plugin-hub
                                     """
+                                    sh "docker image inspect ${hubImage}:${env.IMAGE_TAG} >/dev/null"
                                     sh "docker push ${hubImage}:${env.IMAGE_TAG}"
+                                    sh "docker push ${hubImage}:${env.VERSION_TAG}"
                                     sh "docker push ${hubImage}:latest"
                                     sh "docker manifest inspect ${hubImage}:${env.IMAGE_TAG} >/dev/null"
+                                    sh "docker manifest inspect ${hubImage}:${env.VERSION_TAG} >/dev/null"
                                     sh "docker manifest inspect ${hubImage}:latest >/dev/null"
                                 }
                             }
@@ -130,6 +164,7 @@ pipeline {
                                     script {
                                         def hubImage = "${env.REGISTRY}/${env.REGISTRY_PROJECT}/unified-data-platform/plugin-hub"
                                         sh "docker rmi ${hubImage}:${env.IMAGE_TAG} || true"
+                                        sh "docker rmi ${hubImage}:${env.VERSION_TAG} || true"
                                         sh "docker rmi ${hubImage}:latest || true"
                                     }
                                 }

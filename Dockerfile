@@ -29,6 +29,8 @@ ARG NEXT_PUBLIC_API_URL=http://localhost:8302
 ARG NEXT_PUBLIC_WS_PROXY_URL=ws://localhost:3002/api/openai-realtime
 ARG NEXT_PUBLIC_WS_PROXY_PORT=3002
 ARG BUILD_MEMORY_LIMIT=4096
+ARG BUILD_COMMIT=unknown
+ARG BUILD_VERSION=0.0.0
 
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_WS_PROXY_URL=${NEXT_PUBLIC_WS_PROXY_URL}
@@ -55,11 +57,18 @@ FROM node:20-alpine AS runner
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
+ARG BUILD_COMMIT=unknown
+ARG BUILD_VERSION=0.0.0
+
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=8301 \
     HOSTNAME="0.0.0.0" \
     NODE_OPTIONS="--max-old-space-size=2048"
+
+LABEL org.opencontainers.image.version="${BUILD_VERSION}" \
+      org.opencontainers.image.revision="${BUILD_COMMIT}" \
+      org.opencontainers.image.title="unified-data-platform"
 
 RUN apk add --no-cache postgresql-client dos2unix openssl && \
     addgroup --system --gid 1001 nodejs && \
