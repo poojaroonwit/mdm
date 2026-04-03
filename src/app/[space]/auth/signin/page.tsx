@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,6 +14,7 @@ import { loadBrandingConfig } from '@/lib/branding'
 
 export default function SpaceSignInPage() {
   const params = useParams() as { space: string }
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -84,7 +85,9 @@ export default function SpaceSignInPage() {
     setIsLoading(true)
     setError('')
     try {
-      const result = await signIn('credentials', { email, password, redirect: false })
+      const fallbackCallbackUrl = `/${params.space}/dashboard`
+      const callbackUrl = searchParams?.get('callbackUrl') || fallbackCallbackUrl
+      const result = await signIn('credentials', { email, password, callbackUrl, redirect: false })
       if (result?.error) {
         if (result.error === 'CredentialsSignin') {
           setError('Invalid email or password. Please try again.')
@@ -95,19 +98,7 @@ export default function SpaceSignInPage() {
           setError(result.error)
         }
       } else {
-        // Get the default page for this space from layout config
-        try {
-          const spaceRes = await fetch(`/api/spaces/${params.space}/default-page`)
-          if (spaceRes.ok) {
-            const data = await spaceRes.json()
-            const defaultPath = data.path || '/dashboard'
-            window.location.assign(`/${params.space}${defaultPath}`)
-          } else {
-            window.location.assign(`/${params.space}/dashboard`)
-          }
-        } catch {
-          window.location.assign(`/${params.space}/dashboard`)
-        }
+        window.location.assign(result?.url || callbackUrl)
       }
     } catch {
       setError('An error occurred. Please try again.')
@@ -127,29 +118,20 @@ export default function SpaceSignInPage() {
       setError('')
 
       try {
+        const fallbackCallbackUrl = `/${params.space}/dashboard`
+        const callbackUrl = searchParams?.get('callbackUrl') || fallbackCallbackUrl
         const result = await signIn('credentials', {
             email,
             password,
             totpCode,
+            callbackUrl,
             redirect: false
         })
 
         if (result?.error) {
             setError(result.error)
         } else {
-            // Get the default page for this space from layout config
-            try {
-              const spaceRes = await fetch(`/api/spaces/${params.space}/default-page`)
-              if (spaceRes.ok) {
-                const data = await spaceRes.json()
-                const defaultPath = data.path || '/dashboard'
-                window.location.assign(`/${params.space}${defaultPath}`)
-              } else {
-                window.location.assign(`/${params.space}/dashboard`)
-              }
-            } catch {
-              window.location.assign(`/${params.space}/dashboard`)
-            }
+            window.location.assign(result?.url || callbackUrl)
         }
       } catch (error) {
           setError('An error occurred. Please try again.')
@@ -350,11 +332,12 @@ export default function SpaceSignInPage() {
                   {ssoProviders.google && (
                     <Button variant="outline" className="w-full bg-white/50 hover:bg-white/80 border-white/40" onClick={async () => {
                       try {
+                        const requestedCallbackUrl = searchParams?.get('callbackUrl')
                         const spaceRes = await fetch(`/api/spaces/${params.space}/default-page`)
                         const defaultPath = spaceRes.ok ? (await spaceRes.json()).path : '/dashboard'
-                        await signIn('google', { callbackUrl: `/${params.space}${defaultPath}` })
+                        await signIn('google', { callbackUrl: requestedCallbackUrl || `/${params.space}${defaultPath}` })
                       } catch {
-                        await signIn('google', { callbackUrl: `/${params.space}/dashboard` })
+                        await signIn('google', { callbackUrl: searchParams?.get('callbackUrl') || `/${params.space}/dashboard` })
                       }
                     }} disabled={isLoading}>
                       <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -369,11 +352,12 @@ export default function SpaceSignInPage() {
                   {ssoProviders.azure && (
                     <Button variant="outline" className="w-full bg-white/50 hover:bg-white/80 border-white/40" onClick={async () => {
                       try {
+                        const requestedCallbackUrl = searchParams?.get('callbackUrl')
                         const spaceRes = await fetch(`/api/spaces/${params.space}/default-page`)
                         const defaultPath = spaceRes.ok ? (await spaceRes.json()).path : '/dashboard'
-                        await signIn('azure-ad', { callbackUrl: `/${params.space}${defaultPath}` })
+                        await signIn('azure-ad', { callbackUrl: requestedCallbackUrl || `/${params.space}${defaultPath}` })
                       } catch {
-                        await signIn('azure-ad', { callbackUrl: `/${params.space}/dashboard` })
+                        await signIn('azure-ad', { callbackUrl: searchParams?.get('callbackUrl') || `/${params.space}/dashboard` })
                       }
                     }} disabled={isLoading}>
                       <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { signIn } from 'next-auth/react'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -24,6 +25,7 @@ export default function SignInPage() {
   const [loginBgStyle, setLoginBgStyle] = useState<React.CSSProperties>({})
   const [loginBgVideo, setLoginBgVideo] = useState<string | undefined>(undefined)
   const { settings } = useSystemSettingsSafe()
+  const searchParams = useSearchParams()
   const [appName, setAppName] = useState(settings?.siteName || 'Unified Data Platform')
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   // Update appName when settings load
@@ -101,10 +103,12 @@ export default function SignInPage() {
     setError('')
 
     try {
+      const callbackUrl = searchParams?.get('callbackUrl') || '/'
       // Sign in with NextAuth.js
       const result = await signIn('credentials', {
         email,
         password,
+        callbackUrl,
         redirect: false,
       })
 
@@ -118,7 +122,7 @@ export default function SignInPage() {
           setError(result.error)
         }
       } else {
-        window.location.assign('/')
+        window.location.assign(result?.url || callbackUrl)
       }
     } catch (error) {
       setError('An error occurred. Please try again.')
@@ -138,17 +142,19 @@ export default function SignInPage() {
       setError('')
 
       try {
+        const callbackUrl = searchParams?.get('callbackUrl') || '/'
         const result = await signIn('credentials', {
             email,
             password,
             totpCode,
+            callbackUrl,
             redirect: false
         })
 
         if (result?.error) {
             setError(result.error)
         } else {
-             window.location.assign('/')
+             window.location.assign(result?.url || callbackUrl)
         }
       } catch (error) {
           setError('An error occurred. Please try again.')
@@ -159,8 +165,8 @@ export default function SignInPage() {
 
   const handleGoogleSignIn = async () => {
     try {
-      // Platform login - redirect to overview page
-      await signIn('google', { callbackUrl: '/' })
+      const callbackUrl = searchParams?.get('callbackUrl') || '/'
+      await signIn('google', { callbackUrl })
     } catch (error) {
       setError('An error occurred with Google sign-in.')
     }
@@ -168,8 +174,8 @@ export default function SignInPage() {
 
   const handleAzureSignIn = async () => {
     try {
-      // Platform login - redirect to overview page
-      await signIn('azure-ad', { callbackUrl: '/' })
+      const callbackUrl = searchParams?.get('callbackUrl') || '/'
+      await signIn('azure-ad', { callbackUrl })
     } catch (error) {
       setError('An error occurred with Azure sign-in.')
     }
