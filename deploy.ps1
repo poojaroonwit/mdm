@@ -42,17 +42,17 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "--- Docker Operations ---" -ForegroundColor Cyan
 Write-Host "Building Docker Image..." -ForegroundColor Yellow
-docker build --provenance=false -t nccgit.qsncc.com:5555/ba/unified-data-platform:1.0.3 -t nccgit.qsncc.com:5555/ba/unified-data-platform:latest .
+$mainImage = "nccgit.qsncc.com:5555/ba/unified-data-platform:1.0.6"
+$pluginHubImage = "nccgit.qsncc.com:5555/ba/unified-data-platform/plugin-hub:1.0.6"
+
+docker build --provenance=false -t $mainImage .
 Write-Host "Building Plugin Hub..." -ForegroundColor Yellow
-docker build --provenance=false -t nccgit.qsncc.com:5555/ba/unified-data-platform/plugin-hub:1.0.3 -t nccgit.qsncc.com:5555/ba/unified-data-platform/plugin-hub:latest ./plugin-hub
+docker build --provenance=false -t $pluginHubImage ./plugin-hub
 
 if ($?) {
     Write-Host "Pushing Docker Images..." -ForegroundColor Yellow
-    docker push nccgit.qsncc.com:5555/ba/unified-data-platform:1.0.3
-    docker push nccgit.qsncc.com:5555/ba/unified-data-platform:latest
-    
-    docker push nccgit.qsncc.com:5555/ba/unified-data-platform/plugin-hub:1.0.3
-    docker push nccgit.qsncc.com:5555/ba/unified-data-platform/plugin-hub:latest
+    docker push $mainImage
+    docker push $pluginHubImage
 }
 else {
     Write-Error "Docker build failed. Skipping push."

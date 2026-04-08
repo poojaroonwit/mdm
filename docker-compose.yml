@@ -1,7 +1,7 @@
 services:
   app:
     container_name: mdm-app
-    image: nccgit.qsncc.com:5555/ba/unified-data-platform:latest
+    image: nccgit.qsncc.com:5555/ba/unified-data-platform:1.0.6
     # # Build from local Dockerfile
     # build:
     #   context: .
@@ -62,7 +62,7 @@ services:
   # Plugin Hub Service
   plugin-hub:
     container_name: mdm-plugin-hub
-    image: nccgit.qsncc.com:5555/ba/unified-data-platform/plugin-hub:latest
+    image: nccgit.qsncc.com:5555/ba/unified-data-platform/plugin-hub:1.0.6
 
     ports:
       - '8629:3001'
