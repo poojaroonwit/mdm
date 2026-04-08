@@ -30,15 +30,18 @@ export default function SignInPage() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
 
   const waitForSession = async () => {
-    for (let attempt = 0; attempt < 10; attempt += 1) {
+    console.log('[signin] Waiting for session to be established...')
+    for (let attempt = 0; attempt < 15; attempt += 1) {
       const session = await getSession()
+      console.log(`[signin] Attempt ${attempt + 1}: Session active: ${!!session?.user}`)
       if (session?.user) {
         return true
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 250))
+      await new Promise((resolve) => setTimeout(resolve, 500))
     }
 
+    console.error('[signin] Session not established after 15 attempts.')
     return false
   }
   // Update appName when settings load
