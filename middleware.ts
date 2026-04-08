@@ -1,36 +1,63 @@
-import { withAuth } from 'next-auth/middleware'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 
-export default withAuth(
-  function middleware(req) {
-    const token = req.nextauth.token
-    const now = Math.floor(Date.now() / 1000)
+const SESSION_COOKIE_CANDIDATES = [
+  '__Secure-next-auth.session-token',
+  'next-auth.session-token',
+  '__Secure-authjs.session-token',
+  'authjs.session-token',
+]
 
-    console.log(`[middleware] Path: ${req.nextUrl.pathname}, Token: ${!!token}, Exp: ${token?.exp}`)
-    if (token) {
-      console.log(`[middleware] Token role: ${(token as any).role}, Is SuperAdmin: ${(token as any).isSuperAdmin}`)
-    }
-
-    // Force sign-out if the JWT has expired
-    if (token?.exp && (token.exp as number) < now) {
-      console.warn(`[middleware] Token expired at ${token.exp}, current time is ${now}. Redirecting to signin.`)
-      const signInUrl = new URL('/auth/signin', req.url)
-      signInUrl.searchParams.set('callbackUrl', req.nextUrl.pathname)
-      return NextResponse.redirect(signInUrl)
-    }
-
-    return NextResponse.next()
-  },
-  {
-    secret: process.env.NEXTAUTH_SECRET,
-    pages: {
-      signIn: '/auth/signin',
-    },
-    callbacks: {
-      authorized: ({ token }) => !!token,
-    },
+async function readSessionToken(req: NextRequest) {
+  const secret = process.env.NEXTAUTH_SECRET
+  if (!secret) {
+    console.error('[middleware] NEXTAUTH_SECRET is not configured')
+    return null
   }
-)
+
+  for (const cookieName of SESSION_COOKIE_CANDIDATES) {
+    if (!req.cookies.get(cookieName)?.value) {
+      continue
+    }
+
+    const token = await getToken({
+      req,
+      secret,
+      cookieName,
+    })
+
+    if (token) {
+      return token
+    }
+  }
+
+  return await getToken({
+    req,
+    secret,
+  })
+}
+
+function buildSignInRedirect(req: NextRequest) {
+  const signInUrl = new URL('/auth/signin', req.url)
+  const callbackPath = `${req.nextUrl.pathname}${req.nextUrl.search}`
+  signInUrl.searchParams.set('callbackUrl', callbackPath)
+  return NextResponse.redirect(signInUrl)
+}
+
+export default async function middleware(req: NextRequest) {
+  const token = await readSessionToken(req)
+  const now = Math.floor(Date.now() / 1000)
+
+  if (!token) {
+    return buildSignInRedirect(req)
+  }
+
+  if (typeof token.exp === 'number' && token.exp < now) {
+    return buildSignInRedirect(req)
+  }
+
+  return NextResponse.next()
+}
 
 export const config = {
   matcher: [
