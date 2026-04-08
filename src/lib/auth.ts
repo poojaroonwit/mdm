@@ -36,6 +36,8 @@ const JWT_SECRET = new TextEncoder().encode(
 
 const CACHE_TTL_MS = 10 * 60 * 1000
 let sessionTimeoutCache: { data: number; timestamp: number } | null = null
+const nextAuthUrl = process.env.NEXTAUTH_URL?.trim()
+const isSecureAuthUrl = nextAuthUrl?.startsWith("https://") ?? false
 
 import { getToken } from "next-auth/jwt"
 
@@ -147,6 +149,8 @@ async function getSessionTimeoutSeconds(): Promise<number> {
 function createBaseAuthOptions(providers: NonNullable<NextAuthOptions["providers"]>): NextAuthOptions {
   return {
     secret: process.env.NEXTAUTH_SECRET,
+    trustHost: true,
+    useSecureCookies: isSecureAuthUrl,
     providers: [
       CredentialsProvider({
         name: "credentials",
@@ -185,6 +189,34 @@ function createBaseAuthOptions(providers: NonNullable<NextAuthOptions["providers
       ...providers,
     ],
     session: { strategy: "jwt" },
+    cookies: {
+      sessionToken: {
+        name: isSecureAuthUrl ? "__Secure-next-auth.session-token" : "next-auth.session-token",
+        options: {
+          httpOnly: true,
+          sameSite: "lax",
+          path: "/",
+          secure: isSecureAuthUrl,
+        },
+      },
+      callbackUrl: {
+        name: isSecureAuthUrl ? "__Secure-next-auth.callback-url" : "next-auth.callback-url",
+        options: {
+          sameSite: "lax",
+          path: "/",
+          secure: isSecureAuthUrl,
+        },
+      },
+      csrfToken: {
+        name: isSecureAuthUrl ? "__Host-next-auth.csrf-token" : "next-auth.csrf-token",
+        options: {
+          httpOnly: true,
+          sameSite: "lax",
+          path: "/",
+          secure: isSecureAuthUrl,
+        },
+      },
+    },
     callbacks: {
       async signIn({ user, account, profile }) {
         if (account?.provider === "credentials") {
@@ -258,6 +290,22 @@ function createBaseAuthOptions(providers: NonNullable<NextAuthOptions["providers
         }
 
         return session
+      },
+      async redirect({ url, baseUrl }) {
+        if (url.startsWith("/")) {
+          return `${baseUrl}${url}`
+        }
+
+        try {
+          const redirectUrl = new URL(url)
+          if (redirectUrl.origin === baseUrl) {
+            return url
+          }
+        } catch {
+          return baseUrl
+        }
+
+        return baseUrl
       },
     },
     pages: { signIn: "/auth/signin" },
