@@ -37,11 +37,39 @@ const JWT_SECRET = new TextEncoder().encode(
 const CACHE_TTL_MS = 10 * 60 * 1000
 let sessionTimeoutCache: { data: number; timestamp: number } | null = null
 
+import { getToken } from "next-auth/jwt"
+
 export async function authenticate(req: NextRequest) {
   const authHeader = req.headers.get("authorization")
   const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null
   const cookieToken = req.cookies.get("appkit_token")?.value
-  const token = bearerToken || cookieToken
+  let token = bearerToken || cookieToken
+
+  // Fallback to NextAuth token if appkit_token is missing
+  if (!token) {
+    const nextAuthToken = await getToken({ 
+      req, 
+      secret: process.env.NEXTAUTH_SECRET 
+    })
+    
+    if (nextAuthToken) {
+      console.log(`[auth] Authenticate: Found NextAuth token for user ${nextAuthToken.email}`)
+      return {
+        admin: {
+          id: (nextAuthToken as any).id,
+          adminId: (nextAuthToken as any).adminId,
+          email: (nextAuthToken as any).email,
+          firstName: (nextAuthToken as any).firstName,
+          lastName: (nextAuthToken as any).lastName,
+          name: (nextAuthToken as any).name,
+          avatarUrl: (nextAuthToken as any).avatarUrl,
+          role: (nextAuthToken as any).role,
+          permissions: (nextAuthToken as any).permissions || [],
+          isSuperAdmin: (nextAuthToken as any).isSuperAdmin || false,
+        },
+      }
+    }
+  }
 
   if (!token) {
     return { error: "Access denied", status: 401 }
