@@ -177,6 +177,7 @@ export interface DifyOptions {
 export interface Chatbot {
   id: string
   name: string
+  folder_id?: string | null
   website: string
   description?: string
   engineType: 'custom' | 'openai' | 'chatkit' | 'dify' | 'openai-agent-sdk'
@@ -592,5 +593,16 @@ export interface Chatbot {
   updatedAt: Date
   versions: ChatbotVersion[]
   currentVersion: string
+}
+
+export interface ChatbotFolder {
+  id: string
+  name: string
+  type: 'chatbot'
+  space_id: string
+  parent_id: string | null
+  created_at: string
+  updated_at: string
+  created_by: string | null
 }
 

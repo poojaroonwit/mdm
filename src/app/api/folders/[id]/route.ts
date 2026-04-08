@@ -10,7 +10,7 @@ import {
   type SupportedFolderType,
 } from '@/lib/folder-state'
 
-const folderTypeSchema = z.enum(['data_model'])
+const folderTypeSchema = z.enum(['data_model', 'chatbot'])
 
 async function putHandler(
   request: NextRequest,

@@ -1,7 +1,7 @@
 import { query } from '@/lib/db'
 import { randomUUID } from 'crypto'
 
-export type SupportedFolderType = 'data_model'
+export type SupportedFolderType = 'data_model' | 'chatbot'
 
 export interface FolderItem {
   id: string
@@ -30,7 +30,7 @@ function normalizeFolderItem(input: any): FolderItem | null {
 
   const id = typeof input.id === 'string' ? input.id.trim() : ''
   const name = typeof input.name === 'string' ? input.name.trim() : ''
-  const type = input.type === 'data_model' ? input.type : null
+  const type = input.type === 'data_model' || input.type === 'chatbot' ? input.type : null
   const spaceId = typeof input.space_id === 'string' ? input.space_id.trim() : ''
   const parentId = typeof input.parent_id === 'string' && input.parent_id.trim() ? input.parent_id.trim() : null
   const createdAt = typeof input.created_at === 'string' ? input.created_at : new Date().toISOString()

@@ -7,6 +7,11 @@ import { getSecretsManager } from '@/lib/secrets-manager'
 import { createAuditContext } from '@/lib/audit-context-helper'
 import { requireSpaceAccess } from '@/lib/space-access'
 import { checkRateLimit } from '@/lib/rate-limiter'
+import {
+  assignResourceFolder,
+  getFolderState,
+  resolveFolderSpaceId,
+} from '@/lib/folder-state'
 
 export const dynamic = 'force-dynamic'
 
@@ -103,6 +108,7 @@ async function getHandler(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const spaceId = searchParams.get('spaceId') || searchParams.get('space_id')
   const isPublished = searchParams.get('isPublished')
+  const folderSpaceId = await resolveFolderSpaceId(session.user.id!, spaceId)
 
   const where: any = {
     deletedAt: null,
@@ -145,10 +151,15 @@ async function getHandler(request: NextRequest) {
     orderBy: { createdAt: 'desc' }
   })
 
-  // Merge version config into each chatbot
-  const mergedChatbots = chatbots.map(cb => mergeVersionConfig(cb))
+  const folderState = folderSpaceId ? await getFolderState(folderSpaceId, 'chatbot') : { folders: [], assignments: {} as Record<string, string | null> }
 
-  return NextResponse.json({ chatbots: mergedChatbots })
+  // Merge version config into each chatbot
+  const mergedChatbots = chatbots.map(cb => ({
+    ...mergeVersionConfig(cb),
+    folder_id: folderState.assignments[cb.id] || null,
+  }))
+
+  return NextResponse.json({ chatbots: mergedChatbots, folderSpaceId })
 }
 
 
@@ -210,6 +221,8 @@ async function postHandler(request: NextRequest) {
     deploymentType,
     currentVersion,
     spaceId = body.space_id,
+    folderId = body.folder_id,
+    folderSpaceId = body.folder_space_id,
     customEmbedDomain,
     domainAllowlist,
     selectedModelId,
@@ -716,13 +729,21 @@ async function postHandler(request: NextRequest) {
       }
     })
 
+    const resolvedFolderSpaceId = await resolveFolderSpaceId(session.user.id!, folderSpaceId || spaceId || null)
+    if (resolvedFolderSpaceId) {
+      await assignResourceFolder(resolvedFolderSpaceId, 'chatbot', chatbot.id, folderId || null)
+    }
+
     // Sync OpenAI API key to global provider config if provided
     if (openaiAgentSdkApiKey) {
       await syncOpenAIApiKey(openaiAgentSdkApiKey, request, session.user)
     }
 
     // Merge version config into chatbot object
-    const mergedChatbot = mergeVersionConfig(chatbot)
+    const mergedChatbot = {
+      ...mergeVersionConfig(chatbot),
+      folder_id: folderId || null,
+    }
 
     return NextResponse.json({ chatbot: mergedChatbot }, { status: 201 })
   } catch (error: any) {

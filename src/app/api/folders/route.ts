@@ -11,7 +11,7 @@ import {
   type SupportedFolderType,
 } from '@/lib/folder-state'
 
-const folderTypeSchema = z.enum(['data_model'])
+const folderTypeSchema = z.enum(['data_model', 'chatbot'])
 
 async function getHandler(request: NextRequest) {
   const startTime = Date.now()

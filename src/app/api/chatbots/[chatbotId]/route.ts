@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { db } from '@/lib/db'
 import { mergeVersionConfig, sanitizeChatbotConfig } from '@/lib/chatbot-helper'
+import {
+  assignResourceFolder,
+  clearResourceFolderAssignments,
+  getFolderState,
+  resolveFolderSpaceId,
+} from '@/lib/folder-state'
 
 export const dynamic = 'force-dynamic'
 
@@ -51,8 +57,14 @@ async function getHandler(
     return NextResponse.json({ error: 'Chatbot not found' }, { status: 404 })
   }
 
+  const folderSpaceId = await resolveFolderSpaceId(session.user.id!, chatbot.spaceId || null)
+  const folderState = folderSpaceId ? await getFolderState(folderSpaceId, 'chatbot') : null
+
   // Merge version config and sanitize (rewrites MinIO URLs to proxy paths, strips API keys)
-  const mergedChatbot = sanitizeChatbotConfig(mergeVersionConfig(chatbot))
+  const mergedChatbot = sanitizeChatbotConfig({
+    ...mergeVersionConfig(chatbot),
+    folder_id: folderState?.assignments[chatbot.id] || null,
+  })
 
   return NextResponse.json({ chatbot: mergedChatbot })
 }
@@ -130,6 +142,8 @@ async function putHandler(
     isPublished = body.is_published,
     currentVersion = body.current_version,
     spaceId = body.space_id,
+    folderId = body.folder_id,
+    folderSpaceId = body.folder_space_id,
     customEmbedDomain,
     domainAllowlist,
     chatkitAgentId = body.chatkit_agent_id, // Explicitly extract
@@ -284,6 +298,14 @@ async function putHandler(
     })
   }
 
+  const resolvedFolderSpaceId = await resolveFolderSpaceId(
+    session.user.id!,
+    folderSpaceId || spaceId || existingChatbot.spaceId || null
+  )
+  if (resolvedFolderSpaceId && (folderId !== undefined || folderSpaceId !== undefined || spaceId !== undefined)) {
+    await assignResourceFolder(resolvedFolderSpaceId, 'chatbot', chatbotId, folderId || null)
+  }
+
   // Refetch with updated versions
   const finalChatbot = await db.chatbot.findUnique({
     where: { id: chatbotId },
@@ -309,8 +331,15 @@ async function putHandler(
     }
   })
 
+  const finalFolderState = resolvedFolderSpaceId
+    ? await getFolderState(resolvedFolderSpaceId, 'chatbot')
+    : null
+
   // Merge version config into chatbot object
-  const mergedChatbot = mergeVersionConfig(finalChatbot)
+  const mergedChatbot = {
+    ...mergeVersionConfig(finalChatbot),
+    folder_id: finalFolderState?.assignments[chatbotId] || null,
+  }
 
   return NextResponse.json({ chatbot: mergedChatbot })
 }
@@ -346,6 +375,8 @@ async function deleteHandler(
       deletedAt: new Date()
     }
   })
+
+  await clearResourceFolderAssignments('chatbot', chatbotId)
 
   return NextResponse.json({ message: 'Chatbot deleted successfully' })
 }

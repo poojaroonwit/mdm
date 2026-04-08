@@ -3,12 +3,21 @@
 import { useState, useEffect } from 'react'
 import { ChatbotList } from '@/app/admin/components/chatbot/ChatbotList'
 import { ChatbotEditor } from '@/app/admin/components/chatbot/ChatbotEditor'
-import { Chatbot } from '@/app/admin/components/chatbot/types'
+import { Chatbot, ChatbotFolder } from '@/app/admin/components/chatbot/types'
 import { ChatbotEmulator } from '@/app/admin/components/chatbot/ChatbotEmulator'
 import { DeploymentDrawer } from '@/app/admin/components/chatbot/components/DeploymentDrawer'
 import { VersionDrawer } from '@/app/admin/components/chatbot/components/VersionDrawer'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import { Input } from '@/components/ui/input'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog'
 import { Plus, ArrowLeft, Rocket, History } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
@@ -16,6 +25,7 @@ import { useRouter } from 'next/navigation'
 export default function ChatEmbedUIPage() {
     const router = useRouter()
     const [chatbots, setChatbots] = useState<Chatbot[]>([])
+    const [folders, setFolders] = useState<ChatbotFolder[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [viewMode, setViewMode] = useState<'table' | 'card' | 'list'>('list')
     const [selectedChatbot, setSelectedChatbot] = useState<Chatbot | null>(null)
@@ -24,6 +34,29 @@ export default function ChatEmbedUIPage() {
     const [activeTab, setActiveTab] = useState<'engine' | 'style' | 'config' | 'performance' | 'pwa'>('engine')
     const [previewMode, setPreviewMode] = useState<'popover' | 'fullpage' | 'popup-center'>('popover')
     const [deploymentDrawerOpen, setDeploymentDrawerOpen] = useState(false)
+    const [folderSpaceId, setFolderSpaceId] = useState<string | null>(null)
+    const [folderDialogOpen, setFolderDialogOpen] = useState(false)
+    const [folderDialogMode, setFolderDialogMode] = useState<'create' | 'rename'>('create')
+    const [folderName, setFolderName] = useState('')
+    const [folderTarget, setFolderTarget] = useState<ChatbotFolder | null>(null)
+
+    const fetchFolders = async (spaceId?: string | null) => {
+        try {
+            const params = new URLSearchParams({ type: 'chatbot' })
+            if (spaceId) {
+                params.set('space_id', spaceId)
+            }
+
+            const res = await fetch(`/api/folders?${params.toString()}`)
+            if (!res.ok) throw new Error('Failed to fetch folders')
+            const data = await res.json()
+            setFolders(data.folders || [])
+            setFolderSpaceId(data.spaceId || spaceId || null)
+        } catch (error) {
+            console.error(error)
+            toast.error('Failed to load chatbot folders')
+        }
+    }
 
     const fetchChatbots = async () => {
         setIsLoading(true)
@@ -33,6 +66,7 @@ export default function ChatEmbedUIPage() {
             if (!res.ok) throw new Error('Failed to fetch chatbots')
             const data = await res.json()
             setChatbots(data.chatbots || [])
+            await fetchFolders(data.folderSpaceId || null)
         } catch (error) {
             console.error(error)
             toast.error('Failed to load chatbots')
@@ -49,6 +83,7 @@ export default function ChatEmbedUIPage() {
         setSelectedChatbot(null)
         setEditorFormData({
             name: 'New Chatbot',
+            folder_id: null,
             website: 'https://example.com',
             description: 'A new AI assistant',
             engineType: 'custom',
@@ -138,6 +173,133 @@ export default function ChatEmbedUIPage() {
         } as any)
         setIsEditing(true)
         setActiveTab('engine')
+    }
+
+    const openCreateFolderDialog = () => {
+        setFolderDialogMode('create')
+        setFolderTarget(null)
+        setFolderName('')
+        setFolderDialogOpen(true)
+    }
+
+    const openRenameFolderDialog = (folder: ChatbotFolder) => {
+        setFolderDialogMode('rename')
+        setFolderTarget(folder)
+        setFolderName(folder.name)
+        setFolderDialogOpen(true)
+    }
+
+    const handleSaveFolder = async () => {
+        const trimmedName = folderName.trim()
+        if (!trimmedName) {
+            toast.error('Folder name is required')
+            return
+        }
+
+        try {
+            if (folderDialogMode === 'create') {
+                const res = await fetch('/api/folders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: trimmedName,
+                        type: 'chatbot',
+                        space_id: folderSpaceId || undefined,
+                    })
+                })
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}))
+                    throw new Error(data.error || 'Failed to create folder')
+                }
+                toast.success('Folder created')
+            } else if (folderTarget) {
+                const params = new URLSearchParams({ type: 'chatbot' })
+                if (folderSpaceId) {
+                    params.set('space_id', folderSpaceId)
+                }
+                const res = await fetch(`/api/folders/${folderTarget.id}?${params.toString()}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: trimmedName,
+                        type: 'chatbot',
+                        space_id: folderSpaceId || undefined,
+                    })
+                })
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}))
+                    throw new Error(data.error || 'Failed to rename folder')
+                }
+                toast.success('Folder renamed')
+            }
+
+            setFolderDialogOpen(false)
+            setFolderName('')
+            setFolderTarget(null)
+            await fetchFolders(folderSpaceId)
+        } catch (error: any) {
+            console.error(error)
+            toast.error(error.message || 'Failed to save folder')
+        }
+    }
+
+    const handleDeleteFolder = async (folder: ChatbotFolder) => {
+        if (!confirm(`Delete folder "${folder.name}"? Chatbots inside will be moved back to the root list.`)) {
+            return
+        }
+
+        try {
+            const params = new URLSearchParams({ type: 'chatbot' })
+            if (folderSpaceId) {
+                params.set('space_id', folderSpaceId)
+            }
+            const res = await fetch(`/api/folders/${folder.id}?${params.toString()}`, {
+                method: 'DELETE'
+            })
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}))
+                throw new Error(data.error || 'Failed to delete folder')
+            }
+
+            setChatbots(prev => prev.map(chatbot =>
+                chatbot.folder_id === folder.id ? { ...chatbot, folder_id: null } : chatbot
+            ))
+            toast.success('Folder deleted')
+            await fetchFolders(folderSpaceId)
+        } catch (error: any) {
+            console.error(error)
+            toast.error(error.message || 'Failed to delete folder')
+        }
+    }
+
+    const handleMoveChatbot = async (chatbotId: string, folderId: string | null) => {
+        const chatbot = chatbots.find(item => item.id === chatbotId)
+        if (!chatbot || chatbot.folder_id === folderId) {
+            return
+        }
+
+        try {
+            const res = await fetch(`/api/chatbots/${chatbotId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    folder_id: folderId,
+                    folder_space_id: folderSpaceId || undefined,
+                })
+            })
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}))
+                throw new Error(data.error || 'Failed to move chatbot')
+            }
+
+            const data = await res.json()
+            setChatbots(prev => prev.map(item => item.id === chatbotId ? { ...item, ...data.chatbot, folder_id: folderId } : item))
+            toast.success(folderId ? 'Chatbot moved to folder' : 'Chatbot moved to root')
+        } catch (error: any) {
+            console.error(error)
+            toast.error(error.message || 'Failed to move chatbot')
+        }
     }
 
     // ... handleEdit, handleDelete ...
@@ -493,17 +655,57 @@ export default function ChatEmbedUIPage() {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
             ) : (
-                <ChatbotList
-                    chatbots={chatbots}
-                    viewMode={viewMode}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onPublish={handlePublish}
-                    onPreview={handlePreview}
-                    onViewVersions={handleViewVersions}
-                    onDuplicate={handleDuplicate}
-                    onExport={handleExport}
-                />
+                <>
+                    <ChatbotList
+                        chatbots={chatbots}
+                        folders={folders}
+                        viewMode={viewMode}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        onPublish={handlePublish}
+                        onPreview={handlePreview}
+                        onViewVersions={handleViewVersions}
+                        onDuplicate={handleDuplicate}
+                        onExport={handleExport}
+                        onCreateFolder={openCreateFolderDialog}
+                        onRenameFolder={openRenameFolderDialog}
+                        onDeleteFolder={handleDeleteFolder}
+                        onMoveChatbot={handleMoveChatbot}
+                    />
+
+                    <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>{folderDialogMode === 'create' ? 'Create Folder' : 'Rename Folder'}</DialogTitle>
+                                <DialogDescription>
+                                    {folderDialogMode === 'create'
+                                        ? 'Create a folder to organize chatbot configurations.'
+                                        : 'Update the folder name for this chatbot group.'}
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="p-6 pt-0">
+                                <Input
+                                    value={folderName}
+                                    onChange={(e) => setFolderName(e.target.value)}
+                                    placeholder="Folder name"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            void handleSaveFolder()
+                                        }
+                                    }}
+                                />
+                            </div>
+                            <DialogFooter>
+                                <Button variant="outline" onClick={() => setFolderDialogOpen(false)}>
+                                    Cancel
+                                </Button>
+                                <Button onClick={() => void handleSaveFolder()}>
+                                    {folderDialogMode === 'create' ? 'Create Folder' : 'Save Changes'}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </>
             )}
         </div>
     )
