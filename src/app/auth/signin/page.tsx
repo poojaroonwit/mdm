@@ -141,7 +141,7 @@ export default function SignInPage() {
           return
         }
 
-        window.location.assign(result?.url || callbackUrl)
+        window.location.replace(result?.url || callbackUrl)
       }
     } catch (error) {
       setError('An error occurred. Please try again.')
@@ -179,7 +179,7 @@ export default function SignInPage() {
                return
              }
 
-             window.location.assign(result?.url || callbackUrl)
+             window.location.replace(result?.url || callbackUrl)
         }
       } catch (error) {
           setError('An error occurred. Please try again.')

@@ -16,6 +16,7 @@ export default withAuth(
     return NextResponse.next()
   },
   {
+    secret: process.env.NEXTAUTH_SECRET,
     pages: {
       signIn: '/auth/signin',
     },
