@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
-  Shield,
   Database,
   BarChart3,
   Settings,
@@ -340,20 +339,6 @@ export default function HomePage() {
           </div>
         )
         }
-
-        {/* Tab Content */}
-        {
-          activeTab === 'overview' && (
-            <div className="text-center py-12 px-6">
-              <Shield className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Unified Data Platform Homepage</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                Select a feature from the cards above or use the sidebar to navigate to different admin functions.
-              </p>
-            </div>
-          )
-        }
-
         {activeTab === 'bi' && <BigQueryInterface />}
         {activeTab === 'space-selection' && <SpaceSelection />}
         {activeTab === 'bigquery' && <BigQueryInterface />}

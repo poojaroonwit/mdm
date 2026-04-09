@@ -15,15 +15,14 @@ async function readSessionToken(req: NextRequest) {
     console.warn('[middleware] No explicit auth secret is configured. Falling back to a non-production secret.')
   }
 
-  for (const cookieName of SESSION_COOKIE_CANDIDATES) {
-    if (!req.cookies.get(cookieName)?.value) {
-      continue
-    }
+  const secureCookie = req.nextUrl.protocol === 'https:'
 
+  for (const cookieName of SESSION_COOKIE_CANDIDATES) {
     const token = await getToken({
       req,
       secret,
       cookieName,
+      secureCookie,
     })
 
     if (token) {
@@ -34,6 +33,7 @@ async function readSessionToken(req: NextRequest) {
   return await getToken({
     req,
     secret,
+    secureCookie,
   })
 }
 

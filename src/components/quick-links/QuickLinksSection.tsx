@@ -177,6 +177,7 @@ export function QuickLinksSection() {
                     <CardContent className="p-4">
                       <button
                         onClick={() => handleLinkClick(link.url)}
+                        aria-label={`Open ${link.name}`}
                         className="w-full flex flex-col items-center gap-3"
                       >
                         <div className="relative">
@@ -204,11 +205,12 @@ export function QuickLinksSection() {
                       </button>
 
                       {/* Edit/Delete buttons - shown on hover */}
-                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute right-2 top-2 flex gap-1 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
                         <Button
-                          size="sm"
+                          type="button"
                           variant="ghost"
-                          className="h-6 w-6 p-0"
+                          aria-label={`Edit ${link.name}`}
+                          className="h-10 w-10 rounded-xl bg-white/95 shadow-sm dark:bg-zinc-950/95 md:h-9 md:w-9"
                           onClick={(e) => {
                             e.stopPropagation()
                             handleEditClick(link)
@@ -217,9 +219,10 @@ export function QuickLinksSection() {
                           <Edit2 className="h-3 w-3" />
                         </Button>
                         <Button
-                          size="sm"
+                          type="button"
                           variant="ghost"
-                          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                          aria-label={`Delete ${link.name}`}
+                          className="h-10 w-10 rounded-xl bg-white/95 text-destructive shadow-sm hover:text-destructive dark:bg-zinc-950/95 md:h-9 md:w-9"
                           onClick={(e) => {
                             e.stopPropagation()
                             handleDeleteClick(link)

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { DM_Sans, IBM_Plex_Sans_Thai } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import { SidebarProvider } from '@/contexts/sidebar-context'
@@ -9,6 +10,20 @@ import { LoadingPage } from '@/components/ui/loading-spinner'
 import { GlobalErrorHandler } from '@/components/global-error-handler'
 import { SecurityProvider } from '@/components/providers/SecurityProvider'
 import { SystemSettingsProvider } from '@/contexts/system-settings-context'
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-dm-sans',
+})
+
+const ibmPlexSansThai = IBM_Plex_Sans_Thai({
+  subsets: ['latin', 'thai'],
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-ibm-plex-sans-thai',
+})
 
 export const metadata: Metadata = {
   title: 'Unified Data Platform',
@@ -40,7 +55,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="font-sans antialiased" suppressHydrationWarning>
+      <body
+        className={`${dmSans.variable} ${ibmPlexSansThai.variable} font-sans antialiased`}
+        suppressHydrationWarning
+      >
         <GlobalErrorHandler />
         <Providers>
           <DynamicFavicon />

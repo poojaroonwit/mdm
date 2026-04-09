@@ -158,7 +158,7 @@ const DialogContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border border-zinc-100/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-950/90 shadow-2xl duration-300 animate-in fade-in-0 zoom-in-95 sm:rounded-2xl overflow-hidden backdrop-blur-xl",
+          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border border-zinc-200/70 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 shadow-2xl duration-300 animate-in fade-in-0 zoom-in-95 sm:rounded-2xl overflow-hidden",
           className
         )}
         style={{ zIndex: Z_INDEX.dialog }}

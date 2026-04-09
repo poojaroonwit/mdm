@@ -31,6 +31,8 @@ export function QuickLinkDialog({
 }: QuickLinkDialogProps) {
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<string[]>([])
+  const [creatingCategory, setCreatingCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
   const [form, setForm] = useState({
     name: '',
     url: '',
@@ -43,6 +45,8 @@ export function QuickLinkDialog({
       // Load categories
       const existingCategories = getCategories()
       setCategories(existingCategories)
+      setCreatingCategory(false)
+      setNewCategoryName('')
       
       if (link) {
         // Edit mode
@@ -92,6 +96,14 @@ export function QuickLinkDialog({
         throw new Error('Name is required')
       }
 
+      const resolvedCategory = creatingCategory
+        ? newCategoryName.trim()
+        : form.category.trim()
+
+      if (creatingCategory && !resolvedCategory) {
+        throw new Error('Category name is required')
+      }
+
       const faviconUrl = form.faviconUrl || getFaviconUrl(form.url)
 
       if (link) {
@@ -99,7 +111,7 @@ export function QuickLinkDialog({
         updateQuickLink(link.id, {
           name: form.name.trim(),
           url: form.url.trim(),
-          category: form.category.trim() || undefined,
+          category: resolvedCategory || undefined,
           faviconUrl,
         })
         showSuccess('Quick link updated successfully')
@@ -108,10 +120,14 @@ export function QuickLinkDialog({
         addQuickLink({
           name: form.name.trim(),
           url: form.url.trim(),
-          category: form.category.trim() || undefined,
+          category: resolvedCategory || undefined,
           faviconUrl,
         })
         showSuccess('Quick link added successfully')
+      }
+
+      if (creatingCategory && resolvedCategory && !categories.includes(resolvedCategory)) {
+        setCategories(prev => [...prev, resolvedCategory].sort())
       }
 
       onOpenChange(false)
@@ -124,21 +140,15 @@ export function QuickLinkDialog({
   }
 
   const handleCategoryChange = (value: string) => {
-    setForm(prev => ({ ...prev, category: value }))
-    
-    // If "new" is selected, we'll handle it differently
     if (value === '__new__') {
-      const newCategory = prompt('Enter new category name:')
-      if (newCategory && newCategory.trim()) {
-        setForm(prev => ({ ...prev, category: newCategory.trim() }))
-        // Add to categories list
-        if (!categories.includes(newCategory.trim())) {
-          setCategories(prev => [...prev, newCategory.trim()].sort())
-        }
-      } else {
-        setForm(prev => ({ ...prev, category: '' }))
-      }
+      setCreatingCategory(true)
+      setForm(prev => ({ ...prev, category: '' }))
+      return
     }
+
+    setCreatingCategory(false)
+    setNewCategoryName('')
+    setForm(prev => ({ ...prev, category: value }))
   }
 
   return (
@@ -154,7 +164,7 @@ export function QuickLinkDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 px-6 py-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
               <Input
@@ -198,6 +208,32 @@ export function QuickLinkDialog({
                 </SelectContent>
               </Select>
             </div>
+
+            {creatingCategory && (
+              <div className="space-y-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4">
+                <Label htmlFor="newCategoryName">New Category Name</Label>
+                <Input
+                  id="newCategoryName"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="e.g., Analytics"
+                  autoFocus
+                />
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setCreatingCategory(false)
+                      setNewCategoryName('')
+                    }}
+                  >
+                    Cancel New Category
+                  </Button>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="faviconUrl">Custom Favicon URL (optional)</Label>
