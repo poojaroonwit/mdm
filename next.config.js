@@ -83,7 +83,7 @@ const nextConfig = {
 
   // Disable inline source maps as well
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    removeConsole: false,
   },
 
   // Reduce server components bundle size by keeping heavy libraries out of the bundle
