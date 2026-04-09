@@ -14,6 +14,7 @@ import {
   mapOAuthProfile,
 } from "@/lib/identity-utils"
 import { createNextAuthSSOProviders, getResolvedSSOProvider } from "@/lib/sso"
+import { getAuthSecret } from "@/lib/auth-secret"
 
 export interface AuthenticatedRequest extends NextRequest {
   admin?: {
@@ -31,7 +32,7 @@ export interface AuthenticatedRequest extends NextRequest {
 }
 
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "fallback-secret-key-for-development"
+  getAuthSecret()
 )
 
 const CACHE_TTL_MS = 10 * 60 * 1000
@@ -51,7 +52,7 @@ export async function authenticate(req: NextRequest) {
   if (!token) {
     const nextAuthToken = await getToken({ 
       req, 
-      secret: process.env.NEXTAUTH_SECRET 
+      secret: getAuthSecret(),
     })
     
     if (nextAuthToken) {
@@ -148,7 +149,7 @@ async function getSessionTimeoutSeconds(): Promise<number> {
 
 function createBaseAuthOptions(providers: NonNullable<NextAuthOptions["providers"]>): NextAuthOptions {
   return {
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: getAuthSecret(),
     trustHost: true,
     useSecureCookies: isSecureAuthUrl,
     providers: [

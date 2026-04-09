@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
+import { getAuthSecret, hasExplicitAuthSecret } from '@/lib/auth-secret'
 
 const SESSION_COOKIE_CANDIDATES = [
   '__Secure-next-auth.session-token',
@@ -9,10 +10,9 @@ const SESSION_COOKIE_CANDIDATES = [
 ]
 
 async function readSessionToken(req: NextRequest) {
-  const secret = process.env.NEXTAUTH_SECRET
-  if (!secret) {
-    console.error('[middleware] NEXTAUTH_SECRET is not configured')
-    return null
+  const secret = getAuthSecret()
+  if (!hasExplicitAuthSecret()) {
+    console.warn('[middleware] No explicit auth secret is configured. Falling back to a non-production secret.')
   }
 
   for (const cookieName of SESSION_COOKIE_CANDIDATES) {
