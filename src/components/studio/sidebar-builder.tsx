@@ -328,7 +328,7 @@ export function SidebarBuilder({ items, config, onUpdate, onConfigUpdate }: Side
                           onChange={(color) => setNewItem({ ...newItem, color })}
                           allowImageVideo={false}
                           className="relative"
-                          placeholder="#3b82f6"
+                          placeholder="#1e40af"
                           inputClassName="h-8 text-xs pl-7"
                         />
                       </div>
@@ -511,7 +511,7 @@ export function SidebarBuilder({ items, config, onUpdate, onConfigUpdate }: Side
                       onChange={(color) => setEditingItem({ ...editingItem, color })}
                       allowImageVideo={false}
                       className="relative"
-                      placeholder="#3b82f6"
+                      placeholder="#1e40af"
                       inputClassName="h-8 text-xs pl-7"
                     />
                   </div>

@@ -210,7 +210,7 @@ function ChartWidget({ widget }: { widget: DashboardWidget }) {
     { name: 'Mar', value: 600 },
     { name: 'Apr', value: 800 },
     { name: 'May', value: 500 },
-    { name: 'Jun', value: 700 }
+    { name: 'Jun', value: 600 }
   ]
 
   const { type } = widget.config

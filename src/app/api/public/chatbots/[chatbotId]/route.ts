@@ -88,7 +88,7 @@ export async function GET(
     // So if `api/embed` picks latest, `api/public/chatbots` picking latest is consistent with embed.
     // So using the helper is CONSISTENT.
 
-    const mergedChatbot = sanitizeChatbotConfig(mergeVersionConfig(chatbot))
+    const mergedChatbot = await sanitizeChatbotConfig(mergeVersionConfig(chatbot))
 
     // Check if chatbot is enabled (default to true if not set)
     const chatbotEnabled = mergedChatbot.chatbotEnabled !== false

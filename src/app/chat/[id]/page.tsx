@@ -89,6 +89,8 @@ export default function ChatPage() {
   const [currentTranscript, setCurrentTranscript] = useState('') // Separate state for voice transcript display
   // Track if ChatKit is unavailable (for fallback to regular chat)
   const [chatKitUnavailable, setChatKitUnavailable] = useState(false)
+  // Track if the widget has ever been opened so we can keep it mounted (preserving chat history)
+  const hasEverOpenedRef = useRef(false)
 
   // Detect mobile viewport
   useEffect(() => {
@@ -793,8 +795,6 @@ export default function ChatPage() {
     effectiveDeploymentType === 'fullpage' ? true : isOpen
   )
 
-  // Track if the widget has ever been opened so we can keep it mounted (preserving chat history)
-  const hasEverOpenedRef = useRef(false)
   if (isOpen && !hasEverOpenedRef.current) {
     hasEverOpenedRef.current = true
   }
@@ -1102,7 +1102,7 @@ export default function ChatPage() {
           <div
             className="h-8 w-full flex items-center justify-between px-6 text-[10px] font-bold shrink-0"
             style={{
-              backgroundColor: chatbot.primaryColor || '#3b82f6',
+              backgroundColor: chatbot.primaryColor || '#1e40af',
               color: '#fff'
             }}
           >

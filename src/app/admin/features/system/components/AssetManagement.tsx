@@ -22,10 +22,10 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
+  DialogBody, DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog"
 import {
   Database,
   Globe,
@@ -707,7 +707,8 @@ export function AssetManagement() {
                 : 'Create a new asset for the selected type'}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+                <DialogBody>
+<div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Code *</Label>
@@ -778,7 +779,8 @@ export function AssetManagement() {
               </div>
             </div>
           </div>
-          <DialogFooter>
+                </DialogBody>
+                <DialogFooter>
             <Button variant="outline" onClick={() => setShowAssetDialog(false)}>
               Cancel
             </Button>
@@ -798,7 +800,8 @@ export function AssetManagement() {
               {editingLanguage ? 'Edit Language' : 'Add Language'}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+                <DialogBody>
+<div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Code (ISO 639-1) *</Label>
@@ -868,7 +871,8 @@ export function AssetManagement() {
               </div>
             </div>
           </div>
-          <DialogFooter>
+                </DialogBody>
+                <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setShowLanguageDialog(false)}
@@ -895,7 +899,8 @@ export function AssetManagement() {
               Add translation for {selectedLanguage}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+                <DialogBody>
+<div className="space-y-4">
             <div>
               <Label>Entity Type</Label>
               <Select
@@ -969,7 +974,8 @@ export function AssetManagement() {
               />
             </div>
           </div>
-          <DialogFooter>
+                </DialogBody>
+                <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setShowLocalizationDialog(false)}

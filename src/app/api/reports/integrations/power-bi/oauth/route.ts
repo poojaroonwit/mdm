@@ -1,6 +1,8 @@
 import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from '@/lib/api-middleware'
 import { requireSpaceAccess } from '@/lib/space-access'
 import { NextRequest, NextResponse } from 'next/server'
+import { getConfiguredSiteUrl } from '@/lib/system-runtime-settings'
+import { getPowerBIIntegrationConfig } from '@/lib/power-bi-config'
 async function getHandler(request: NextRequest) {
   const authResult = await requireAuthWithId()
   if (!authResult.success) return authResult.response
@@ -8,15 +10,19 @@ async function getHandler(request: NextRequest) {
 
   const { searchParams } = new URL(request.url)
   const spaceId = searchParams.get('space_id')
-  const redirectUri = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/reports/integrations/power-bi/oauth/callback`
-
-  // Power BI OAuth configuration
-  const clientId = process.env.POWER_BI_CLIENT_ID || ''
-  const tenantId = process.env.POWER_BI_TENANT_ID || ''
+  const configId = searchParams.get('config_id')
+  const siteUrl = await getConfiguredSiteUrl(request)
+  const redirectUri = `${siteUrl}/api/reports/integrations/power-bi/oauth/callback`
+  const integrationConfig = await getPowerBIIntegrationConfig(session.user.id, {
+    configId,
+    spaceId,
+  })
+  const clientId = integrationConfig?.config?.client_id || ''
+  const tenantId = integrationConfig?.config?.tenant_id || ''
 
   if (!clientId || !tenantId) {
     return NextResponse.json({ 
-      error: 'Power BI OAuth not configured. Please set POWER_BI_CLIENT_ID and POWER_BI_TENANT_ID environment variables.' 
+      error: 'Power BI OAuth is not configured. Save a Power BI API configuration with tenant ID and client credentials first.' 
     }, { status: 400 })
   }
 
@@ -24,6 +30,7 @@ async function getHandler(request: NextRequest) {
     const state = Buffer.from(JSON.stringify({ 
       userId: session.user.id, 
       spaceId,
+      configId: integrationConfig?.id || configId || null,
       timestamp: Date.now() 
     })).toString('base64')
 

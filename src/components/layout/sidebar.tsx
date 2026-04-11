@@ -221,13 +221,13 @@ export function Sidebar({ className }: SidebarProps) {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="w-full justify-between text-lg font-bold pr-2 pl-0"
+                className="w-full justify-between pr-2 pl-0 text-left text-base font-bold"
                 style={{
                   color: settings.fontColor
                 }}
               >
                 <div className="flex items-center">
-                  <div className="h-9 w-9 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-white text-sm shadow-lg shadow-blue-600/25 mr-3 overflow-hidden bg-gradient-to-br from-blue-600 via-blue-600 to-blue-700">
+                  <div className="h-9 w-9 rounded-md flex-shrink-0 flex items-center justify-center font-bold text-white text-sm shadow-lg mr-3 overflow-hidden bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900">
                     <span>{(currentSpace?.name || 'C').substring(0, 1).toUpperCase()}</span>
                   </div>
                   <div className="flex flex-col items-start overflow-hidden whitespace-nowrap">
@@ -235,7 +235,7 @@ export function Sidebar({ className }: SidebarProps) {
                     <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest leading-none">Space</p>
                   </div>
                 </div>
-                <ChevronDown className="h-4 w-4 ml-2 text-muted-foreground" />
+                  <ChevronDown className="ml-2 h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
@@ -294,7 +294,7 @@ export function Sidebar({ className }: SidebarProps) {
 
         {menuLoading ? (
           <div className="px-2 py-4 flex items-center justify-center">
-            <LucideIcons.RefreshCw className="h-5 w-5 animate-spin" style={{ color: settings.fontColor, opacity: 0.5 }} />
+            <LucideIcons.RefreshCw className="h-4 w-4 animate-spin" style={{ color: settings.fontColor, opacity: 0.5 }} />
           </div>
         ) : (
           <Accordion type="single" collapsible defaultValue={groups[0]?.name}>
@@ -311,7 +311,7 @@ export function Sidebar({ className }: SidebarProps) {
 
               return (
                 <AccordionItem key={group.slug} value={group.name} className="border-none">
-                  <AccordionTrigger className="py-2 hover:no-underline md:py-2 px-2 group" style={{ color: settings.fontColor, opacity: 0.9 }}>
+                  <AccordionTrigger className="group px-2 py-2 hover:no-underline md:py-2" style={{ color: settings.fontColor, opacity: 0.9 }}>
                     <div className="flex items-center text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground group-hover:text-foreground transition-colors">
                       <IconComponent className="mr-3 h-4 w-4" />
                       {group.name}
@@ -335,7 +335,7 @@ export function Sidebar({ className }: SidebarProps) {
                                 {isSystemSettings ? (
                                   <Button
                                     variant="ghost"
-                                    className="w-full justify-start text-sm h-8"
+                                    className="h-8 w-full justify-start px-3 text-[13px] font-medium"
                                     onClick={() => router.push('/system/settings')}
                                     style={{
                                       color: settings.fontColor,
@@ -350,20 +350,20 @@ export function Sidebar({ className }: SidebarProps) {
                                     <Button
                                       variant="ghost"
                                       className={cn(
-                                        "w-full justify-start text-[13px] font-medium h-9 px-3 rounded-lg group transition-all duration-150",
-                                        isActive(item.href) ? "bg-primary/5 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                        "group h-9 w-full justify-start rounded-lg px-3 text-[13px] font-medium transition-all duration-150",
+                                        isActive(item.href) ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
                                       )}
                                       style={{
-                                        color: isActive(item.href) ? 'var(--brand-primary, hsl(var(--primary)))' : undefined,
+                                        color: isActive(item.href) ? 'var(--brand-primary, hsl(var(--foreground)))' : undefined,
                                       }}
                                     >
                                       <ItemIcon className={cn(
-                                        "mr-3 h-[18px] w-[18px]",
-                                        isActive(item.href) ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                                        "mr-3 h-4 w-4",
+                                        isActive(item.href) ? "text-zinc-900 dark:text-zinc-100" : "text-muted-foreground group-hover:text-foreground"
                                       )} />
                                       <span>{item.name}</span>
                                       {isActive(item.href) && (
-                                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-zinc-100 shadow-lg" />
                                       )}
                                     </Button>
                                   </Link>
@@ -392,35 +392,35 @@ export function Sidebar({ className }: SidebarProps) {
                                     <Button
                                       variant="ghost"
                                       className={cn(
-                                        "w-full justify-start text-[13px] font-medium h-9 px-3 rounded-lg group transition-all duration-150",
-                                        isActive(href) ? "bg-primary/5 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                        "group h-9 w-full justify-start rounded-lg px-3 text-[13px] font-medium transition-all duration-150",
+                                        isActive(href) ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
                                       )}
                                       style={{
-                                        color: isActive(href) ? 'var(--brand-primary, hsl(var(--primary)))' : undefined,
+                                        color: isActive(href) ? 'var(--brand-primary, hsl(var(--foreground)))' : undefined,
                                       }}
                                     >
                                       {m.icon ? (
                                         <AnimatedIcon
                                           icon={m.icon}
-                                          size={18}
+                                          size={16}
                                           animation="float"
                                           trigger="hover"
                                           className={cn(
                                             "mr-3",
-                                            isActive(href) ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                                            isActive(href) ? "text-zinc-900 dark:text-zinc-100" : "text-muted-foreground group-hover:text-foreground"
                                           )}
                                         />
                                       ) : (
                                         <span className={cn(
                                           "mr-3 inline-flex h-4 w-4 items-center justify-center rounded bg-muted font-bold text-[10px]",
-                                          isActive(href) ? "text-primary bg-primary/10" : "text-muted-foreground"
+                                          isActive(href) ? "text-zinc-900 dark:text-zinc-100 bg-zinc-200 dark:bg-zinc-700" : "text-muted-foreground"
                                         )}>
                                           {(String(m.display_name || m.name || '')?.slice(0, 1) || '?').toUpperCase()}
                                         </span>
                                       )}
                                       <span>{m.display_name || m.name}</span>
                                       {isActive(href) && (
-                                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-zinc-100 shadow-lg" />
                                       )}
                                     </Button>
                                   </Link>

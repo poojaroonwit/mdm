@@ -2,6 +2,7 @@ import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from 
 import { requireSpaceAccess } from '@/lib/space-access'
 import { NextRequest, NextResponse } from 'next/server'
 import { db, query } from '@/lib/db'
+import { DEFAULT_STORAGE_CONFIG } from '@/lib/storage-config'
 
 async function getHandler(
   request: NextRequest,
@@ -42,37 +43,7 @@ async function getHandler(
     // Return default MinIO config if no config exists
     const defaultConfig = {
       provider: 'minio',
-      config: {
-        minio: {
-          endpoint: process.env.MINIO_ENDPOINT || 'http://localhost:9000',
-          access_key: process.env.MINIO_ACCESS_KEY || 'minioadmin',
-          secret_key: process.env.MINIO_SECRET_KEY || 'minioadmin',
-          bucket: process.env.MINIO_BUCKET || 'attachments',
-          region: 'us-east-1',
-          use_ssl: false
-        },
-        s3: {
-          access_key_id: '',
-          secret_access_key: '',
-          bucket: '',
-          region: 'us-east-1'
-        },
-        sftp: {
-          host: '',
-          port: 22,
-          username: '',
-          password: '',
-          path: '/uploads'
-        },
-        ftp: {
-          host: '',
-          port: 21,
-          username: '',
-          password: '',
-          path: '/uploads',
-          passive: true
-        }
-      }
+      config: DEFAULT_STORAGE_CONFIG
     }
 
     return NextResponse.json({

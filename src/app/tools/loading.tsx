@@ -14,10 +14,10 @@ export default function Loading() {
         ))}
       </div>
       
-      <div className="space-y-4 shadow-sm border border-border/50 rounded-2xl p-6 bg-card/50 backdrop-blur-sm">
+      <div className="space-y-4 shadow-lg border border-border/50 rounded-2xl p-6 bg-card/50 backdrop-blur-sm">
         <Skeleton className="h-6 w-[200px] mb-6" />
         {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={`row-${i}`} className="h-12 w-full rounded-xl" />
+          <Skeleton key={`row-${i}`} className="h-12 w-full rounded-md" />
         ))}
       </div>
     </div>

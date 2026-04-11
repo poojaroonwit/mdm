@@ -1,5 +1,5 @@
 /**
- * Unified Data Fetching Hook
+ * Unified Data Platform Fetching Hook
  * Standardized pattern for data fetching with loading, error, and retry logic
  */
 

@@ -234,7 +234,7 @@ export function ChatbotEmulator({
             <Button
               variant={previewSource === 'draft' ? 'secondary' : 'ghost'}
               size="sm"
-              className={`h-7 px-3 text-xs font-medium rounded-md transition-all ${previewSource === 'draft' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
+              className={`h-7 px-3 text-xs font-medium rounded-md transition-all ${previewSource === 'draft' ? 'bg-background shadow-lg' : 'text-muted-foreground'}`}
               onClick={() => setPreviewSource('draft')}
             >
               Draft
@@ -242,7 +242,7 @@ export function ChatbotEmulator({
             <Button
               variant={previewSource === 'live' ? 'secondary' : 'ghost'}
               size="sm"
-              className={`h-7 px-3 text-xs font-medium rounded-md transition-all ${previewSource === 'live' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
+              className={`h-7 px-3 text-xs font-medium rounded-md transition-all ${previewSource === 'live' ? 'bg-background shadow-lg' : 'text-muted-foreground'}`}
               onClick={() => setPreviewSource('live')}
               disabled={!selectedChatbot?.isPublished}
               title={!selectedChatbot?.isPublished ? "Publish the chatbot to preview the live version" : ""}
@@ -257,7 +257,7 @@ export function ChatbotEmulator({
             <Button
               variant={deviceType === 'desktop' ? 'default' : 'ghost'}
               size="icon"
-              className={`h-7 w-7 rounded-md transition-all ${deviceType === 'desktop' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted'}`}
+              className={`h-7 w-7 rounded-md transition-all ${deviceType === 'desktop' ? 'bg-primary text-primary-foreground shadow-lg' : 'hover:bg-muted'}`}
               onClick={() => setDeviceType('desktop')}
               title="Desktop View"
             >
@@ -266,7 +266,7 @@ export function ChatbotEmulator({
             <Button
               variant={deviceType === 'tablet' ? 'default' : 'ghost'}
               size="icon"
-              className={`h-7 w-7 rounded-md transition-all ${deviceType === 'tablet' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted'}`}
+              className={`h-7 w-7 rounded-md transition-all ${deviceType === 'tablet' ? 'bg-primary text-primary-foreground shadow-lg' : 'hover:bg-muted'}`}
               onClick={() => setDeviceType('tablet')}
               title="Tablet View"
             >
@@ -275,7 +275,7 @@ export function ChatbotEmulator({
             <Button
               variant={deviceType === 'mobile' ? 'default' : 'ghost'}
               size="icon"
-              className={`h-7 w-7 rounded-md transition-all ${deviceType === 'mobile' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted'}`}
+              className={`h-7 w-7 rounded-md transition-all ${deviceType === 'mobile' ? 'bg-primary text-primary-foreground shadow-lg' : 'hover:bg-muted'}`}
               onClick={() => setDeviceType('mobile')}
               title="Mobile View"
             >
@@ -289,7 +289,7 @@ export function ChatbotEmulator({
                 <Button
                   variant={platform === 'ios' ? 'secondary' : 'ghost'}
                   size="sm"
-                  className={`h-7 px-2 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${platform === 'ios' ? 'bg-secondary text-secondary-foreground shadow-sm' : 'hover:bg-muted text-muted-foreground'}`}
+                  className={`h-7 px-2 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${platform === 'ios' ? 'bg-secondary text-secondary-foreground shadow-lg' : 'hover:bg-muted text-muted-foreground'}`}
                   onClick={() => setPlatform('ios')}
                 >
                   iOS
@@ -297,7 +297,7 @@ export function ChatbotEmulator({
                 <Button
                   variant={platform === 'android' ? 'secondary' : 'ghost'}
                   size="sm"
-                  className={`h-7 px-2 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${platform === 'android' ? 'bg-secondary text-secondary-foreground shadow-sm' : 'hover:bg-muted text-muted-foreground'}`}
+                  className={`h-7 px-2 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${platform === 'android' ? 'bg-secondary text-secondary-foreground shadow-lg' : 'hover:bg-muted text-muted-foreground'}`}
                   onClick={() => setPlatform('android')}
                 >
                   Android

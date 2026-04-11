@@ -25,34 +25,34 @@ export function RegularStyleConfig({ formData, setFormData }: RegularStyleConfig
   return (
     <div className="w-full">
       <Tabs defaultValue="chat-window" className="flex w-full gap-6">
-        <TabsList orientation="vertical" className="bg-muted/30 p-1 min-h-[400px] h-fit flex-col justify-start items-stretch gap-1 w-[220px] rounded-lg">
-          <TabsTrigger value="chat-window" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all">
+        <TabsList orientation="vertical" className=" p-1 min-h-[400px] h-fit flex-col justify-start items-stretch gap-1 w-[220px] rounded-lg">
+          <TabsTrigger value="chat-window" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all">
             <Icons.Layout className="h-4 w-4" />
             Chat Window
           </TabsTrigger>
-          <TabsTrigger value="widget" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all">
+          <TabsTrigger value="widget" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all">
             <Icons.MessageSquare className="h-4 w-4" />
             Widget Button
           </TabsTrigger>
           {!isOpenAIAgentSDK && (
-            <TabsTrigger value="chatkit-integration" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all">
+            <TabsTrigger value="chatkit-integration" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all">
               <Icons.Settings2 className="h-4 w-4" />
               Integration
             </TabsTrigger>
           )}
-          <TabsTrigger value="header" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all">
+          <TabsTrigger value="header" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all">
             <Icons.PanelTop className="h-4 w-4" />
             Header
           </TabsTrigger>
-          <TabsTrigger value="messages" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all">
+          <TabsTrigger value="messages" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all">
             <Icons.MessageCircle className="h-4 w-4" />
             Messages
           </TabsTrigger>
-          <TabsTrigger value="footer" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all">
+          <TabsTrigger value="footer" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all">
             <Icons.Type className="h-4 w-4" />
             Footer & Input
           </TabsTrigger>
-          <TabsTrigger value="startScreenPrompts" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all">
+          <TabsTrigger value="startScreenPrompts" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all">
             <Icons.Zap className="h-4 w-4" />
             Start Screen
           </TabsTrigger>

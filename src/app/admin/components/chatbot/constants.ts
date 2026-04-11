@@ -40,7 +40,7 @@ export const DEFAULT_CHATBOT_CONFIG: Partial<Chatbot> = {
       colorScheme: 'light',
       color: {
         accent: {
-          primary: '#3b82f6',
+          primary: '#1e40af',
           level: 2,
         },
       },
@@ -50,7 +50,7 @@ export const DEFAULT_CHATBOT_CONFIG: Partial<Chatbot> = {
         fontFamily: 'Inter, sans-serif',
       },
       // Legacy support
-      primaryColor: '#3b82f6',
+      primaryColor: '#1e40af',
       secondaryColor: '#6b7280',
       backgroundColor: '#ffffff',
       textColor: '#000000',
@@ -81,7 +81,7 @@ export const DEFAULT_CHATBOT_CONFIG: Partial<Chatbot> = {
       personas: [],
     },
   },
-  primaryColor: '#3b82f6',
+  primaryColor: '#1e40af',
   fontFamily: 'Inter',
   fontSize: '14px',
   fontColor: '#000000',
@@ -95,7 +95,7 @@ export const DEFAULT_CHATBOT_CONFIG: Partial<Chatbot> = {
   // Message bubble padding (separate for user and bot)
   userBubblePadding: '12px',
   botBubblePadding: '12px',
-  userMessageBackgroundColor: '#3b82f6',
+  userMessageBackgroundColor: '#1e40af',
   botMessageBackgroundColor: '#f3f4f6',
   userMessageFontColor: '#ffffff',
   userMessageFontFamily: 'Inter',
@@ -133,7 +133,7 @@ export const DEFAULT_CHATBOT_CONFIG: Partial<Chatbot> = {
   widgetAvatarStyle: 'circle',
   widgetPosition: 'bottom-right',
   widgetSize: '60px',
-  widgetBackgroundColor: '#3b82f6',
+  widgetBackgroundColor: '#1e40af',
   widgetBackgroundBlur: 0, // No blur by default
   widgetBackgroundOpacity: 100, // Fully opaque by default
   widgetBorderColor: '#ffffff',
@@ -180,7 +180,7 @@ export const DEFAULT_CHATBOT_CONFIG: Partial<Chatbot> = {
   headerTitle: '',
   headerDescription: '',
   headerLogo: '',
-  headerBgColor: '#3b82f6',
+  headerBgColor: '#1e40af',
   headerFontColor: '#ffffff',
   headerFontFamily: 'Inter',
   headerShowAvatar: true,
@@ -188,7 +188,7 @@ export const DEFAULT_CHATBOT_CONFIG: Partial<Chatbot> = {
   headerAvatarType: 'icon',
   headerAvatarIcon: 'Bot',
   headerAvatarIconColor: '#ffffff',
-  headerAvatarBackgroundColor: '#3b82f6',
+  headerAvatarBackgroundColor: '#1e40af',
   headerAvatarImageUrl: '',
   headerBorderEnabled: true,
   headerBorderColor: '#e5e7eb',
@@ -210,7 +210,7 @@ export const DEFAULT_CHATBOT_CONFIG: Partial<Chatbot> = {
   footerInputFontColor: '#000000',
   sendButtonIcon: 'Send',
   sendButtonRounded: false,
-  sendButtonBgColor: '#3b82f6',
+  sendButtonBgColor: '#1e40af',
   sendButtonIconColor: '#ffffff',
   sendButtonShadowColor: '#000000',
   sendButtonShadowBlur: '0px',
@@ -220,7 +220,7 @@ export const DEFAULT_CHATBOT_CONFIG: Partial<Chatbot> = {
   avatarType: 'icon',
   avatarIcon: 'Bot',
   avatarIconColor: '#ffffff',
-  avatarBackgroundColor: '#3b82f6',
+  avatarBackgroundColor: '#1e40af',
   avatarImageUrl: '',
   // User Avatar
   showUserAvatar: true,
@@ -300,7 +300,7 @@ export function createDefaultChatbot(name: string): Chatbot {
         colorScheme: 'light',
         color: {
           accent: {
-            primary: '#3b82f6',
+            primary: '#1e40af',
             level: 2,
           },
         },
@@ -310,7 +310,7 @@ export function createDefaultChatbot(name: string): Chatbot {
           fontFamily: 'Inter, sans-serif',
         },
         // Legacy support
-        primaryColor: '#3b82f6',
+        primaryColor: '#1e40af',
         secondaryColor: '#6b7280',
         backgroundColor: '#ffffff',
         textColor: '#000000',
@@ -330,7 +330,7 @@ export function createDefaultChatbot(name: string): Chatbot {
       entities: undefined,
     },
     logo: '',
-    primaryColor: '#3b82f6',
+    primaryColor: '#1e40af',
     fontFamily: 'Inter',
     fontSize: '14px',
     fontColor: '#000000',
@@ -344,7 +344,7 @@ export function createDefaultChatbot(name: string): Chatbot {
     // Message bubble padding (separate for user and bot)
     userBubblePadding: '12px',
     botBubblePadding: '12px',
-    userMessageBackgroundColor: '#3b82f6',
+    userMessageBackgroundColor: '#1e40af',
     botMessageBackgroundColor: '#f3f4f6',
     userMessageFontColor: '#ffffff',
     userMessageFontFamily: 'Inter',
@@ -378,7 +378,7 @@ export function createDefaultChatbot(name: string): Chatbot {
     widgetAvatarStyle: 'circle',
     widgetPosition: 'bottom-right',
     widgetSize: '60px',
-    widgetBackgroundColor: '#3b82f6',
+    widgetBackgroundColor: '#1e40af',
     widgetBackgroundBlur: 0, // No blur by default
     widgetBackgroundOpacity: 100, // Fully opaque by default
     widgetBorderColor: '#ffffff',

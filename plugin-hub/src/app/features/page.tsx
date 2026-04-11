@@ -31,7 +31,7 @@ export default function FeaturesPage() {
     return (
         <div style={{ padding: '80px 24px', maxWidth: '1400px', margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-                <h1 style={{ fontSize: '48px', fontWeight: 700, color: 'hsl(var(--foreground))', marginBottom: '16px' }}>
+                <h1 style={{ fontSize: '48px', fontWeight: 600, color: 'hsl(var(--foreground))', marginBottom: '16px' }}>
                     Platform Features
                 </h1>
                 <p style={{ fontSize: '18px', color: 'hsl(var(--muted-foreground))', maxWidth: '700px', margin: '0 auto' }}>

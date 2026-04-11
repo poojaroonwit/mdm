@@ -131,7 +131,7 @@ export function ChatHeader({ chatbot, onClearSession, onClose, isMobile = false 
           const LazyIcon = loadIcon(IconName)
 
           const iconColor = chatbot.headerAvatarIconColor || chatbot.avatarIconColor || '#ffffff'
-          const bgColor = chatbot.headerAvatarBackgroundColor || chatbot.avatarBackgroundColor || chatbot.primaryColor || '#3b82f6'
+          const bgColor = chatbot.headerAvatarBackgroundColor || chatbot.avatarBackgroundColor || chatbot.primaryColor || '#1e40af'
           return (
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-200 ease-out hover:scale-105 ring-2 ring-white/20"

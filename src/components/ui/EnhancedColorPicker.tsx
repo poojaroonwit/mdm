@@ -78,7 +78,7 @@ export function EnhancedColorPicker({
       
       <div className="flex items-center gap-2">
         {/* Color Type Toggle */}
-        <div className="flex border border-zinc-100/60 dark:border-zinc-800/60 rounded-xl overflow-hidden shadow-sm">
+        <div className="flex border border-zinc-100/60 dark:border-zinc-800/60 rounded-md overflow-hidden shadow-lg">
           <Button
             variant={colorType === 'solid' ? 'default' : 'ghost'}
             size="sm"
@@ -99,7 +99,7 @@ export function EnhancedColorPicker({
 
         {/* Color Swatch */}
         <div
-          className="w-8 h-8 border border-zinc-100/60 dark:border-zinc-800/60 rounded-xl cursor-pointer shadow-sm"
+          className="w-8 h-8 border border-zinc-100/60 dark:border-zinc-800/60 rounded-md cursor-pointer shadow-lg"
           style={{ background: getSwatchBackground() }}
           onClick={handleSwatchClick}
         />
@@ -131,7 +131,7 @@ export function EnhancedColorPicker({
                 />
                 <div className="flex items-center gap-2">
                   <div 
-                    className="w-6 h-6 rounded-lg border border-zinc-100/60 dark:border-zinc-800/60 shadow-sm" 
+                    className="w-6 h-6 rounded-lg border border-zinc-100/60 dark:border-zinc-800/60 shadow-lg" 
                     style={{ backgroundColor: pendingValue }}
                   />
                   <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-tighter">{pendingValue}</span>

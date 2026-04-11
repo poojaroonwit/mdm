@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
-import { getSession, signIn } from 'next-auth/react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { getSession, signIn, useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,10 +11,15 @@ import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Eye, EyeOff, Mail, Lock, AlertCircle, Layers, Smartphone, ArrowLeft } from 'lucide-react'
 import { loadBrandingConfig } from '@/lib/branding'
+import { getSafeCallbackUrl } from '@/lib/auth-callback'
 
 export default function SpaceSignInPage() {
   const params = useParams() as { space: string }
+  const router = useRouter()
+  const { data: session, status } = useSession()
   const searchParams = useSearchParams()
+  const fallbackCallbackUrl = `/${params.space}/dashboard`
+  const safeCallbackUrl = getSafeCallbackUrl(searchParams?.get('callbackUrl'), fallbackCallbackUrl)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -58,6 +63,12 @@ export default function SpaceSignInPage() {
   }, [])
 
   useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      router.replace(safeCallbackUrl)
+    }
+  }, [router, safeCallbackUrl, session, status])
+
+  useEffect(() => {
     const loadSpace = async () => {
       try {
         const res = await fetch(`/api/spaces/${params.space}`)
@@ -98,8 +109,7 @@ export default function SpaceSignInPage() {
     setIsLoading(true)
     setError('')
     try {
-      const fallbackCallbackUrl = `/${params.space}/dashboard`
-      const callbackUrl = searchParams?.get('callbackUrl') || fallbackCallbackUrl
+      const callbackUrl = safeCallbackUrl
       const result = await signIn('credentials', { email, password, callbackUrl, redirect: false })
       if (result?.error) {
         if (result.error === 'CredentialsSignin') {
@@ -111,13 +121,13 @@ export default function SpaceSignInPage() {
           setError(result.error)
         }
       } else {
+        const targetUrl = getSafeCallbackUrl(result?.url, callbackUrl)
         const hasSession = await waitForSession()
         if (!hasSession) {
-          setError('Sign-in succeeded, but session was not established. Please check site auth configuration.')
-          return
+          console.warn('[space-signin] Session endpoint did not confirm in time; forcing navigation to target.', targetUrl)
         }
 
-        window.location.assign(result?.url || callbackUrl)
+        window.location.replace(targetUrl)
       }
     } catch {
       setError('An error occurred. Please try again.')
@@ -137,8 +147,7 @@ export default function SpaceSignInPage() {
       setError('')
 
       try {
-        const fallbackCallbackUrl = `/${params.space}/dashboard`
-        const callbackUrl = searchParams?.get('callbackUrl') || fallbackCallbackUrl
+        const callbackUrl = safeCallbackUrl
         const result = await signIn('credentials', {
             email,
             password,
@@ -150,13 +159,13 @@ export default function SpaceSignInPage() {
         if (result?.error) {
             setError(result.error)
         } else {
+            const targetUrl = getSafeCallbackUrl(result?.url, callbackUrl)
             const hasSession = await waitForSession()
             if (!hasSession) {
-              setError('Verification succeeded, but session was not established. Please check site auth configuration.')
-              return
+              console.warn('[space-signin] 2FA session endpoint did not confirm in time; forcing navigation to target.', targetUrl)
             }
 
-            window.location.assign(result?.url || callbackUrl)
+            window.location.replace(targetUrl)
         }
       } catch (error) {
           setError('An error occurred. Please try again.')
@@ -205,14 +214,14 @@ export default function SpaceSignInPage() {
       <div className="relative z-10 flex flex-col justify-start px-6 pb-6 pt-12 md:flex-1 md:justify-center md:p-12 lg:p-20">
         <div className="max-w-3xl space-y-4 md:space-y-6">
           <div className="mb-2 flex items-center space-x-4">
-            <div className="rounded-2xl border border-gray-200 bg-white/60 p-3 shadow-sm backdrop-blur-sm">
+            <div className="rounded-2xl border border-gray-200 bg-white/60 p-3 shadow-lg backdrop-blur-sm">
               {branding?.applicationLogo ? (
                 <img src={branding.applicationLogo} alt="Logo" className="h-10 w-10 object-contain" />
               ) : (
                 <Layers className="h-10 w-10 text-primary fill-primary/10" />
               )}
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 drop-shadow-sm md:text-5xl lg:text-6xl">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 drop-shadow-lg md:text-5xl lg:text-6xl">
               {branding?.applicationName || 'Unified Data Platform'}
             </h1>
           </div>
@@ -357,12 +366,12 @@ export default function SpaceSignInPage() {
                   {ssoProviders.google && (
                     <Button variant="outline" className="w-full bg-white/50 hover:bg-white/80 border-white/40" onClick={async () => {
                       try {
-                        const requestedCallbackUrl = searchParams?.get('callbackUrl')
+                        const requestedCallbackUrl = getSafeCallbackUrl(searchParams?.get('callbackUrl'), fallbackCallbackUrl)
                         const spaceRes = await fetch(`/api/spaces/${params.space}/default-page`)
                         const defaultPath = spaceRes.ok ? (await spaceRes.json()).path : '/dashboard'
                         await signIn('google', { callbackUrl: requestedCallbackUrl || `/${params.space}${defaultPath}` })
                       } catch {
-                        await signIn('google', { callbackUrl: searchParams?.get('callbackUrl') || `/${params.space}/dashboard` })
+                        await signIn('google', { callbackUrl: safeCallbackUrl })
                       }
                     }} disabled={isLoading}>
                       <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -377,12 +386,12 @@ export default function SpaceSignInPage() {
                   {ssoProviders.azure && (
                     <Button variant="outline" className="w-full bg-white/50 hover:bg-white/80 border-white/40" onClick={async () => {
                       try {
-                        const requestedCallbackUrl = searchParams?.get('callbackUrl')
+                        const requestedCallbackUrl = getSafeCallbackUrl(searchParams?.get('callbackUrl'), fallbackCallbackUrl)
                         const spaceRes = await fetch(`/api/spaces/${params.space}/default-page`)
                         const defaultPath = spaceRes.ok ? (await spaceRes.json()).path : '/dashboard'
                         await signIn('azure-ad', { callbackUrl: requestedCallbackUrl || `/${params.space}${defaultPath}` })
                       } catch {
-                        await signIn('azure-ad', { callbackUrl: searchParams?.get('callbackUrl') || `/${params.space}/dashboard` })
+                        await signIn('azure-ad', { callbackUrl: safeCallbackUrl })
                       }
                     }} disabled={isLoading}>
                       <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">

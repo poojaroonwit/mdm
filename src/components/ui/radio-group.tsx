@@ -51,7 +51,7 @@ const RadioGroupItem = React.forwardRef<HTMLInputElement, RadioGroupItemProps>(
           disabled={disabled}
           className={cn(
             "h-4 w-4 rounded-full border border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950/50 text-zinc-900 dark:text-zinc-100 ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/20 dark:focus-visible:ring-zinc-500/20 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-40 appearance-none cursor-pointer transition-all duration-200",
-            "checked:bg-zinc-900 dark:checked:bg-zinc-100 checked:border-zinc-900 dark:checked:border-zinc-100 shadow-sm",
+            "checked:bg-zinc-900 dark:checked:bg-zinc-100 checked:border-zinc-900 dark:checked:border-zinc-100 shadow-lg",
             className
           )}
           {...props}

@@ -28,11 +28,12 @@ export function StorageConnectionDialog({
 }: StorageConnectionDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-3xl max-h-[90vh]">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>{description}</DialogDescription>
                 </DialogHeader>
+                <DialogBody className="overflow-y-auto">
                 <StorageConnectionForm
                     initialData={initialData}
                     onSubmit={async (data) => {
@@ -41,6 +42,7 @@ export function StorageConnectionDialog({
                     }}
                     onCancel={() => onOpenChange(false)}
                 />
+                </DialogBody>
             </DialogContent>
         </Dialog>
     )

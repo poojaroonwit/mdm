@@ -81,7 +81,7 @@ const DEFAULT_BREAKPOINTS: Breakpoint[] = [
     height: 800,
     minWidth: 1024,
     icon: 'Monitor',
-    color: '#3b82f6'
+    color: '#1e40af'
   },
   {
     id: 'tablet',

@@ -234,7 +234,7 @@ export function TableWidgetRenderer({ widget, props, style, chartData, dataLoadi
     if (isValueCell && styleCfg.valueViz && styleCfg.valueViz !== 'none') {
       const num = Number(value)
       const isValidNum = isFinite(num)
-      const color = styleCfg.valueColor || '#3b82f6'
+      const color = styleCfg.valueColor || '#1e40af'
       const showNumber = styleCfg.valueShowNumber !== false
       
       if (isValidNum && minMax && minMax.min !== undefined && minMax.max !== undefined) {

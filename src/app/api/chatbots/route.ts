@@ -108,7 +108,7 @@ async function getHandler(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const spaceId = searchParams.get('spaceId') || searchParams.get('space_id')
   const isPublished = searchParams.get('isPublished')
-  const folderSpaceId = await resolveFolderSpaceId(session.user.id!, spaceId)
+  const folderSpaceId = await resolveFolderSpaceId(session.user.id!, spaceId, 'chatbot')
 
   const where: any = {
     deletedAt: null,
@@ -118,7 +118,7 @@ async function getHandler(request: NextRequest) {
     ]
   }
 
-  if (spaceId) {
+  if (spaceId && spaceId !== 'global') {
     where.spaceId = spaceId
   }
 
@@ -478,7 +478,7 @@ async function postHandler(request: NextRequest) {
         isPublished: false,
         currentVersion: currentVersion || null,
         createdBy: session.user.id,
-        spaceId: spaceId || null,
+        spaceId: (spaceId && spaceId !== 'global') ? spaceId : null,
         versions: {
           create: {
             version: currentVersion || '1.0.0',

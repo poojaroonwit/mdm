@@ -13,6 +13,7 @@ import {
   updateServiceDeskJob 
 } from '@/lib/servicedesk-job-queue'
 import { checkServiceDeskRateLimit, getServiceDeskRateLimitConfig } from '@/lib/servicedesk-rate-limiter'
+import { getConfiguredSiteUrl } from '@/lib/system-runtime-settings'
 
 /**
  * GET - List jobs for a space
@@ -91,13 +92,12 @@ async function postHandler(request: NextRequest) {
   const jobId = await createServiceDeskJob(spaceId, session.user.id, jobType, payload)
 
   // Trigger job processing (async)
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/integrations/manageengine-servicedesk/jobs/process`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jobId })
-    }).catch(err => console.error('Failed to trigger job processing:', err))
-  }
+  const siteUrl = await getConfiguredSiteUrl(request)
+  fetch(`${siteUrl}/api/integrations/manageengine-servicedesk/jobs/process`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jobId })
+  }).catch(err => console.error('Failed to trigger job processing:', err))
 
   return NextResponse.json({
     success: true,

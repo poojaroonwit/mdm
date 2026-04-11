@@ -130,7 +130,7 @@ export default function PluginsPage() {
         <div style={{ minHeight: '100vh', background: 'hsl(var(--background))', padding: '32px 24px' }}>
             <main style={{ maxWidth: '1400px', margin: '0 auto' }}>
                 <div style={{ marginBottom: '32px' }}>
-                    <h1 style={{ fontSize: '32px', fontWeight: 700, marginBottom: '8px' }}>Plugin Hub</h1>
+                    <h1 style={{ fontSize: '32px', fontWeight: 600, marginBottom: '8px' }}>Plugin Hub</h1>
                     <p style={{ color: 'hsl(var(--muted-foreground))' }}>Manage your plugins and templates</p>
                 </div>
 

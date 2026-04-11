@@ -29,8 +29,6 @@ interface LookerStudioConfig {
   name: string
   access_type: 'API' | 'PUBLIC'
   // API Configuration
-  client_id?: string
-  client_secret?: string
   refresh_token?: string
   // Public Link
   public_link?: string
@@ -273,27 +271,8 @@ export function LookerStudioIntegration({ spaceId, onSuccess }: LookerStudioInte
             </TabsList>
 
             <TabsContent value="api" className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="client_id">Client ID</Label>
-                  <Input
-                    id="client_id"
-                    type="password"
-                    value={formData.client_id || ''}
-                    onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
-                    placeholder="Google OAuth Client ID"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="client_secret">Client Secret</Label>
-                  <Input
-                    id="client_secret"
-                    type="password"
-                    value={formData.client_secret || ''}
-                    onChange={(e) => setFormData({ ...formData, client_secret: e.target.value })}
-                    placeholder="Google OAuth Client Secret"
-                  />
-                </div>
+              <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                Google OAuth client credentials are managed in SSO settings. Only the refresh token is stored per Looker Studio integration.
               </div>
               <div>
                 <Label htmlFor="refresh_token">Refresh Token</Label>

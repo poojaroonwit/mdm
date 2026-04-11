@@ -113,7 +113,7 @@ export function AttachmentField({
 
       {/* File Limit Warning */}
       {!canUploadMore && (
-        <div className="flex items-center space-x-2 p-3 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-900/50 rounded-xl">
+        <div className="flex items-center space-x-2 p-3 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-900/50 rounded-md">
           <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
           <span className="text-xs font-medium text-amber-800 dark:text-amber-300">
             Maximum number of files ({maxFiles}) reached
@@ -129,7 +129,7 @@ export function AttachmentField({
             {attachments.map((attachment) => (
               <div
                 key={attachment.id}
-                className="flex items-center justify-between p-3 bg-white/50 dark:bg-zinc-900/50 border border-zinc-100/60 dark:border-zinc-800/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+                className="flex items-center justify-between p-3 bg-white/50 dark:bg-zinc-900/50 border border-zinc-100/60 dark:border-zinc-800/60 rounded-md shadow-lg hover:shadow-md transition-all duration-200"
               >
                 <div className="flex items-center space-x-3">
                   <File className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />

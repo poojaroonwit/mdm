@@ -284,11 +284,11 @@ export function ChartRenderer({
             { name: 'Mar', sales: 1800, profit: 500 },
             { name: 'Apr', sales: 1600, profit: 450 },
             { name: 'May', sales: 2000, profit: 600 },
-            { name: 'Jun', sales: 2200, profit: 700 }
+            { name: 'Jun', sales: 2200, profit: 600 }
           ]
         } else if (ct.includes('PIE') || ct.includes('DONUT')) {
           return [
-            { name: 'Desktop', value: 45, color: '#3b82f6' },
+            { name: 'Desktop', value: 45, color: '#1e40af' },
             { name: 'Mobile', value: 35, color: '#10b981' },
             { name: 'Tablet', value: 20, color: '#f59e0b' }
           ]
@@ -314,7 +314,7 @@ export function ChartRenderer({
             { name: 'Mar', sales: 1800, profit: 500 },
             { name: 'Apr', sales: 1600, profit: 450 },
             { name: 'May', sales: 2000, profit: 600 },
-            { name: 'Jun', sales: 2200, profit: 700 }
+            { name: 'Jun', sales: 2200, profit: 600 }
           ]
         }
       })()
@@ -1237,7 +1237,7 @@ export function ChartRenderer({
                 const r = rFor(Number(d[valKey]))
                 return (
                   <g key={i}>
-                    <circle cx={cx} cy={cy} r={r} fill="rgba(59,130,246,0.35)" stroke="#3b82f6" />
+                    <circle cx={cx} cy={cy} r={r} fill="rgba(59,130,246,0.35)" stroke="#1e40af" />
                     <title>{`${d.name || ''}\n${valKey}: ${d[valKey]}`}</title>
                   </g>
                 )

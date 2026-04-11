@@ -11,6 +11,7 @@ import {
 } from '@/lib/folder-state'
 
 const folderTypeSchema = z.enum(['data_model', 'chatbot'])
+const spaceIdSchema = z.union([z.string().uuid(), z.literal('global')])
 
 async function putHandler(
   request: NextRequest,
@@ -28,7 +29,7 @@ async function putHandler(
   const bodyValidation = await validateBody(request, z.object({
     name: z.string().min(1).optional(),
     parent_id: commonSchemas.id.optional().nullable(),
-    space_id: commonSchemas.id.optional(),
+    space_id: spaceIdSchema.optional(),
     type: folderTypeSchema.optional().default('data_model'),
   }))
   if (!bodyValidation.success) {
@@ -36,14 +37,17 @@ async function putHandler(
   }
 
   const { id } = paramValidation.data
-  const spaceId = await resolveFolderSpaceId(session.user.id!, bodyValidation.data.space_id)
+  const type = bodyValidation.data.type || 'data_model'
+  const spaceId = await resolveFolderSpaceId(session.user.id!, bodyValidation.data.space_id, type)
   if (!spaceId) {
     return NextResponse.json({ error: 'Space is required' }, { status: 400 })
   }
 
-  const accessResult = await requireSpaceAccess(spaceId, session.user.id!)
-  if (!accessResult.success) {
-    return accessResult.response
+  if (spaceId !== 'global') {
+    const accessResult = await requireSpaceAccess(spaceId, session.user.id!)
+    if (!accessResult.success) {
+      return accessResult.response
+    }
   }
 
   try {
@@ -75,7 +79,7 @@ async function deleteHandler(
   }
 
   const queryValidation = validateQuery(request, z.object({
-    space_id: commonSchemas.id.optional(),
+    space_id: spaceIdSchema.optional(),
     type: folderTypeSchema.optional().default('data_model'),
   }))
   if (!queryValidation.success) {
@@ -83,14 +87,17 @@ async function deleteHandler(
   }
 
   const { id } = paramValidation.data
-  const spaceId = await resolveFolderSpaceId(session.user.id!, queryValidation.data.space_id)
+  const type = queryValidation.data.type || 'data_model'
+  const spaceId = await resolveFolderSpaceId(session.user.id!, queryValidation.data.space_id, type)
   if (!spaceId) {
     return NextResponse.json({ error: 'Space is required' }, { status: 400 })
   }
 
-  const accessResult = await requireSpaceAccess(spaceId, session.user.id!)
-  if (!accessResult.success) {
-    return accessResult.response
+  if (spaceId !== 'global') {
+    const accessResult = await requireSpaceAccess(spaceId, session.user.id!)
+    if (!accessResult.success) {
+      return accessResult.response
+    }
   }
 
   try {

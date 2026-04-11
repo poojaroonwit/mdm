@@ -89,9 +89,9 @@ export function MessageBubble({
       const iconColor = chatbot.avatarIconColor || '#ffffff'
       const chatKitAccent = (chatbot as any).chatkitOptions?.theme?.color?.accent?.primary
       // Ensure bgColor is never empty
-      let bgColor = chatbot.avatarBackgroundColor || chatKitAccent || chatbot.primaryColor || '#3b82f6'
+      let bgColor = chatbot.avatarBackgroundColor || chatKitAccent || chatbot.primaryColor || '#1e40af'
       if (!bgColor || bgColor.trim() === '') {
-        bgColor = '#3b82f6'
+        bgColor = '#1e40af'
       }
       return (
         <div
@@ -233,7 +233,7 @@ export function MessageBubble({
                 )
               }),
             backgroundColor: message.role === 'user'
-              ? (chatbot.userMessageBackgroundColor || chatbot.primaryColor || '#3b82f6')
+              ? (chatbot.userMessageBackgroundColor || chatbot.primaryColor || '#1e40af')
               : (chatbot.botMessageBackgroundColor || '#f3f4f6'),
             color: message.role === 'user'
               ? (chatbot.userMessageFontColor || 'white')

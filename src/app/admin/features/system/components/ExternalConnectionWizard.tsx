@@ -1,7 +1,8 @@
 'use client'
 
+import { Skeleton } from '@/components/ui/skeleton'
 import { useState, useEffect } from 'react'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogBody, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -218,7 +219,11 @@ export function ExternalConnectionWizard({
 
                 <TabsContent value="select" className="pt-4 space-y-4">
                     {isLoadingConnections ? (
-                        <div className="flex justify-center p-8"><RefreshCw className="animate-spin h-6 w-6 text-muted-foreground" /></div>
+                        <div className="w-full space-y-3 p-4">
+                          <Skeleton className="h-10 w-full rounded-md" />
+                          <Skeleton className="h-12 w-full rounded-md" />
+                          <Skeleton className="h-12 w-full rounded-md" />
+                        </div>
                     ) : existingConnections.length === 0 ? (
                         <div className="text-center p-8 text-muted-foreground border-2 border-dashed rounded-lg">
                             No existing connections found. Create a new one.
@@ -509,12 +514,12 @@ export function ExternalConnectionWizard({
                         )}
                     </DialogDescription>
                 </DialogHeader>
-
-                {/* Main Content Area */}
+                <DialogBody>
+{/* Main Content Area */}
                 {step === 1 && renderModeSelection()}
                 {step === 2 && mode === 'create' && renderStep2()}
                 {step === 3 && mode === 'create' && renderStep3()}
-
+                </DialogBody>
                 <DialogFooter className="flex justify-between sm:justify-between">
                     {(step > 1 || mode === 'select' && step > 1) ? (
                         <Button variant="ghost" onClick={() => setStep(prev => prev - 1 as any)}>

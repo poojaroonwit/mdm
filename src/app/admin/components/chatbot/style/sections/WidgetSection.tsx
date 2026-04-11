@@ -481,11 +481,11 @@ export function WidgetSection({ formData, setFormData, chatkitOptions }: Section
               </FormRow>
               <FormRow label="Background" description="Color or image for the widget">
                 <ColorInput
-                  value={formData.widgetBackgroundColor || '#3b82f6'}
+                  value={formData.widgetBackgroundColor || '#1e40af'}
                   onChange={(color) => setFormData({ ...formData, widgetBackgroundColor: color })}
                   allowImageVideo={true}
                   className="relative"
-                  placeholder="#3b82f6"
+                  placeholder="#1e40af"
                   inputClassName="h-7 text-xs pl-7 w-full"
                 />
               </FormRow>

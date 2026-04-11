@@ -317,11 +317,11 @@ export function ChatKitIntegrationSection({ formData, setFormData }: ChatKitInte
             <FormSection>
               <FormRow label="Background Color" description="Header background color or image">
                 <ColorInput
-                  value={formData.headerBgColor || '#3b82f6'}
+                  value={formData.headerBgColor || '#1e40af'}
                   onChange={(color) => setFormData({ ...formData, headerBgColor: color })}
                   allowImageVideo={true}
                   className="relative"
-                  placeholder="#3b82f6"
+                  placeholder="#1e40af"
                   inputClassName="h-7 text-xs pl-7 w-full"
                 />
               </FormRow>

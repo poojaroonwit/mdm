@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -416,14 +416,14 @@ export function DatabaseManagement() {
                   Add Connection
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="p-0 overflow-hidden">
                 <DialogHeader>
                   <DialogTitle>Add Database Connection</DialogTitle>
                   <DialogDescription>
                     Configure a new database connection
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+                <DialogBody className="space-y-4 p-6 pt-2 pb-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="conn-name">Connection Name</Label>
@@ -528,7 +528,7 @@ export function DatabaseManagement() {
                       />
                     </div>
                   </div>
-                </div>
+                </DialogBody>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setShowCreateConnection(false)}>
                     Cancel

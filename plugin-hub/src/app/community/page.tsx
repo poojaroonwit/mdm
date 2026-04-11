@@ -60,7 +60,7 @@ export default function CommunityPage() {
 
             {/* Resources Section */}
             <div style={{ maxWidth: '1200px', margin: '80px auto', padding: '0 24px' }}>
-                <h2 style={{ fontSize: '32px', fontWeight: 700, marginBottom: '40px', textAlign: 'center' }}>Developer Resources</h2>
+                <h2 style={{ fontSize: '32px', fontWeight: 600, marginBottom: '40px', textAlign: 'center' }}>Developer Resources</h2>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
 
                     <div style={resourceCardStyle}>
@@ -113,7 +113,7 @@ const iconContainerStyle: React.CSSProperties = {
 
 const cardTitleStyle: React.CSSProperties = {
     fontSize: '24px',
-    fontWeight: 700,
+    fontWeight: 600,
     marginBottom: '12px',
     color: 'hsl(var(--foreground))'
 }

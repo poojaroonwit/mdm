@@ -41,14 +41,18 @@
     --border-hover: #d1d5db; /* gray-300 */
     --border-active: #9ca3af; /* gray-400 */
 
-    --primary-blue: #2563eb;
-    --primary-blue-hover: #1d4ed8;
+    --primary-blue: #1e40af;
+    --primary-blue-hover: #1e3a8a;
     --primary-blue-light: #dbeafe;
+    --primary-navy: #172554;
+
+    --shadow-blue-glow: 0 4px 14px 0 rgba(30, 64, 175, 0.3);
+    --shadow-blue-glow-hover: 0 6px 20px rgba(30, 64, 175, 0.45);
 
     --sidebar-bg: #ffffff;
     --sidebar-border: #e5e7eb;
     --sidebar-hover: #f3f4f6;
-    --sidebar-active: #2563eb;
+    --sidebar-active: #1e40af;
     --sidebar-icon: #6b7280;
     --sidebar-icon-hover: #374151;
     --sidebar-icon-active: #ffffff;
@@ -69,7 +73,7 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%; /* Zinc-900 */
+    --primary: 226 71% 40%; /* Luxury Blue (#1e40af) */
     --primary-foreground: 0 0% 98%;
     --secondary: 240 4.8% 95.9%; /* Zinc-100 */
     --secondary-foreground: 240 5.9% 10%;
@@ -81,7 +85,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 240 5.9% 90%; /* Zinc-200 */
     --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
+    --ring: 226 71% 40%;
     --radius: 0.75rem;
 
     /* z-index scale */
@@ -133,14 +137,14 @@
     --border-hover: #404040;
     --border-active: #525252;
 
-    --primary-blue: #3b82f6;
-    --primary-blue-hover: #2563eb;
+    --primary-blue: #1e40af;
+    --primary-blue-hover: #1e40af;
     --primary-blue-light: #1e3a8a;
 
     --sidebar-bg: #000000;
     --sidebar-border: #262626;
     --sidebar-hover: #1a1a1a;
-    --sidebar-active: #3b82f6;
+    --sidebar-active: #1e40af;
     --sidebar-icon: #71717a;
     --sidebar-icon-hover: #a1a1aa;
     --sidebar-icon-active: #ffffff;

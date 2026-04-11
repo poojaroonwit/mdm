@@ -3,13 +3,14 @@
  *
  * Two clients are created:
  *  - `minioClient`       : uses MINIO_ENDPOINT (internal Docker hostname for uploads)
- *  - `minioPublicClient` : built from MINIO_PUBLIC_URL (external hostname for proxy/stream reads)
+ *  - `getMinioPublicClient()` : built from the configured public URL (external hostname for proxy/stream reads)
  *
  * The public client is what the /api/assets proxy uses, because MINIO_ENDPOINT
  * may be an internal Docker service name unreachable from the app at read time.
  */
 
 import { Client } from 'minio'
+import { getMinioPublicUrl } from '@/lib/system-runtime-settings'
 
 export const MINIO_BUCKET = process.env.MINIO_UPLOADS_BUCKET || process.env.MINIO_BUCKET || 'udp'
 
@@ -36,8 +37,7 @@ export const minioClient = new Client({
 // ── Public client (built from MINIO_PUBLIC_URL — used for proxy/stream reads) ─
 // Mirrors studio-2's pattern: parse the public URL to get the correct
 // hostname, port, and SSL flag for external access.
-function buildPublicClient(): Client | null {
-  const publicBase = process.env.MINIO_PUBLIC_URL
+function buildPublicClient(publicBase: string | null): Client | null {
   if (!publicBase) return null
   try {
     const u = new URL(publicBase)
@@ -53,4 +53,6 @@ function buildPublicClient(): Client | null {
   }
 }
 
-export const minioPublicClient: Client | null = buildPublicClient()
+export async function getMinioPublicClient(): Promise<Client | null> {
+  return buildPublicClient(await getMinioPublicUrl())
+}

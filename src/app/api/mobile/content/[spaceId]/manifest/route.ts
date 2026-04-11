@@ -123,7 +123,7 @@ export async function GET(
       // Theme summary
       theme: {
         hasBranding: !!branding,
-        primaryColor: branding?.primaryColor || '#3B82F6',
+        primaryColor: branding?.primaryColor || '#1e40af',
         mode: 'auto', // Could be derived from branding
       },
 

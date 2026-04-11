@@ -7,11 +7,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Building2, Search, ArrowRight, Settings, Layout, Grid3X3, Table as TableIcon, Plus, X, Filter } from 'lucide-react'
 import { Space } from '../types'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function SpaceSelection() {
   const router = useRouter()
@@ -177,10 +178,56 @@ export function SpaceSelection() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading spaces...</p>
+        <div className="w-full space-y-3 p-4">
+  <Skeleton className="h-10 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Space Selection</h2>
+          <p className="text-muted-foreground">Select a workspace to continue</p>
         </div>
+        <div className="flex items-center gap-3">
+          <div className="w-64 relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search spaces..."
+              className="pl-8"
+            />
+          </div>
+          <div className="flex items-center gap-1 border rounded-md p-1">
+            <Button
+              variant={viewMode === 'cards' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('cards')}
+              className="h-8"
+            >
+              <Grid3X3 className="h-4 w-4 mr-2" />
+              Cards
+            </Button>
+            <Button
+              variant={viewMode === 'table' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('table')}
+              className="h-8"
+            >
+              <TableIcon className="h-4 w-4 mr-2" />
+              Table
+            </Button>
+          </div>
+          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+            <DialogTrigger asChild>
+</div>
       </div>
     )
   }
@@ -229,15 +276,15 @@ export function SpaceSelection() {
                 Create New Space
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
+            <DialogContent className="sm:max-w-md p-0 overflow-hidden">
+              <DialogHeader className="p-6 pb-2">
                 <DialogTitle>Create New Space</DialogTitle>
                 <DialogDescription>
                   Create a new workspace to organize your data and collaborate with your team.
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleCreateSpace}>
-                <div className="space-y-4">
+                <DialogBody className="p-6 pt-2 pb-4 space-y-4">
                   <div>
                     <Label htmlFor="name">Space Name *</Label>
                     <Input
@@ -306,35 +353,7 @@ export function SpaceSelection() {
                       </div>
                     )}
                   </div>
-                </div>
-                <DialogFooter className="mt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setShowCreateDialog(false)
-                      setCreateFormData({
-                        name: '',
-                        description: '',
-                        slug: '',
-                        tags: [],
-                        tagInput: ''
-                      })
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={!createFormData.name.trim() || isLoading}>
-                    {isLoading ? 'Creating...' : 'Create Space'}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
-
-      {/* Status and Tag Filters */}
+                </DialogBody>
       <div className="flex items-center gap-4 flex-wrap">
         {/* Status Filter */}
         <div className="flex items-center gap-2">

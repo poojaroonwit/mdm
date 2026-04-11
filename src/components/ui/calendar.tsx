@@ -36,7 +36,7 @@ export function Calendar({
         type="date"
         value={selectedDate ? selectedDate.toISOString().split('T')[0] : ''}
         onChange={handleDateChange}
-        className="w-full px-3 py-2 border border-zinc-100/60 dark:border-zinc-800/60 rounded-xl bg-white/50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-500 transition-all duration-200"
+        className="w-full px-3 py-2 border border-zinc-100/60 dark:border-zinc-800/60 rounded-md bg-white/50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-500 transition-all duration-200"
         autoFocus={initialFocus}
       />
     </div>

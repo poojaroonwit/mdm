@@ -5,6 +5,7 @@ import type { Provider } from "next-auth/providers/index"
 import { db as prisma, query } from "@/lib/db"
 import { decryptApiKey } from "@/lib/encryption"
 import { mapOAuthProfile } from "@/lib/identity-utils"
+import { getGoogleOAuthConfig } from "@/lib/google-oauth-config"
 
 const CACHE_TTL_MS = 5 * 60 * 1000
 const SUPPORTED_PROVIDER_NAMES = ["google", "github", "azure-ad"] as const
@@ -153,14 +154,19 @@ function resolveDbProvider(record: OAuthProviderRecord): ResolvedSSOProvider | n
   }
 }
 
-function getEnvProvider(providerName: SupportedSSOProviderName): ResolvedSSOProvider | null {
-  if (providerName === "google" && process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+async function getEnvProvider(providerName: SupportedSSOProviderName): Promise<ResolvedSSOProvider | null> {
+  if (providerName === "google") {
+    const googleConfig = await getGoogleOAuthConfig()
+    if (!googleConfig) {
+      return null
+    }
+
     return {
       providerName,
       displayName: "Google",
       isEnabled: true,
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      clientId: googleConfig.clientId,
+      clientSecret: googleConfig.clientSecret,
       authorizationUrl: null,
       tokenUrl: null,
       userinfoUrl: null,
@@ -172,56 +178,6 @@ function getEnvProvider(providerName: SupportedSSOProviderName): ResolvedSSOProv
       defaultRole: null,
       displayOrder: 1,
       tenantId: null,
-      groupRoleMappings: [],
-    }
-  }
-
-  if (providerName === "github" && process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
-    return {
-      providerName,
-      displayName: "GitHub",
-      isEnabled: true,
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      authorizationUrl: null,
-      tokenUrl: null,
-      userinfoUrl: null,
-      scopes: ["read:user", "user:email"],
-      allowedDomains: [],
-      allowSignup: false,
-      requireEmailVerified: true,
-      autoLinkByEmail: false,
-      defaultRole: null,
-      displayOrder: 2,
-      tenantId: null,
-      groupRoleMappings: [],
-    }
-  }
-
-  if (
-    providerName === "azure-ad" &&
-    process.env.AZURE_AD_CLIENT_ID &&
-    process.env.AZURE_AD_CLIENT_SECRET &&
-    process.env.AZURE_AD_TENANT_ID
-  ) {
-    const tenantId = process.env.AZURE_AD_TENANT_ID
-    return {
-      providerName,
-      displayName: "Microsoft Azure",
-      isEnabled: true,
-      clientId: process.env.AZURE_AD_CLIENT_ID,
-      clientSecret: process.env.AZURE_AD_CLIENT_SECRET,
-      authorizationUrl: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`,
-      tokenUrl: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
-      userinfoUrl: "https://graph.microsoft.com/oidc/userinfo",
-      scopes: ["openid", "email", "profile", "offline_access", "User.Read"],
-      allowedDomains: [],
-      allowSignup: false,
-      requireEmailVerified: true,
-      autoLinkByEmail: false,
-      defaultRole: null,
-      displayOrder: 3,
-      tenantId,
       groupRoleMappings: [],
     }
   }
@@ -277,7 +233,7 @@ export async function getResolvedSSOProviders(): Promise<ResolvedSSOProvider[]> 
 
   for (const providerName of SUPPORTED_PROVIDER_NAMES) {
     if (!merged.has(providerName)) {
-      const envProvider = getEnvProvider(providerName)
+      const envProvider = await getEnvProvider(providerName)
       if (envProvider) {
         merged.set(providerName, envProvider)
       }

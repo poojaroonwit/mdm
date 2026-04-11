@@ -54,7 +54,7 @@ export function ChatbotAvatar({ chatbot, size = 'md' }: ChatbotAvatarProps) {
   }
 
   const iconColor = chatbot.avatarIconColor || '#ffffff'
-  const bgColor = chatbot.avatarBackgroundColor || chatbot.primaryColor || '#3b82f6'
+  const bgColor = chatbot.avatarBackgroundColor || chatbot.primaryColor || '#1e40af'
   return (
     <div
       className={`${sizeClasses[size]} rounded-full flex items-center justify-center flex-shrink-0`}

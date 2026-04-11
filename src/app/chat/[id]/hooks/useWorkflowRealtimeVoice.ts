@@ -9,6 +9,21 @@ interface UseWorkflowRealtimeVoiceProps {
   onResponse?: (response: string) => void
 }
 
+async function getRealtimeProxyUrl(chatbotId: string): Promise<string> {
+  const response = await fetch(`/api/openai-realtime?chatbotId=${encodeURIComponent(chatbotId)}`)
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}))
+    throw new Error(error.error || 'Failed to load Realtime voice configuration')
+  }
+
+  const data = await response.json()
+  if (!data.wsUrl) {
+    throw new Error('Realtime voice WebSocket URL is not configured')
+  }
+
+  return data.wsUrl as string
+}
+
 /**
  * Realtime Voice Hook for Workflow Integration
  * 
@@ -172,14 +187,14 @@ export function useWorkflowRealtimeVoice({
           return
         }
 
-        // Connect to WebSocket proxy server
-        // Try to detect if running on same host (for development)
-        // Default to port 3002 since 3001 may be used by Docker
-        const wsPort = process.env.NEXT_PUBLIC_WS_PROXY_PORT || '3002'
-        const wsHost = typeof window !== 'undefined' 
-          ? window.location.hostname 
-          : 'localhost'
-        const proxyUrl = process.env.NEXT_PUBLIC_WS_PROXY_URL || `ws://${wsHost}:${wsPort}/api/openai-realtime`
+        const chatbotId = chatbot?.id
+        if (!chatbotId) {
+          toast.error('Chatbot ID is required for Realtime Voice')
+          resolve(false)
+          return
+        }
+
+        const proxyUrl = await getRealtimeProxyUrl(chatbotId)
         console.log('Attempting to connect to WebSocket proxy:', proxyUrl)
         
         // First, try to check if server is reachable (optional health check)

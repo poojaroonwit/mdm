@@ -67,7 +67,7 @@ export function PwaEmulator({ config }: PwaEmulatorProps) {
                   onClick={() => setPreviewMode('banner')}
                   className={cn(
                      "flex-1 text-xs py-1.5 px-3 rounded-md font-medium transition-all",
-                     previewMode === 'banner' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                     previewMode === 'banner' ? "bg-background shadow-lg text-foreground" : "text-muted-foreground hover:text-foreground"
                   )}
                >
                   Install Banner
@@ -76,7 +76,7 @@ export function PwaEmulator({ config }: PwaEmulatorProps) {
                   onClick={() => setPreviewMode('splash')}
                   className={cn(
                      "flex-1 text-xs py-1.5 px-3 rounded-md font-medium transition-all",
-                     previewMode === 'splash' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                     previewMode === 'splash' ? "bg-background shadow-lg text-foreground" : "text-muted-foreground hover:text-foreground"
                   )}
                >
                   Loading Screen
@@ -123,7 +123,7 @@ export function PwaEmulator({ config }: PwaEmulatorProps) {
                   <div className="absolute inset-0 flex flex-col animate-in fade-in duration-300">
                      {/* Fake browser bar */}
                      <div className="h-14 bg-gray-100 border-b flex items-center px-4 space-x-2 shrink-0">
-                        <div className="flex-1 bg-white rounded-md h-8 flex items-center px-3 text-xs text-gray-500 shadow-sm">
+                        <div className="flex-1 bg-white rounded-md h-8 flex items-center px-3 text-xs text-gray-500 shadow-lg">
                            <span className="truncate">{config.url || 'https://your-pwa.com'}</span>
                         </div>
                         <RefreshCw className="h-4 w-4 text-gray-500" />

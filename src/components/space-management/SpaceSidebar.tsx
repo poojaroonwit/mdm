@@ -138,7 +138,7 @@ function SortablePageItem({
               onClick={() => onPageClick(page)}
               {...(editMode ? { ...attributes, ...listeners } : {})}
               className={cn(
-                "platform-sidebar-menu-button w-full justify-between text-sm font-medium h-10 px-4 transition-colors duration-150 cursor-pointer text-foreground hover:!bg-transparent hover:!text-foreground rounded-none",
+                "platform-sidebar-menu-button w-full justify-between text-[13px] font-medium h-[34px] px-4 transition-colors duration-150 cursor-pointer text-foreground hover:!bg-transparent hover:!text-foreground rounded-none",
                 editMode ? 'cursor-grab active:cursor-grabbing' : '',
                 isActive
                   ? "platform-sidebar-menu-button-active !bg-muted !text-foreground rounded-sm"
@@ -495,7 +495,7 @@ export const SpaceSidebar = memo(function SpaceSidebar({
           {/* Pages Section */}
        
             <div className="px-2.5 py-1.5">
-              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.1em]">
                 Pages
               </div>
             </div>
@@ -548,7 +548,7 @@ export const SpaceSidebar = memo(function SpaceSidebar({
               variant="ghost"
               onClick={toggleSettingsExpanded}
               className={cn(
-                "platform-sidebar-menu-button w-full justify-start text-sm font-medium h-10 px-4 transition-colors duration-150 cursor-pointer text-foreground hover:!bg-transparent hover:!text-foreground rounded-none"
+                "platform-sidebar-menu-button w-full justify-start text-[13px] font-medium h-[34px] px-4 transition-colors duration-150 cursor-pointer text-foreground hover:!bg-transparent hover:!text-foreground rounded-none"
               )}
               style={{ 
                 pointerEvents: 'auto', 
@@ -578,7 +578,7 @@ export const SpaceSidebar = memo(function SpaceSidebar({
                           variant="ghost"
                           onClick={() => handleSettingsItemClick(item)}
                           className={cn(
-                            "platform-sidebar-menu-button w-full justify-start text-sm font-medium h-10 px-4 transition-colors duration-150 cursor-pointer text-foreground hover:!bg-transparent hover:!text-foreground rounded-none",
+                            "platform-sidebar-menu-button w-full justify-start text-[13px] font-medium h-[34px] px-4 transition-colors duration-150 cursor-pointer text-foreground hover:!bg-transparent hover:!text-foreground rounded-none",
                             isActive
                               ? "platform-sidebar-menu-button-active !bg-muted !text-foreground rounded-sm"
                               : "",

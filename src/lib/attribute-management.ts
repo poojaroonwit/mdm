@@ -346,7 +346,7 @@ export class AttributeManagementService {
         is_required: false,
         is_unique: false,
         options: [
-          { value: 'option1', label: 'Option 1', color: '#3B82F6', order: 0 },
+          { value: 'option1', label: 'Option 1', color: '#1e40af', order: 0 },
           { value: 'option2', label: 'Option 2', color: '#10B981', order: 1 }
         ]
       },

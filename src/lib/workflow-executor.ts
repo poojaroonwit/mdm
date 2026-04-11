@@ -17,6 +17,7 @@
  */
 
 import { query } from './db'
+import { getGlobalOpenAIApiKey } from './openai-config'
 
 interface ExecuteWorkflowCodeOptions {
   workflowCode: string
@@ -122,7 +123,7 @@ export async function executeWorkflow(workflowId: string): Promise<ExecuteWorkfl
 
     const workflow = workflowResult.rows[0]
     const workflowCode = workflow.code || ''
-    const apiKey = workflow.api_key || process.env.OPENAI_API_KEY || ''
+    const apiKey = workflow.api_key || await getGlobalOpenAIApiKey() || ''
 
     if (!workflowCode) {
       return {

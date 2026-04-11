@@ -21,11 +21,11 @@ export function SendButtonSection({ formData, setFormData, chatkitOptions }: Sec
         <FormSection>
           <FormRow label="Background Color" description="Button background color">
             <ColorInput
-              value={(formData as any).sendButtonBgColor || formData.primaryColor || '#3b82f6'}
+              value={(formData as any).sendButtonBgColor || formData.primaryColor || '#1e40af'}
               onChange={(color) => setFormData({ ...formData, sendButtonBgColor: color } as any)}
               allowImageVideo={false}
               className="relative"
-              placeholder="#3b82f6"
+              placeholder="#1e40af"
               inputClassName="h-8 text-xs pl-7"
             />
           </FormRow>

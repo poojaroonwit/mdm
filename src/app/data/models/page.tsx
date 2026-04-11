@@ -673,7 +673,7 @@ export default function DataModelsPage() {
                         {attributes.length > 0 && attributes.map((attr) => (
                           <div 
                             key={attr.id} 
-                            className="group flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors bg-background shadow-sm"
+                            className="group flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors bg-background shadow-lg"
                             onClick={(e) => {
                               e.preventDefault()
                               e.stopPropagation()

@@ -27,6 +27,8 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
+  DialogFooter,
+  DialogBody,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
@@ -250,113 +252,115 @@ export function TicketsList({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-5 mt-2">
-            {/* Grouping */}
-            <div className="space-y-3">
-              <p className="text-sm font-semibold text-foreground">Grouping</p>
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Group by Rows</Label>
+          <DialogBody>
+            <div className="space-y-5">
+              {/* Grouping */}
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-foreground">Grouping</p>
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Group by Rows</Label>
+                  <Select
+                    value={localConfig.rows || 'none'}
+                    onValueChange={(value) =>
+                      setLocalConfig({ ...localConfig, rows: value === 'none' ? undefined : value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="priority">Priority</SelectItem>
+                      <SelectItem value="assignee">Assignee</SelectItem>
+                      <SelectItem value="tags">Tags</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Group by Columns</Label>
+                  <Select
+                    value={localConfig.columns || 'status'}
+                    onValueChange={(value) =>
+                      setLocalConfig({ ...localConfig, columns: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="status">Status</SelectItem>
+                      <SelectItem value="priority">Priority</SelectItem>
+                      <SelectItem value="assignee">Assignee</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Ticket display mode */}
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-foreground">Ticket Detail View</p>
+                <Label className="text-xs text-muted-foreground mb-1 block">Open tickets as</Label>
                 <Select
-                  value={localConfig.rows || 'none'}
-                  onValueChange={(value) =>
-                    setLocalConfig({ ...localConfig, rows: value === 'none' ? undefined : value })
+                  value={localConfig.ticketDisplayMode || 'modal'}
+                  onValueChange={(value: 'modal' | 'drawer') =>
+                    setLocalConfig({ ...localConfig, ticketDisplayMode: value })
                   }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="priority">Priority</SelectItem>
-                    <SelectItem value="assignee">Assignee</SelectItem>
-                    <SelectItem value="tags">Tags</SelectItem>
+                    <SelectItem value="modal">Modal (centered dialog)</SelectItem>
+                    <SelectItem value="drawer">Drawer (side panel)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label className="text-xs text-muted-foreground mb-1 block">Group by Columns</Label>
-                <Select
-                  value={localConfig.columns || 'status'}
-                  onValueChange={(value) =>
-                    setLocalConfig({ ...localConfig, columns: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="status">Status</SelectItem>
-                    <SelectItem value="priority">Priority</SelectItem>
-                    <SelectItem value="assignee">Assignee</SelectItem>
-                  </SelectContent>
-                </Select>
+
+              <Separator />
+
+              {/* Card fields */}
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-foreground">Card Fields</p>
+                <p className="text-xs text-muted-foreground">Choose which fields appear on each ticket card.</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {cardFieldOptions.map(({ key, label }) => (
+                    <div key={key} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`field-${key}`}
+                        checked={localConfig.cardFields?.[key as keyof typeof localConfig.cardFields] !== false}
+                        onCheckedChange={(checked) =>
+                          setLocalConfig({
+                            ...localConfig,
+                            cardFields: {
+                              ...localConfig.cardFields,
+                              [key]: !!checked,
+                            },
+                          })
+                        }
+                      />
+                      <label
+                        htmlFor={`field-${key}`}
+                        className="text-sm cursor-pointer"
+                      >
+                        {label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+          </DialogBody>
 
-            <Separator />
-
-            {/* Ticket display mode */}
-            <div className="space-y-2">
-              <p className="text-sm font-semibold text-foreground">Ticket Detail View</p>
-              <Label className="text-xs text-muted-foreground mb-1 block">Open tickets as</Label>
-              <Select
-                value={localConfig.ticketDisplayMode || 'modal'}
-                onValueChange={(value: 'modal' | 'drawer') =>
-                  setLocalConfig({ ...localConfig, ticketDisplayMode: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="modal">Modal (centered dialog)</SelectItem>
-                  <SelectItem value="drawer">Drawer (side panel)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Separator />
-
-            {/* Card fields */}
-            <div className="space-y-3">
-              <p className="text-sm font-semibold text-foreground">Card Fields</p>
-              <p className="text-xs text-muted-foreground">Choose which fields appear on each ticket card.</p>
-              <div className="grid grid-cols-2 gap-2">
-                {cardFieldOptions.map(({ key, label }) => (
-                  <div key={key} className="flex items-center gap-2">
-                    <Checkbox
-                      id={`field-${key}`}
-                      checked={localConfig.cardFields?.[key as keyof typeof localConfig.cardFields] !== false}
-                      onCheckedChange={(checked) =>
-                        setLocalConfig({
-                          ...localConfig,
-                          cardFields: {
-                            ...localConfig.cardFields,
-                            [key]: !!checked,
-                          },
-                        })
-                      }
-                    />
-                    <label
-                      htmlFor={`field-${key}`}
-                      className="text-sm cursor-pointer"
-                    >
-                      {label}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-2 pt-4 border-t mt-4">
-            <Button onClick={handleConfigSave} className="flex-1">
-              Apply
-            </Button>
-            <Button variant="outline" onClick={() => setIsConfigOpen(false)}>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConfigOpen(false)} className="px-6 h-11 rounded-xl">
               Cancel
             </Button>
-          </div>
+            <Button onClick={handleConfigSave} className="px-8 h-11 rounded-xl bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900">
+              Apply Settings
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

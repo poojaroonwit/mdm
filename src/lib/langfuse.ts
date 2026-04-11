@@ -11,12 +11,10 @@ let configCacheTime: number = 0
 const CONFIG_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
 /**
- * Get Langfuse configuration from database or environment variables
+ * Get Langfuse configuration from database-backed integrations
  */
 async function getLangfuseConfig(): Promise<LangfuseConfig | null> {
-  // 1. Try to get from Database first
   try {
-    // Dynamic import to avoid circular dependency if any
     const { query } = await import('./db')
     
     // Check cache first for DB config
@@ -54,17 +52,7 @@ async function getLangfuseConfig(): Promise<LangfuseConfig | null> {
       }
     }
   } catch (error) {
-    // Ignore DB errors (e.g. during build or if table missing) and fall back to env
-    // console.warn('Failed to fetch Langfuse config from DB:', error)
-  }
-
-  // 2. Fallback to Environment Variables
-  if (process.env.LANGFUSE_PUBLIC_KEY && process.env.LANGFUSE_SECRET_KEY) {
-    return {
-      publicKey: process.env.LANGFUSE_PUBLIC_KEY,
-      secretKey: process.env.LANGFUSE_SECRET_KEY,
-      host: process.env.LANGFUSE_HOST || 'https://cloud.langfuse.com'
-    }
+    // Ignore DB errors (e.g. during build or if table missing)
   }
 
   return null

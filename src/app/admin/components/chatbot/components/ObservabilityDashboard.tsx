@@ -106,7 +106,7 @@ export function ObservabilityDashboard({ chatbot }: ObservabilityDashboardProps)
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
             <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Langfuse is not configured. Set LANGFUSE_SECRET_KEY and LANGFUSE_PUBLIC_KEY in your environment variables.</p>
+            <p>Langfuse is not configured. Add it in the integrations/settings UI to enable observability.</p>
           </div>
         </CardContent>
       </Card>

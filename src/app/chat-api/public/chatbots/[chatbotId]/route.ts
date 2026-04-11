@@ -52,7 +52,7 @@ export async function GET(
       return NextResponse.json({ error: 'Chatbot not found' }, { status: 404, headers: corsHeaders })
     }
 
-    const mergedChatbot = sanitizeChatbotConfig(mergeVersionConfig(chatbot))
+    const mergedChatbot = await sanitizeChatbotConfig(mergeVersionConfig(chatbot))
 
     if (mergedChatbot.chatbotEnabled === false) {
       return NextResponse.json(

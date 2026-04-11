@@ -28,7 +28,7 @@ export function TypingIndicator({ chatbot }: TypingIndicatorProps) {
       const IconName = chatbot.avatarIcon || 'Bot'
       const IconComponent = (Icons as any)[IconName] || Bot
       const iconColor = chatbot.avatarIconColor || '#ffffff'
-      const bgColor = chatbot.avatarBackgroundColor || chatbot.primaryColor || '#3b82f6'
+      const bgColor = chatbot.avatarBackgroundColor || chatbot.primaryColor || '#1e40af'
       return (
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"

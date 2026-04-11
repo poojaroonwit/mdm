@@ -44,7 +44,7 @@ export function ChatbotHeader({ formData, setFormData }: ChatbotHeaderProps) {
       ) : (
         <div
           className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: (formData.avatarBackgroundColor || formData.primaryColor || '#3b82f6') as string }}
+          style={{ backgroundColor: (formData.avatarBackgroundColor || formData.primaryColor || '#1e40af') as string }}
         >
           <IconComponent className="h-6 w-6" style={{ color: (formData.avatarIconColor || '#ffffff') as string }} />
         </div>

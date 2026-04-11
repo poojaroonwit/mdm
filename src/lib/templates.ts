@@ -87,7 +87,7 @@ export const DATA_MODEL_TEMPLATES: DataModelTemplate[] = [
         is_required: true,
         is_unique: false,
         options: [
-          { value: 'lead', label: 'Lead', color: '#3B82F6' },
+          { value: 'lead', label: 'Lead', color: '#1e40af' },
           { value: 'prospect', label: 'Prospect', color: '#10B981' },
           { value: 'customer', label: 'Customer', color: '#F59E0B' },
           { value: 'inactive', label: 'Inactive', color: '#6B7280' }
@@ -151,7 +151,7 @@ export const DATA_MODEL_TEMPLATES: DataModelTemplate[] = [
         is_required: true,
         is_unique: false,
         options: [
-          { value: 'electronics', label: 'Electronics', color: '#3B82F6' },
+          { value: 'electronics', label: 'Electronics', color: '#1e40af' },
           { value: 'clothing', label: 'Clothing', color: '#10B981' },
           { value: 'books', label: 'Books', color: '#F59E0B' },
           { value: 'home', label: 'Home & Garden', color: '#8B5CF6' }
@@ -233,7 +233,7 @@ export const DATA_MODEL_TEMPLATES: DataModelTemplate[] = [
         is_required: true,
         is_unique: false,
         options: [
-          { value: 'planning', label: 'Planning', color: '#3B82F6' },
+          { value: 'planning', label: 'Planning', color: '#1e40af' },
           { value: 'active', label: 'Active', color: '#10B981' },
           { value: 'on_hold', label: 'On Hold', color: '#F59E0B' },
           { value: 'completed', label: 'Completed', color: '#6B7280' }
@@ -323,7 +323,7 @@ export const DATA_MODEL_TEMPLATES: DataModelTemplate[] = [
         is_required: true,
         is_unique: false,
         options: [
-          { value: 'engineering', label: 'Engineering', color: '#3B82F6' },
+          { value: 'engineering', label: 'Engineering', color: '#1e40af' },
           { value: 'marketing', label: 'Marketing', color: '#10B981' },
           { value: 'sales', label: 'Sales', color: '#F59E0B' },
           { value: 'hr', label: 'Human Resources', color: '#8B5CF6' }

@@ -11,7 +11,7 @@ const Alert = React.forwardRef<
     ref={ref}
     role="alert"
     className={clsx(
-      'relative w-full rounded-xl border border-zinc-100/60 dark:border-zinc-800/60 p-4 backdrop-blur-md [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4',
+      'relative w-full rounded-md border border-zinc-100/60 dark:border-zinc-800/60 p-4 backdrop-blur-md [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4',
       {
         'bg-white/50 dark:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100': variant === 'default',
         'bg-red-50/50 dark:bg-red-900/10 border-red-200/50 dark:border-red-900/50 text-red-600 dark:text-red-400 [&>svg]:text-red-600 dark:[&>svg]:text-red-400':

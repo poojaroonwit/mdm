@@ -158,14 +158,14 @@ const DialogContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border border-zinc-200/70 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 shadow-2xl duration-300 animate-in fade-in-0 zoom-in-95 sm:rounded-2xl overflow-hidden",
+          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border border-zinc-200/70 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl shadow-2xl duration-300 animate-in fade-in-0 zoom-in-95 sm:rounded-2xl overflow-hidden",
           className
         )}
         style={{ zIndex: Z_INDEX.dialog }}
         {...props}
       >
         {children}
-        <DialogClose className="absolute right-6 top-6 rounded-lg p-2 opacity-70 ring-offset-background transition-all hover:opacity-100 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 disabled:pointer-events-none">
+        <DialogClose className="absolute right-4 top-4 rounded-xl p-2 opacity-70 ring-offset-background transition-all hover:opacity-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 disabled:pointer-events-none">
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </DialogClose>
@@ -183,7 +183,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-2 text-center sm:text-left p-6 border-b border-zinc-100/60 dark:border-zinc-800/60",
+      "flex flex-col space-y-1.5 text-center p-6 border-b border-zinc-100/60 dark:border-zinc-800/60",
       className
     )}
     {...props}
@@ -197,13 +197,24 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 p-6",
+      "flex flex-col sm:flex-row sm:justify-center sm:space-x-4 p-6 pt-2",
       className
     )}
     {...props}
   />
 )
 DialogFooter.displayName = "DialogFooter"
+
+const DialogBody = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn("p-6 pt-2 pb-4", className)}
+    {...props}
+  />
+)
+DialogBody.displayName = "DialogBody"
 
 const DialogTitle = React.forwardRef<
   HTMLHeadingElement,
@@ -212,7 +223,7 @@ const DialogTitle = React.forwardRef<
   <h2
     ref={ref}
     className={cn(
-      "text-lg font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-50 leading-none",
+      "text-lg font-bold uppercase tracking-tight text-zinc-900 dark:text-zinc-50 leading-none",
       className
     )}
     {...props}
@@ -241,6 +252,7 @@ export {
   DialogContent,
   DialogHeader,
   DialogFooter,
+  DialogBody,
   DialogTitle,
   DialogDescription,
 }

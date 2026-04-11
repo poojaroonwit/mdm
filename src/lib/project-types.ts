@@ -370,7 +370,7 @@ export interface OntologyGraph {
 }
 
 export const ONTOLOGY_NODE_COLORS: Record<OntologyNodeType, string> = {
-  project: '#3B82F6',      // Blue
+  project: '#1e40af',      // Blue
   data_model: '#8B5CF6',   // Purple
   data_table: '#6366F1',   // Indigo
   field: '#A855F7',        // Violet

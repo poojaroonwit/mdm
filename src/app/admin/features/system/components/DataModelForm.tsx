@@ -131,7 +131,7 @@ export function DataModelForm({
                         onChange={(color) => setFormData(prev => ({ ...prev, primary_color: color }))}
                         allowImageVideo={false}
                         className="relative"
-                        placeholder="#3b82f6"
+                        placeholder="#1e40af"
                         inputClassName="h-8 text-xs pl-7"
                     />
                 </div>

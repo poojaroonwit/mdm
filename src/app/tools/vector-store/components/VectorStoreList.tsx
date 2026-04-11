@@ -134,7 +134,7 @@ export function VectorStoreList({ vectorStores, selectedId, onSelect, onRefresh,
               className={cn(
                 "group relative p-3 rounded-lg cursor-pointer transition-all border border-transparent",
                 selectedId === vs.id 
-                  ? "bg-primary/5 border-primary/20 shadow-sm" 
+                  ? "bg-primary/5 border-primary/20 shadow-lg" 
                   : "hover:bg-muted/50"
               )}
             >

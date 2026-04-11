@@ -27,7 +27,7 @@ export default function PricingPage() {
     return (
         <div style={{ padding: '80px 24px', maxWidth: '1400px', margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-                <h1 style={{ fontSize: '48px', fontWeight: 700, color: 'hsl(var(--foreground))', marginBottom: '16px' }}>
+                <h1 style={{ fontSize: '48px', fontWeight: 600, color: 'hsl(var(--foreground))', marginBottom: '16px' }}>
                     Simple, Transparent Pricing
                 </h1>
                 <p style={{ fontSize: '18px', color: 'hsl(var(--muted-foreground))', maxWidth: '600px', margin: '0 auto' }}>
@@ -69,7 +69,7 @@ export default function PricingPage() {
                             {plan.description}
                         </p>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '32px' }}>
-                            <span style={{ fontSize: '48px', fontWeight: 700, color: 'hsl(var(--foreground))' }}>{plan.price}</span>
+                            <span style={{ fontSize: '48px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>{plan.price}</span>
                             {plan.period && <span style={{ fontSize: '16px', color: 'hsl(var(--muted-foreground))' }}>{plan.period}</span>}
                         </div>
 

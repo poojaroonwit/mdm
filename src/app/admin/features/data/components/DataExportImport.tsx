@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -380,14 +380,14 @@ export function DataExportImport() {
                   Create Export
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-2xl p-0 overflow-hidden">
                 <DialogHeader>
                   <DialogTitle>Create Export Job</DialogTitle>
                   <DialogDescription>
                     Create a new data export with custom filters and format options
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+                <DialogBody className="space-y-4 p-6 pt-2 pb-4">
                   <div>
                     <Label htmlFor="export-name">Export Name</Label>
                     <Input
@@ -455,7 +455,7 @@ export function DataExportImport() {
                       ))}
                     </div>
                   </div>
-                </div>
+                </DialogBody>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setShowCreateExport(false)}>
                     Cancel
@@ -526,14 +526,14 @@ export function DataExportImport() {
                   Create Import
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="p-0 overflow-hidden">
                 <DialogHeader>
                   <DialogTitle>Create Import Job</DialogTitle>
                   <DialogDescription>
                     Import data from a file with format detection and validation
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+                <DialogBody className="space-y-4 p-6 pt-2 pb-4">
                   <div>
                     <Label htmlFor="import-name">Import Name</Label>
                     <Input
@@ -570,7 +570,7 @@ export function DataExportImport() {
                       accept=".json,.csv,.xml,.sql"
                     />
                   </div>
-                </div>
+                </DialogBody>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setShowCreateImport(false)}>
                     Cancel

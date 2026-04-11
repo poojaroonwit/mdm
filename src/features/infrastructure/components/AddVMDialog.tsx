@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -105,82 +105,90 @@ export function AddVMDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">VM Name *</Label>
-              <Input
-                id="name"
-                value={form.name}
-                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder="Enter VM name"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+          <DialogBody>
+            <div className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="host">Host / IP Address *</Label>
+                <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-zinc-500">VM Name *</Label>
                 <Input
-                  id="host"
-                  value={form.host}
-                  onChange={(e) => setForm((prev) => ({ ...prev, host: e.target.value }))}
-                  placeholder="e.g., 192.168.1.100 or hostname"
+                  id="name"
+                  value={form.name}
+                  onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter VM name"
+                  className="h-11 rounded-xl"
                   required
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="host" className="text-xs font-black uppercase tracking-widest text-zinc-500">Host / IP Address *</Label>
+                  <Input
+                    id="host"
+                    value={form.host}
+                    onChange={(e) => setForm((prev) => ({ ...prev, host: e.target.value }))}
+                    placeholder="e.g., 192.168.1.100"
+                    className="h-11 rounded-xl"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="port" className="text-xs font-black uppercase tracking-widest text-zinc-500">SSH Port</Label>
+                  <Input
+                    id="port"
+                    type="number"
+                    value={form.port}
+                    onChange={(e) => setForm((prev) => ({ ...prev, port: e.target.value }))}
+                    placeholder="22"
+                    className="h-11 rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="username" className="text-xs font-black uppercase tracking-widest text-zinc-500">SSH Username</Label>
+                  <Input
+                    id="username"
+                    value={form.username}
+                    onChange={(e) => setForm((prev) => ({ ...prev, username: e.target.value }))}
+                    placeholder="Enter SSH username"
+                    className="h-11 rounded-xl"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-zinc-500">SSH Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={form.password}
+                    onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+                    placeholder="Enter SSH password"
+                    className="h-11 rounded-xl"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="port">SSH Port</Label>
-                <Input
-                  id="port"
-                  type="number"
-                  value={form.port}
-                  onChange={(e) => setForm((prev) => ({ ...prev, port: e.target.value }))}
-                  placeholder="22"
+                <Label htmlFor="description" className="text-xs font-black uppercase tracking-widest text-zinc-500">Description</Label>
+                <Textarea
+                  id="description"
+                  value={form.description}
+                  onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+                  placeholder="Enter description (optional)"
+                  rows={3}
+                  className="rounded-2xl"
                 />
               </div>
             </div>
+          </DialogBody>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">SSH Username</Label>
-                <Input
-                  id="username"
-                  value={form.username}
-                  onChange={(e) => setForm((prev) => ({ ...prev, username: e.target.value }))}
-                  placeholder="Enter SSH username"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">SSH Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={form.password}
-                  onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-                  placeholder="Enter SSH password"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={form.description}
-                onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-                placeholder="Enter description (optional)"
-                rows={3}
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <DialogFooter className="pt-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="px-6 h-11 rounded-xl">
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !form.name || !form.host}>
+            <Button type="submit" disabled={loading || !form.name || !form.host} className="px-8 h-11 rounded-xl bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 font-bold">
               {loading ? 'Creating...' : 'Create VM'}
             </Button>
           </DialogFooter>

@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 import { logAPIRequest } from '@/shared/lib/security/audit-logger'
 import { encrypt } from '@/lib/encryption'
+import { getResolvedMinIOManagementConfig } from '@/lib/minio-management-config'
 
 /**
  * GET /api/minio/[instanceId]/config
@@ -45,32 +46,16 @@ async function getHandler(
     }
 
     const row = result.rows[0]
-    const config = row.management_config || {}
-    const credentials = row.credentials || {}
-    const endpoints = row.endpoints || []
-
-    // Extract configuration (don't expose secret key)
-    const endpoint = config.endpoint || credentials.endpoint || endpoints[0]?.url || process.env.MINIO_ENDPOINT || 'localhost'
-    const port = config.port || credentials.port || endpoints[0]?.port || parseInt(process.env.MINIO_PORT || '9000')
-    const useSSL = config.use_ssl || credentials.use_ssl || endpoint.startsWith('https://') || process.env.MINIO_USE_SSL === 'true'
-    const region = config.region || credentials.region || process.env.MINIO_REGION || 'us-east-1'
-
-    // Parse endpoint URL
-    let endpointUrl: URL
-    try {
-      endpointUrl = new URL(endpoint.startsWith('http') ? endpoint : `http://${endpoint}`)
-    } catch {
-      endpointUrl = new URL(`http://${endpoint}`)
-    }
+    const resolvedConfig = await getResolvedMinIOManagementConfig(instanceId)
 
     return NextResponse.json({
       serviceId: row.service_id,
-      endpoint: endpointUrl.hostname,
-      port: port || (endpointUrl.port ? parseInt(endpointUrl.port) : (useSSL ? 443 : 9000)),
-      useSSL: useSSL,
-      region: region,
+      endpoint: resolvedConfig.endPoint,
+      port: resolvedConfig.port,
+      useSSL: resolvedConfig.useSSL,
+      region: resolvedConfig.region,
       // Don't expose access key or secret key in GET
-      hasCredentials: !!(credentials.access_key || config.access_key),
+      hasCredentials: !!(resolvedConfig.accessKey && resolvedConfig.secretKey),
     })
 }
 

@@ -8,16 +8,18 @@ import { listVectorStoreFiles, uploadFileToVectorStore } from '@/lib/openai-vect
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const authResult = await requireAuth();
   if (!authResult.success) return authResult.response;
 
   try {
-    const files = await listVectorStoreFiles(params.id);
+    const { id } = await params;
+    const files = await listVectorStoreFiles(id);
     return NextResponse.json({ files });
   } catch (error) {
-    console.error(`Error listing files for vector store ${params.id}:`, error);
+    const { id } = await params;
+    console.error(`Error listing files for vector store ${id}:`, error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to list files' },
       { status: 500 }
@@ -31,12 +33,13 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const adminResult = await requireAdmin();
   if (!adminResult.success) return adminResult.response;
 
   try {
+    const { id } = await params;
     const formData = await request.formData();
     const file = formData.get('file') as File;
     
@@ -47,11 +50,12 @@ export async function POST(
     // Convert File to Buffer for OpenAI SDK if needed, 
     // though modern OpenAI SDK often handles File objects in Node.js environments.
     // We'll pass it through and let the utility handle it.
-    const result = await uploadFileToVectorStore(params.id, file, file.name);
+    const result = await uploadFileToVectorStore(id, file, file.name);
     
     return NextResponse.json({ success: true, file: result });
   } catch (error) {
-    console.error(`Error uploading file to vector store ${params.id}:`, error);
+    const { id } = await params;
+    console.error(`Error uploading file to vector store ${id}:`, error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to upload file' },
       { status: 500 }

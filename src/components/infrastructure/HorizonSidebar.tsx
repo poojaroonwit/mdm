@@ -307,7 +307,7 @@ export function HorizonSidebar({
                         <Button
                           variant="ghost"
                           className={cn(
-                            "flex-1 justify-start items-center text-sm h-auto px-3 py-2 transition-colors duration-150 cursor-pointer",
+                            "flex-1 justify-start items-center text-[13px] font-medium h-[34px] px-3 transition-colors duration-150 cursor-pointer",
                             selectedVmId === vm.id
                               ? "bg-muted text-foreground"
                               : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -397,7 +397,7 @@ export function HorizonSidebar({
                           {/* Instance Header */}
                           <Button
                             variant="ghost"
-                            className="w-full justify-start items-center text-sm h-auto px-3 py-2 transition-colors duration-150 cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground"
+                            className="w-full justify-start items-center text-[13px] font-medium h-[34px] px-3 transition-colors duration-150 cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground"
                             onClick={() => toggleInstanceExpansion(instance.id)}
                           >
                             <div className="flex items-center gap-2 w-full min-w-0">
@@ -430,7 +430,7 @@ export function HorizonSidebar({
                                   key={service.id}
                                   variant="ghost"
                                   className={cn(
-                                    "w-full justify-start items-center text-sm h-auto px-3 py-2 transition-colors duration-150 cursor-pointer",
+                                    "w-full justify-start items-center text-[13px] font-medium h-[34px] px-3 transition-colors duration-150 cursor-pointer",
                                     selectedServiceId === service.id
                                       ? "bg-muted text-foreground"
                                       : "text-muted-foreground hover:bg-muted hover:text-foreground"

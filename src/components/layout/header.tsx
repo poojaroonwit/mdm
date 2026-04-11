@@ -37,7 +37,7 @@ export function Header({ user }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-zinc-100/60 dark:border-zinc-800/60 bg-white/40 dark:bg-zinc-950/20 px-6 backdrop-blur-xl transition-all duration-300">
+    <header className="h-16 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between px-4 lg:px-8 relative z-50 shrink-0 shadow-lg shadow-gray-200/20 dark:shadow-none transition-all duration-300">
       <div className="flex items-center space-x-4">
         <div className="relative group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors duration-200" />
@@ -46,7 +46,7 @@ export function Header({ user }: HeaderProps) {
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-10 w-80 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30 pl-10 pr-4 text-sm transition-all duration-300 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-zinc-500/10 outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-zinc-100 font-medium"
+            className="h-10 w-80 rounded-md border border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30 pl-10 pr-4 text-sm transition-all duration-300 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-zinc-500/10 outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-zinc-100 font-medium"
           />
         </div>
       </div>
@@ -56,8 +56,8 @@ export function Header({ user }: HeaderProps) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center space-x-3 p-1.5 rounded-xl hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20 transition-all duration-300 group outline-none">
-              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-950 dark:from-zinc-100 dark:to-zinc-300 flex items-center justify-center text-white dark:text-zinc-900 font-black text-xs shadow-sm shadow-zinc-900/10 group-hover:shadow-md transition-all duration-300">
+            <button className="group flex items-center space-x-3 rounded-md p-1.5 outline-none transition-all duration-300 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20">
+              <div className="h-9 w-9 rounded-md bg-gradient-to-br from-zinc-800 to-zinc-950 dark:from-zinc-100 dark:to-zinc-300 flex items-center justify-center text-white dark:text-zinc-900 font-black text-xs shadow-lg shadow-zinc-900/10 group-hover:shadow-md transition-all duration-300">
                 {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
               </div>
               <div className="hidden sm:block text-left pr-1">
@@ -68,7 +68,7 @@ export function Header({ user }: HeaderProps) {
                   {user.role}
                 </p>
               </div>
-              <ChevronDown className="h-4 w-4 text-zinc-400 group-hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors duration-200" />
+              <ChevronDown className="h-4 w-4 text-zinc-400 transition-colors duration-200 group-hover:text-zinc-800 dark:group-hover:text-zinc-200" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-72 mt-2 rounded-[24px] border-zinc-100/60 dark:border-zinc-800/60 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl p-0 shadow-2xl shadow-zinc-900/10" align="end">
@@ -79,7 +79,7 @@ export function Header({ user }: HeaderProps) {
 
             <div className="p-2">
               <DropdownMenuItem
-                className="flex items-center px-4 py-3 text-sm font-bold rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-all duration-200 text-zinc-700 dark:text-zinc-300"
+                className="flex items-center px-4 py-3 text-sm font-bold rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-all duration-200 text-zinc-700 dark:text-zinc-300"
                 onSelect={(e) => {
                   e.preventDefault()
                   setShowProfileModal(true)
@@ -102,14 +102,14 @@ export function Header({ user }: HeaderProps) {
                     key={t.id}
                     onClick={() => setTheme(t.id)}
                     className={`
-                      flex flex-col items-center justify-center py-2.5 rounded-xl transition-all duration-300
+                      flex flex-col items-center justify-center py-2.5 rounded-md transition-all duration-300
                       ${theme === t.id 
-                        ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600' 
+                        ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-lg ring-1 ring-zinc-200 dark:ring-zinc-600' 
                         : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
                       }
                     `}
                   >
-                    <t.icon className="h-4 w-4 mb-2 stroke-[2.5]" />
+                    <t.icon className="mb-1 h-4 w-4" />
                     <span className="text-[10px] font-black uppercase tracking-wider">{t.label}</span>
                   </button>
                 ))}
@@ -118,7 +118,7 @@ export function Header({ user }: HeaderProps) {
 
             <div className="p-2 border-t border-zinc-100 dark:border-zinc-800/60">
               <DropdownMenuItem 
-                className="flex items-center px-4 py-3 text-sm font-black text-red-500 dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer transition-all duration-200"
+                className="flex items-center px-4 py-3 text-sm font-black text-red-500 dark:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer transition-all duration-200"
                 onClick={handleSignOut}
               >
                 <LogOut className="mr-3 h-4 w-4" />
@@ -136,4 +136,4 @@ export function Header({ user }: HeaderProps) {
       />
     </header>
   )
-}
+}

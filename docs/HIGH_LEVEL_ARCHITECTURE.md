@@ -1,7 +1,7 @@
 # High-Level Architecture Documentation
 
 ## Introduction
-The Master Data Management (MDM) System is a unified data platform designed for event organizations. it provides a centralized, flexible environment for managing customer profiles, task assignments, and dynamic data models.
+The Master Data Management (MDM) System is a Unified Data Platform designed for event organizations. it provides a centralized, flexible environment for managing customer profiles, task assignments, and dynamic data models.
 
 ## Technology Stack
 

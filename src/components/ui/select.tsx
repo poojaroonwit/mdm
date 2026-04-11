@@ -105,7 +105,7 @@ const SelectTrigger = React.forwardRef<
       onClick={handleClick}
       data-component="select-trigger"
       className={cn(
-        "flex min-h-11 w-full items-center justify-between rounded-xl border border-zinc-200/70 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 px-4 py-2 text-sm ring-offset-background transition-colors duration-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-500 disabled:cursor-not-allowed disabled:opacity-40 [&>span]:line-clamp-1 group",
+        "flex min-h-11 w-full items-center justify-between rounded-md border-none bg-zinc-100/50 dark:bg-zinc-900/50 px-4 py-2 text-sm ring-offset-background transition-all duration-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-40 [&>span]:line-clamp-1 group shadow-none",
         className
       )}
       {...props}
@@ -202,7 +202,7 @@ const SelectContent = React.forwardRef<
       ref={contentRef}
       data-component="select-content"
       className={cn(
-        "fixed rounded-xl border border-zinc-200/70 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-2xl outline-none flex flex-col overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200",
+        "fixed rounded-md border border-zinc-200/70 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-2xl outline-none flex flex-col overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200",
         className
       )}
       style={{

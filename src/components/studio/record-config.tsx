@@ -156,7 +156,7 @@ const defaultRecordConfig: RecordConfig = {
   },
   styling: {
     theme: 'default',
-    primaryColor: '#3b82f6',
+    primaryColor: '#1e40af',
     backgroundColor: '#ffffff',
     textColor: '#374151',
     borderColor: '#e5e7eb',

@@ -51,7 +51,7 @@ export function GlobalStyleDrawer({
             backgroundColor: '#1e40af',
             gradient: {
               from: '#1e40af',
-              to: '#3b82f6',
+              to: '#1e40af',
               angle: 135
             },
             leftPanelWidth: '70%',
@@ -74,7 +74,7 @@ export function GlobalStyleDrawer({
             backgroundColor: '#1e40af',
             gradient: {
               from: '#1e40af',
-              to: '#3b82f6',
+              to: '#1e40af',
               angle: 135
             },
             leftPanelWidth: '70%',
@@ -98,7 +98,7 @@ export function GlobalStyleDrawer({
           backgroundColor: '#1e40af',
           gradient: {
             from: '#1e40af',
-            to: '#3b82f6',
+            to: '#1e40af',
             angle: 135
           },
           leftPanelWidth: '70%',
@@ -131,7 +131,7 @@ export function GlobalStyleDrawer({
         backgroundColor: '#1e40af',
         gradient: {
           from: '#1e40af',
-          to: '#3b82f6',
+          to: '#1e40af',
           angle: 135
         },
         leftPanelWidth: '70%',
@@ -172,7 +172,7 @@ export function GlobalStyleDrawer({
     backgroundColor: '#1e40af',
     gradient: {
       from: '#1e40af',
-      to: '#3b82f6',
+      to: '#1e40af',
       angle: 135
     },
     leftPanelWidth: '70%',
@@ -423,11 +423,11 @@ export function GlobalStyleDrawer({
             <div className="flex items-center justify-between">
               <Label className={isMobileViewport ? "text-sm" : "text-xs"}>Primary Color</Label>
               <ColorInput
-                value={globalStyle?.primaryColor || '#3b82f6'}
+                value={globalStyle?.primaryColor || '#1e40af'}
                 onChange={(color) => handleGlobalStyleUpdate({ primaryColor: color })}
                 allowImageVideo={false}
                 className="relative w-32"
-                placeholder="#3b82f6"
+                placeholder="#1e40af"
                 inputClassName={isMobileViewport ? "h-10 pl-7" : "h-8 text-xs pl-7"}
               />
             </div>
@@ -604,7 +604,7 @@ export function GlobalStyleDrawer({
                         value={currentLoginConfig.gradient?.from || '#1e40af'}
                         onChange={(color) => setLoginPageConfig({
                           ...currentLoginConfig,
-                          gradient: { ...currentLoginConfig.gradient, from: color, to: currentLoginConfig.gradient?.to || '#3b82f6', angle: currentLoginConfig.gradient?.angle || 135 }
+                          gradient: { ...currentLoginConfig.gradient, from: color, to: currentLoginConfig.gradient?.to || '#1e40af', angle: currentLoginConfig.gradient?.angle || 135 }
                         } as LoginPageConfig)}
                         allowImageVideo={false}
                         className="relative w-32"
@@ -615,14 +615,14 @@ export function GlobalStyleDrawer({
                     <div className="flex items-center justify-between">
                       <Label className={isMobileViewport ? "text-sm" : "text-xs"}>Gradient To</Label>
                       <ColorInput
-                        value={currentLoginConfig.gradient?.to || '#3b82f6'}
+                        value={currentLoginConfig.gradient?.to || '#1e40af'}
                         onChange={(color) => setLoginPageConfig({
                           ...currentLoginConfig,
                           gradient: { ...currentLoginConfig.gradient, from: currentLoginConfig.gradient?.from || '#1e40af', to: color, angle: currentLoginConfig.gradient?.angle || 135 }
                         } as LoginPageConfig)}
                         allowImageVideo={false}
                         className="relative w-32"
-                        placeholder="#3b82f6"
+                        placeholder="#1e40af"
                         inputClassName={isMobileViewport ? "h-10 pl-7" : "h-8 text-xs pl-7"}
                       />
                     </div>
@@ -634,7 +634,7 @@ export function GlobalStyleDrawer({
                         value={currentLoginConfig.gradient?.angle || 135}
                         onChange={(e) => setLoginPageConfig({
                           ...currentLoginConfig,
-                          gradient: { ...currentLoginConfig.gradient, from: currentLoginConfig.gradient?.from || '#1e40af', to: currentLoginConfig.gradient?.to || '#3b82f6', angle: parseInt(e.target.value) || 135 }
+                          gradient: { ...currentLoginConfig.gradient, from: currentLoginConfig.gradient?.from || '#1e40af', to: currentLoginConfig.gradient?.to || '#1e40af', angle: parseInt(e.target.value) || 135 }
                         } as LoginPageConfig)}
                         placeholder="135"
                         min="0"

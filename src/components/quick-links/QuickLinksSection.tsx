@@ -210,7 +210,7 @@ export function QuickLinksSection() {
                           type="button"
                           variant="ghost"
                           aria-label={`Edit ${link.name}`}
-                          className="h-10 w-10 rounded-xl bg-white/95 shadow-sm dark:bg-zinc-950/95 md:h-9 md:w-9"
+                          className="h-10 w-10 rounded-md bg-white/95 shadow-lg dark:bg-zinc-950/95 md:h-9 md:w-9"
                           onClick={(e) => {
                             e.stopPropagation()
                             handleEditClick(link)
@@ -222,7 +222,7 @@ export function QuickLinksSection() {
                           type="button"
                           variant="ghost"
                           aria-label={`Delete ${link.name}`}
-                          className="h-10 w-10 rounded-xl bg-white/95 text-destructive shadow-sm hover:text-destructive dark:bg-zinc-950/95 md:h-9 md:w-9"
+                          className="h-10 w-10 rounded-md bg-white/95 text-destructive shadow-lg hover:text-destructive dark:bg-zinc-950/95 md:h-9 md:w-9"
                           onClick={(e) => {
                             e.stopPropagation()
                             handleDeleteClick(link)

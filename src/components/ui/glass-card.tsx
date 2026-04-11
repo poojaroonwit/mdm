@@ -33,7 +33,7 @@ export const GlassCard = ({
         "before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-br",
         variantStyles[variant]
       ],
-      "shadow-sm dark:shadow-none",
+      "shadow-lg dark:shadow-none",
       className
     )}>
       {children}

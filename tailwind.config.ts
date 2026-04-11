@@ -12,18 +12,17 @@ const config: Config = {
     container: {
       center: true,
       padding: {
-        DEFAULT: "1rem",  // Reduced from 2rem (32px -> 16px)
+        DEFAULT: "1rem",
         sm: "1rem",
-        lg: "1.5rem",
-        xl: "1.5rem",
-        "2xl": "1.5rem",
+        lg: "1.25rem",
+        xl: "1.25rem",
+        "2xl": "1.25rem",
       },
       screens: {
-        "2xl": "1400px",
+        "2xl": "1280px",
       },
     },
     extend: {
-      // Reduced spacing scale for more compact UI
       spacing: {
         'xs': '0.25rem',   // 4px
         'sm': '0.5rem',    // 8px
@@ -38,17 +37,16 @@ const config: Config = {
         'macos-lg': '16px',
         'macos-xl': '24px'
       },
-      // Optimized font sizes
       fontSize: {
-        'xs': ['0.75rem', { lineHeight: '1.5' }],      // 12px
-        'sm': ['0.875rem', { lineHeight: '1.5' }],     // 14px
-        'base': ['1rem', { lineHeight: '1.5' }],        // 16px
-        'lg': ['1.125rem', { lineHeight: '1.5' }],     // 18px
-        'xl': ['1.25rem', { lineHeight: '1.5' }],      // 20px
-        '2xl': ['1.5rem', { lineHeight: '1.5' }],      // 24px
-        '3xl': ['1.875rem', { lineHeight: '1.5' }],    // 30px
-        '4xl': ['2.25rem', { lineHeight: '1.5' }],     // 36px
-        '5xl': ['3rem', { lineHeight: '1.5' }],        // 48px
+        'xs': ['0.75rem', { lineHeight: '1.45' }],
+        'sm': ['0.875rem', { lineHeight: '1.5' }],
+        'base': ['1rem', { lineHeight: '1.6' }],
+        'lg': ['1.125rem', { lineHeight: '1.55' }],
+        'xl': ['1.25rem', { lineHeight: '1.4' }],
+        '2xl': ['1.5rem', { lineHeight: '1.3' }],
+        '3xl': ['1.875rem', { lineHeight: '1.2' }],
+        '4xl': ['2.25rem', { lineHeight: '1.15' }],
+        '5xl': ['3rem', { lineHeight: '1.05' }],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -87,9 +85,9 @@ const config: Config = {
           blue: {
             '50': '#1e293b',
             '100': '#1e40af',
-            '500': '#3b82f6',
-            '600': '#2563eb',
-            '900': '#1e3a8a'
+            '500': '#1e40af',
+            '600': '#1e3a8a',
+            '900': '#172554'
           },
           gray: {
             '50': 'var(--bg-default)',
@@ -106,9 +104,9 @@ const config: Config = {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
           '50': '#1e293b',
-          '500': '#3b82f6',
-          '600': '#2563eb',
-          '700': '#1d4ed8',
+          '500': '#1e40af',
+          '600': '#1e3a8a',
+          '700': '#172554',
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -223,8 +221,8 @@ const config: Config = {
         shimmer: 'shimmer 2s linear infinite'
       },
       fontFamily: {
-        'thai': ['Prompt', 'sans-serif'],
-        'sans': ['"DM Sans"', '"IBM Plex Sans Thai"', 'Inter', 'SF Pro Display', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Open Sans', 'Helvetica Neue', 'sans-serif'],
+        'thai': ['var(--font-thai)', 'sans-serif'],
+        'sans': ['var(--font-dm-sans)', 'var(--font-ibm-plex-sans-thai)', 'Segoe UI', 'sans-serif'],
         'mono': ['"SF Mono"', 'Monaco', '"Cascadia Code"', '"Roboto Mono"', 'Consolas', '"Courier New"', 'monospace']
       },
     },

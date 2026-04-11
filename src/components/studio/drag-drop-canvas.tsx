@@ -467,7 +467,7 @@ export function DragDropCanvas({
                 />
 
                 {/* Component Actions */}
-                <div className="absolute -top-8 left-0 flex items-center gap-1 bg-background rounded shadow-sm p-1">
+                <div className="absolute -top-8 left-0 flex items-center gap-1 bg-background rounded shadow-lg p-1">
                   <Button
                     variant="ghost"
                     size="sm"

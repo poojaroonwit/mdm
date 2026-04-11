@@ -230,7 +230,7 @@ export function GradientColorPicker({
           {colorStops.map((stop) => (
             <div key={stop.id} className="flex items-center gap-2">
               <div
-                className={`w-6 h-6 border rounded-lg cursor-pointer shadow-sm transition-all duration-200 ${
+                className={`w-6 h-6 border rounded-lg cursor-pointer shadow-lg transition-all duration-200 ${
                   selectedStopId === stop.id ? 'ring-2 ring-zinc-400 dark:ring-zinc-500 border-transparent' : 'border-zinc-100/60 dark:border-zinc-800/60'
                 }`}
                 style={{ backgroundColor: stop.color }}
@@ -278,7 +278,7 @@ export function GradientColorPicker({
       <div className="pt-2">
         <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-2 block">Preview</Label>
         <div
-          className="w-full h-12 border border-zinc-100/60 dark:border-zinc-800/60 rounded-xl shadow-inner-sm"
+          className="w-full h-12 border border-zinc-100/60 dark:border-zinc-800/60 rounded-md shadow-inner-sm"
           style={{ background: pendingValue }}
         />
       </div>

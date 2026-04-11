@@ -31,6 +31,7 @@ import {
   ArrowUpDown
 } from 'lucide-react'
 import { AuditLog } from '../types'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface LogFilters {
   search: string
@@ -332,10 +333,12 @@ export function AuditLogs() {
         <CardContent>
           <ScrollArea className="h-[600px]">
             {isLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading audit logs...</p>
-              </div>
+              <div className="w-full space-y-3 p-4">
+  <Skeleton className="h-10 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+</div>
             ) : filteredLogs.length === 0 ? (
               <div className="text-center py-12">
                 <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

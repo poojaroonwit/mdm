@@ -105,68 +105,68 @@ export function ResizeHandles({ widget, setIsResizing, resizeStateRef }: ResizeH
       
       {/* Corner square handles - positioned over the border */}
       <div
-        className="resize-handle absolute top-0 left-0 w-2 h-2 cursor-nw-resize z-30 shadow-sm"
+        className="resize-handle absolute top-0 left-0 w-2 h-2 cursor-nw-resize z-30 shadow-lg"
         style={{ 
           transform: 'translate(calc(-50% + 0.125rem), calc(-50% + 0.125rem))',
-          backgroundColor: '#3b82f6'
+          backgroundColor: '#1e40af'
         }}
         onMouseDown={(e) => handleResizeStart('nw', e)}
       />
       <div
-        className="resize-handle absolute top-0 right-0 w-2 h-2 cursor-ne-resize z-30 shadow-sm"
+        className="resize-handle absolute top-0 right-0 w-2 h-2 cursor-ne-resize z-30 shadow-lg"
         style={{ 
           transform: 'translate(calc(50% - 0.125rem), calc(-50% + 0.125rem))',
-          backgroundColor: '#3b82f6'
+          backgroundColor: '#1e40af'
         }}
         onMouseDown={(e) => handleResizeStart('ne', e)}
       />
       <div
-        className="resize-handle absolute bottom-0 left-0 w-2 h-2 cursor-sw-resize z-30 shadow-sm"
+        className="resize-handle absolute bottom-0 left-0 w-2 h-2 cursor-sw-resize z-30 shadow-lg"
         style={{ 
           transform: 'translate(calc(-50% + 0.125rem), calc(50% - 0.125rem))',
-          backgroundColor: '#3b82f6'
+          backgroundColor: '#1e40af'
         }}
         onMouseDown={(e) => handleResizeStart('sw', e)}
       />
       <div
-        className="resize-handle absolute bottom-0 right-0 w-2 h-2 cursor-se-resize z-30 shadow-sm"
+        className="resize-handle absolute bottom-0 right-0 w-2 h-2 cursor-se-resize z-30 shadow-lg"
         style={{ 
           transform: 'translate(calc(50% - 0.125rem), calc(50% - 0.125rem))',
-          backgroundColor: '#3b82f6'
+          backgroundColor: '#1e40af'
         }}
         onMouseDown={(e) => handleResizeStart('se', e)}
       />
       
       {/* Center edge handles - positioned over the border */}
       <div
-        className="resize-handle absolute top-0 left-1/2 w-2 h-2 cursor-n-resize z-30 shadow-sm"
+        className="resize-handle absolute top-0 left-1/2 w-2 h-2 cursor-n-resize z-30 shadow-lg"
         style={{ 
           transform: 'translate(-50%, calc(-50% + 0.125rem))',
-          backgroundColor: '#3b82f6'
+          backgroundColor: '#1e40af'
         }}
         onMouseDown={(e) => handleResizeStart('n', e)}
       />
       <div
-        className="resize-handle absolute bottom-0 left-1/2 w-2 h-2 cursor-s-resize z-30 shadow-sm"
+        className="resize-handle absolute bottom-0 left-1/2 w-2 h-2 cursor-s-resize z-30 shadow-lg"
         style={{ 
           transform: 'translate(-50%, calc(50% - 0.125rem))',
-          backgroundColor: '#3b82f6'
+          backgroundColor: '#1e40af'
         }}
         onMouseDown={(e) => handleResizeStart('s', e)}
       />
       <div
-        className="resize-handle absolute top-1/2 left-0 w-2 h-2 cursor-w-resize z-30 shadow-sm"
+        className="resize-handle absolute top-1/2 left-0 w-2 h-2 cursor-w-resize z-30 shadow-lg"
         style={{ 
           transform: 'translate(calc(-50% + 0.125rem), -50%)',
-          backgroundColor: '#3b82f6'
+          backgroundColor: '#1e40af'
         }}
         onMouseDown={(e) => handleResizeStart('w', e)}
       />
       <div
-        className="resize-handle absolute top-1/2 right-0 w-2 h-2 cursor-e-resize z-30 shadow-sm"
+        className="resize-handle absolute top-1/2 right-0 w-2 h-2 cursor-e-resize z-30 shadow-lg"
         style={{ 
           transform: 'translate(calc(50% - 0.125rem), -50%)',
-          backgroundColor: '#3b82f6'
+          backgroundColor: '#1e40af'
         }}
         onMouseDown={(e) => handleResizeStart('e', e)}
       />

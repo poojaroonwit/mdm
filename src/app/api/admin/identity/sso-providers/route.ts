@@ -17,7 +17,7 @@ const providerSchema = z.object({
   tokenUrl: z.string().url().optional().nullable(),
   userinfoUrl: z.string().url().optional().nullable(),
   scopes: z.array(z.string()).default([]),
-  claimsMapping: z.record(z.string()).default({}),
+  claimsMapping: z.record(z.string(), z.string()).default({}),
   allowSignup: z.boolean().default(true),
   requireEmailVerified: z.boolean().default(true),
   autoLinkByEmail: z.boolean().default(false),
@@ -36,23 +36,25 @@ const providerSchema = z.object({
  * List all SSO providers
  */
 export async function GET(req: NextRequest) {
-  return requireAdmin(async (admin) => {
-    try {
-      const providers = await db.oAuthProvider.findMany({
-        orderBy: { displayOrder: 'asc' },
-      });
-      return NextResponse.json(
-        providers.map((provider) => ({
-          ...provider,
-          providerName: normalizeSSOProviderName(provider.providerName) || provider.providerName,
-          clientSecret: provider.clientSecret ? SSO_SECRET_MASK : '',
-        }))
-      );
-    } catch (error) {
-      console.error('[SSO_PROVIDERS_GET]', error);
-      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-    }
-  });
+  const adminResult = await requireAdmin();
+  if (!adminResult.success) return adminResult.response;
+  const admin = adminResult.session.user;
+
+  try {
+    const providers = await db.oAuthProvider.findMany({
+      orderBy: { displayOrder: 'asc' },
+    });
+    return NextResponse.json(
+      providers.map((provider) => ({
+        ...provider,
+        providerName: normalizeSSOProviderName(provider.providerName) || provider.providerName,
+        clientSecret: provider.clientSecret ? SSO_SECRET_MASK : '',
+      }))
+    );
+  } catch (error) {
+    console.error('[SSO_PROVIDERS_GET]', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
 }
 
 /**
@@ -60,105 +62,32 @@ export async function GET(req: NextRequest) {
  * Create or update an SSO provider
  */
 export async function POST(req: NextRequest) {
-  return requireAdmin(async (admin) => {
-    try {
-      const body = await req.json();
-      const validatedData = providerSchema.parse(body);
+  const adminResult = await requireAdmin();
+  if (!adminResult.success) return adminResult.response;
+  const admin = adminResult.session.user;
 
-      const normalizedProviderName = normalizeSSOProviderName(validatedData.providerName) || validatedData.providerName
-      const { id, clientSecret, ...data } = validatedData;
+  try {
+    const body = await req.json();
+    const validatedData = providerSchema.parse(body);
 
-      let result;
-      let action: 'CREATE' | 'UPDATE';
-
-      if (id) {
-        // Update existing provider
-        const existing = await db.oAuthProvider.findUnique({
-          where: { id },
-        });
-
-        if (!existing) {
-          return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
-        }
-
-        const resolvedSecret =
-          clientSecret === SSO_SECRET_MASK
-            ? existing.clientSecret
-            : encryptApiKey(clientSecret)
-
-        result = await db.oAuthProvider.update({
-          where: { id },
-          data: {
-            ...data,
-            providerName: normalizedProviderName,
-            clientSecret: resolvedSecret,
-          },
-        });
-
-        action = 'UPDATE';
-        await createAuditLog({
-          userId: admin.id,
-          action: 'SSO_PROVIDER_UPDATE',
-          category: 'IDENTITY',
-          resource: 'oAuthProvider',
-          resourceId: id,
-          oldValue: existing,
-          newValue: result,
-          status: 'success',
-        });
-      } else {
-        const resolvedSecret = encryptApiKey(clientSecret)
-
-        // Create new provider
-        result = await db.oAuthProvider.create({
-          data: {
-            ...data,
-            providerName: normalizedProviderName,
-            clientSecret: resolvedSecret!,
-          },
-        });
-
-        action = 'CREATE';
-        await createAuditLog({
-          userId: admin.id,
-          action: 'SSO_PROVIDER_CREATE',
-          category: 'IDENTITY',
-          resource: 'oAuthProvider',
-          resourceId: result.id,
-          newValue: result,
-          status: 'success',
-        });
+    const normalizedProviderName =
+      normalizeSSOProviderName(validatedData.providerName) || validatedData.providerName;
+    const { id, clientSecret, ...data } = validatedData;
+    const providerData = {
+      ...data,
+      providerName: normalizedProviderName,
+    };
+    const encryptClientSecret = (secret: string) => {
+      const encryptedSecret = encryptApiKey(secret);
+      if (!encryptedSecret) {
+        throw new Error('Failed to encrypt client secret');
       }
+      return encryptedSecret;
+    };
 
-      clearSSOProviderCache()
-      return NextResponse.json({
-        ...result,
-        clientSecret: result.clientSecret ? SSO_SECRET_MASK : '',
-      });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return NextResponse.json({ error: 'Validation Error', details: error.errors }, { status: 400 });
-      }
-      console.error('[SSO_PROVIDERS_POST]', error);
-      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-    }
-  });
-}
+    let result;
 
-/**
- * DELETE /api/admin/identity/sso-providers?id=...
- * Delete an SSO provider
- */
-export async function DELETE(req: NextRequest) {
-  return requireAdmin(async (admin) => {
-    try {
-      const { searchParams } = new URL(req.url);
-      const id = searchParams.get('id');
-
-      if (!id) {
-        return NextResponse.json({ error: 'Missing ID parameter' }, { status: 400 });
-      }
-
+    if (id) {
       const existing = await db.oAuthProvider.findUnique({
         where: { id },
       });
@@ -167,25 +96,101 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
       }
 
-      await db.oAuthProvider.delete({
+      const resolvedSecret =
+        clientSecret === SSO_SECRET_MASK
+          ? existing.clientSecret
+          : encryptClientSecret(clientSecret);
+
+      result = await db.oAuthProvider.update({
         where: { id },
+        data: {
+          ...providerData,
+          clientSecret: resolvedSecret,
+        },
       });
 
-      clearSSOProviderCache()
       await createAuditLog({
         userId: admin.id,
-        action: 'SSO_PROVIDER_DELETE',
-        category: 'IDENTITY',
-        resource: 'oAuthProvider',
-        resourceId: id,
+        action: 'SSO_PROVIDER_UPDATE',
+        entityType: 'oAuthProvider',
+        entityId: id,
         oldValue: existing,
-        status: 'success',
+        newValue: result,
+      });
+    } else {
+      const resolvedSecret = encryptClientSecret(clientSecret);
+
+      result = await db.oAuthProvider.create({
+        data: {
+          ...providerData,
+          clientSecret: resolvedSecret,
+        },
       });
 
-      return NextResponse.json({ success: true });
-    } catch (error) {
-      console.error('[SSO_PROVIDERS_DELETE]', error);
-      return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+      await createAuditLog({
+        userId: admin.id,
+        action: 'SSO_PROVIDER_CREATE',
+        entityType: 'oAuthProvider',
+        entityId: result.id,
+        newValue: result,
+      });
     }
-  });
+
+    clearSSOProviderCache();
+    return NextResponse.json({
+      ...result,
+      clientSecret: result.clientSecret ? SSO_SECRET_MASK : '',
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Validation Error', details: error.issues }, { status: 400 });
+    }
+    console.error('[SSO_PROVIDERS_POST]', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+/**
+ * DELETE /api/admin/identity/sso-providers?id=...
+ * Delete an SSO provider
+ */
+export async function DELETE(req: NextRequest) {
+  const adminResult = await requireAdmin();
+  if (!adminResult.success) return adminResult.response;
+  const admin = adminResult.session.user;
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing ID parameter' }, { status: 400 });
+    }
+
+    const existing = await db.oAuthProvider.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+    }
+
+    await db.oAuthProvider.delete({
+      where: { id },
+    });
+
+    clearSSOProviderCache();
+    await createAuditLog({
+      userId: admin.id,
+      action: 'SSO_PROVIDER_DELETE',
+      entityType: 'oAuthProvider',
+      entityId: id,
+      oldValue: existing,
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('[SSO_PROVIDERS_DELETE]', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
 }

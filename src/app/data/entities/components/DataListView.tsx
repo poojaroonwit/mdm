@@ -37,7 +37,7 @@ export function DataListView({
   return (
     <div className="space-y-2">
       {records.map((record) => (
-        <Card key={record.id} className="hover:shadow-sm transition-shadow">
+        <Card key={record.id} className="hover:shadow-lg transition-shadow">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex-1 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

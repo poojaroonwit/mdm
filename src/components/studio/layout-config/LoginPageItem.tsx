@@ -46,7 +46,7 @@ export function LoginPageItem({
             backgroundColor: '#1e40af',
             gradient: {
               from: '#1e40af',
-              to: '#3b82f6',
+              to: '#1e40af',
               angle: 135
             },
             leftPanelWidth: '70%',
@@ -93,7 +93,7 @@ export function LoginPageItem({
   const currentConfig = loginPageConfig || {
     backgroundType: 'gradient' as const,
     backgroundColor: '#1e40af',
-    gradient: { from: '#1e40af', to: '#3b82f6', angle: 135 },
+    gradient: { from: '#1e40af', to: '#1e40af', angle: 135 },
     leftPanelWidth: '70%',
     rightPanelWidth: '30%',
     cardStyle: {
@@ -225,14 +225,14 @@ export function LoginPageItem({
                 <Label className={`${isMobileViewport ? 'text-sm' : 'text-xs'} font-medium`}>Gradient To</Label>
                 <div className="flex items-center gap-2">
                   <ColorInput
-                    value={currentConfig.gradient?.to || '#3b82f6'}
+                    value={currentConfig.gradient?.to || '#1e40af'}
                     onChange={(color) => setLoginPageConfig({
                       ...currentConfig,
                       gradient: { ...currentConfig.gradient!, to: color }
                     })}
                     allowImageVideo={false}
                     className="relative flex-1"
-                    placeholder="#3b82f6"
+                    placeholder="#1e40af"
                     inputClassName={`${isMobileViewport ? 'h-10' : 'h-8'} text-xs pl-7`}
                   />
                 </div>

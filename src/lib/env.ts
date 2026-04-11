@@ -20,15 +20,11 @@ const envSchema = z.object({
   // PostgREST
   NEXT_PUBLIC_API_URL: z.string().url().optional(),
 
-  // MinIO/S3
+  // MinIO
   MINIO_ENDPOINT: z.string().optional(),
   MINIO_PORT: z.string().optional(),
   MINIO_ACCESS_KEY: z.string().optional(),
   MINIO_SECRET_KEY: z.string().optional(),
-  AWS_ACCESS_KEY_ID: z.string().optional(),
-  AWS_SECRET_ACCESS_KEY: z.string().optional(),
-  AWS_REGION: z.string().optional(),
-  AWS_S3_BUCKET: z.string().optional(),
 
   // Redis
   REDIS_URL: z.string().url().optional(),
@@ -41,34 +37,7 @@ const envSchema = z.object({
   VAULT_ADDR: z.string().url().optional(),
   VAULT_TOKEN: z.string().optional(),
 
-  // Langfuse
-  LANGFUSE_PUBLIC_KEY: z.string().optional(),
-  LANGFUSE_SECRET_KEY: z.string().optional(),
-  LANGFUSE_HOST: z.string().url().optional(),
-
-  // SMTP
-  SMTP_HOST: z.string().optional(),
-  SMTP_PORT: z.string().optional(),
-  SMTP_USER: z.string().optional(),
-  SMTP_PASSWORD: z.string().optional(),
-  SMTP_FROM: z.string().email().optional(),
-  SMTP_SECURE: z.string().optional(),
-
-  // OAuth
-  GOOGLE_CLIENT_ID: z.string().optional(),
-  GOOGLE_CLIENT_SECRET: z.string().optional(),
-  AZURE_AD_CLIENT_ID: z.string().optional(),
-  AZURE_AD_CLIENT_SECRET: z.string().optional(),
-  AZURE_AD_TENANT_ID: z.string().optional(),
-
-  // WebSocket
-  NEXT_PUBLIC_WS_PROXY_URL: z.string().optional(),
-  NEXT_PUBLIC_WS_PROXY_PORT: z.string().optional(),
-
   // Application
-  NEXT_PUBLIC_APP_NAME: z.string().optional(),
-  SESSION_TIMEOUT_HOURS: z.string().optional(),
-  MAX_FILE_SIZE: z.string().optional(),
 })
 
 // Validate environment variables

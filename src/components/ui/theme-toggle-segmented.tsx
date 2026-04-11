@@ -63,7 +63,7 @@ export function ThemeToggleSegmented({
           className={cn(
             "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed",
             !isDarkMode && !isSystemMode
-              ? "bg-background text-foreground shadow-sm"
+              ? "bg-background text-foreground shadow-lg"
               : "text-muted-foreground hover:text-foreground"
           )}
         >
@@ -84,7 +84,7 @@ export function ThemeToggleSegmented({
           className={cn(
             "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed",
             isDarkMode && !isSystemMode
-              ? "bg-background text-foreground shadow-sm"
+              ? "bg-background text-foreground shadow-lg"
               : "text-muted-foreground hover:text-foreground"
           )}
         >

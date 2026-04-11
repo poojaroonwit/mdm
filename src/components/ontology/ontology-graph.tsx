@@ -442,7 +442,7 @@ export function OntologyGraphView({
                       y1={sourcePos.y}
                       x2={targetPos.x}
                       y2={targetPos.y}
-                      stroke={isHighlighted ? '#3B82F6' : '#CBD5E1'}
+                      stroke={isHighlighted ? '#1e40af' : '#CBD5E1'}
                       strokeWidth={isHighlighted ? 2 : 1}
                       strokeOpacity={isHighlighted ? 1 : 0.5}
                     />
@@ -486,7 +486,7 @@ export function OntologyGraphView({
                     <circle
                       r={size / 2}
                       fill={node.color || ONTOLOGY_NODE_COLORS[node.type]}
-                      stroke={isSelected ? '#1D4ED8' : isHovered ? '#3B82F6' : 'white'}
+                      stroke={isSelected ? '#1D4ED8' : isHovered ? '#1e40af' : 'white'}
                       strokeWidth={isSelected ? 3 : 2}
                       className="transition-all duration-150"
                     />

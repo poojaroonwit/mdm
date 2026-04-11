@@ -2,6 +2,7 @@ import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from 
 import { requireSpaceAccess } from '@/lib/space-access'
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
+import { getConfiguredSiteUrl } from '@/lib/system-runtime-settings'
 
 async function getHandler(request: NextRequest) {
   const authResult = await requireAuthWithId()
@@ -23,7 +24,12 @@ async function getHandler(request: NextRequest) {
   const params = spaceId ? [session.user.id, spaceId] : [session.user.id]
   const result = await query(sql, params)
   
-  return NextResponse.json({ configs: result.rows || [] })
+  const siteUrl = await getConfiguredSiteUrl(request)
+
+  return NextResponse.json({
+    configs: result.rows || [],
+    oauthCallbackUrl: `${siteUrl}/api/reports/integrations/power-bi/oauth/callback`,
+  })
 }
 
 

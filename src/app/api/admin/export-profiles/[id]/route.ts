@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -15,8 +15,9 @@ export async function GET(
   }
 
   try {
+     const { id } = await params;
      const profile = await prisma.exportProfile.findUnique({
-      where: { id: params.id },
+      where: { id },
        include: {
         creator: {
             select: {
@@ -55,7 +56,7 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -63,10 +64,11 @@ export async function PUT(
   }
 
   try {
+    const { id } = await params;
     const body = await req.json();
     const { name, description, config } = body;
 
-    const existingProfile = await prisma.exportProfile.findUnique({ where: { id: params.id } });
+    const existingProfile = await prisma.exportProfile.findUnique({ where: { id } });
     if (!existingProfile) {
         return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
@@ -84,7 +86,7 @@ export async function PUT(
     }
 
     const profile = await prisma.exportProfile.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         description,
@@ -101,7 +103,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -109,7 +111,8 @@ export async function DELETE(
   }
 
   try {
-    const existingProfile = await prisma.exportProfile.findUnique({ where: { id: params.id } });
+    const { id } = await params;
+    const existingProfile = await prisma.exportProfile.findUnique({ where: { id } });
     if (!existingProfile) {
         return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
@@ -128,7 +131,7 @@ export async function DELETE(
 
     // Soft delete
     await prisma.exportProfile.update({
-        where: { id: params.id },
+        where: { id },
         data: { deletedAt: new Date() }
     });
 

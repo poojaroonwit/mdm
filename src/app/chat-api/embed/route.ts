@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Merge version config into chatbot object (this includes chatkitOptions, widgetBackgroundColor, etc.)
-    const chatbot = sanitizeChatbotConfig(mergeVersionConfig(rawChatbot))
+    const chatbot = await sanitizeChatbotConfig(mergeVersionConfig(rawChatbot))
 
     // Generate Icon SVG if needed
     let iconSvg = ''

@@ -91,7 +91,7 @@ interface AnalyticsData {
   }
 }
 
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16', '#F97316']
+const COLORS = ['#1e40af', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16', '#F97316']
 
 export function FileAnalytics({ spaceId }: FileAnalyticsProps) {
   const { data: session } = useSession()
@@ -287,7 +287,7 @@ export function FileAnalytics({ spaceId }: FileAnalyticsProps) {
                   <Line 
                     type="monotone" 
                     dataKey="uploads" 
-                    stroke="#3B82F6" 
+                    stroke="#1e40af" 
                     strokeWidth={2}
                     name="uploads"
                   />
@@ -349,7 +349,7 @@ export function FileAnalytics({ spaceId }: FileAnalyticsProps) {
                     <Tooltip 
                       formatter={(value) => [formatFileSize(Number(value)), 'Size']}
                     />
-                    <Bar dataKey="totalSize" fill="#3B82F6" />
+                    <Bar dataKey="totalSize" fill="#1e40af" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>

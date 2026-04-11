@@ -3,14 +3,14 @@
  *
  * MinIO proxy route — mirrors studio-2's /api/secure-file/preview pattern.
  *
- * Uses minioPublicClient (built from MINIO_PUBLIC_URL) so the hostname/port/SSL
+ * Uses the configured MinIO public URL so the hostname/port/SSL
  * are always correct for the externally-reachable MinIO server.
  * Falls back to minioClient (MINIO_ENDPOINT) if no public URL is configured.
  *
  * No authentication required — chatbot assets are served to public widgets.
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { minioClient, minioPublicClient, MINIO_BUCKET } from '@/lib/minio'
+import { minioClient, getMinioPublicClient, MINIO_BUCKET } from '@/lib/minio'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,9 +49,9 @@ export async function GET(request: NextRequest) {
   const contentType = inferContentType(safePath)
   const isImage = /\.(jpg|jpeg|png|gif|webp|svg|ico)$/i.test(safePath)
 
-  // Prefer the public client (built from MINIO_PUBLIC_URL) so hostname/SSL are correct.
+  // Prefer the configured public client so hostname/SSL are correct.
   // Fall back to internal client if public URL is not configured.
-  const client = minioPublicClient ?? minioClient
+  const client = (await getMinioPublicClient()) ?? minioClient
 
   try {
     // Stream directly to the response — same approach as studio-2

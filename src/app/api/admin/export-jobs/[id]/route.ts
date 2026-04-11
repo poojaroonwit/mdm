@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -15,14 +15,15 @@ export async function DELETE(
   }
 
   try {
+    const { id } = await params;
     // Check ownership or admin
-    const job = await prisma.exportJob.findUnique({ where: { id: params.id } });
+    const job = await prisma.exportJob.findUnique({ where: { id } });
     if (!job) {
          return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }
 
     await prisma.exportJob.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true });
@@ -34,7 +35,7 @@ export async function DELETE(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
      const session = await getServerSession(authOptions);
       if (!session) {
@@ -42,8 +43,9 @@ export async function GET(
       }
 
       try {
+        const { id } = await params;
         const job = await prisma.exportJob.findUnique({ 
-            where: { id: params.id },
+            where: { id },
             include: { profile: true }
         });
         if (!job) {

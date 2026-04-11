@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogBody,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
@@ -252,35 +253,39 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
                     Collections help organize your documents into groups
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Name</label>
-                    <Input
-                      placeholder="Collection name..."
-                      value={newCollectionName}
-                      onChange={(e) => setNewCollectionName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && newCollectionName.trim()) {
-                          handleCreateCollection()
-                        }
-                      }}
-                      autoFocus
-                    />
+                <DialogBody>
+                  <div className="space-y-5">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Name</label>
+                      <Input
+                        placeholder="Collection name..."
+                        value={newCollectionName}
+                        onChange={(e) => setNewCollectionName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && newCollectionName.trim()) {
+                            handleCreateCollection()
+                          }
+                        }}
+                        autoFocus
+                        className="h-11 rounded-xl"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Description (Optional)</label>
+                      <Input
+                        placeholder="Brief description..."
+                        value={newCollectionDescription}
+                        onChange={(e) => setNewCollectionDescription(e.target.value)}
+                        className="h-11 rounded-xl"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Description (Optional)</label>
-                    <Input
-                      placeholder="Brief description..."
-                      value={newCollectionDescription}
-                      onChange={(e) => setNewCollectionDescription(e.target.value)}
-                    />
-                  </div>
-                </div>
+                </DialogBody>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowNewCollectionDialog(false)}>
+                  <Button variant="outline" onClick={() => setShowNewCollectionDialog(false)} className="px-6 h-11 rounded-xl">
                     Cancel
                   </Button>
-                  <Button onClick={handleCreateCollection} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button onClick={handleCreateCollection} className="px-8 h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white">
                     Create
                   </Button>
                 </DialogFooter>
@@ -530,47 +535,53 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
               Update the collection details shown in the knowledge base.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Name</label>
-              <Input
-                value={collectionSettingsName}
-                onChange={(e) => setCollectionSettingsName(e.target.value)}
-                placeholder="Collection name..."
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Description</label>
-              <Input
-                value={collectionSettingsDescription}
-                onChange={(e) => setCollectionSettingsDescription(e.target.value)}
-                placeholder="Brief description..."
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+          <DialogBody>
+            <div className="space-y-5">
               <div>
-                <label className="text-sm font-medium mb-2 block">Icon</label>
+                <label className="text-sm font-medium mb-2 block">Name</label>
                 <Input
-                  value={collectionSettingsIcon}
-                  onChange={(e) => setCollectionSettingsIcon(e.target.value)}
-                  placeholder="e.g. 📚"
+                  value={collectionSettingsName}
+                  onChange={(e) => setCollectionSettingsName(e.target.value)}
+                  placeholder="Collection name..."
+                  className="h-11 rounded-xl"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium mb-2 block">Color</label>
+                <label className="text-sm font-medium mb-2 block">Description</label>
                 <Input
-                  value={collectionSettingsColor}
-                  onChange={(e) => setCollectionSettingsColor(e.target.value)}
-                  placeholder="e.g. #2563eb"
+                  value={collectionSettingsDescription}
+                  onChange={(e) => setCollectionSettingsDescription(e.target.value)}
+                  placeholder="Brief description..."
+                  className="h-11 rounded-xl"
                 />
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Icon</label>
+                  <Input
+                    value={collectionSettingsIcon}
+                    onChange={(e) => setCollectionSettingsIcon(e.target.value)}
+                    placeholder="e.g. 📚"
+                    className="h-11 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Color</label>
+                  <Input
+                    value={collectionSettingsColor}
+                    onChange={(e) => setCollectionSettingsColor(e.target.value)}
+                    placeholder="e.g. #2563eb"
+                    className="h-11 rounded-xl"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          </DialogBody>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCollectionSettingsDialog(false)}>
+            <Button variant="outline" onClick={() => setShowCollectionSettingsDialog(false)} className="px-6 h-11 rounded-xl">
               Cancel
             </Button>
-            <Button onClick={handleSaveCollectionSettings} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button onClick={handleSaveCollectionSettings} className="px-8 h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white">
               Save Changes
             </Button>
           </DialogFooter>
@@ -588,27 +599,30 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
               Create a new document in {selectedCollection?.name}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Title</label>
-              <Input
-                placeholder="Document title..."
-                value={newDocumentTitle}
-                onChange={(e) => setNewDocumentTitle(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && newDocumentTitle.trim()) {
-                    handleCreateDocument()
-                  }
-                }}
-                autoFocus
-              />
+          <DialogBody>
+            <div className="space-y-5">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Title</label>
+                <Input
+                  placeholder="Document title..."
+                  value={newDocumentTitle}
+                  onChange={(e) => setNewDocumentTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newDocumentTitle.trim()) {
+                      handleCreateDocument()
+                    }
+                  }}
+                  autoFocus
+                  className="h-11 rounded-xl"
+                />
+              </div>
             </div>
-          </div>
+          </DialogBody>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewDocumentDialog(false)}>
+            <Button variant="outline" onClick={() => setShowNewDocumentDialog(false)} className="px-6 h-11 rounded-xl">
               Cancel
             </Button>
-            <Button onClick={handleCreateDocument} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button onClick={handleCreateDocument} className="px-8 h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white">
               Create
             </Button>
           </DialogFooter>

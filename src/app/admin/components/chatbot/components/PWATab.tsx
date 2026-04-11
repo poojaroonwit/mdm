@@ -46,19 +46,19 @@ export function PWATab({
             {formData.pwaEnabled && (
                 <Tabs defaultValue="general" className="flex w-full gap-6">
                     <TabsList orientation="vertical" className="bg-muted/30 p-1 min-h-[400px] h-fit flex-col justify-start items-stretch gap-1 w-[220px] rounded-lg">
-                        <TabsTrigger value="general" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all">
+                        <TabsTrigger value="general" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all">
                             <Icons.Settings className="h-4 w-4" />
                             General
                         </TabsTrigger>
-                        <TabsTrigger value="metadata" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all">
+                        <TabsTrigger value="metadata" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all">
                             <Icons.FileText className="h-4 w-4" />
                             App Metadata
                         </TabsTrigger>
-                        <TabsTrigger value="banner-styling" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all">
+                        <TabsTrigger value="banner-styling" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all">
                             <Icons.Palette className="h-4 w-4" />
                             Banner Styling
                         </TabsTrigger>
-                        <TabsTrigger value="button-styling" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all">
+                        <TabsTrigger value="button-styling" className="justify-start gap-2 px-3 py-2.5 rounded-md aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all">
                             <Icons.MousePointer className="h-4 w-4" />
                             Button Styling
                         </TabsTrigger>
@@ -187,11 +187,11 @@ export function PWATab({
                                     <div className="space-y-2">
                                         <Label>Theme Color</Label>
                                         <ColorInput
-                                            value={formData.pwaThemeColor || formData.primaryColor || '#3b82f6'}
+                                            value={formData.pwaThemeColor || formData.primaryColor || '#1e40af'}
                                             onChange={(color) => setFormData({ ...formData, pwaThemeColor: color })}
                                             allowImageVideo={false}
                                             className="relative"
-                                            placeholder="#3b82f6"
+                                            placeholder="#1e40af"
                                             inputClassName="h-10 text-xs pl-9 w-full"
                                         />
                                         <p className="text-xs text-muted-foreground">Status bar color</p>
@@ -284,11 +284,11 @@ export function PWATab({
                                     <div className="space-y-2">
                                         <Label>Banner Background</Label>
                                         <ColorInput
-                                            value={formData.pwaBannerBgColor || formData.primaryColor || '#3b82f6'}
+                                            value={formData.pwaBannerBgColor || formData.primaryColor || '#1e40af'}
                                             onChange={(color) => setFormData({ ...formData, pwaBannerBgColor: color })}
                                             allowImageVideo={true}
                                             className="relative"
-                                            placeholder={formData.primaryColor || '#3b82f6'}
+                                            placeholder={formData.primaryColor || '#1e40af'}
                                             inputClassName="h-10 text-xs pl-9 w-full"
                                         />
                                     </div>
@@ -513,11 +513,11 @@ export function PWATab({
                                     <div className="space-y-2">
                                         <Label>Button Text Color</Label>
                                         <ColorInput
-                                            value={formData.pwaBannerButtonTextColor || formData.primaryColor || '#3b82f6'}
+                                            value={formData.pwaBannerButtonTextColor || formData.primaryColor || '#1e40af'}
                                             onChange={(color) => setFormData({ ...formData, pwaBannerButtonTextColor: color })}
                                             allowImageVideo={false}
                                             className="relative"
-                                            placeholder={formData.primaryColor || '#3b82f6'}
+                                            placeholder={formData.primaryColor || '#1e40af'}
                                             inputClassName="h-10 text-xs pl-9 w-full"
                                         />
                                     </div>

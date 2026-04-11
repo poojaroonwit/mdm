@@ -132,7 +132,7 @@
        }
        .app-icon span {
           font-size: 10px;
-          font-weight: 700;
+          font-weight: 600;
           color: #9ca3af;
           text-transform: uppercase;
        }
@@ -247,7 +247,7 @@
           align-items: center;
           margin-bottom: 24px;
        }
-       .modal-title { font-weight: 700; font-size: 18px; }
+       .modal-title { font-weight: 600; font-size: 18px; }
        .instruction-step {
           display: flex;
           align-items: flex-start;

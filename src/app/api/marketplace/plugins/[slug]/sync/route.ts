@@ -504,11 +504,13 @@ async function syncLookerStudioReports(
  * Refresh Looker Studio OAuth token
  */
 async function refreshLookerStudioToken(refreshToken: string): Promise<string> {
-  const clientId = process.env.GOOGLE_CLIENT_ID || ''
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET || ''
+  const { getGoogleOAuthConfig } = await import('@/lib/google-oauth-config')
+  const googleConfig = await getGoogleOAuthConfig()
+  const clientId = googleConfig?.clientId || ''
+  const clientSecret = googleConfig?.clientSecret || ''
 
   if (!clientId || !clientSecret) {
-    throw new Error('Google OAuth credentials not configured')
+    throw new Error('Google OAuth credentials not configured in SSO settings')
   }
 
   const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {

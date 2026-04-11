@@ -210,7 +210,7 @@ export function QuickLinkDialog({
             </div>
 
             {creatingCategory && (
-              <div className="space-y-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4">
+              <div className="space-y-2 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4">
                 <Label htmlFor="newCategoryName">New Category Name</Label>
                 <Input
                   id="newCategoryName"

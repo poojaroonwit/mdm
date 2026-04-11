@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { FALLBACK_MENU_CONFIG } from '@/lib/menu-fallback'
 
 export interface MenuItemConfig {
     id: string
@@ -55,11 +56,13 @@ export function useMenuConfig(): UseMenuConfigResult {
             }
 
             const data = await response.json()
-            setMenuConfig({ groups: data.menuConfig || [] })
+            const groups = Array.isArray(data.menuConfig) ? data.menuConfig : []
+            setMenuConfig(groups.length > 0 ? { groups } : FALLBACK_MENU_CONFIG)
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to load menu configuration'
             setError(message)
             console.error('Error fetching menu config:', err)
+            setMenuConfig(FALLBACK_MENU_CONFIG)
         } finally {
             setLoading(false)
         }

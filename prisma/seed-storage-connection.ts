@@ -23,11 +23,11 @@ async function main() {
         isActive: true,
         status: 'connected',
         config: {
-          endpoint: process.env.MINIO_ENDPOINT || 'http://localhost:9000',
-          accessKey: process.env.MINIO_ACCESS_KEY || 'minioadmin',
-          secretKey: process.env.MINIO_SECRET_KEY || 'minioadmin',
-          bucket: process.env.MINIO_BUCKET || 'default',
-          useSSL: process.env.MINIO_USE_SSL === 'true' || false
+          endpoint: 'http://localhost:9000',
+          accessKey: 'minioadmin',
+          secretKey: 'minioadmin',
+          bucket: 'default',
+          useSSL: false
         }
       }
     })

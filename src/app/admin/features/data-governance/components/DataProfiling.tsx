@@ -1,5 +1,7 @@
 'use client'
 
+import { Skeleton } from '@/components/ui/skeleton'
+
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -87,9 +89,15 @@ export function DataProfiling({ asset, config }: DataProfilingProps) {
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="text-center py-8">
-          <RefreshCw className="h-8 w-8 mx-auto mb-4 animate-spin text-muted-foreground" />
-          <p className="text-muted-foreground">Loading profile data...</p>
+        <CardContent className="py-8 space-y-4">
+          <Skeleton className="h-10 w-full rounded-md" />
+          <div className="grid grid-cols-3 gap-4">
+             <Skeleton className="h-24 w-full rounded-lg" />
+             <Skeleton className="h-24 w-full rounded-lg" />
+             <Skeleton className="h-24 w-full rounded-lg" />
+          </div>
+          <Skeleton className="h-10 w-full rounded-md" />
+          <Skeleton className="h-64 w-full rounded-md" />
         </CardContent>
       </Card>
     )

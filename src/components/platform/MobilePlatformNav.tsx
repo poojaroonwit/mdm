@@ -245,7 +245,7 @@ export function MobilePlatformNav({
                           onClick={() => navigateToItem(item)}
                           className="flex w-full items-start gap-3 rounded-2xl border border-zinc-200/70 bg-zinc-50/80 px-4 py-4 text-left transition hover:border-primary/30 hover:bg-primary/5"
                         >
-                          <div className="mt-0.5 rounded-2xl bg-white p-2 text-primary shadow-sm">
+                          <div className="mt-0.5 rounded-2xl bg-white p-2 text-primary shadow-lg">
                             <Icon className="h-5 w-5" />
                           </div>
                           <div className="min-w-0 flex-1">

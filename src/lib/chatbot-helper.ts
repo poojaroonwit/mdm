@@ -1,6 +1,7 @@
 /**
  * Helper functions for chatbot operations
  */
+import { getConfiguredSiteUrl, getMinioPublicUrl } from '@/lib/system-runtime-settings'
 
 /**
  * Merge version config into chatbot object.
@@ -59,10 +60,10 @@ const MINIO_IMAGE_FIELDS = [
  * /uploads/... proxy route. This ensures images are served via authenticated MinIO
  * SDK requests even when the bucket has no public-read policy.
  */
-function rewriteMinioUrls(config: any): any {
-  const publicBase = process.env.MINIO_PUBLIC_URL
+async function rewriteMinioUrls(config: any): Promise<any> {
+  const publicBase = await getMinioPublicUrl()
   const bucket = process.env.MINIO_UPLOADS_BUCKET || 'udp'
-  const appBase = (process.env.NEXTAUTH_URL || '').replace(/\/$/, '')
+  const appBase = await getConfiguredSiteUrl(null)
 
   // Build the proxy URL in the same absolute form as storeUploadedImage (studio-2 pattern)
   const toProxyUrl = (filePath: string): string =>
@@ -119,11 +120,11 @@ function rewriteMinioUrls(config: any): any {
  * @param chatbot - The merged chatbot object
  * @returns The sanitized chatbot object
  */
-export function sanitizeChatbotConfig(chatbot: any): any {
+export async function sanitizeChatbotConfig(chatbot: any): Promise<any> {
   if (!chatbot) return chatbot
 
   // Create a shallow copy and rewrite MinIO URLs to proxy paths
-  const sanitized = rewriteMinioUrls({ ...chatbot })
+  const sanitized = await rewriteMinioUrls({ ...chatbot })
 
   // Remove sensitive keys from root (merged config)
   delete sanitized.openaiAgentSdkApiKey

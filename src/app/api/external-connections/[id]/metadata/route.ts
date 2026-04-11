@@ -5,12 +5,12 @@ import { getSecretsManager } from '@/lib/secrets-manager'
 import { decryptApiKey } from '@/lib/encryption'
 import { createExternalClient } from '@/lib/external-db'
 
-async function getHandler(request: NextRequest, { params }: { params: { id: string } }) {
+async function getHandler(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const authResult = await requireAuthWithId()
     if (!authResult.success) return authResult.response
     const { session } = authResult
 
-    const id = params.id
+    const { id } = await params
     const { searchParams } = new URL(request.url)
     const rawSpaceId = searchParams.get('space_id')
     const schemaParam = searchParams.get('schema')

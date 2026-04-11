@@ -2,6 +2,7 @@ import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from 
 import { requireSpaceAccess } from '@/lib/space-access'
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
+import { getGoogleOAuthConfig } from '@/lib/google-oauth-config'
 
 async function getHandler(request: NextRequest) {
   const authResult = await requireAuthWithId()
@@ -32,9 +33,14 @@ async function getHandler(request: NextRequest) {
     }
 
     // Exchange code for tokens
-    const clientId = process.env.GOOGLE_CLIENT_ID || ''
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET || ''
+    const googleConfig = await getGoogleOAuthConfig()
+    const clientId = googleConfig?.clientId || ''
+    const clientSecret = googleConfig?.clientSecret || ''
     const redirectUri = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/reports/integrations/looker-studio/oauth/callback`
+
+    if (!clientId || !clientSecret) {
+      return NextResponse.redirect(new URL('/reports/integrations?source=looker-studio&error=google_oauth_not_configured', request.url))
+    }
 
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',

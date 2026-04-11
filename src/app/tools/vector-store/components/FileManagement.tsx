@@ -193,7 +193,7 @@ export function FileManagement({ vectorStoreId, vectorStoreName }: FileManagemen
             </Card>
           ))
         ) : (
-          <div className="col-span-full py-20 text-center border-2 border-dashed border-muted rounded-xl bg-muted/10">
+          <div className="col-span-full py-20 text-center border-2 border-dashed border-muted rounded-md bg-muted/10">
             <DocumentIcon className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
             <p className="text-muted-foreground">No files attached to this vector store yet.</p>
             <p className="text-[10px] text-muted-foreground/60 uppercase mt-4 tracking-widest font-bold">Supported: .pdf, .docx, .txt, .json</p>

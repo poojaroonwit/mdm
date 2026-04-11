@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -115,114 +115,120 @@ export function AddInstanceDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
-              <Input
-                id="name"
-                value={form.name}
-                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder="Enter instance name"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+          <DialogBody>
+            <div className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="type">Type *</Label>
-                <Select
-                  value={form.type}
-                  onValueChange={(value) => setForm((prev) => ({ ...prev, type: value }))}
-                >
-                  <SelectTrigger id="type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="vm">Virtual Machine</SelectItem>
-                    <SelectItem value="docker">Docker Host</SelectItem>
-                    <SelectItem value="kubernetes">Kubernetes Cluster</SelectItem>
-                    <SelectItem value="cloud">Cloud Instance</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="connectionType">Connection Type *</Label>
-                <Select
-                  value={form.connectionType}
-                  onValueChange={(value) => setForm((prev) => ({ ...prev, connectionType: value }))}
-                >
-                  <SelectTrigger id="connectionType">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ssh">SSH</SelectItem>
-                    <SelectItem value="docker">Docker API</SelectItem>
-                    <SelectItem value="kubernetes">Kubernetes API</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="host">Host *</Label>
+                <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-zinc-500">Name *</Label>
                 <Input
-                  id="host"
-                  value={form.host}
-                  onChange={(e) => setForm((prev) => ({ ...prev, host: e.target.value }))}
-                  placeholder="e.g., 192.168.1.100 or hostname"
+                  id="name"
+                  value={form.name}
+                  onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter instance name"
+                  className="h-11 rounded-xl"
                   required
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="type" className="text-xs font-black uppercase tracking-widest text-zinc-500">Type *</Label>
+                  <Select
+                    value={form.type}
+                    onValueChange={(value) => setForm((prev) => ({ ...prev, type: value }))}
+                  >
+                    <SelectTrigger id="type" className="h-11 rounded-xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="vm">Virtual Machine</SelectItem>
+                      <SelectItem value="docker">Docker Host</SelectItem>
+                      <SelectItem value="kubernetes">Kubernetes Cluster</SelectItem>
+                      <SelectItem value="cloud">Cloud Instance</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="connectionType" className="text-xs font-black uppercase tracking-widest text-zinc-500">Connection Type *</Label>
+                  <Select
+                    value={form.connectionType}
+                    onValueChange={(value) => setForm((prev) => ({ ...prev, connectionType: value }))}
+                  >
+                    <SelectTrigger id="connectionType" className="h-11 rounded-xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ssh">SSH</SelectItem>
+                      <SelectItem value="docker">Docker API</SelectItem>
+                      <SelectItem value="kubernetes">Kubernetes API</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="host" className="text-xs font-black uppercase tracking-widest text-zinc-500">Host *</Label>
+                  <Input
+                    id="host"
+                    value={form.host}
+                    onChange={(e) => setForm((prev) => ({ ...prev, host: e.target.value }))}
+                    placeholder="e.g., 192.168.1.100"
+                    className="h-11 rounded-xl"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="port" className="text-xs font-black uppercase tracking-widest text-zinc-500">Port</Label>
+                  <Input
+                    id="port"
+                    type="number"
+                    value={form.port}
+                    onChange={(e) => setForm((prev) => ({ ...prev, port: e.target.value }))}
+                    placeholder="Default port"
+                    className="h-11 rounded-xl"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="port">Port</Label>
-                <Input
-                  id="port"
-                  type="number"
-                  value={form.port}
-                  onChange={(e) => setForm((prev) => ({ ...prev, port: e.target.value }))}
-                  placeholder="Default port"
+                <Label htmlFor="protocol" className="text-xs font-black uppercase tracking-widest text-zinc-500">Protocol</Label>
+                <Select
+                  value={form.protocol}
+                  onValueChange={(value) => setForm((prev) => ({ ...prev, protocol: value }))}
+                >
+                  <SelectTrigger id="protocol" className="h-11 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ssh">SSH</SelectItem>
+                    <SelectItem value="http">HTTP</SelectItem>
+                    <SelectItem value="https">HTTPS</SelectItem>
+                    <SelectItem value="tcp">TCP</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description" className="text-xs font-black uppercase tracking-widest text-zinc-500">Description</Label>
+                <Textarea
+                  id="description"
+                  value={form.description}
+                  onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+                  placeholder="Enter description (optional)"
+                  rows={3}
+                  className="rounded-2xl"
                 />
               </div>
             </div>
+          </DialogBody>
 
-            <div className="space-y-2">
-              <Label htmlFor="protocol">Protocol</Label>
-              <Select
-                value={form.protocol}
-                onValueChange={(value) => setForm((prev) => ({ ...prev, protocol: value }))}
-              >
-                <SelectTrigger id="protocol">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ssh">SSH</SelectItem>
-                  <SelectItem value="http">HTTP</SelectItem>
-                  <SelectItem value="https">HTTPS</SelectItem>
-                  <SelectItem value="tcp">TCP</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={form.description}
-                onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-                placeholder="Enter description (optional)"
-                rows={3}
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <DialogFooter className="pt-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="px-6 h-11 rounded-xl">
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !form.name || !form.host}>
+            <Button type="submit" disabled={loading || !form.name || !form.host} className="px-8 h-11 rounded-xl bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 font-bold">
               {loading ? 'Creating...' : 'Create Instance'}
             </Button>
           </DialogFooter>

@@ -141,7 +141,7 @@ export default function PluginDetailPage() {
 
                         <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                                <h1 style={{ fontSize: '32px', fontWeight: 700, color: 'hsl(var(--foreground))', margin: 0 }}>
+                                <h1 style={{ fontSize: '32px', fontWeight: 600, color: 'hsl(var(--foreground))', margin: 0 }}>
                                     {plugin.name}
                                 </h1>
                                 {plugin.verified && (

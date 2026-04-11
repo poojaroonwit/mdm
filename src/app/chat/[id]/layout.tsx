@@ -26,17 +26,17 @@ export async function generateViewport({ params }: { params: Promise<{ id: strin
     })
 
     if (!chatbot) {
-      return { themeColor: '#3b82f6' }
+      return { themeColor: '#1e40af' }
     }
 
     const cb = mergeVersionConfig(chatbot)
-    const themeColor = cb.pwaThemeColor || cb.primaryColor || '#3b82f6'
+    const themeColor = cb.pwaThemeColor || cb.primaryColor || '#1e40af'
 
     return {
       themeColor: themeColor,
     }
   } catch (error) {
-    return { themeColor: '#3b82f6' }
+    return { themeColor: '#1e40af' }
   }
 }
 
@@ -87,7 +87,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const cb = mergeVersionConfig(chatbot)
     const appName = cb.pwaAppName || cb.name || 'Chat Assistant'
     const description = cb.pwaDescription || cb.description || 'AI Chat Assistant'
-    const themeColor = cb.pwaThemeColor || cb.primaryColor || '#3b82f6'
+    const themeColor = cb.pwaThemeColor || cb.primaryColor || '#1e40af'
     const iconUrl = cb.pwaIconUrl || cb.logo
 
     return {

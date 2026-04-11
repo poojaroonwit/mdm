@@ -1430,7 +1430,7 @@ export default function SpaceSettingsPage() {
                     </TabsList>
 
                     <TabsContent value="basic" className="space-y-6 mt-6">
-                      <Card className="border-0 shadow-sm bg-card">
+                      <Card className="border-0 shadow-lg bg-card">
                         <CardHeader className="pb-4">
                           <CardTitle className="flex items-center space-x-2 text-lg">
                             <Settings className="h-5 w-5" />
@@ -1507,7 +1507,7 @@ export default function SpaceSettingsPage() {
                     </TabsContent>
 
                     <TabsContent value="login" className="space-y-6 mt-6">
-                      <Card className="border-0 shadow-sm bg-card">
+                      <Card className="border-0 shadow-lg bg-card">
                         <CardHeader className="gap-4 pb-2 md:flex-row md:items-start md:justify-between">
                           <div className="space-y-2">
                             <CardTitle className="flex items-center space-x-2 text-lg">

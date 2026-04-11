@@ -1,5 +1,6 @@
 'use client'
 
+import { cva, type VariantProps } from 'class-variance-authority'
 import { ButtonHTMLAttributes, forwardRef } from 'react'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
@@ -9,81 +10,66 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'warning' | 'success' | 'destructive' | 'default'
-  size?: 'sm' | 'md' | 'lg' | 'icon' | 'default'
+export const buttonVariants = cva(
+  'inline-flex items-center justify-center whitespace-nowrap font-medium transition-[background-color,border-color,box-shadow,color,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none select-none [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0',
+  {
+    variants: {
+        primary:
+          'bg-gradient-to-br from-[var(--primary-navy)] to-[var(--primary-blue)] text-primary-foreground border border-transparent shadow-[var(--shadow-blue-glow)] hover:-translate-y-px hover:shadow-[var(--shadow-blue-glow-hover)]',
+        default:
+          'bg-gradient-to-br from-[var(--primary-navy)] to-[var(--primary-blue)] text-primary-foreground border border-transparent shadow-[var(--shadow-blue-glow)] hover:-translate-y-px hover:shadow-[var(--shadow-blue-glow-hover)]',
+        luxury:
+          'bg-gradient-to-b from-[#1e40af] to-[#172554] text-white border border-white/10 shadow-[var(--shadow-blue-glow)] hover:shadow-[var(--shadow-blue-glow-hover)] hover:scale-[1.02] active:scale-[0.98]',
+        gradient:
+          'bg-gradient-to-r from-[#3b82f6] to-[#4f46e5] text-white border border-transparent hover:opacity-90 hover:shadow-lg',
+        glass:
+          'bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 shadow-xl',
+        soft:
+          'bg-[var(--primary-blue-light)] text-[var(--primary-blue)] border border-transparent hover:bg-[color-mix(in_srgb,var(--primary-blue-light)_88%,black)]',
+        secondary:
+          'bg-secondary text-secondary-foreground border border-border shadow-md hover:bg-secondary/80',
+        danger:
+          'bg-[color:color-mix(in_srgb,var(--destructive)_12%,transparent)] text-[color:var(--destructive)] border border-[color:color-mix(in_srgb,var(--destructive)_24%,transparent)] hover:bg-[color:var(--destructive)] hover:text-white',
+        destructive:
+          'bg-[color:color-mix(in_srgb,var(--destructive)_12%,transparent)] text-[color:var(--destructive)] border border-[color:color-mix(in_srgb,var(--destructive)_24%,transparent)] hover:bg-[color:var(--destructive)] hover:text-white',
+        warning:
+          'bg-[color:color-mix(in_srgb,var(--warning)_14%,transparent)] text-[color:var(--warning)] border border-[color:color-mix(in_srgb,var(--warning)_26%,transparent)] hover:bg-[color:var(--warning)] hover:text-[color:var(--text-primary)]',
+        success:
+          'bg-[color:color-mix(in_srgb,var(--success)_14%,transparent)] text-[color:var(--success)] border border-[color:color-mix(in_srgb,var(--success)_26%,transparent)] hover:bg-[color:var(--success)] hover:text-white',
+        outline:
+          'bg-transparent text-foreground border border-border hover:bg-accent hover:text-accent-foreground',
+        ghost:
+          'bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+      size: {
+        sm: 'h-8 px-3 text-xs rounded-md gap-1.5',
+        md: 'h-10 px-4 py-2 text-sm rounded-md gap-2',
+        default: 'h-10 px-4 py-2 text-sm rounded-md gap-2',
+        lg: 'h-11 px-8 text-base rounded-md gap-2',
+        icon: 'h-10 w-10 rounded-md',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'md',
+    },
+  }
+)
+
+export interface ButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
   tooltip?: string
   as?: 'button' | 'span'
 }
 
 export const Button = forwardRef<HTMLButtonElement | HTMLSpanElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', tooltip, children, as = 'button', ...props }, ref) => {
+  ({ className, variant, size, tooltip, children, as = 'button', ...props }, ref) => {
     const Element = as === 'span' ? 'span' : 'button'
-
-    const baseStyles = [
-      'inline-flex items-center justify-center whitespace-nowrap font-medium',
-      'transition-colors duration-200',
-      'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 dark:focus-visible:ring-zinc-500',
-      'disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none',
-      'select-none',
-    ].join(' ')
-
-    const variantStyles: Record<string, string> = {
-      // Solid Zinc — Professional & High Contrast
-      primary:
-        'bg-zinc-900 text-zinc-50 dark:bg-zinc-50 dark:text-zinc-900 ' +
-        'hover:bg-zinc-800 dark:hover:bg-zinc-200',
-      default:
-        'bg-zinc-900 text-zinc-50 dark:bg-zinc-50 dark:text-zinc-900 ' +
-        'hover:bg-zinc-800 dark:hover:bg-zinc-200',
-      secondary:
-        'bg-zinc-100/80 text-zinc-900 dark:bg-zinc-800/80 dark:text-zinc-50 ' +
-        'border border-zinc-200/60 dark:border-zinc-700/60 ' +
-        'hover:bg-zinc-200/90 dark:hover:bg-zinc-700/90',
-      danger:
-        'bg-red-500/10 text-red-600 dark:text-red-400 ' +
-        'border border-red-500/20 ' +
-        'hover:bg-red-500 hover:text-white',
-      destructive:
-        'bg-red-500/10 text-red-600 dark:text-red-400 ' +
-        'border border-red-500/20 ' +
-        'hover:bg-red-500 hover:text-white',
-      warning:
-        'bg-amber-500/10 text-amber-600 dark:text-amber-400 ' +
-        'border border-amber-500/20 ' +
-        'hover:bg-amber-500 hover:text-white',
-      success:
-        'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ' +
-        'border border-emerald-500/20 ' +
-        'hover:bg-emerald-500 hover:text-white',
-
-      // Outline — Glassmorphism Lite
-      outline:
-        'bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 ' +
-        'border border-zinc-200/70 dark:border-zinc-800/70 ' +
-        'hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700',
-
-      // Ghost — Subtle Dock Style
-      ghost:
-        'bg-transparent text-zinc-500 dark:text-zinc-400 ' +
-        'hover:bg-zinc-100/70 dark:hover:bg-zinc-800/70 hover:text-zinc-900 dark:hover:text-zinc-100',
-    }
-
-    const sizeStyles: Record<string, string> = {
-      sm: 'min-h-10 px-3.5 text-xs rounded-lg gap-1.5',
-      md: 'min-h-11 px-5 text-sm rounded-xl gap-2',
-      default: 'min-h-11 px-5 text-sm rounded-xl gap-2',
-      lg: 'min-h-12 px-6 text-sm rounded-2xl gap-2.5',
-      icon: 'h-11 w-11 rounded-xl',
-    }
-
-    const resolvedVariant = (variantStyles[variant] ?? variantStyles.primary)
-    const resolvedSize = (sizeStyles[size] ?? sizeStyles.md)
 
     const button = (
       <Element
         ref={ref as any}
-        className={cn(baseStyles, resolvedVariant, resolvedSize, className)}
+        className={cn(buttonVariants({ variant, size, className }))}
         {...(as === 'button' ? (props as any) : {})}
       >
         {children}

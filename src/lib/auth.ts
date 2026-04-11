@@ -132,15 +132,25 @@ async function getSessionTimeoutSeconds(): Promise<number> {
 
   let timeout = 24 * 3600
   try {
-    const setting = await (prisma as any).systemSetting.findUnique({ where: { key: "sessionPolicy" } })
-    if (setting?.value) {
-      const policy = JSON.parse(setting.value)
-      if (policy?.timeout) {
-        timeout = Number(policy.timeout) * 3600
+    const [timeoutSetting, legacyPolicySetting] = await Promise.all([
+      (prisma as any).systemSetting.findUnique({ where: { key: "sessionTimeout" } }),
+      (prisma as any).systemSetting.findUnique({ where: { key: "sessionPolicy" } }),
+    ])
+
+    if (timeoutSetting?.value) {
+      const timeoutHours = Number(timeoutSetting.value)
+      if (Number.isFinite(timeoutHours) && timeoutHours > 0) {
+        timeout = timeoutHours * 3600
+      }
+    } else if (legacyPolicySetting?.value) {
+      const policy = JSON.parse(legacyPolicySetting.value)
+      const timeoutHours = Number(policy?.timeout)
+      if (Number.isFinite(timeoutHours) && timeoutHours > 0) {
+        timeout = timeoutHours * 3600
       }
     }
   } catch (error) {
-    console.warn("Could not load session timeout from database, using fallback")
+    console.warn("Could not load session timeout from system settings, using fallback")
   }
 
   sessionTimeoutCache = { data: timeout, timestamp: now }

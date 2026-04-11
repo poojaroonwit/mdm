@@ -51,18 +51,18 @@ export type StorageProviderType = 'minio' | 's3' | 'sftp' | 'ftp' | 'onedrive' |
 
 export const DEFAULT_STORAGE_CONFIG: StorageConfig = {
   minio: {
-    endpoint: process.env.MINIO_ENDPOINT || 'http://localhost:9000',
-    access_key: process.env.MINIO_ACCESS_KEY || 'minioadmin',
-    secret_key: process.env.MINIO_SECRET_KEY || 'minioadmin',
-    bucket: process.env.MINIO_BUCKET || 'attachments',
+    endpoint: 'http://localhost:9000',
+    access_key: 'minioadmin',
+    secret_key: 'minioadmin',
+    bucket: 'attachments',
     region: 'us-east-1',
     use_ssl: false
   },
   s3: {
-    access_key_id: process.env.AWS_ACCESS_KEY_ID || '',
-    secret_access_key: process.env.AWS_SECRET_ACCESS_KEY || '',
-    bucket: process.env.AWS_S3_BUCKET || '',
-    region: process.env.AWS_REGION || 'us-east-1'
+    access_key_id: '',
+    secret_access_key: '',
+    bucket: '',
+    region: 'us-east-1'
   },
   sftp: {
     host: '',
@@ -99,9 +99,9 @@ export const DEFAULT_STORAGE_CONFIG: StorageConfig = {
 }
 
 export const FILE_UPLOAD_LIMITS = {
-  MAX_FILE_SIZE_MB: parseInt(process.env.MAX_FILE_SIZE_MB || '10'),
-  MAX_FILES_PER_ATTRIBUTE: parseInt(process.env.MAX_FILES_PER_ATTRIBUTE || '10'),
-  ALLOWED_FILE_TYPES: (process.env.ALLOWED_FILE_TYPES || 'jpg,jpeg,png,gif,pdf,doc,docx,txt,mp4,mp3,zip').split(',')
+  MAX_FILE_SIZE_MB: 10,
+  MAX_FILES_PER_ATTRIBUTE: 10,
+  ALLOWED_FILE_TYPES: ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'txt', 'mp4', 'mp3', 'zip']
 }
 
 export const SUPPORTED_FILE_TYPES = {

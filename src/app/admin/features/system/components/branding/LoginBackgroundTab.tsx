@@ -69,7 +69,7 @@ export function LoginBackgroundTab({ branding, setBranding, handleApplyBrandingC
                         <div className="space-y-2">
                             <Label className="text-sm font-medium">From Color</Label>
                             <ColorInput
-                                value={branding.loginBackground.gradient?.from || '#3b82f6'}
+                                value={branding.loginBackground.gradient?.from || '#1e40af'}
                                 onChange={(color) =>
                                     setBranding({
                                         ...branding,
@@ -84,7 +84,7 @@ export function LoginBackgroundTab({ branding, setBranding, handleApplyBrandingC
                                 }
                                 allowImageVideo={false}
                                 className="w-full"
-                                placeholder="#3b82f6"
+                                placeholder="#1e40af"
                             />
                         </div>
                         <div className="space-y-2">

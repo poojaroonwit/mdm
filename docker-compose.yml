@@ -25,7 +25,6 @@ services:
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
       - MINIO_UPLOADS_BUCKET=${MINIO_UPLOADS_BUCKET:-udp}
-      - MINIO_PUBLIC_URL=${MINIO_PUBLIC_URL:-https://ncc-dev-api-storage-data-product.qsncc.com}
       - USE_VAULT=${USE_VAULT:-false}
       - VAULT_ADDR=${VAULT_ADDR:-http://vault:8200}
       - VAULT_TOKEN=${VAULT_TOKEN:-dev-root-token}

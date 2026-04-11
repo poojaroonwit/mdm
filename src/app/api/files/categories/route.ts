@@ -127,7 +127,7 @@ async function postHandler(request: NextRequest) {
         `INSERT INTO file_categories (space_id, name, description, color, icon, created_by)
          VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING *`,
-        [spaceId, name, description || '', color || '#3B82F6', icon || 'folder', userId]
+        [spaceId, name, description || '', color || '#1e40af', icon || 'folder', userId]
       )
 
       const duration = Date.now() - startTime

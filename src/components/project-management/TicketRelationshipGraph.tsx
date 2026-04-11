@@ -221,8 +221,8 @@ export function TicketRelationshipGraph({
         source: `project-${relationships.project.id}`,
         target: ticketId,
         type: 'smoothstep',
-        style: { stroke: '#3b82f6', strokeWidth: 2 },
-        markerEnd: { type: MarkerType.ArrowClosed, color: '#3b82f6' }
+        style: { stroke: '#1e40af', strokeWidth: 2 },
+        markerEnd: { type: MarkerType.ArrowClosed, color: '#1e40af' }
       })
     }
 
@@ -368,7 +368,7 @@ export function TicketRelationshipGraph({
         return (edge.style as any)?.stroke === '#ef4444'
       }
       if (filterType === 'project') {
-        return (edge.style as any)?.stroke === '#3b82f6'
+        return (edge.style as any)?.stroke === '#1e40af'
       }
       if (filterType === 'milestone') {
         return (edge.style as any)?.stroke === '#a855f7'

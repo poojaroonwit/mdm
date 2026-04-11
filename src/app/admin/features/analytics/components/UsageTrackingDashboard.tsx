@@ -254,7 +254,7 @@ export function UsageTrackingDashboard() {
                         className="flex items-center justify-between p-4 border border-zinc-100/60 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/20 rounded-2xl hover:shadow-lg transition-all duration-300"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-xl">
+                          <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-md">
                             <Users className="h-5 w-5 text-zinc-500" />
                           </div>
                           <div>
@@ -306,7 +306,7 @@ export function UsageTrackingDashboard() {
                         className="flex items-center justify-between p-4 border border-zinc-100/60 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/20 rounded-2xl hover:shadow-lg transition-all duration-300"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-xl">
+                          <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-md">
                             <Database className="h-5 w-5 text-zinc-500" />
                           </div>
                           <div>

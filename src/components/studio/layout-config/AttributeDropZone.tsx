@@ -434,7 +434,7 @@ function AttributeStylePopover({
               <div className="flex items-center gap-2 justify-between">
                 <span className="text-muted-foreground">Color</span>
                 <ColorInput
-                  value={style.valueColor || '#3b82f6'}
+                  value={style.valueColor || '#1e40af'}
                   onChange={(color) => onChange && onChange({ valueColor: color })}
                   allowImageVideo={false}
                 />

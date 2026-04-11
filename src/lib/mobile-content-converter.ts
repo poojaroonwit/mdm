@@ -422,7 +422,7 @@ function convertTheme(branding: PartialBrandingConfig | undefined, mode: 'light'
   const defaultLight: ThemeConfig = {
     mode: 'light',
     colors: {
-      primary: '#3B82F6',
+      primary: '#1e40af',
       secondary: '#8B5CF6',
       background: '#F5F5F7',
       surface: '#FFFFFF',
@@ -432,7 +432,7 @@ function convertTheme(branding: PartialBrandingConfig | undefined, mode: 'light'
       error: '#EF4444',
       warning: '#F59E0B',
       success: '#10B981',
-      info: '#3B82F6',
+      info: '#1e40af',
     },
     typography: {
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',

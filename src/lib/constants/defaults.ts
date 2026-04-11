@@ -73,7 +73,7 @@ export const DEFAULT_SESSION = {
  */
 export const DEFAULT_UI = {
   theme: 'light',
-  primaryColor: '#3b82f6',
+  primaryColor: '#1e40af',
   secondaryColor: '#64748b',
   borderRadius: 8,
   fontSize: 14,

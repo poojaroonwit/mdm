@@ -121,8 +121,8 @@ export function StorageConnectionForm({
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label>Endpoint</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Endpoint</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     value={config.endpoint || ''}
                                     onChange={(e) =>
                                         setFormData({
@@ -134,8 +134,8 @@ export function StorageConnectionForm({
                                 />
                             </div>
                             <div>
-                                <Label>Bucket</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Bucket</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     value={config.bucket || ''}
                                     onChange={(e) =>
                                         setFormData({
@@ -149,8 +149,8 @@ export function StorageConnectionForm({
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label>Access Key</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Access Key</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     type="password"
                                     value={config.access_key || ''}
                                     onChange={(e) =>
@@ -162,8 +162,8 @@ export function StorageConnectionForm({
                                 />
                             </div>
                             <div>
-                                <Label>Secret Key</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Secret Key</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     type="password"
                                     value={config.secret_key || ''}
                                     onChange={(e) =>
@@ -177,8 +177,8 @@ export function StorageConnectionForm({
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label>Region</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Region</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     value={config.region || 'us-east-1'}
                                     onChange={(e) =>
                                         setFormData({
@@ -198,7 +198,7 @@ export function StorageConnectionForm({
                                         })
                                     }
                                 />
-                                <Label>Use SSL</Label>
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Use SSL</Label>
                             </div>
                         </div>
                     </div>
@@ -208,8 +208,8 @@ export function StorageConnectionForm({
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label>Access Key ID</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Access Key ID</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     type="password"
                                     value={config.access_key_id || ''}
                                     onChange={(e) =>
@@ -221,8 +221,8 @@ export function StorageConnectionForm({
                                 />
                             </div>
                             <div>
-                                <Label>Secret Access Key</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Secret Access Key</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     type="password"
                                     value={config.secret_access_key || ''}
                                     onChange={(e) =>
@@ -236,8 +236,8 @@ export function StorageConnectionForm({
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label>Bucket</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Bucket</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     value={config.bucket || ''}
                                     onChange={(e) =>
                                         setFormData({
@@ -248,8 +248,8 @@ export function StorageConnectionForm({
                                 />
                             </div>
                             <div>
-                                <Label>Region</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Region</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     value={config.region || 'us-east-1'}
                                     onChange={(e) =>
                                         setFormData({
@@ -267,8 +267,8 @@ export function StorageConnectionForm({
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label>Host</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Host</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     value={config.host || ''}
                                     onChange={(e) =>
                                         setFormData({
@@ -279,8 +279,8 @@ export function StorageConnectionForm({
                                 />
                             </div>
                             <div>
-                                <Label>Port</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Port</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     type="number"
                                     value={config.port || 22}
                                     onChange={(e) =>
@@ -294,8 +294,8 @@ export function StorageConnectionForm({
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label>Username</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Username</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     value={config.username || ''}
                                     onChange={(e) =>
                                         setFormData({
@@ -306,8 +306,8 @@ export function StorageConnectionForm({
                                 />
                             </div>
                             <div>
-                                <Label>Password</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Password</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     type="password"
                                     value={config.password || ''}
                                     onChange={(e) =>
@@ -320,8 +320,8 @@ export function StorageConnectionForm({
                             </div>
                         </div>
                         <div>
-                            <Label>Path</Label>
-                            <Input
+                            <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Path</Label>
+                            <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                 value={config.path || '/uploads'}
                                 onChange={(e) =>
                                     setFormData({
@@ -338,8 +338,8 @@ export function StorageConnectionForm({
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label>Client ID</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Client ID</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     value={config.client_id || ''}
                                     onChange={(e) =>
                                         setFormData({
@@ -350,8 +350,8 @@ export function StorageConnectionForm({
                                 />
                             </div>
                             <div>
-                                <Label>Client Secret</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Client Secret</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     type="password"
                                     value={config.client_secret || ''}
                                     onChange={(e) =>
@@ -364,8 +364,8 @@ export function StorageConnectionForm({
                             </div>
                         </div>
                         <div>
-                            <Label>Tenant ID</Label>
-                            <Input
+                            <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Tenant ID</Label>
+                            <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                 value={config.tenant_id || 'common'}
                                 onChange={(e) =>
                                     setFormData({
@@ -377,8 +377,8 @@ export function StorageConnectionForm({
                             />
                         </div>
                         <div>
-                            <Label>Redirect URI</Label>
-                            <Input
+                            <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Redirect URI</Label>
+                            <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                 value={config.redirect_uri || ''}
                                 onChange={(e) =>
                                     setFormData({
@@ -390,8 +390,8 @@ export function StorageConnectionForm({
                             />
                         </div>
                         <div>
-                            <Label>Folder Path (optional)</Label>
-                            <Input
+                            <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Folder Path (optional)</Label>
+                            <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                 value={config.folder_path || ''}
                                 onChange={(e) =>
                                     setFormData({
@@ -402,7 +402,7 @@ export function StorageConnectionForm({
                                 placeholder="/Documents"
                             />
                         </div>
-                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                             <p className="text-sm text-blue-800 dark:text-blue-200">
                                 <strong>Note:</strong> After saving, you'll need to authenticate with OneDrive to
                                 get access and refresh tokens. Use the "Test Connection" button to initiate OAuth
@@ -416,8 +416,8 @@ export function StorageConnectionForm({
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label>Client ID</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Client ID</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     value={config.client_id || ''}
                                     onChange={(e) =>
                                         setFormData({
@@ -428,8 +428,8 @@ export function StorageConnectionForm({
                                 />
                             </div>
                             <div>
-                                <Label>Client Secret</Label>
-                                <Input
+                                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Client Secret</Label>
+                                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                     type="password"
                                     value={config.client_secret || ''}
                                     onChange={(e) =>
@@ -442,8 +442,8 @@ export function StorageConnectionForm({
                             </div>
                         </div>
                         <div>
-                            <Label>Redirect URI</Label>
-                            <Input
+                            <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Redirect URI</Label>
+                            <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                 value={config.redirect_uri || ''}
                                 onChange={(e) =>
                                     setFormData({
@@ -455,8 +455,8 @@ export function StorageConnectionForm({
                             />
                         </div>
                         <div>
-                            <Label>Folder ID (optional)</Label>
-                            <Input
+                            <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Folder ID (optional)</Label>
+                            <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                                 value={config.folder_id || ''}
                                 onChange={(e) =>
                                     setFormData({
@@ -467,7 +467,7 @@ export function StorageConnectionForm({
                                 placeholder="1abc123def456..."
                             />
                         </div>
-                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                             <p className="text-sm text-blue-800 dark:text-blue-200">
                                 <strong>Note:</strong> After saving, you'll need to authenticate with Google Drive
                                 to get access and refresh tokens. Use the "Test Connection" button to initiate OAuth
@@ -485,15 +485,15 @@ export function StorageConnectionForm({
         <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <Label>Name *</Label>
-                    <Input
+                    <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Name *</Label>
+                    <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         placeholder="My Storage Connection"
                     />
                 </div>
                 <div>
-                    <Label>Type *</Label>
+                    <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Type *</Label>
                     <Select value={formData.type} onValueChange={handleTypeChange}>
                         <SelectTrigger>
                             <SelectValue />
@@ -516,8 +516,8 @@ export function StorageConnectionForm({
             </div>
 
             <div>
-                <Label>Description</Label>
-                <Input
+                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Description</Label>
+                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     placeholder="Optional description"
@@ -529,7 +529,7 @@ export function StorageConnectionForm({
                     checked={formData.isActive}
                     onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
                 />
-                <Label>Active</Label>
+                <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Active</Label>
             </div>
 
             <div className="border-t pt-4 mt-4">
@@ -538,10 +538,10 @@ export function StorageConnectionForm({
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={onCancel} disabled={isLoading}>
+                <Button className="rounded-xl font-bold" variant="outline" onClick={onCancel} disabled={isLoading}>
                     Cancel
                 </Button>
-                <Button onClick={() => onSubmit(formData)} disabled={isLoading || !formData.name}>
+                <Button className="rounded-xl font-bold" onClick={() => onSubmit(formData)} disabled={isLoading || !formData.name}>
                     {isLoading ? 'Saving...' : 'Save Connection'}
                 </Button>
             </div>

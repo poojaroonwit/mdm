@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogBody, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -292,7 +292,8 @@ export function NotificationCenter() {
                     Create a new notification template for automated messaging
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+                <DialogBody>
+<div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="template-name">Template Name</Label>
@@ -363,6 +364,7 @@ export function NotificationCenter() {
                     </div>
                   </div>
                 </div>
+                </DialogBody>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setShowCreateTemplate(false)}>
                     Cancel

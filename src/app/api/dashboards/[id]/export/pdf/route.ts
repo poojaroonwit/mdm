@@ -3,7 +3,7 @@ import { requireSpaceAccess } from '@/lib/space-access'
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 import puppeteer from 'puppeteer'
-import { getS3Client } from '@/lib/s3'
+import { getS3Client, getS3Config } from '@/lib/s3'
 import { PutObjectCommand } from '@aws-sdk/client-s3'
 
 async function postHandler(
@@ -268,11 +268,15 @@ async function postHandler(
 
     await browser.close()
 
-    // Upload PDF to S3
-    const isProduction = process.env.NODE_ENV === 'production'
-    const bucket = isProduction 
-      ? (process.env.AWS_S3_BUCKET || 'studio-production')
-      : 'attachments'
+    // Upload PDF to configured S3 storage
+    const s3Config = await getS3Config()
+    if (!s3Config?.bucket) {
+      return NextResponse.json(
+        { error: 'AWS S3 is not configured in the UI' },
+        { status: 500 }
+      )
+    }
+    const bucket = s3Config.bucket
 
     // Generate S3 key
     const timestamp = Date.now()

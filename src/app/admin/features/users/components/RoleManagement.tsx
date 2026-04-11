@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
@@ -31,6 +31,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Role, Permission } from '../types'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function RoleManagement() {
   const [roles, setRoles] = useState<Role[]>([])
@@ -338,10 +339,12 @@ export function RoleManagement() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-muted-foreground">Loading roles...</p>
-                </div>
+                <div className="w-full space-y-3 p-4">
+  <Skeleton className="h-10 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+</div>
               ) : (
                 <div className="space-y-2">
                   {roles.map(role => (
@@ -431,52 +434,57 @@ export function RoleManagement() {
 
       {/* Create Role Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle>Create New {selectedLevel === 'global' ? 'Global' : 'Space'} Role</DialogTitle>
             <DialogDescription>
               Create a new role and assign permissions
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
             <div>
-              <Label htmlFor="role-name">Role Name *</Label>
+              <Label htmlFor="role-name" className="text-sm font-bold">Role Name *</Label>
               <Input
                 id="role-name"
                 value={roleForm.name}
                 onChange={(e) => setRoleForm({ ...roleForm, name: e.target.value })}
                 placeholder="Enter role name"
+                className="h-10 rounded-xl mt-1"
               />
             </div>
             <div>
-              <Label htmlFor="role-description">Description</Label>
+              <Label htmlFor="role-description" className="text-sm font-bold">Description</Label>
               <Textarea
                 id="role-description"
                 value={roleForm.description}
                 onChange={(e) => setRoleForm({ ...roleForm, description: e.target.value })}
                 placeholder="Enter role description"
                 rows={3}
+                className="rounded-xl mt-1"
               />
             </div>
             <div>
-              <Label>Permissions</Label>
+              <Label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Permissions</Label>
               <div className="mt-2 space-y-4">
                 <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search permissions..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8"
+                    className="pl-9 h-10 rounded-xl"
                   />
                 </div>
-                <ScrollArea className="h-[400px] border rounded-md p-4">
+                <ScrollArea className="h-[400px] border border-zinc-100 dark:border-zinc-800 rounded-xl p-4 bg-zinc-50/30 dark:bg-zinc-900/10">
                   {Object.entries(groupedPermissions).map(([resource, perms]) => (
-                    <div key={resource} className="mb-4">
-                      <h4 className="font-medium mb-2 capitalize">{resource}</h4>
-                      <div className="space-y-2">
+                    <div key={resource} className="mb-6">
+                      <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-500 mb-3 flex items-center gap-2">
+                        {resource}
+                        <div className="h-px flex-1 bg-zinc-100 dark:bg-zinc-800" />
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {perms.map(perm => (
-                          <div key={perm.id} className="flex items-start space-x-2">
+                          <div key={perm.id} className="flex items-start space-x-3 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors">
                             <Checkbox
                               id={`perm-${perm.id}`}
                               checked={selectedPermissions.includes(perm.id)}
@@ -487,16 +495,17 @@ export function RoleManagement() {
                                   setSelectedPermissions(selectedPermissions.filter(id => id !== perm.id))
                                 }
                               }}
+                              className="mt-0.5"
                             />
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
                               <label
                                 htmlFor={`perm-${perm.id}`}
-                                className="text-sm font-medium cursor-pointer"
+                                className="text-sm font-bold cursor-pointer text-zinc-900 dark:text-zinc-100"
                               >
                                 {perm.name}
                               </label>
                               {perm.description && (
-                                <p className="text-xs text-muted-foreground">{perm.description}</p>
+                                <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 leading-tight mt-0.5">{perm.description}</p>
                               )}
                             </div>
                           </div>
@@ -505,14 +514,15 @@ export function RoleManagement() {
                     </div>
                   ))}
                   {filteredPermissions.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No permissions found
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Shield className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                      <p className="text-sm font-medium">No permissions found</p>
                     </div>
                   )}
                 </ScrollArea>
               </div>
             </div>
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
               Cancel
@@ -526,39 +536,45 @@ export function RoleManagement() {
 
       {/* Edit Role Permissions Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle>Edit Role Permissions</DialogTitle>
             <DialogDescription>
               Update permissions for {editingRole?.name}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
             <div>
-              <Label>Role: {editingRole?.name}</Label>
-              {editingRole?.description && (
-                <p className="text-sm text-muted-foreground mt-1">{editingRole.description}</p>
-              )}
+              <Label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Role Information</Label>
+              <div className="mt-1 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800">
+                <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{editingRole?.name}</p>
+                {editingRole?.description && (
+                  <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-1">{editingRole.description}</p>
+                )}
+              </div>
             </div>
             <div>
-              <Label>Permissions</Label>
+              <Label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Permissions</Label>
               <div className="mt-2 space-y-4">
                 <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search permissions..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8"
+                    className="pl-9 h-10 rounded-xl"
                   />
                 </div>
-                <ScrollArea className="h-[400px] border rounded-md p-4">
+                <ScrollArea className="h-[400px] border border-zinc-100 dark:border-zinc-800 rounded-xl p-4 bg-zinc-50/30 dark:bg-zinc-900/10">
                   {Object.entries(groupedPermissions).map(([resource, perms]) => (
-                    <div key={resource} className="mb-4">
-                      <h4 className="font-medium mb-2 capitalize">{resource}</h4>
-                      <div className="space-y-2">
+                    <div key={resource} className="mb-6">
+                      <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-500 mb-3 flex items-center gap-2">
+                        {resource}
+                        <div className="h-px flex-1 bg-zinc-100 dark:bg-zinc-800" />
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {perms.map(perm => (
-                          <div key={perm.id} className="flex items-start space-x-2">
+                          <div key={perm.id} className="flex items-start space-x-3 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors">
                             <Checkbox
                               id={`edit-perm-${perm.id}`}
                               checked={selectedPermissions.includes(perm.id)}
@@ -569,16 +585,17 @@ export function RoleManagement() {
                                   setSelectedPermissions(selectedPermissions.filter(id => id !== perm.id))
                                 }
                               }}
+                              className="mt-0.5"
                             />
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
                               <label
                                 htmlFor={`edit-perm-${perm.id}`}
-                                className="text-sm font-medium cursor-pointer"
+                                className="text-sm font-bold cursor-pointer text-zinc-900 dark:text-zinc-100 block truncate"
                               >
                                 {perm.name}
                               </label>
                               {perm.description && (
-                                <p className="text-xs text-muted-foreground">{perm.description}</p>
+                                <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 leading-tight mt-0.5">{perm.description}</p>
                               )}
                             </div>
                           </div>
@@ -589,7 +606,7 @@ export function RoleManagement() {
                 </ScrollArea>
               </div>
             </div>
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEditDialog(false)}>
               Cancel
@@ -604,34 +621,41 @@ export function RoleManagement() {
 
       {/* Clone Role Dialog */}
       <Dialog open={showCloneDialog} onOpenChange={setShowCloneDialog}>
-        <DialogContent>
+        <DialogContent className="p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle>Clone Role</DialogTitle>
             <DialogDescription>
               Create a copy of {cloningRole?.name} with the same permissions
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="clone-name">Role Name *</Label>
+          <DialogBody className="space-y-6 p-6 pt-2 pb-4">
+            <div className="space-y-2">
+              <Label htmlFor="clone-name" className="text-sm font-bold">New Role Name *</Label>
               <Input
                 id="clone-name"
                 value={cloneForm.name}
                 onChange={(e) => setCloneForm({ ...cloneForm, name: e.target.value })}
                 placeholder="Enter new role name"
+                className="h-11 rounded-xl"
               />
             </div>
-            <div>
-              <Label htmlFor="clone-description">Description</Label>
+            <div className="space-y-2">
+              <Label htmlFor="clone-description" className="text-sm font-bold">Description</Label>
               <Textarea
                 id="clone-description"
                 value={cloneForm.description}
                 onChange={(e) => setCloneForm({ ...cloneForm, description: e.target.value })}
                 placeholder="Enter role description"
                 rows={3}
+                className="rounded-xl"
               />
             </div>
-          </div>
+            <div className="p-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800">
+               <p className="text-xs text-zinc-500 text-center">
+                 Cloning will copy all {cloningRole?.permissions?.length || 0} permissions from <strong>{cloningRole?.name}</strong> to the new role.
+               </p>
+            </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => {
               setShowCloneDialog(false)
@@ -672,91 +696,73 @@ export function RoleManagement() {
 
       {/* Analytics Dialog */}
       <Dialog open={showAnalytics} onOpenChange={setShowAnalytics}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle>Role Usage Analytics</DialogTitle>
             <DialogDescription>
               Statistics on role usage across the system
             </DialogDescription>
           </DialogHeader>
-          {analytics && (
-            <ScrollArea className="max-h-[70vh]">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Global Role Distribution</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {analytics.globalRoles?.map((item: any) => (
-                        <div key={item.role_name} className="flex items-center justify-between p-2 rounded-md border-b border-border/50 last:border-0">
-                          <span className="font-medium">{item.role_name}</span>
-                          <Badge>{item.user_count} users</Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+          <DialogBody className="max-h-[70vh] overflow-y-auto p-6 pt-2 pb-4">
+            <div className="space-y-6">
+              <Card className="border-zinc-100 dark:border-zinc-800 shadow-none rounded-xl overflow-hidden">
+                <CardHeader className="bg-zinc-50/50 dark:bg-zinc-900/50 border-b border-zinc-100 dark:border-zinc-800 p-4">
+                  <CardTitle className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Global Role Distribution</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                    {analytics.globalRoles?.map((item: any) => (
+                      <div key={item.role_name} className="flex items-center justify-between p-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
+                        <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{item.role_name}</span>
+                        <Badge variant="secondary" className="font-black text-[10px] h-6 px-3 rounded-lg">{item.user_count} users</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Space Role Distribution</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {analytics.spaceRoles?.map((item: any) => (
-                        <div key={item.role_name} className="flex items-center justify-between p-2 border rounded">
-                          <div>
-                            <span className="font-medium">{item.role_name}</span>
-                            <p className="text-xs text-muted-foreground">{item.space_count} spaces</p>
-                          </div>
-                          <Badge>{item.member_count} members</Badge>
+              <Card className="border-zinc-100 dark:border-zinc-800 shadow-none rounded-xl overflow-hidden">
+                <CardHeader className="bg-zinc-50/50 dark:bg-zinc-900/50 border-b border-zinc-100 dark:border-zinc-800 p-4">
+                  <CardTitle className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Space Role Distribution</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                    {analytics.spaceRoles?.map((item: any) => (
+                      <div key={item.role_name} className="flex items-center justify-between p-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
+                        <div>
+                          <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{item.role_name}</span>
+                          <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">{item.space_count} spaces</p>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                        <Badge variant="outline" className="font-black text-[10px] h-6 px-3 border-zinc-200 rounded-lg">{item.member_count} members</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Custom Roles Usage</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {analytics.customRoles?.map((item: any) => (
-                        <div key={item.id} className="flex items-center justify-between p-2 rounded-md border-b border-border/50 last:border-0">
-                          <div>
-                            <span className="font-medium">{item.name}</span>
-                            <Badge variant="outline" className="ml-2">{item.level}</Badge>
-                          </div>
-                          <Badge>{item.usage_count || 0} assignments</Badge>
+              <Card className="border-zinc-100 dark:border-zinc-800 shadow-none rounded-xl overflow-hidden">
+                <CardHeader className="bg-zinc-50/50 dark:bg-zinc-900/50 border-b border-zinc-100 dark:border-zinc-800 p-4">
+                  <CardTitle className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Custom Roles Usage</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                    {analytics.customRoles?.map((item: any) => (
+                      <div key={item.id} className="flex items-center justify-between p-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
+                        <div>
+                          <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{item.name}</span>
+                          <Badge variant="outline" className="ml-2 text-[10px] uppercase font-black tracking-widest h-5 rounded-lg">{item.level}</Badge>
                         </div>
-                      ))}
-                      {(!analytics.customRoles || analytics.customRoles.length === 0) && (
-                        <p className="text-sm text-muted-foreground">No custom roles</p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Permission Distribution</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {analytics.permissionDistribution?.map((item: any) => (
-                        <div key={item.resource} className="flex items-center justify-between p-2 rounded-md border-b border-border/50 last:border-0">
-                          <span className="font-medium capitalize">{item.resource}</span>
-                          <Badge>{item.role_count || 0} roles</Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </ScrollArea>
-          )}
+                        <Badge className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] h-6 px-3 rounded-lg font-black">{item.usage_count || 0} assignments</Badge>
+                      </div>
+                    ))}
+                    {(!analytics.customRoles || analytics.customRoles.length === 0) && (
+                      <p className="text-sm text-muted-foreground p-8 text-center italic">No custom roles defined</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAnalytics(false)}>
               Close
@@ -767,16 +773,16 @@ export function RoleManagement() {
 
       {/* Role Templates Dialog */}
       <Dialog open={showTemplatesDialog} onOpenChange={setShowTemplatesDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle>Create Role from Template</DialogTitle>
             <DialogDescription>
               Select a template to quickly create a role with predefined permissions
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <DialogBody className="space-y-6 p-6 pt-2 pb-4">
             <div>
-              <Label>Template</Label>
+              <Label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Pick a Template</Label>
               <Select value={selectedTemplate?.name || ''} onValueChange={(value) => {
                 const template = [...roleTemplates.global, ...roleTemplates.space].find((t: any) => t.name === value)
                 setSelectedTemplate(template)
@@ -788,48 +794,56 @@ export function RoleManagement() {
                   })
                 }
               }}>
-                <SelectTrigger>
+                <SelectTrigger className="h-11 rounded-xl mt-1">
                   <SelectValue placeholder="Select template" />
                 </SelectTrigger>
                 <SelectContent>
+                  <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-400">Global Templates</div>
                   {roleTemplates.global?.map((template: any) => (
                     <SelectItem key={template.name} value={template.name}>
-                      {template.name} - {template.description}
+                      {template.name}
                     </SelectItem>
                   ))}
+                  <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-2">Space Templates</div>
                   {roleTemplates.space?.map((template: any) => (
                     <SelectItem key={template.name} value={template.name}>
-                      {template.name} - {template.description}
+                      {template.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             {selectedTemplate && (
-              <div className="space-y-4">
-                <div>
-                  <Label>Role Name *</Label>
+              <div className="space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                <div className="space-y-2">
+                  <Label className="text-sm font-bold">Role Name *</Label>
                   <Input
                     value={roleForm.name}
                     onChange={(e) => setRoleForm({ ...roleForm, name: e.target.value })}
                     placeholder="Enter role name"
+                    className="h-10 rounded-xl"
                   />
                 </div>
-                <div>
-                  <Label>Description</Label>
+                <div className="space-y-2">
+                  <Label className="text-sm font-bold">Description</Label>
                   <Textarea
                     value={roleForm.description}
                     onChange={(e) => setRoleForm({ ...roleForm, description: e.target.value })}
                     placeholder="Enter role description"
                     rows={3}
+                    className="rounded-xl"
                   />
                 </div>
-                <div className="p-3 bg-muted rounded">
-                  <p className="text-sm font-medium mb-2">Template includes {selectedTemplate.permissions?.length || 0} permissions</p>
+                <div className="p-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-zinc-100 dark:border-zinc-800">
+                  <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    Includes {selectedTemplate.permissions?.length || 0} pre-configured permissions
+                  </p>
+                  <p className="text-[10px] text-zinc-500 mt-1 ml-6">{selectedTemplate.description}</p>
                 </div>
               </div>
             )}
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => {
               setShowTemplatesDialog(false)

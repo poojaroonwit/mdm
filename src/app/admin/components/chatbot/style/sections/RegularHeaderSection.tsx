@@ -240,11 +240,11 @@ export function RegularHeaderSection({ formData, setFormData }: RegularHeaderSec
                     </FormRow>
                     <FormRow label="Avatar Background" description="Background color of the avatar">
                       <ColorInput
-                        value={formData.headerAvatarBackgroundColor || '#3b82f6'}
+                        value={formData.headerAvatarBackgroundColor || '#1e40af'}
                         onChange={(color) => setFormData({ ...formData, headerAvatarBackgroundColor: color })}
                         allowImageVideo={false}
                         className="relative"
-                        placeholder="#3b82f6"
+                        placeholder="#1e40af"
                         inputClassName="h-7 text-xs pl-7 w-full"
                       />
                     </FormRow>
@@ -259,11 +259,11 @@ export function RegularHeaderSection({ formData, setFormData }: RegularHeaderSec
           <FormSection>
             <FormRow label="Background Color" description="Background color of the header">
               <ColorInput
-                value={formData.headerBgColor || '#3b82f6'}
+                value={formData.headerBgColor || '#1e40af'}
                 onChange={(color) => setFormData({ ...formData, headerBgColor: color })}
                 allowImageVideo={false}
                 className="relative"
-                placeholder="#3b82f6"
+                placeholder="#1e40af"
                 inputClassName="h-7 text-xs pl-7 w-full"
               />
             </FormRow>

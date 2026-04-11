@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { requireSpaceAccess } from '@/lib/space-access'
 import { query } from '@/lib/db'
-import nodemailer from 'nodemailer'
 import { logger } from '@/lib/logger'
 import { validateParams, validateBody, commonSchemas } from '@/lib/api-validation'
 import { env } from '@/lib/env'
+import { sendEmail } from '@/lib/email'
 import { z } from 'zod'
 
 async function postHandler(
@@ -144,26 +144,9 @@ async function sendInvitationEmail(
   inviterName: string
 ) {
   try {
-    // Get SMTP settings from environment or database
-    const smtpConfig = {
-      host: env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(env.SMTP_PORT || '587'),
-      secure: env.SMTP_SECURE === 'true',
-      auth: {
-        user: env.SMTP_USER,
-        pass: env.SMTP_PASSWORD
-      }
-    }
-
-    const transporter = nodemailer.createTransport(smtpConfig)
-
     const invitationUrl = `${env.NEXTAUTH_URL}/invite/${token}`
-    
-    const mailOptions = {
-      from: env.SMTP_FROM || env.SMTP_USER,
-      to: email,
-      subject: `You're invited to join ${spaceName}`,
-      html: `
+
+    const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">You're invited to join ${spaceName}</h2>
           <p>Hello!</p>
@@ -184,9 +167,12 @@ async function sendInvitationEmail(
           </p>
         </div>
       `
+
+    const sent = await sendEmail(email, `You're invited to join ${spaceName}`, html)
+    if (!sent) {
+      throw new Error('SMTP is not configured in system settings')
     }
 
-    await transporter.sendMail(mailOptions)
     logger.info('Invitation email sent', { email, spaceName })
   } catch (error) {
     logger.error('Error sending invitation email', error, { email, spaceName })

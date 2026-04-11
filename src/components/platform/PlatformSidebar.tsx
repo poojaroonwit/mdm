@@ -98,8 +98,6 @@ const ICON_MAP: Record<string, any> = {
 
 export const getPlatformIcon = (name: string) => ICON_MAP[name] || DocumentTextIcon
 
-
-
 interface PlatformSidebarProps {
   activeTab: string
   onTabChange: (tab: string) => void
@@ -163,7 +161,6 @@ export function PlatformSidebar({
   // Fetch menu configuration from database
   const { menuConfig, loading: menuLoading } = useMenuConfig()
 
-
   // Inside component function
   const { data: session } = useSession()
   const { permissions: userPermissions } = useUserPermissions()
@@ -177,8 +174,6 @@ export function PlatformSidebar({
 
       // Get user role from session or default to USER
       const userRole: string = (session?.user as any)?.role || 'USER'
-      console.log('PlatformSidebar Debug:', { userRole, groups: menuConfig.groups })
-
 
       for (const group of menuConfig.groups) {
         // Filter items based on requiredRoles and Permissions
@@ -188,9 +183,6 @@ export function PlatformSidebar({
             return true
           }
 
-          // Check for Role match with hierarchy
-          // SUPER_ADMIN > ADMIN > MANAGER > USER
-          // Higher roles can see items for lower roles
           const roleHierarchy: Record<string, string[]> = {
             'SUPER_ADMIN': ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'USER'],
             'ADMIN': ['ADMIN', 'MANAGER', 'USER'],
@@ -203,14 +195,8 @@ export function PlatformSidebar({
             return true
           }
 
-          // Check for Permission match (strings with ':')
-          // If the item requires specific permissions (e.g. 'system:manage_users')
-          // and the user has them, allow access.
           const permissionRequirements = item.requiredRoles.filter(r => r.includes(':'))
           if (permissionRequirements.length > 0) {
-            // Check if user has ANY of the required permissions listed
-            // This acts as an OR condition with Roles. 
-            // (Role A OR Role B OR Permission P)
             const hasPermission = permissionRequirements.some(p => userPermissions.includes(p))
             if (hasPermission) return true
           }
@@ -251,7 +237,6 @@ export function PlatformSidebar({
       return tabs
     }
 
-    // Fallback to empty structure if menu not loaded
     return {
       overview: [],
       tools: [],
@@ -259,7 +244,7 @@ export function PlatformSidebar({
       'data-management': [],
       infrastructure: []
     }
-  }, [menuConfig, installedPlugins, session])
+  }, [menuConfig, installedPlugins, session, userPermissions])
 
   // Group metadata for primary sidebar (from database)
   const groupMetadata = useMemo(() => {
@@ -273,7 +258,6 @@ export function PlatformSidebar({
       }
       return meta
     }
-    // Fallback
     return {
       overview: { name: 'Homepage', icon: ComputerDesktopIcon },
       tools: { name: 'Tools', icon: BeakerIcon },
@@ -299,9 +283,7 @@ export function PlatformSidebar({
     return sections
   }, [groupedTabs, selectedGroup])
 
-
   const handleTabClick = useCallback((tabId: string, href?: string) => {
-    // Always use href if available, otherwise construct from tabId
     const targetHref = href || `/${tabId}`
     const currentSpaceSlug = typeof params?.space === 'string' ? params.space : ''
     const isSpaceScopedPath = !!currentSpaceSlug && !!pathname?.startsWith(`/${currentSpaceSlug}/`)
@@ -316,198 +298,149 @@ export function PlatformSidebar({
 
   const handleGroupClick = useCallback((groupName: string) => {
     const tabs = groupedTabs[groupName as keyof typeof groupedTabs]
-    // Data Management has no secondary sidebar - go directly to the tab and clear selectedGroup
     if (groupName === 'data-management') {
-      if (onGroupSelect) {
-        onGroupSelect('') // Clear selectedGroup to hide secondary sidebar
-      }
-      // Use tab if available, otherwise fallback to hardcoded path
+      if (onGroupSelect) onGroupSelect('')
       if (tabs && tabs.length > 0) {
         handleTabClick(tabs[0].id, (tabs[0] as any).href)
       } else {
-        // Navigate to space selection page
         router.push('/admin/space-selection')
       }
       return
     }
 
-    // Infrastructure shows VM list in secondary sidebar
     if (groupName === 'infrastructure') {
-      if (onGroupSelect) {
-        onGroupSelect(groupName) // Show secondary sidebar with VM list
-      }
-      // Navigate to infrastructure page if not already there
+      if (onGroupSelect) onGroupSelect(groupName)
       if (activeTab !== 'infrastructure' && tabs && tabs.length > 0) {
         handleTabClick(tabs[0].id, (tabs[0] as any).href)
       }
       return
     }
 
-    // For System and Tools, navigate to the grid view
     if (groupName === 'system' || groupName === 'tools') {
-        if (onGroupSelect) {
-            onGroupSelect(groupName)
-        }
-        router.push(`/${groupName}`)
-        return
+      if (onGroupSelect) onGroupSelect(groupName)
+      router.push(`/${groupName}`)
+      return
     }
 
-    if (onGroupSelect) {
-      onGroupSelect(groupName)
-    }
-    // If group has tabs, select the first one
+    if (onGroupSelect) onGroupSelect(groupName)
     if (tabs && tabs.length > 0) {
       handleTabClick(tabs[0].id, (tabs[0] as any).href)
     }
   }, [onGroupSelect, handleTabClick, activeTab, groupedTabs, router])
 
-  // Filter tabs based on search query
   const filterTabs = useCallback((tabs: any[], query: string) => {
-    if (!query || query.trim() === '') {
-      return tabs
-    }
+    if (!query || query.trim() === '') return tabs
     const lowerQuery = query.toLowerCase()
     return tabs.filter((tab: any) =>
       tab.name.toLowerCase().includes(lowerQuery) ||
-      tab.id.toLowerCase().includes(lowerQuery) ||
-      (tab.description && tab.description.toLowerCase().includes(lowerQuery))
+      tab.id.toLowerCase().includes(lowerQuery)
     )
   }, [])
 
-
-
-  const sidebarBg = mode === 'primary'
-        ? 'var(--brand-platform-sidebar-bg, hsl(var(--background)))'
-        : 'var(--brand-secondary-sidebar-bg, hsl(var(--muted)))'
-
-  const sidebarText = mode === 'primary'
-        ? 'var(--brand-platform-sidebar-text, hsl(var(--foreground)))'
-        : 'var(--brand-secondary-sidebar-text, hsl(var(--muted-foreground)))'
+  const sidebarBg = mode === 'primary' ? 'var(--sidebar-bg)' : 'var(--bg-surface)'
+  const sidebarText = mode === 'primary' ? 'var(--text-primary)' : 'var(--text-secondary)'
 
   return (
     <div
       className={cn(
-        "h-full flex flex-col transition-all duration-300",
-        mode === 'primary' ? (collapsed ? "w-16" : "w-64") : "w-full lg:w-[320px]"
+        "h-full flex flex-col transition-all duration-300 z-20 shrink-0",
+        mode === 'primary' ? (collapsed ? "w-[65px]" : "w-[210px]") : "w-full lg:w-[210px]"
       )}
       data-sidebar={mode}
-      data-component="platform-sidebar"
       style={{
         position: 'relative',
         zIndex: Z_INDEX.sidebar,
         pointerEvents: 'auto',
-        backgroundColor: 'transparent',
-        borderRight: mode === 'primary' ? '1px solid var(--border-default)' : 'none'
+        backgroundColor: sidebarBg,
+        borderRight: mode === 'primary' ? '1px solid var(--sidebar-border)' : 'none'
       }}
     >
-
-
-      {/* GCP-style Navigation */}
-      <ScrollArea
-        className="flex-1 overflow-auto"
-        style={{ pointerEvents: 'auto' }}
-      >
-        <div
-          className={mode === 'secondary' ? 'min-h-full py-2 px-2' : 'py-2 px-2'}
-          style={{ pointerEvents: 'auto' }}
-        >
+      <ScrollArea className="flex-1 overflow-auto">
+        <div className={cn("py-2 px-2", mode === 'secondary' && "min-h-full")}>
           {mode === 'primary' ? (
-            // Primary sidebar - show groups
             collapsed ? (
-              // Collapsed view - show only group icons
               <div className="space-y-1">
-                {Object.entries(groupMetadata).map(([groupId, group], index) => {
+                {Object.entries(groupMetadata).filter(([groupId]) => groupId !== 'system').map(([groupId, group], index) => {
                   const Icon = group.icon
                   const isDataManagement = groupId === 'data-management'
-                  const isInfrastructure = groupId === 'infrastructure'
+                  const isActive = selectedGroup === groupId || (groupId === 'overview' && pathname?.includes('/knowledge')) || (isDataManagement && activeTab === 'space-selection') || (groupId === 'infrastructure' && activeTab === 'infrastructure')
 
                   return (
                     <div key={groupId}>
                       {isDataManagement && index > 0 && (
-                        <div className="border-t border-border/50 my-1 mx-2" />
+                        <div className="border-t border-sidebar-border my-1 mx-2" />
                       )}
                       <Button
                         variant="ghost"
                         className={cn(
-                          "platform-sidebar-menu-button w-full justify-center h-10 transition-all duration-300 cursor-pointer group",
-                          (selectedGroup === groupId || (groupId === 'data-management' && (activeTab === 'space-selection' || selectedGroup === 'data-management')) || (groupId === 'infrastructure' && activeTab === 'infrastructure'))
-                            ? "platform-sidebar-menu-button-active bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white rounded-xl shadow-sm"
-                            : "text-zinc-500 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-xl"
+                          "group relative w-11 h-11 flex items-center justify-center rounded-xl transition-all duration-200 cursor-pointer mx-auto p-0",
+                          isActive
+                            ? "bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-lg"
+                            : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
                         )}
                         onClick={() => handleGroupClick(groupId)}
                         onMouseEnter={() => {
                           const tabs = groupedTabs[groupId as keyof typeof groupedTabs]
-                          // Only show secondary sidebar if group has tabs and is not data-management
                           if (tabs && tabs.length > 0 && groupId !== 'data-management') {
                             onGroupHover?.(groupId)
                           }
                         }}
                         onMouseLeave={() => {
-                          // Only clear hover if not currently selected
-                          if (selectedGroup !== groupId) {
-                            onGroupLeave?.()
-                          }
+                          if (selectedGroup !== groupId) onGroupLeave?.()
                         }}
                         title={group.name}
-                        style={{
-                          pointerEvents: 'auto',
-                          position: 'relative',
-                          zIndex: Z_INDEX.sidebar + 1
-                        }}
                       >
-                        <Icon className="h-5 w-5 stroke-2" />
+                        {isActive && (
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-zinc-900 dark:bg-zinc-100 rounded-r-full" />
+                        )}
+                        <Icon className={cn("h-5 w-5 flex-shrink-0 transition-all duration-200", 
+                          isActive ? "text-zinc-900 dark:text-zinc-100" : "group-hover:scale-105"
+                        )} />
                       </Button>
                     </div>
                   )
                 })}
               </div>
             ) : (
-              // Expanded view - show groups with names
               <div className="space-y-1">
-                {Object.entries(groupMetadata).map(([groupId, group], index) => {
+                {Object.entries(groupMetadata).filter(([groupId]) => groupId !== 'system').map(([groupId, group], index) => {
                   const Icon = group.icon
-                  const tabs = groupedTabs[groupId as keyof typeof groupedTabs]
                   const isDataManagement = groupId === 'data-management'
-                  const isInfrastructure = groupId === 'infrastructure'
-                  const isLastGroup = index === Object.entries(groupMetadata).length - 1
+                  const isActive = selectedGroup === groupId || (groupId === 'overview' && pathname?.includes('/knowledge')) || (isDataManagement && activeTab === 'space-selection') || (groupId === 'infrastructure' && activeTab === 'infrastructure')
 
                   return (
                     <div key={groupId}>
                       {isDataManagement && (
-                        <div className="border-t border-border/50 my-2 mx-4" />
+                        <div className="border-t border-sidebar-border my-2 mx-4" />
                       )}
-                      <Button
-                        variant="ghost"
-                        className={cn(
-                          "platform-sidebar-menu-button w-full justify-start text-sm font-bold h-11 px-4 transition-all duration-300 cursor-pointer group",
-                          (selectedGroup === groupId || (groupId === 'data-management' && activeTab === 'space-selection') || (groupId === 'infrastructure' && activeTab === 'infrastructure'))
-                            ? "platform-sidebar-menu-button-active bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white rounded-xl shadow-sm"
-                            : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-xl"
-                        )}
+                        <Button
+                          variant="ghost"
+                          className={cn(
+                            "group flex w-full items-center justify-start rounded-lg px-3 transition-all duration-200 cursor-pointer h-[34px]",
+                            isActive
+                              ? "bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-semibold shadow-lg"
+                              : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-zinc-100"
+                          )}
                         onClick={() => handleGroupClick(groupId)}
                         onMouseEnter={() => {
                           const tabs = groupedTabs[groupId as keyof typeof groupedTabs]
-                          // Only show secondary sidebar if group has tabs and is not data-management
                           if (tabs && tabs.length > 0 && groupId !== 'data-management') {
                             onGroupHover?.(groupId)
                           }
                         }}
                         onMouseLeave={() => {
-                          // Only clear hover if not currently selected
-                          if (selectedGroup !== groupId) {
-                            onGroupLeave?.()
-                          }
-                        }}
-                        style={{
-                          pointerEvents: 'auto',
-                          position: 'relative',
-                          zIndex: Z_INDEX.sidebar + 1
+                          if (selectedGroup !== groupId) onGroupLeave?.()
                         }}
                       >
-                        <Icon className="h-4 w-4 mr-3 stroke-2" />
-                        <span className="flex-1 text-left">{group.name}</span>
-                        {!isDataManagement && !isInfrastructure && (
-                          <ChevronRightIcon className="h-4 w-4 ml-2 text-muted-foreground" />
+                        <span className={cn(
+                          "mr-3 flex h-5 w-5 items-center justify-center transition-colors",
+                          isActive ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300"
+                        )}>
+                          <Icon className="w-[18px] h-[18px] flex-shrink-0 transition-colors" />
+                        </span>
+                        <span className="flex-1 text-left text-[13px] font-medium leading-[1]">{group.name}</span>
+                        {!isDataManagement && groupId !== 'infrastructure' && (
+                          <ChevronRightIcon className="w-4 h-4 ml-auto text-zinc-400 opacity-50" />
                         )}
                       </Button>
                     </div>
@@ -516,9 +449,7 @@ export function PlatformSidebar({
               </div>
             )
           ) : (
-            // Secondary sidebar - show submenu items for selected group or Horizon tab for infrastructure
             selectedGroup === 'infrastructure' ? (
-              // Infrastructure group - show Horizon tab with VMs and Services
               <div className="w-full h-full flex flex-col">
                 <HorizonSidebar
                   selectedVmId={selectedVmId}
@@ -534,112 +465,123 @@ export function PlatformSidebar({
               </div>
             ) : selectedGroup && groupedTabs[selectedGroup as keyof typeof groupedTabs] ? (
               <div className="w-full pb-4">
-
-                {/* Group Header Label */}
-                {selectedGroup && groupMetadata[selectedGroup] && (
-                  <div className="px-4 py-6 border-b border-zinc-100/60 dark:border-zinc-800/60 mb-4">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 flex items-center gap-3">
-                      {(() => {
-                        const Icon = groupMetadata[selectedGroup].icon
-                        return <Icon className="h-4 w-4 stroke-[2.5]" />
-                      })()}
-                      {groupMetadata[selectedGroup].name}
-                    </h3>
-                  </div>
-                )}
-
-                {/* Dynamic Section Rendering */}
                 <div className="space-y-4">
                   {Object.entries(activeGroupSections).map(([sectionName, items], sectionIndex) => {
                     const filteredItems = filterTabs(items, searchValue)
                     if (filteredItems.length === 0) return null
 
                     return (
-                      <div key={sectionName} className="py-2 px-2">
-                        <div className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-4 px-4">
+                      <div key={sectionName} className="px-3">
+                        <div className="px-3 py-1.5 text-[10px] uppercase font-black tracking-[0.1em] text-zinc-500 mb-1">
                           {sectionName}
                         </div>
-                        <div className="space-y-1">
-                          {filteredItems.map((tab: any) => (
-                            <Button
-                              key={tab.id}
-                              variant="ghost"
-                              className={cn(
-                                "platform-sidebar-menu-button w-full justify-start items-center text-sm font-bold h-10 px-4 transition-all duration-200 cursor-pointer rounded-xl group",
-                                activeTab === tab.id
-                                  ? "platform-sidebar-menu-button-active bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white shadow-sm"
-                                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 hover:text-zinc-900 dark:hover:text-zinc-100"
-                              )}
-                              onClick={() => handleTabClick(tab.id, (tab as any).href)}
-                              style={{
-                                pointerEvents: 'auto',
-                                position: 'relative',
-                                zIndex: Z_INDEX.sidebar + 1,
-                                ...(activeTab === tab.id 
-                                  ? { 
-                                      backgroundColor: 'var(--brand-primary-light, rgba(59, 130, 246, 0.10))',
-                                      color: 'var(--brand-primary, hsl(var(--primary)))'
-                                    } 
-                                  : {})
-                              }}
-                            >
-                              <tab.icon className={cn("h-4 w-4 mr-3 flex-shrink-0", activeTab === tab.id ? "text-primary" : "")} />
-                              <span className="truncate text-left">{tab.name}</span>
-                            </Button>
-                          ))}
+                        <div className="space-y-0.5">
+                          {filteredItems.map((tab: any) => {
+                            const isActive = activeTab === tab.id
+                            return (
+                              <Button
+                                key={tab.id}
+                                variant="ghost"
+                                className={cn(
+                                  "group flex w-full items-center justify-start rounded-lg px-3 transition-all duration-200 cursor-pointer h-[34px]",
+                                  isActive
+                                    ? "bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-lg"
+                                    : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-zinc-100"
+                                )}
+                                onClick={() => handleTabClick(tab.id, tab.href)}
+                              >
+                                <span className={cn(
+                                  "mr-3 flex h-5 w-5 items-center justify-center transition-colors",
+                                  isActive ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300"
+                                )}>
+                                  <tab.icon className="w-[18px] h-[18px] flex-shrink-0 transition-colors" />
+                                </span>
+                                <span className="flex-1 truncate text-left text-[13px] font-medium leading-[1]">{tab.name}</span>
+                                {isActive && (
+                                  <span className="ml-auto h-1.5 w-1.5 flex-shrink-0 rounded-full bg-zinc-900 dark:bg-zinc-100" />
+                                )}
+                              </Button>
+                            )
+                          })}
                         </div>
                         {sectionIndex < Object.entries(activeGroupSections).length - 1 && (
-                          <div className="border-t border-border/50 my-2 mx-0" />
+                          <div className="border-t border-sidebar-border my-2 mx-0" />
                         )}
                       </div>
                     )
                   })}
                 </div>
               </div>
-            ) : (
-              // Fallback: Show message if group not found
-              <div className="p-4 text-sm text-muted-foreground">
-                No menu items available for this group.
-              </div>
-            )
+            ) : null
           )}
         </div>
       </ScrollArea>
 
-      {/* Zinc Footer */}
+      {/* Footer */}
       {mode === 'primary' && onToggleCollapse && (
-        <div
-          className={cn(
-            "px-4 py-4 border-t border-zinc-100/60 dark:border-zinc-800/60 bg-transparent flex flex-col gap-4",
-            collapsed && "px-2 items-center"
-          )}
-          style={{ pointerEvents: 'auto' }}
-        >
+        <div className={cn("py-4 flex flex-col items-stretch space-y-1.5 border-t border-sidebar-border px-4", collapsed && "px-2")}>
+          {groupMetadata['system'] && (() => {
+            const groupId = 'system'
+            const group = groupMetadata['system']
+            const Icon = group.icon
+            const isActive = selectedGroup === groupId
+
+            return (
+              <div className="w-full mb-2 border-b border-sidebar-border pb-2">
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "group flex w-full items-center transition-all duration-200 cursor-pointer h-auto",
+                    collapsed ? "w-11 h-11 rounded-xl justify-center p-0 mx-auto" : "rounded-lg px-3 py-2 justify-start",
+                    isActive
+                      ? "bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-lg"
+                      : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-zinc-100"
+                  )}
+                  onClick={() => handleGroupClick(groupId)}
+                >
+                   {collapsed && isActive && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-zinc-900 dark:bg-zinc-100 rounded-r-full" />
+                  )}
+                  <span className={cn(
+                    "flex h-5 w-5 items-center justify-center transition-colors",
+                    !collapsed && "mr-3",
+                    isActive ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-500"
+                  )}>
+                    <Icon className="w-[18px] h-[18px] flex-shrink-0" />
+                  </span>
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1 text-left text-[13px] font-medium leading-[1]">{group.name}</span>
+                      <ChevronRightIcon className="w-4 h-4 ml-auto text-zinc-400 opacity-50" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            )
+          })()}
+
           <Button
             variant="ghost"
-            size={collapsed ? "icon" : "sm"}
             onClick={onToggleCollapse}
             className={cn(
-              "w-full transition-all duration-300 rounded-xl font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 hover:text-zinc-900 dark:hover:text-zinc-100",
-              collapsed ? "h-10 w-10 justify-center" : "h-10 justify-start px-3 gap-3"
+              "group relative flex items-center transition-all duration-200 h-auto",
+              collapsed 
+                ? "w-11 h-11 rounded-xl justify-center p-0 mx-auto" 
+                : "w-full rounded-lg px-3 py-2 justify-start gap-2 text-left"
             )}
-            style={{ pointerEvents: 'auto' }}
           >
             {collapsed ? (
-              <ChevronRightIcon className="h-4 w-4 stroke-2" />
+              <ChevronRightIcon className="h-5 w-5 text-zinc-400" />
             ) : (
               <>
-                <ChevronLeftIcon className="h-4 w-4 stroke-2" />
-                <span className="text-xs uppercase tracking-widest font-black text-[11px]">Collapse</span>
+                <ChevronLeftIcon className="h-4 w-4 text-zinc-400" />
+                <span className="text-xs font-medium text-zinc-500">Collapse</span>
               </>
             )}
           </Button>
 
-          <div className={cn(
-            "text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400/60 dark:text-zinc-500/60",
-            collapsed ? "text-center" : "px-1"
-          )}>
-            {collapsed ? `v${APP_VERSION}` : `Version ${APP_VERSION}`}
+          <div className={cn("text-[10px] font-black uppercase tracking-[0.1em] text-zinc-400 px-3", collapsed && "text-center")}>
+            v{APP_VERSION}
           </div>
         </div>
       )}

@@ -3,13 +3,18 @@
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { cn } from '@/lib/utils'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -41,6 +46,7 @@ import {
 } from 'lucide-react'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { LogEntry, LogStats, LogFilter, LogRetention } from '../types'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function LogManagement() {
   const [logs, setLogs] = useState<LogEntry[]>([])
@@ -247,7 +253,7 @@ export function LogManagement() {
     switch (level) {
       case 'DEBUG': return 'bg-zinc-100/50 dark:bg-zinc-800/20 text-zinc-700 dark:text-zinc-300 border-zinc-200/50 dark:border-zinc-700/30'
       case 'INFO': return 'bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border-emerald-100/50 dark:border-emerald-900/30'
-      case 'WARN': return 'bg-amber-50/50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border-amber-100/50 dark:border-amber-900/30'
+      case 'WARN': return 'bg-amber-50/50 dark:bg-amber-950/20 text-amber-700 dark:amber-300 border-amber-100/50 dark:border-amber-900/30'
       case 'ERROR': return 'bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 border-rose-100/50 dark:border-rose-900/30'
       case 'FATAL': return 'bg-rose-900 dark:bg-rose-100 text-white dark:text-rose-950 border-transparent'
       default: return 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200/50 dark:border-zinc-700/30'
@@ -458,10 +464,12 @@ export function LogManagement() {
             <CardContent>
               <ScrollArea className="h-[600px]">
                 {isLoading ? (
-                  <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p className="text-muted-foreground">Loading logs...</p>
-                  </div>
+                  <div className="w-full space-y-3 p-4">
+  <Skeleton className="h-10 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+</div>
                 ) : filteredLogs.length === 0 ? (
                   <div className="text-center py-12">
                     <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -604,59 +612,61 @@ export function LogManagement() {
                   Create Policy
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create Retention Policy</DialogTitle>
-                  <DialogDescription>
-                    Set up log retention policies for automatic cleanup
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="retention-service">Service</Label>
-                    <Input
-                      id="retention-service"
-                      value={newRetention.service}
-                      onChange={(e) => setNewRetention({ ...newRetention, service: e.target.value })}
-                      placeholder="Enter service name"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="retention-level">Log Level</Label>
-                    <Select value={newRetention.level} onValueChange={(value) => setNewRetention({ ...newRetention, level: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select level" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Levels</SelectItem>
-                        <SelectItem value="DEBUG">DEBUG</SelectItem>
-                        <SelectItem value="INFO">INFO</SelectItem>
-                        <SelectItem value="WARN">WARN</SelectItem>
-                        <SelectItem value="ERROR">ERROR</SelectItem>
-                        <SelectItem value="FATAL">FATAL</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="retention-days">Retention Days</Label>
-                    <Input
-                      id="retention-days"
-                      type="number"
-                      value={newRetention.retentionDays}
-                      onChange={(e) => setNewRetention({ ...newRetention, retentionDays: parseInt(e.target.value) })}
-                      placeholder="30"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowRetentionDialog(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={createRetention} disabled={!newRetention.service}>
-                    Create Policy
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
+                <DialogContent className="p-0 overflow-hidden">
+                  <DialogHeader className="p-6 pb-2">
+                    <DialogTitle>Create Retention Policy</DialogTitle>
+                    <DialogDescription>
+                      Set up log retention policies for automatic cleanup
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogBody className="p-6 pt-2 pb-4">
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="retention-service">Service</Label>
+                        <Input
+                          id="retention-service"
+                          value={newRetention.service}
+                          onChange={(e) => setNewRetention({ ...newRetention, service: e.target.value })}
+                          placeholder="Enter service name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="retention-level">Log Level</Label>
+                        <Select value={newRetention.level} onValueChange={(value) => setNewRetention({ ...newRetention, level: value })}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select level" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Levels</SelectItem>
+                            <SelectItem value="DEBUG">DEBUG</SelectItem>
+                            <SelectItem value="INFO">INFO</SelectItem>
+                            <SelectItem value="WARN">WARN</SelectItem>
+                            <SelectItem value="ERROR">ERROR</SelectItem>
+                            <SelectItem value="FATAL">FATAL</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="retention-days">Retention Days</Label>
+                        <Input
+                          id="retention-days"
+                          type="number"
+                          value={newRetention.retentionDays}
+                          onChange={(e) => setNewRetention({ ...newRetention, retentionDays: parseInt(e.target.value) })}
+                          placeholder="30"
+                        />
+                      </div>
+                    </div>
+                  </DialogBody>
+                  <DialogFooter className="p-6 pt-2">
+                    <Button variant="outline" onClick={() => setShowRetentionDialog(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={createRetention} disabled={!newRetention.service}>
+                      Create Policy
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
             </Dialog>
           </div>
 
@@ -727,8 +737,8 @@ export function LogManagement() {
       {/* Log Details Modal */}
       {selectedLog && (
         <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
-          <DialogContent className="max-w-4xl">
-            <DialogHeader>
+          <DialogContent className="max-w-4xl p-0 overflow-hidden">
+            <DialogHeader className="p-6 pb-2">
               <DialogTitle className="flex items-center gap-2">
                 {getLevelIcon(selectedLog.level)}
                 Log Details
@@ -737,65 +747,67 @@ export function LogManagement() {
                 {selectedLog.service} • {selectedLog.timestamp.toLocaleString()}
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Level:</span> 
-                  <Badge className={`ml-2 ${getLevelColor(selectedLog.level)}`}>
-                    {selectedLog.level}
-                  </Badge>
-                </div>
-                <div>
-                  <span className="font-medium">Service:</span> {selectedLog.service}
-                </div>
-                <div>
-                  <span className="font-medium">Timestamp:</span> {selectedLog.timestamp.toLocaleString()}
-                </div>
-                <div>
-                  <span className="font-medium">Duration:</span> {formatDuration(selectedLog.duration)}
-                </div>
-                {selectedLog.userId && (
+            <DialogBody className="p-6 pt-2 pb-4">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="font-medium">User ID:</span> {selectedLog.userId}
+                    <span className="font-medium">Level:</span> 
+                    <Badge className={`ml-2 ${getLevelColor(selectedLog.level)}`}>
+                      {selectedLog.level}
+                    </Badge>
                   </div>
-                )}
-                {selectedLog.sessionId && (
                   <div>
-                    <span className="font-medium">Session ID:</span> {selectedLog.sessionId}
+                    <span className="font-medium">Service:</span> {selectedLog.service}
                   </div>
-                )}
-              </div>
-              
-              <div>
-                <span className="font-medium">Message:</span>
-                <div className="text-sm text-muted-foreground mt-1 p-2 bg-muted rounded">
-                  {selectedLog.message}
+                  <div>
+                    <span className="font-medium">Timestamp:</span> {selectedLog.timestamp.toLocaleString()}
+                  </div>
+                  <div>
+                    <span className="font-medium">Duration:</span> {formatDuration(selectedLog.duration)}
+                  </div>
+                  {selectedLog.userId && (
+                    <div>
+                      <span className="font-medium">User ID:</span> {selectedLog.userId}
+                    </div>
+                  )}
+                  {selectedLog.sessionId && (
+                    <div>
+                      <span className="font-medium">Session ID:</span> {selectedLog.sessionId}
+                    </div>
+                  )}
                 </div>
-              </div>
-
-              {Object.keys(selectedLog.context).length > 0 && (
+                
                 <div>
-                  <span className="font-medium">Context:</span>
+                  <span className="font-medium">Message:</span>
                   <div className="text-sm text-muted-foreground mt-1 p-2 bg-muted rounded">
-                    <pre>{JSON.stringify(selectedLog.context, null, 2)}</pre>
+                    {selectedLog.message}
                   </div>
                 </div>
-              )}
 
-              {selectedLog.tags.length > 0 && (
-                <div>
-                  <span className="font-medium">Tags:</span>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {selectedLog.tags.map(tag => (
-                      <Badge key={tag} variant="outline">
-                        {tag}
-                      </Badge>
-                    ))}
+                {Object.keys(selectedLog.context).length > 0 && (
+                  <div>
+                    <span className="font-medium">Context:</span>
+                    <div className="text-sm text-muted-foreground mt-1 p-2 bg-muted rounded">
+                      <pre>{JSON.stringify(selectedLog.context, null, 2)}</pre>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-            <DialogFooter>
+                )}
+
+                {selectedLog.tags.length > 0 && (
+                  <div>
+                    <span className="font-medium">Tags:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {selectedLog.tags.map(tag => (
+                        <Badge key={tag} variant="outline">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </DialogBody>
+            <DialogFooter className="p-6 pt-2">
               <Button variant="outline" onClick={() => setSelectedLog(null)}>
                 Close
               </Button>

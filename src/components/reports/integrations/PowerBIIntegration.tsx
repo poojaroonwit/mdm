@@ -51,6 +51,27 @@ interface PowerBIConfig {
   is_active: boolean
 }
 
+function normalizePowerBIConfig(rawConfig: any): PowerBIConfig {
+  const parsedConfig = typeof rawConfig?.config === 'string'
+    ? JSON.parse(rawConfig.config)
+    : rawConfig?.config || {}
+
+  return {
+    id: rawConfig?.id,
+    name: rawConfig?.name || '',
+    access_type: rawConfig?.access_type || 'API',
+    tenant_id: parsedConfig.tenant_id || '',
+    client_id: parsedConfig.client_id || '',
+    client_secret: parsedConfig.client_secret || '',
+    workspace_id: parsedConfig.workspace_id || '',
+    sdk_config: parsedConfig.sdk_config || '',
+    embed_url: parsedConfig.embed_url || '',
+    embed_token: parsedConfig.embed_token || '',
+    public_link: parsedConfig.public_link || '',
+    is_active: rawConfig?.is_active !== false
+  }
+}
+
 export function PowerBIIntegration({ spaceId, onSuccess }: PowerBIIntegrationProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -68,9 +89,11 @@ export function PowerBIIntegration({ spaceId, onSuccess }: PowerBIIntegrationPro
       const response = await fetch(`/api/reports/integrations/power-bi?space_id=${spaceId || ''}`)
       if (response.ok) {
         const data = await response.json()
-        setConfigs(data.configs || [])
-        if (data.configs && data.configs.length > 0) {
-          setActiveConfig(data.configs[0])
+        const normalizedConfigs = (data.configs || []).map(normalizePowerBIConfig)
+        setConfigs(normalizedConfigs)
+        if (normalizedConfigs.length > 0) {
+          setActiveConfig(normalizedConfigs[0])
+          setFormData(normalizedConfigs[0])
         }
       }
     } catch (error) {
@@ -81,6 +104,12 @@ export function PowerBIIntegration({ spaceId, onSuccess }: PowerBIIntegrationPro
   useEffect(() => {
     loadConfigs()
   }, [spaceId])
+
+  useEffect(() => {
+    if (activeConfig) {
+      setFormData(activeConfig)
+    }
+  }, [activeConfig])
 
   const handleSave = async () => {
     if (!formData.name.trim()) {
@@ -94,6 +123,7 @@ export function PowerBIIntegration({ spaceId, onSuccess }: PowerBIIntegrationPro
         method: activeConfig?.id ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          id: activeConfig?.id,
           ...formData,
           space_id: spaceId
         })
@@ -397,7 +427,12 @@ export function PowerBIIntegration({ spaceId, onSuccess }: PowerBIIntegrationPro
                 variant="outline"
                 onClick={async () => {
                   try {
-                    const response = await fetch(`/api/reports/integrations/power-bi/oauth?space_id=${spaceId || ''}`)
+                    if (!activeConfig?.id) {
+                      toast.error('Save a Power BI API configuration first')
+                      return
+                    }
+
+                    const response = await fetch(`/api/reports/integrations/power-bi/oauth?space_id=${spaceId || ''}&config_id=${activeConfig.id}`)
                     if (!response.ok) throw new Error('Failed to initiate OAuth')
                     const data = await response.json()
                     window.location.href = data.authUrl

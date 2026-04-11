@@ -1117,8 +1117,8 @@ export function AIAnalyst({ installationId, config = {} }: AIAnalystProps) {
                         onClick={() => switchToChat(chat.id)}
                         className={cn(
                           "w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ease-out",
-                          "hover:bg-muted/50 hover:shadow-sm transform hover:scale-[1.02] active:scale-[0.98]",
-                          currentChatId === chat.id && "bg-muted shadow-sm"
+                          "hover:bg-muted/50 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]",
+                          currentChatId === chat.id && "bg-muted shadow-lg"
                         )}
                       >
                         <div className="flex items-center gap-2">
@@ -1720,7 +1720,7 @@ function ChatView({
             )}
 
             <form onSubmit={onSubmit} className="relative">
-              <div className="relative flex items-center rounded-xl border border-border bg-background shadow-lg focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 focus-within:shadow-xl transition-all duration-200 ease-out min-h-[64px] overflow-hidden">
+              <div className="relative flex items-center rounded-md border border-border bg-background shadow-lg focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 focus-within:shadow-xl transition-all duration-200 ease-out min-h-[64px] overflow-hidden">
                 <input
                   ref={fileInputRef}
                   type="file"

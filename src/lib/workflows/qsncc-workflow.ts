@@ -5,6 +5,7 @@ import { OpenAI } from "openai";
 import { runGuardrails } from "@openai/guardrails";
 
 import { z } from "zod";
+import { getGlobalOpenAIApiKey } from "@/lib/openai-config";
 
 
 
@@ -56,12 +57,6 @@ const mcp = hostedMcpTool({
 
 
 
-// Shared client for guardrails and file search
-
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-
-
 // Guardrails definitions
 
 const guardrailsConfig = {
@@ -85,8 +80,6 @@ const guardrailsConfig = {
   ]
 
 };
-
-const context = { guardrailLlm: client };
 
 // Guardrails utils
 
@@ -571,6 +564,13 @@ type WorkflowInput = { input_as_text: string };
 export const runWorkflow = async (workflow: WorkflowInput, _agentId?: string, _apiKey?: string) => {
 
   return await withTrace("qsncc", async () => {
+    const resolvedApiKey = _apiKey || await getGlobalOpenAIApiKey();
+    if (!resolvedApiKey) {
+      throw new Error("OpenAI API key is not configured");
+    }
+
+    const client = new OpenAI({ apiKey: resolvedApiKey });
+    const context = { guardrailLlm: client };
 
     const state = {
 

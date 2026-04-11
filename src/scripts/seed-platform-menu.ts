@@ -28,7 +28,7 @@ async function seedPlatformMenu() {
 
     const groups: MenuGroup[] = [
         {
-            name: 'Platform Overview',
+            name: 'Overview',
             slug: 'overview',
             icon: 'Monitor',
             priority: 10,

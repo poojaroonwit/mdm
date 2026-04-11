@@ -199,11 +199,11 @@ export function RegularFooterSection({ formData, setFormData }: RegularFooterSec
             </FormRow>
             <FormRow label="Background Color" description="Button background color">
               <ColorInput
-                value={formData.sendButtonBgColor || formData.primaryColor || '#3b82f6'}
+                value={formData.sendButtonBgColor || formData.primaryColor || '#1e40af'}
                 onChange={(color) => setFormData({ ...formData, sendButtonBgColor: color })}
                 allowImageVideo={false}
                 className="relative"
-                placeholder="#3b82f6"
+                placeholder="#1e40af"
                 inputClassName="h-7 text-xs pl-7 w-full"
               />
             </FormRow>

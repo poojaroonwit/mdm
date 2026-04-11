@@ -48,7 +48,7 @@ export default async function PublicDashboardPage({ params }: PublicDashboardPag
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="grid grid-cols-12 gap-4">
             {dashboard.elements.map((element: any) => (
               <div
@@ -59,7 +59,7 @@ export default async function PublicDashboardPage({ params }: PublicDashboardPag
                   gridRow: `span ${element.height || 3}`
                 }}
               >
-                <div className="h-full bg-card border border-border rounded-lg p-4 shadow-sm">
+                <div className="h-full bg-card border border-border rounded-lg p-4 shadow-lg">
                   <h3 className="font-medium text-sm mb-2">{element.name}</h3>
                   <div className="text-xs text-muted-foreground mb-4">
                     {element.type} - {element.chart_type || 'Chart'}

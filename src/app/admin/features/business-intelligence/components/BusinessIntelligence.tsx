@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -366,57 +366,59 @@ export function BusinessIntelligence() {
                   Create Dashboard
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
+              <DialogContent className="p-0 overflow-hidden">
+                <DialogHeader className="p-6 pb-2">
                   <DialogTitle>Create Dashboard</DialogTitle>
                   <DialogDescription>
                     Create a new dashboard for data visualization
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="dashboard-name">Dashboard Name</Label>
-                    <Input
-                      id="dashboard-name"
-                      value={newDashboard.name}
-                      onChange={(e) => setNewDashboard({ ...newDashboard, name: e.target.value })}
-                      placeholder="Sales Dashboard"
-                    />
+                <DialogBody className="p-6 pt-2 pb-4">
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="dashboard-name">Dashboard Name</Label>
+                      <Input
+                        id="dashboard-name"
+                        value={newDashboard.name}
+                        onChange={(e) => setNewDashboard({ ...newDashboard, name: e.target.value })}
+                        placeholder="Sales Dashboard"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="dashboard-description">Description</Label>
+                      <Textarea
+                        id="dashboard-description"
+                        value={newDashboard.description}
+                        onChange={(e) => setNewDashboard({ ...newDashboard, description: e.target.value })}
+                        placeholder="Dashboard description"
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="dashboard-space">Space</Label>
+                      <Select value={newDashboard.spaceId} onValueChange={(value) => setNewDashboard({ ...newDashboard, spaceId: value })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a space" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {spaces.map(space => (
+                            <SelectItem key={space.id} value={space.id}>
+                              {space.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        checked={newDashboard.isPublic} 
+                        onCheckedChange={(checked) => setNewDashboard({ ...newDashboard, isPublic: checked })}
+                      />
+                      <Label>Make Public</Label>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="dashboard-description">Description</Label>
-                    <Textarea
-                      id="dashboard-description"
-                      value={newDashboard.description}
-                      onChange={(e) => setNewDashboard({ ...newDashboard, description: e.target.value })}
-                      placeholder="Dashboard description"
-                      rows={3}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="dashboard-space">Space</Label>
-                    <Select value={newDashboard.spaceId} onValueChange={(value) => setNewDashboard({ ...newDashboard, spaceId: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a space" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {spaces.map(space => (
-                          <SelectItem key={space.id} value={space.id}>
-                            {space.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch 
-                      checked={newDashboard.isPublic} 
-                      onCheckedChange={(checked) => setNewDashboard({ ...newDashboard, isPublic: checked })}
-                    />
-                    <Label>Make Public</Label>
-                  </div>
-                </div>
-                <DialogFooter>
+                </DialogBody>
+                <DialogFooter className="p-6 pt-2">
                   <Button variant="outline" onClick={() => setShowCreateDashboard(false)}>
                     Cancel
                   </Button>
@@ -490,57 +492,59 @@ export function BusinessIntelligence() {
                     Create Dashboard
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
+                <DialogContent className="p-0 overflow-hidden">
+                  <DialogHeader className="p-6 pb-2">
                     <DialogTitle>Create Dashboard</DialogTitle>
                     <DialogDescription>
                       Create a new dashboard for data visualization
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="dashboard-name">Dashboard Name</Label>
-                      <Input
-                        id="dashboard-name"
-                        value={newDashboard.name}
-                        onChange={(e) => setNewDashboard({ ...newDashboard, name: e.target.value })}
-                        placeholder="Sales Dashboard"
-                      />
+                  <DialogBody className="p-6 pt-2 pb-4">
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="dashboard-name">Dashboard Name</Label>
+                        <Input
+                          id="dashboard-name"
+                          value={newDashboard.name}
+                          onChange={(e) => setNewDashboard({ ...newDashboard, name: e.target.value })}
+                          placeholder="Sales Dashboard"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="dashboard-description">Description</Label>
+                        <Textarea
+                          id="dashboard-description"
+                          value={newDashboard.description}
+                          onChange={(e) => setNewDashboard({ ...newDashboard, description: e.target.value })}
+                          placeholder="Dashboard description"
+                          rows={3}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="dashboard-space">Space</Label>
+                        <Select value={newDashboard.spaceId} onValueChange={(value) => setNewDashboard({ ...newDashboard, spaceId: value })}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a space" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {spaces.map(space => (
+                              <SelectItem key={space.id} value={space.id}>
+                                {space.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Switch 
+                          checked={newDashboard.isPublic} 
+                          onCheckedChange={(checked) => setNewDashboard({ ...newDashboard, isPublic: checked })}
+                        />
+                        <Label>Make Public</Label>
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="dashboard-description">Description</Label>
-                      <Textarea
-                        id="dashboard-description"
-                        value={newDashboard.description}
-                        onChange={(e) => setNewDashboard({ ...newDashboard, description: e.target.value })}
-                        placeholder="Dashboard description"
-                        rows={3}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="dashboard-space">Space</Label>
-                      <Select value={newDashboard.spaceId} onValueChange={(value) => setNewDashboard({ ...newDashboard, spaceId: value })}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a space" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {spaces.map(space => (
-                            <SelectItem key={space.id} value={space.id}>
-                              {space.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Switch 
-                        checked={newDashboard.isPublic} 
-                        onCheckedChange={(checked) => setNewDashboard({ ...newDashboard, isPublic: checked })}
-                      />
-                      <Label>Make Public</Label>
-                    </div>
-                  </div>
-                  <DialogFooter>
+                  </DialogBody>
+                  <DialogFooter className="p-6 pt-2">
                     <Button variant="outline" onClick={() => setShowCreateDashboard(false)}>
                       Cancel
                     </Button>
@@ -557,100 +561,102 @@ export function BusinessIntelligence() {
                     Create Report
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
+                <DialogContent className="p-0 overflow-hidden">
+                  <DialogHeader className="p-6 pb-2">
                     <DialogTitle>Create Report</DialogTitle>
                     <DialogDescription>
                       Create a new automated report
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                  <DialogBody className="p-6 pt-2 pb-4">
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="report-name">Report Name</Label>
+                          <Input
+                            id="report-name"
+                            value={newReport.name}
+                            onChange={(e) => setNewReport({ ...newReport, name: e.target.value })}
+                            placeholder="Monthly Sales Report"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="report-space">Space</Label>
+                          <Select value={newReport.spaceId} onValueChange={(value) => setNewReport({ ...newReport, spaceId: value })}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a space" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {spaces.map(space => (
+                                <SelectItem key={space.id} value={space.id}>
+                                  {space.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                       <div>
-                        <Label htmlFor="report-name">Report Name</Label>
-                        <Input
-                          id="report-name"
-                          value={newReport.name}
-                          onChange={(e) => setNewReport({ ...newReport, name: e.target.value })}
-                          placeholder="Monthly Sales Report"
+                        <Label htmlFor="report-description">Description</Label>
+                        <Textarea
+                          id="report-description"
+                          value={newReport.description}
+                          onChange={(e) => setNewReport({ ...newReport, description: e.target.value })}
+                          placeholder="Report description"
+                          rows={3}
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="report-space">Space</Label>
-                        <Select value={newReport.spaceId} onValueChange={(value) => setNewReport({ ...newReport, spaceId: value })}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a space" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {spaces.map(space => (
-                              <SelectItem key={space.id} value={space.id}>
-                                {space.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="report-type">Type</Label>
+                          <Select value={newReport.type} onValueChange={(value: any) => setNewReport({ ...newReport, type: value })}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="on_demand">On Demand</SelectItem>
+                              <SelectItem value="scheduled">Scheduled</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="report-format">Format</Label>
+                          <Select value={newReport.format} onValueChange={(value: any) => setNewReport({ ...newReport, format: value })}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pdf">PDF</SelectItem>
+                              <SelectItem value="excel">Excel</SelectItem>
+                              <SelectItem value="csv">CSV</SelectItem>
+                              <SelectItem value="json">JSON</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="report-description">Description</Label>
-                      <Textarea
-                        id="report-description"
-                        value={newReport.description}
-                        onChange={(e) => setNewReport({ ...newReport, description: e.target.value })}
-                        placeholder="Report description"
-                        rows={3}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
+                      {newReport.type === 'scheduled' && (
+                        <div>
+                          <Label htmlFor="report-schedule">Schedule (Cron)</Label>
+                          <Input
+                            id="report-schedule"
+                            value={newReport.schedule}
+                            onChange={(e) => setNewReport({ ...newReport, schedule: e.target.value })}
+                            placeholder="0 9 * * 1 (Every Monday at 9 AM)"
+                          />
+                        </div>
+                      )}
                       <div>
-                        <Label htmlFor="report-type">Type</Label>
-                        <Select value={newReport.type} onValueChange={(value: any) => setNewReport({ ...newReport, type: value })}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="on_demand">On Demand</SelectItem>
-                            <SelectItem value="scheduled">Scheduled</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="report-format">Format</Label>
-                        <Select value={newReport.format} onValueChange={(value: any) => setNewReport({ ...newReport, format: value })}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pdf">PDF</SelectItem>
-                            <SelectItem value="excel">Excel</SelectItem>
-                            <SelectItem value="csv">CSV</SelectItem>
-                            <SelectItem value="json">JSON</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    {newReport.type === 'scheduled' && (
-                      <div>
-                        <Label htmlFor="report-schedule">Schedule (Cron)</Label>
+                        <Label htmlFor="report-recipients">Recipients (comma-separated emails)</Label>
                         <Input
-                          id="report-schedule"
-                          value={newReport.schedule}
-                          onChange={(e) => setNewReport({ ...newReport, schedule: e.target.value })}
-                          placeholder="0 9 * * 1 (Every Monday at 9 AM)"
+                          id="report-recipients"
+                          value={newReport.recipients}
+                          onChange={(e) => setNewReport({ ...newReport, recipients: e.target.value })}
+                          placeholder="admin@company.com, manager@company.com"
                         />
                       </div>
-                    )}
-                    <div>
-                      <Label htmlFor="report-recipients">Recipients (comma-separated emails)</Label>
-                      <Input
-                        id="report-recipients"
-                        value={newReport.recipients}
-                        onChange={(e) => setNewReport({ ...newReport, recipients: e.target.value })}
-                        placeholder="admin@company.com, manager@company.com"
-                      />
                     </div>
-                  </div>
-                  <DialogFooter>
+                  </DialogBody>
+                  <DialogFooter className="p-6 pt-2">
                     <Button variant="outline" onClick={() => setShowCreateReport(false)}>
                       Cancel
                     </Button>
@@ -796,64 +802,66 @@ export function BusinessIntelligence() {
                   Add Data Source
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
+              <DialogContent className="p-0 overflow-hidden">
+                <DialogHeader className="p-6 pb-2">
                   <DialogTitle>Add Data Source</DialogTitle>
                   <DialogDescription>
                     Connect a new data source for reporting
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="source-name">Data Source Name</Label>
-                    <Input
-                      id="source-name"
-                      value={newDataSource.name}
-                      onChange={(e) => setNewDataSource({ ...newDataSource, name: e.target.value })}
-                      placeholder="Sales Database"
-                    />
+                <DialogBody className="p-6 pt-2 pb-4">
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="source-name">Data Source Name</Label>
+                      <Input
+                        id="source-name"
+                        value={newDataSource.name}
+                        onChange={(e) => setNewDataSource({ ...newDataSource, name: e.target.value })}
+                        placeholder="Sales Database"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="source-type">Type</Label>
+                      <Select value={newDataSource.type} onValueChange={(value: any) => setNewDataSource({ ...newDataSource, type: value })}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="database">Database</SelectItem>
+                          <SelectItem value="api">API</SelectItem>
+                          <SelectItem value="file">File</SelectItem>
+                          <SelectItem value="space_data">Space Data</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="source-connection">Connection</Label>
+                      <Input
+                        id="source-connection"
+                        value={newDataSource.connection}
+                        onChange={(e) => setNewDataSource({ ...newDataSource, connection: e.target.value })}
+                        placeholder="Database connection string or API endpoint"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="source-space">Space (Optional)</Label>
+                      <Select value={newDataSource.spaceId} onValueChange={(value) => setNewDataSource({ ...newDataSource, spaceId: value })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a space" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No specific space</SelectItem>
+                          {spaces.map(space => (
+                            <SelectItem key={space.id} value={space.id}>
+                              {space.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="source-type">Type</Label>
-                    <Select value={newDataSource.type} onValueChange={(value: any) => setNewDataSource({ ...newDataSource, type: value })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="database">Database</SelectItem>
-                        <SelectItem value="api">API</SelectItem>
-                        <SelectItem value="file">File</SelectItem>
-                        <SelectItem value="space_data">Space Data</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="source-connection">Connection</Label>
-                    <Input
-                      id="source-connection"
-                      value={newDataSource.connection}
-                      onChange={(e) => setNewDataSource({ ...newDataSource, connection: e.target.value })}
-                      placeholder="Database connection string or API endpoint"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="source-space">Space (Optional)</Label>
-                    <Select value={newDataSource.spaceId} onValueChange={(value) => setNewDataSource({ ...newDataSource, spaceId: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a space" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No specific space</SelectItem>
-                        {spaces.map(space => (
-                          <SelectItem key={space.id} value={space.id}>
-                            {space.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <DialogFooter>
+                </DialogBody>
+                <DialogFooter className="p-6 pt-2">
                   <Button variant="outline" onClick={() => setShowDataSourceDialog(false)}>
                     Cancel
                   </Button>

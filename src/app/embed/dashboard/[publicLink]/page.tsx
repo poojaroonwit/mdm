@@ -149,7 +149,7 @@ export default async function EmbedDashboardPage({ params }: EmbedDashboardPageP
                     return (
                       <div
                         key={element.id}
-                        className="absolute border rounded-lg shadow-sm bg-background"
+                        className="absolute border rounded-lg shadow-lg bg-background"
                         style={{
                           left: `${(element.position_x / (dashboard.grid_size || 12)) * 100}%`,
                           top: `${(element.position_y / (dashboard.grid_size || 12)) * 100}%`,

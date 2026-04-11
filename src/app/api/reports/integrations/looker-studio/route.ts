@@ -36,8 +36,6 @@ async function postHandler(request: NextRequest) {
   const {
     name,
     access_type,
-    client_id,
-    client_secret,
     refresh_token,
     public_link,
     is_active,
@@ -49,8 +47,6 @@ async function postHandler(request: NextRequest) {
   }
 
   const config = {
-    client_id,
-    client_secret,
     refresh_token,
     public_link
   }
@@ -87,8 +83,6 @@ async function putHandler(request: NextRequest) {
     id,
     name,
     access_type,
-    client_id,
-    client_secret,
     refresh_token,
     public_link,
     is_active
@@ -99,8 +93,6 @@ async function putHandler(request: NextRequest) {
   }
 
   const config = {
-    client_id,
-    client_secret,
     refresh_token,
     public_link
   }

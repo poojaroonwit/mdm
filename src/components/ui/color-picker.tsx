@@ -25,7 +25,7 @@ export function ColorPicker({ value, onChange, disabled = false }: ColorPickerPr
           className="h-8 w-8 p-0 border-2 hover:scale-110 transition-transform"
           style={{ backgroundColor: value }}
         >
-          <Palette className="h-3 w-3 text-white drop-shadow-sm" />
+          <Palette className="h-3 w-3 text-white drop-shadow-lg" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-3" align="start">

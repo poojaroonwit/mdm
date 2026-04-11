@@ -4,7 +4,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
-import { LogOut, User, Bell, CheckCircle, AlertCircle, Info, AlertTriangle, ExternalLink, MoreHorizontal, ChevronDown } from 'lucide-react'
+import { LogOut, User, Bell, CheckCircle, AlertCircle, Info, AlertTriangle, ExternalLink, MoreHorizontal, ChevronDown, Settings } from 'lucide-react'
 import { Z_INDEX } from '@/lib/z-index'
 import { useEffect, useState } from 'react'
 import { loadBrandingConfig } from '@/lib/branding'
@@ -127,7 +127,7 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
       case 'WARNING':
         return <AlertTriangle className="h-4 w-4 text-yellow-500" />
       default:
-        return <Info className="h-4 w-4 text-blue-500" />
+        return <Info className="h-4 w-4 text-zinc-500" />
     }
   }
 
@@ -159,83 +159,69 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
 
   return (
     <header
-      className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-zinc-100/60 dark:border-zinc-800/60 px-4 backdrop-blur-md transition-all duration-300"
+      className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-sidebar-border px-4 lg:px-8 backdrop-blur-xl transition-all duration-300 shrink-0"
       data-component="top-menu-bar"
       style={{
         zIndex: Z_INDEX.navigation,
-        backgroundColor: headerBg.includes('var(--background)') ? 'transparent' : headerBg,
-        color: headerColor,
+        backgroundColor: 'var(--bg-default-60)', // 60% opacity for blur effect
+        color: 'var(--text-primary)',
       }}
     >
-      {/* Left Section: Logo + Application Name + Feature */}
-      <div className="flex items-center gap-2 min-w-0">
-        {/* Logo */}
-        {displayLogo ? (
-          <div className="relative group cursor-pointer">
-            <div className="absolute -inset-1 bg-gradient-to-r from-zinc-200 to-zinc-100 dark:from-zinc-800 dark:to-zinc-900 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+      {/* Left Section: Logo + Divider + Feature */}
+      <div className="flex items-center space-x-6 min-w-0">
+        {/* Brand Logo */}
+        <div className="flex items-center group">
+          {displayLogo ? (
             <img
               src={displayLogo}
               alt={displayName}
-              className="relative h-6 w-6 object-contain flex-shrink-0"
+              className="w-9 h-9 flex-shrink-0 mr-4 object-contain"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none'
               }}
             />
-          </div>
-        ) : (
-          <div className="h-7 w-7 rounded-lg bg-zinc-900 dark:bg-white flex items-center justify-center flex-shrink-0 shadow-lg">
-            <span className="text-white dark:text-zinc-900 text-[10px] font-black uppercase">
-              {displayName.charAt(0)}
-            </span>
-          </div>
-        )}
-
-        {/* Space Name or Application Name */}
-        {showSpaceName && spaceName ? (
-          <div className="flex flex-col min-w-0 ml-1">
-            <span className="font-black text-xs uppercase tracking-widest text-zinc-900 dark:text-white whitespace-nowrap leading-none">
-              {spaceName}
-            </span>
-            <span className="text-[9px] font-medium uppercase tracking-[0.1em] text-zinc-400 dark:text-zinc-500 whitespace-nowrap leading-none mt-1">
+          ) : (
+            <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-white text-sm shadow-lg mr-4 group-hover:bg-zinc-800 transition-all duration-300 overflow-hidden bg-zinc-900 dark:bg-zinc-50 dark:text-zinc-900">
+              <span>{displayName.substring(0, 1).toUpperCase()}</span>
+            </div>
+          )}
+          
+          <div className="hidden md:block overflow-hidden whitespace-nowrap">
+            <h1 className="font-bold text-zinc-900 dark:text-white tracking-tight text-xl leading-none mb-0.5">
               {displayName}
-            </span>
+            </h1>
+            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-widest leading-none">
+              {showSpaceName && spaceName ? spaceName : 'Platform'}
+            </p>
           </div>
-        ) : displayName && (
-          <div className="flex items-center gap-2 ml-1">
-            <span className="font-black text-xs uppercase tracking-widest text-zinc-900 dark:text-white whitespace-nowrap">
-              {displayName}
-            </span>
+        </div>
 
-            {!showSpaceName && (
-              <>
-                <span className="text-zinc-300 dark:text-zinc-700 select-none">/</span>
+        {!showSpaceName && (
+          <div className="hidden sm:flex items-center">
+            {/* Vertical Divider */}
+            <div className="hidden lg:block h-8 w-px bg-gradient-to-b from-transparent via-sidebar-border to-transparent mx-6" />
 
-                {/* Selected Feature */}
-                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-zinc-400 dark:text-zinc-500 truncate">
-                  {featureName}
-                </span>
-              </>
-            )}
+            {/* Page Title */}
+            <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">{featureName}</h2>
           </div>
         )}
       </div>
 
       {/* Right Section: Notifications and User Avatar */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center space-x-4 md:space-x-6">
         {/* Notification Bell with Popover */}
         <Popover open={notificationPopoverOpen} onOpenChange={setNotificationPopoverOpen}>
           <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative h-9 w-9 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 border border-zinc-100/60 dark:border-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-95 group"
+            <button
+              className="relative p-2.5 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-all duration-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl group"
+              aria-label="Notifications"
               title="Notifications"
             >
-              <Bell className="h-4 w-4 text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors" />
+              <Bell className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
               {notifications.length > 0 && unreadCount > 0 && (
-                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-zinc-950 dark:bg-white border border-white dark:border-zinc-950 animate-pulse" />
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-zinc-900 animate-pulse" />
               )}
-            </Button>
+            </button>
           </PopoverTrigger>
           <PopoverContent className="w-96 p-0" align="end">
             <div className="flex flex-col max-h-[600px]">
@@ -361,50 +347,50 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
         {/* User Avatar with Popover */}
         <Popover open={profilePopoverOpen} onOpenChange={setProfilePopoverOpen}>
           <PopoverTrigger asChild>
-            <button className="flex items-center gap-3 p-1 rounded-xl hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-all duration-300 group outline-none ml-2 border border-transparent hover:border-zinc-100 dark:hover:border-zinc-800">
-              <div className="h-8 w-8 rounded-lg bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-zinc-900 font-black text-xs shadow-sm group-hover:shadow-md transition-all duration-300 overflow-hidden">
+            <button className="flex items-center space-x-3 p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-200 group outline-none">
+              <div className="w-9 h-9 rounded-full bg-zinc-900 dark:bg-zinc-50 flex items-center justify-center text-white dark:text-zinc-900 font-bold text-sm shadow-lg group-hover:bg-zinc-800 transition-all duration-300 overflow-hidden">
                 {userImage ? (
                   <img src={userImage} alt={userName} className="h-full w-full object-cover" />
                 ) : userInitial}
               </div>
-              <div className="hidden sm:block text-left">
-                <p className="text-[11px] font-black text-zinc-900 dark:text-white leading-none uppercase tracking-wider">
+              <div className="hidden sm:block text-left pr-3">
+                <p className="text-sm font-semibold text-zinc-900 dark:text-white leading-none capitalize">
                   {userName}
                 </p>
-                <p className="text-[9px] text-zinc-400 dark:text-zinc-500 font-bold uppercase mt-1 tracking-[0.2em]">
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium uppercase mt-0.5 tracking-wider">
                   {userRole}
                 </p>
               </div>
-              <ChevronDown className="h-3 w-3 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors duration-300" />
+              <ChevronDown className="w-4 h-4 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors duration-200" />
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-72 mt-2 rounded-xl border border-zinc-100/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl shadow-2xl p-0 overflow-hidden" align="end">
-            <div className="px-5 py-4 border-b border-border/50">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1">Signed in as</p>
-              <p className="text-sm font-semibold truncate mt-1">{userEmail}</p>
+          <PopoverContent className="w-72 mt-2 origin-top-right divide-y divide-zinc-100 dark:divide-zinc-800 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shadow-2xl ring-1 ring-black/5 dark:ring-white/5 focus:outline-none z-50 border border-zinc-200 dark:border-zinc-800 p-0 overflow-hidden" align="end">
+            <div className="px-5 py-4">
+              <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-widest mb-1">Signed in as</p>
+              <p className="text-sm font-semibold text-zinc-900 dark:text-white truncate mt-1">{userEmail}</p>
             </div>
 
-            <div className="p-2">
+            <div className="p-3 space-y-1">
               <Button
                 variant="ghost"
-                className="w-full justify-start font-medium h-11 px-4 rounded-xl hover:bg-muted/50 transition-colors"
+                className="flex w-full justify-start items-center px-4 py-3 text-sm font-medium text-zinc-700 dark:text-zinc-300 rounded-xl transition-all duration-200 hover:bg-zinc-50/80 dark:hover:bg-zinc-800/80 h-11"
                 onClick={() => {
                   setProfilePopoverOpen(false)
                   setProfileModalOpen(true)
                 }}
               >
-                <User className="mr-3 h-4 w-4 text-muted-foreground" />
+                <Settings className="w-4 h-4 mr-3 text-zinc-400" />
                 <span>Account Settings</span>
               </Button>
             </div>
 
-            <div className="p-2 border-t border-border/50">
+            <div className="p-3">
               <Button
                 variant="ghost"
-                className="w-full justify-start font-semibold h-11 px-4 text-destructive rounded-xl hover:bg-destructive/10 transition-colors"
+                className="flex w-full justify-start items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 bg-transparent text-zinc-700 dark:text-zinc-300 hover:bg-red-50/80 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 h-11"
                 onClick={handleSignOut}
               >
-                <LogOut className="mr-3 h-4 w-4" />
+                <LogOut className="w-4 h-4 mr-3 text-red-500" />
                 <span>Sign Out</span>
               </Button>
             </div>

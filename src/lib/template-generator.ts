@@ -89,7 +89,7 @@ export class TemplateGenerator {
         type: 'page' as const,
         name: dataModel.display_name,
         icon: 'Table',
-        color: '#3b82f6',
+        color: '#1e40af',
         pageId: pageId
       },
       {
@@ -271,7 +271,7 @@ export class TemplateGenerator {
               fontFamily: 'Inter',
               borderRadius: '6px',
               colors: {
-                primary: '#3b82f6',
+                primary: '#1e40af',
                 secondary: '#6b7280',
                 background: '#ffffff',
                 border: '#e5e7eb'
@@ -434,7 +434,7 @@ export class TemplateGenerator {
             type: 'page',
             name: 'Dashboard',
             icon: 'BarChart3',
-            color: '#3b82f6',
+            color: '#1e40af',
             pageId: pageId
           }
         ],

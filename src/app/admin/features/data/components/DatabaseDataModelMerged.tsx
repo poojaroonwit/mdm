@@ -1,12 +1,14 @@
 'use client'
 
+import { Skeleton } from '@/components/ui/skeleton'
+
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
 import { CentralizedDrawer } from '@/components/ui/centralized-drawer'
 import { DrawerClose } from '@/components/ui/drawer'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -457,7 +459,7 @@ export function DatabaseDataModelMerged() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'connected':
-        return <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />
+        return <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50" />
       case 'disconnected':
         return <div className="h-2 w-2 rounded-full bg-gray-400" />
       case 'error':
@@ -902,8 +904,8 @@ export function DatabaseDataModelMerged() {
                   <button
                     onClick={() => setSelectedDatabase('__builtin__')}
                     className={cn(
-                      "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-left mb-2",
-                      selectedDatabase === '__builtin__' && "shadow-sm"
+                      "w-full flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200 text-left mb-2",
+                      selectedDatabase === '__builtin__' && "shadow-lg"
                     )}
                     style={{
                       backgroundColor: selectedDatabase === '__builtin__'
@@ -942,7 +944,7 @@ export function DatabaseDataModelMerged() {
                         <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
                           System
                         </Badge>
-                        <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />
+                        <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50" />
                       </div>
                       <div
                         className="text-xs truncate"
@@ -981,8 +983,8 @@ export function DatabaseDataModelMerged() {
                           key={connection.id}
                           onClick={() => setSelectedDatabase(connection.id)}
                           className={cn(
-                            "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-left",
-                            isSelected && "shadow-sm"
+                            "w-full flex items-center gap-3 px-3 py-3 rounded-md transition-all duration-200 text-left",
+                            isSelected && "shadow-lg"
                           )}
                           style={{
                             backgroundColor: isSelected
@@ -1169,12 +1171,9 @@ export function DatabaseDataModelMerged() {
                         <p className="text-xs mt-1">Choose a database from the left panel to view its schema</p>
                       </div>
                     ) : isLoadingSchema ? (
-                      <div
-                        className="flex flex-col items-center justify-center py-16"
-                        style={{ color: bodyText, opacity: 0.6 }}
-                      >
-                        <RefreshCw className="h-6 w-6 animate-spin mb-3" />
-                        <p className="text-sm">Loading schema...</p>
+                      <div className="w-full space-y-3 p-4">
+                        <Skeleton className="h-10 w-full rounded-md" />
+                        <Skeleton className="h-32 w-full rounded-md" />
                       </div>
                     ) : !databaseSchema ? (
                       <div
@@ -1299,7 +1298,7 @@ export function DatabaseDataModelMerged() {
                             {databaseSchema.tables.map(table => (
                               <div
                                 key={table.name}
-                                className="flex items-center gap-4 p-3 transition-all border cursor-pointer hover:shadow-sm group"
+                                className="flex items-center gap-4 p-3 transition-all border cursor-pointer hover:shadow-lg group"
                                 style={{
                                   backgroundColor: `color-mix(in srgb, ${uiBg} 98%, transparent)`,
                                   borderColor: borderColor,
@@ -1383,12 +1382,9 @@ export function DatabaseDataModelMerged() {
                 // ERD Diagram View
                 <div className="h-full relative">
                   {isLoadingERD ? (
-                    <div
-                      className="flex flex-col items-center justify-center h-full"
-                      style={{ color: bodyText, opacity: 0.6 }}
-                    >
-                      <RefreshCw className="h-6 w-6 animate-spin mb-3" />
-                      <p className="text-sm">Loading ERD diagram...</p>
+                    <div className="w-full space-y-3 p-4">
+                        <Skeleton className="h-10 w-full rounded-md" />
+                        <Skeleton className="h-32 w-full rounded-md" />
                     </div>
                   ) : erdModels.length === 0 ? (
                     <div
@@ -1505,12 +1501,9 @@ export function DatabaseDataModelMerged() {
                     <div className="p-4">
                       {/* Always show Data Models from API */}
                       {isLoadingModels ? (
-                        <div
-                          className="flex flex-col items-center justify-center py-16"
-                          style={{ color: bodyText, opacity: 0.6 }}
-                        >
-                          <RefreshCw className="h-6 w-6 animate-spin mb-3" />
-                          <p className="text-sm">Loading models...</p>
+                        <div className="w-full space-y-3 p-4">
+                          <Skeleton className="h-10 w-full rounded-md" />
+                          <Skeleton className="h-32 w-full rounded-md" />
                         </div>
                       ) : (
                         <div className="space-y-1">
@@ -1560,7 +1553,7 @@ export function DatabaseDataModelMerged() {
         setShowAddConnection(open)
         if (!open) resetNewConnection()
       }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Database className="h-5 w-5" />
@@ -1571,7 +1564,7 @@ export function DatabaseDataModelMerged() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="conn-name">Connection Name</Label>
@@ -1775,7 +1768,7 @@ export function DatabaseDataModelMerged() {
                 )}
               </div>
             )}
-          </div>
+          </DialogBody>
 
           <DialogFooter className="flex items-center gap-2">
             <Button
@@ -1858,8 +1851,10 @@ export function DatabaseDataModelMerged() {
                 </div>
 
                 {isLoadingAttributes ? (
-                  <div className="flex items-center justify-center py-8">
-                    <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <div className="w-full space-y-3 p-4">
+                    <Skeleton className="h-10 w-full rounded-md" />
+                    <Skeleton className="h-12 w-full rounded-md" />
+                    <Skeleton className="h-12 w-full rounded-md" />
                   </div>
                 ) : selectedDetailItem?.type === 'model' ? (
                   /* Model Attributes */
@@ -2017,8 +2012,9 @@ export function DatabaseDataModelMerged() {
                       <Badge variant="outline" className="text-[10px]">{attributeOptions.length}</Badge>
                     </div>
                     {isLoadingOptions ? (
-                      <div className="flex items-center justify-center py-8">
-                        <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
+                      <div className="w-full space-y-3 p-4">
+                        <Skeleton className="h-10 w-full rounded-md" />
+                        <Skeleton className="h-12 w-full rounded-md" />
                       </div>
                     ) : attributeOptions.length > 0 ? (
                       <div className="space-y-2">

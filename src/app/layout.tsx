@@ -27,7 +27,7 @@ const ibmPlexSansThai = IBM_Plex_Sans_Thai({
 
 export const metadata: Metadata = {
   title: 'Unified Data Platform',
-  description: 'Comprehensive unified data platform for event organizations',
+  description: 'Comprehensive Unified Data Platform for event organizations',
   robots: {
     index: false,
     follow: false,
@@ -44,8 +44,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 }
 
 export default function RootLayout({
@@ -57,6 +55,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${dmSans.variable} ${ibmPlexSansThai.variable} font-sans antialiased`}
+        style={{ fontFamily: 'var(--font-dm-sans), "IBM Plex Sans Thai", sans-serif' }}
         suppressHydrationWarning
       >
         <GlobalErrorHandler />

@@ -3,6 +3,7 @@ import { query } from '@/lib/db'
 import { executeWorkflow } from '@/lib/workflow-executor'
 import { DataSyncExecutor } from '@/lib/data-sync-executor'
 import { executeNotebookSchedule } from '@/lib/notebook-scheduler'
+import { getConfiguredSiteUrl, getSchedulerApiKey } from '@/lib/system-runtime-settings'
 
 /**
  * Unified Scheduler Endpoint
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
   try {
     // Authentication: Check for API key (for cron jobs) or session (for manual triggers)
     const apiKey = request.headers.get('X-API-Key') || request.headers.get('x-api-key')
-    const expectedApiKey = process.env.SCHEDULER_API_KEY || process.env.CRON_SECRET
+    const expectedApiKey = await getSchedulerApiKey()
 
     // If API key is required and provided, validate it
     if (expectedApiKey && apiKey) {
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
       )
     }
     // If no API key is configured, allow unauthenticated access (for development)
-    // In production, you should always set SCHEDULER_API_KEY
+    // In production, configure a scheduler API key in System Settings
 
     console.log('[Unified Scheduler] Starting scheduled task execution...')
     const results = {
@@ -51,7 +52,8 @@ export async function POST(request: NextRequest) {
 
     // 0. Execute ServiceDesk sync schedules
     try {
-      const servicedeskSyncResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/integrations/manageengine-servicedesk/sync-schedule`, {
+      const siteUrl = await getConfiguredSiteUrl(request)
+      const servicedeskSyncResponse = await fetch(`${siteUrl}/api/integrations/manageengine-servicedesk/sync-schedule`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

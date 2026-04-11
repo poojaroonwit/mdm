@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import crypto from 'crypto'
+import { getGitWebhookSecret } from '@/lib/system-runtime-settings'
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,7 +10,7 @@ export async function POST(request: NextRequest) {
     const body = await request.text()
 
     // Verify webhook signature
-    if (!verifyWebhookSignature(body, signature)) {
+    if (!await verifyWebhookSignature(body, signature)) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
 
@@ -32,10 +33,10 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function verifyWebhookSignature(body: string, signature: string | null): boolean {
+async function verifyWebhookSignature(body: string, signature: string | null): Promise<boolean> {
   if (!signature) return false
 
-  const secret = process.env.GIT_WEBHOOK_SECRET
+  const secret = await getGitWebhookSecret()
   if (!secret) return false
 
   // GitHub signature verification

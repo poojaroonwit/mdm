@@ -51,7 +51,7 @@ export function AttributeForm({ initialData, onSubmit, onCancel, loading = false
   })
 
   const [options, setOptions] = useState<AttributeOption[]>([
-    { value: '', label: '', color: '#3B82F6', order: 0 }
+    { value: '', label: '', color: '#1e40af', order: 0 }
   ])
 
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -63,9 +63,9 @@ export function AttributeForm({ initialData, onSubmit, onCancel, loading = false
       if (initialData.options) {
         setOptions(initialData.options.length > 0 ? initialData.options.map(opt => ({
           ...opt,
-          color: opt.color || '#3B82F6'
+          color: opt.color || '#1e40af'
         })) : [
-          { value: '', label: '', color: '#3B82F6', order: 0 }
+          { value: '', label: '', color: '#1e40af', order: 0 }
         ])
       }
     }
@@ -89,7 +89,7 @@ export function AttributeForm({ initialData, onSubmit, onCancel, loading = false
   ]
 
   const colorOptions = [
-    '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+    '#1e40af', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
     '#06B6D4', '#84CC16', '#F97316', '#EC4899', '#6B7280'
   ]
 
@@ -112,7 +112,7 @@ export function AttributeForm({ initialData, onSubmit, onCancel, loading = false
     setOptions(prev => [...prev, { 
       value: '', 
       label: '', 
-      color: '#3B82F6', 
+      color: '#1e40af', 
       order: prev.length 
     }])
   }
@@ -305,11 +305,11 @@ export function AttributeForm({ initialData, onSubmit, onCancel, loading = false
                   {/* Color Swatch */}
                   <div className="flex items-center gap-2">
                     <ColorInput
-                      value={option.color || '#3B82F6'}
+                      value={option.color || '#1e40af'}
                       onChange={(color) => handleOptionChange(index, 'color', color)}
                       allowImageVideo={false}
                       className="relative"
-                      placeholder="#3B82F6"
+                      placeholder="#1e40af"
                       inputClassName="h-8 text-xs pl-7"
                     />
                   </div>

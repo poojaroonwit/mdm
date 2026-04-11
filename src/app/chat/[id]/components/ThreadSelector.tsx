@@ -57,7 +57,7 @@ export function ThreadSelector({
       const IconName = chatbot.headerAvatarIcon || chatbot.avatarIcon || 'Bot'
       const IconComponent = (Icons as any)[IconName] || Bot
       const iconColor = chatbot.headerAvatarIconColor || chatbot.avatarIconColor || '#ffffff'
-      const bgColor = chatbot.headerAvatarBackgroundColor || chatbot.avatarBackgroundColor || chatbot.primaryColor || '#3b82f6'
+      const bgColor = chatbot.headerAvatarBackgroundColor || chatbot.avatarBackgroundColor || chatbot.primaryColor || '#1e40af'
       return (
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"

@@ -310,7 +310,7 @@ export function JupyterCell({
   return (
     <div
       className={cn(
-        "group relative border-l-4 transition-all duration-200 hover:shadow-sm",
+        "group relative border-l-4 transition-all duration-200 hover:shadow-lg",
         isActive ? "border-blue-500 bg-blue-50/30" : "border-transparent",
         isSelected ? "bg-blue-100/50" : "",
         cell.status === 'running' ? "bg-yellow-50" : "",

@@ -51,7 +51,7 @@ export default function IconPickerPopover({ value, onChange, animated = false, a
           setAnchorRect(rect)
           setOpen((v) => !v)
         }}
-        className="p-2 rounded-xl inline-flex items-center gap-3 border border-zinc-100/60 dark:border-zinc-800/60 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-all duration-200 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-sm shadow-sm"
+        className="p-2 rounded-md inline-flex items-center gap-3 border border-zinc-100/60 dark:border-zinc-800/60 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-all duration-200 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-sm shadow-lg"
         title={value || "Choose icon"}
       >
         <div className="h-10 w-10 rounded-full flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-200/50 dark:border-zinc-700/50 shadow-inner-sm">

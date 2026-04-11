@@ -37,8 +37,8 @@ export const buildChatKitTheme = (chatbot: ChatbotConfig) => {
 
     if (chatkitOptions.theme?.color) {
         // Accent color (required) - ChatKit expects hex format
-        const accentPrimaryRaw = chatkitOptions.theme.color.accent?.primary || chatbot.primaryColor || '#3b82f6'
-        const accentPrimaryHex = convertToHex(accentPrimaryRaw) || '#3b82f6'
+        const accentPrimaryRaw = chatkitOptions.theme.color.accent?.primary || chatbot.primaryColor || '#1e40af'
+        const accentPrimaryHex = convertToHex(accentPrimaryRaw) || '#1e40af'
         const accentLevel = chatkitOptions.theme.color.accent?.level ?? 2
 
         // Validate accent level (0-3) per ChatKit schema
@@ -109,7 +109,7 @@ export const buildChatKitTheme = (chatbot: ChatbotConfig) => {
         }
     } else {
         // Default color if none provided - convert to hex as ChatKit requires hex format
-        const primaryHex = convertToHex(chatbot.primaryColor) || '#3b82f6'
+        const primaryHex = convertToHex(chatbot.primaryColor) || '#1e40af'
         colorObj.accent = {
             primary: primaryHex,
             level: 2,

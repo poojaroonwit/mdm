@@ -2,6 +2,7 @@ import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from 
 import { requireSpaceAccess } from '@/lib/space-access'
 import { NextRequest, NextResponse } from 'next/server'
 import puppeteer from 'puppeteer'
+import { getConfiguredSiteUrl } from '@/lib/system-runtime-settings'
 
 async function postHandler(request: NextRequest) {
   try {
@@ -23,8 +24,9 @@ async function postHandler(request: NextRequest) {
     }
 
     // Fetch data from data model
+    const siteUrl = await getConfiguredSiteUrl(request)
     const dataResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/data-models/${modelId}/data`,
+      `${siteUrl}/api/data-models/${modelId}/data`,
       {
         method: 'POST',
         headers: {

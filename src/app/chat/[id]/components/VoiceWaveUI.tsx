@@ -82,8 +82,8 @@ export function VoiceWaveUI({
         >
           <defs>
             <linearGradient id="waveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={chatbot.primaryColor || '#3b82f6'} stopOpacity="0.8" />
-              <stop offset="100%" stopColor={chatbot.primaryColor || '#3b82f6'} stopOpacity="0.2" />
+              <stop offset="0%" stopColor={chatbot.primaryColor || '#1e40af'} stopOpacity="0.8" />
+              <stop offset="100%" stopColor={chatbot.primaryColor || '#1e40af'} stopOpacity="0.2" />
             </linearGradient>
           </defs>
           {[0, 1, 2].map((i) => (
@@ -122,7 +122,7 @@ export function VoiceWaveUI({
                 key={i}
                 className="w-1 rounded-full transition-all duration-75"
                 style={{
-                  backgroundColor: chatbot.primaryColor || '#3b82f6',
+                  backgroundColor: chatbot.primaryColor || '#1e40af',
                   height: `${height}%`,
                   minHeight: '10%',
                   transition: 'height 0.075s ease-out',
@@ -143,7 +143,7 @@ export function VoiceWaveUI({
           className="rounded-full w-20 h-20 p-0 shadow-lg hover:scale-105 transition-transform"
           style={{
             backgroundColor: isVoiceOn
-              ? (chatbot.primaryColor || '#3b82f6')
+              ? (chatbot.primaryColor || '#1e40af')
               : '#e5e7eb',
             color: isVoiceOn ? '#ffffff' : '#6b7280',
           }}
@@ -178,7 +178,7 @@ export function VoiceWaveUI({
           <div
             className="mt-2 px-6 py-3 rounded-lg max-w-lg text-center min-h-[3rem] flex items-center justify-center"
             style={{
-              backgroundColor: chatbot.primaryColor || '#3b82f6',
+              backgroundColor: chatbot.primaryColor || '#1e40af',
               color: '#ffffff',
               opacity: 0.9,
             }}
@@ -203,7 +203,7 @@ export function VoiceWaveUI({
               className="px-3 py-2 rounded-lg text-sm backdrop-blur-sm"
               style={{
                 backgroundColor: msg.role === 'user'
-                  ? (chatbot.userMessageBackgroundColor || chatbot.primaryColor || '#3b82f6')
+                  ? (chatbot.userMessageBackgroundColor || chatbot.primaryColor || '#1e40af')
                   : (chatbot.botMessageBackgroundColor || '#f3f4f6'),
                 color: msg.role === 'user'
                   ? (chatbot.userMessageFontColor || '#ffffff')

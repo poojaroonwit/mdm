@@ -97,7 +97,7 @@ export const ChatKitGlobalStyles = ({ chatbot, chatkitOptions }: ChatKitGlobalSt
           .chatkit-send-button,
           div[class*="composer"] button:last-child,
           div[class*="Composer"] button:last-child {
-            background-color: ${(chatbot as any).sendButtonBgColor || primaryColor || '#3b82f6'} !important;
+            background-color: ${(chatbot as any).sendButtonBgColor || primaryColor || '#1e40af'} !important;
           }
 
           :root {
@@ -144,7 +144,7 @@ export const ChatKitGlobalStyles = ({ chatbot, chatkitOptions }: ChatKitGlobalSt
           button[aria-label="Send message"],
           button[class*="send-button"],
           button[class*="SendButton"] {
-            background-color: ${(chatbot as any).sendButtonBgColor || primaryColor || '#3b82f6'} !important;
+            background-color: ${(chatbot as any).sendButtonBgColor || primaryColor || '#1e40af'} !important;
             color: ${(chatbot as any).sendButtonIconColor || '#ffffff'} !important;
             ${(chatbot as any).sendButtonBorderRadiusTopLeft || (chatbot as any).sendButtonBorderRadiusTopRight || (chatbot as any).sendButtonBorderRadiusBottomRight || (chatbot as any).sendButtonBorderRadiusBottomLeft
           ? `border-top-left-radius: ${(chatbot as any).sendButtonBorderRadiusTopLeft || (chatbot as any).sendButtonBorderRadius || '8px'} !important;

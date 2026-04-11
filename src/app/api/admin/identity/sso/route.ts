@@ -4,6 +4,7 @@ import { SignJWT } from 'jose';
 import { randomUUID } from 'crypto';
 import bcrypt from 'bcryptjs';
 import { getResolvedSSOProvider, normalizeSSOProviderName } from '@/lib/sso';
+import { getConfiguredSiteUrl } from '@/lib/system-runtime-settings';
 import {
   isDomainAllowed,
   mapOAuthProfile,
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'OAuth provider not found or disabled' }, { status: 404 });
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const siteUrl = await getConfiguredSiteUrl(request);
 
     const oauthUrls = {
       google: {
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
     let tokenResponse;
     let userInfo;
     let azureAccessToken: string | null = null;
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const siteUrl = await getConfiguredSiteUrl(request);
 
     if (provider === 'google') {
       const googleTokenData = new URLSearchParams({

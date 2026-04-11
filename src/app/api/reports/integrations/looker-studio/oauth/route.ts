@@ -1,6 +1,7 @@
 import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from '@/lib/api-middleware'
 import { requireSpaceAccess } from '@/lib/space-access'
 import { NextRequest, NextResponse } from 'next/server'
+import { getGoogleOAuthConfig } from '@/lib/google-oauth-config'
 async function getHandler(request: NextRequest) {
   const authResult = await requireAuthWithId()
   if (!authResult.success) return authResult.response
@@ -10,13 +11,12 @@ async function getHandler(request: NextRequest) {
   const spaceId = searchParams.get('space_id')
   const redirectUri = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/reports/integrations/looker-studio/oauth/callback`
 
-  // Google OAuth configuration for Looker Studio
-  const clientId = process.env.GOOGLE_CLIENT_ID || ''
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET || ''
+  const googleConfig = await getGoogleOAuthConfig()
+  const clientId = googleConfig?.clientId || ''
 
   if (!clientId) {
     return NextResponse.json({ 
-      error: 'Google OAuth not configured. Please set GOOGLE_CLIENT_ID environment variable.' 
+      error: 'Google OAuth not configured. Please configure it in SSO settings.' 
     }, { status: 400 })
   }
 

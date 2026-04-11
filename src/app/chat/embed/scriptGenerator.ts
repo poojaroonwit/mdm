@@ -101,7 +101,7 @@ export function generateEmbedScript(
     else if (wPos.indexOf('left') !== -1) phPos += 'left:' + buttonShadowBuffer + 'px;right:auto;';
     else phPos += 'left:50%;transform:translateX(-50%);';
 
-    var phBg = widgetConfig.backgroundColor || '#3b82f6';
+    var phBg = widgetConfig.backgroundColor || '#1e40af';
     var phRadius = widgetConfig.borderRadius || '50%';
     var phBorder = (widgetConfig.borderWidth && widgetConfig.borderWidth !== '0px')
       ? widgetConfig.borderWidth + ' solid ' + (widgetConfig.borderColor || 'transparent') : 'none';

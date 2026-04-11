@@ -19,7 +19,6 @@ import { Toaster } from "react-hot-toast"
 import { NotificationProvider } from "@/contexts/notification-context"
 import { QueryProvider } from "@/lib/providers/query-provider"
 import { ThemeProvider } from "@/contexts/theme-context"
-import { SessionTimeoutWatcher } from "@/components/providers/SessionTimeoutWatcher"
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 
@@ -91,7 +90,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <ThemeProvider>
           <QueryProvider>
             <NotificationProvider>
-              <SessionTimeoutWatcher />
               {children}
               <ThemedToaster />
             </NotificationProvider>

@@ -12,6 +12,7 @@ import {
 } from '@/lib/folder-state'
 
 const folderTypeSchema = z.enum(['data_model', 'chatbot'])
+const spaceIdSchema = z.union([z.string().uuid(), z.literal('global')])
 
 async function getHandler(request: NextRequest) {
   const startTime = Date.now()
@@ -21,7 +22,7 @@ async function getHandler(request: NextRequest) {
 
   // Validate query parameters
   const queryValidation = validateQuery(request, z.object({
-    space_id: commonSchemas.id.optional(),
+    space_id: spaceIdSchema.optional(),
     type: folderTypeSchema.optional().default('data_model'),
   }))
 
@@ -30,15 +31,15 @@ async function getHandler(request: NextRequest) {
   }
 
   const { space_id: requestedSpaceId, type = 'data_model' } = queryValidation.data
-  const spaceId = await resolveFolderSpaceId(session.user.id!, requestedSpaceId)
+  const spaceId = await resolveFolderSpaceId(session.user.id!, requestedSpaceId, type)
   logger.apiRequest('GET', '/api/folders', { userId: session.user.id, spaceId, type })
 
   if (!spaceId) {
     return NextResponse.json({ folders: [], spaceId: null })
   }
 
-  // Check space access only if a space_id was provided
-  if (spaceId) {
+  // Check space access only if a space_id was provided and it's not the 'global' bucket
+  if (spaceId && spaceId !== 'global') {
     const accessResult = await requireSpaceAccess(spaceId, session.user.id!)
     if (!accessResult.success) {
       logger.warn('Access denied for folders', { spaceId, userId: session.user.id })
@@ -69,7 +70,7 @@ async function postHandler(request: NextRequest) {
   const bodyValidation = await validateBody(request, z.object({
     name: z.string().min(1, 'Name is required'),
     type: folderTypeSchema.optional().default('data_model'),
-    space_id: commonSchemas.id.optional(),
+    space_id: spaceIdSchema.optional(),
     parent_id: commonSchemas.id.optional().nullable(),
   }))
   
@@ -78,18 +79,20 @@ async function postHandler(request: NextRequest) {
   }
   
   const { name, type = 'data_model', parent_id } = bodyValidation.data
-  const space_id = await resolveFolderSpaceId(session.user.id!, bodyValidation.data.space_id)
+  const space_id = await resolveFolderSpaceId(session.user.id!, bodyValidation.data.space_id, type)
   logger.apiRequest('POST', '/api/folders', { userId: session.user.id, name, space_id })
 
   if (!space_id) {
     return NextResponse.json({ error: 'No accessible space available for folder creation' }, { status: 400 })
   }
 
-  // Check if user has access to the space (requireSpaceAccess checks member or owner)
-  const accessResult = await requireSpaceAccess(space_id, session.user.id!)
-  if (!accessResult.success) {
-    logger.warn('Access denied for folder creation', { spaceId: space_id, userId: session.user.id })
-    return accessResult.response
+  // Check if user has access to the space (skip check for 'global' chatbot bucket)
+  if (space_id !== 'global') {
+    const accessResult = await requireSpaceAccess(space_id, session.user.id!)
+    if (!accessResult.success) {
+      logger.warn('Access denied for folder creation', { spaceId: space_id, userId: session.user.id })
+      return accessResult.response
+    }
   }
 
   try {

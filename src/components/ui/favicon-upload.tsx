@@ -107,7 +107,7 @@ export function FaviconUpload({ currentFavicon, onFaviconChange, onRemove }: Fav
           <div className="space-y-3">
             <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Current Favicon</Label>
             <div className="flex items-center space-x-4 p-4 border border-zinc-100/60 dark:border-zinc-800/60 rounded-2xl bg-white/50 dark:bg-zinc-950/20 backdrop-blur-md shadow-inner-sm">
-              <div className="w-16 h-16 border border-zinc-200/50 dark:border-zinc-700/50 rounded-xl flex items-center justify-center bg-zinc-100/50 dark:bg-zinc-800/30">
+              <div className="w-16 h-16 border border-zinc-200/50 dark:border-zinc-700/50 rounded-md flex items-center justify-center bg-zinc-100/50 dark:bg-zinc-800/30">
                 <img 
                   src={preview} 
                   alt="Favicon preview" 
@@ -137,7 +137,7 @@ export function FaviconUpload({ currentFavicon, onFaviconChange, onRemove }: Fav
 
         {/* Error Display */}
         {error && (
-          <div className="flex items-center space-x-2 p-3 bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100/50 dark:border-rose-900/30 rounded-xl">
+          <div className="flex items-center space-x-2 p-3 bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100/50 dark:border-rose-900/30 rounded-md">
             <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
             <span className="text-xs font-medium text-rose-600 dark:text-rose-400 tracking-tight">{error}</span>
           </div>

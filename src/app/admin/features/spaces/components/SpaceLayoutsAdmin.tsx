@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
 import { useSpace } from '@/contexts/space-context'
 import { Layout, Eye, Plus, Save, Trash2 } from 'lucide-react'
 import { LayoutTemplate } from '../types'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const TEMPLATES_KEY = 'space_layout_templates'
 
@@ -91,13 +92,13 @@ export function SpaceLayoutsAdmin() {
           <Layout className="h-5 w-5" />
           <h2 className="text-xl font-semibold">Space Layout Templates</h2>
         </div>
-        <Button onClick={startCreate}>
+        <Button className="rounded-xl font-bold" onClick={startCreate}>
           <Plus className="h-4 w-4 mr-2" />
           New Template
         </Button>
       </div>
 
-      <Card>
+      <Card className="rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm">
         <CardHeader>
           <CardTitle className="text-base">Templates</CardTitle>
         </CardHeader>
@@ -120,13 +121,13 @@ export function SpaceLayoutsAdmin() {
                     <td className="py-2 px-3">{t.allowedSpaceIds.length}</td>
                     <td className="py-2 px-3">
                       <div className="flex items-center gap-2">
-                        <Button size="sm" variant="outline" onClick={() => startEdit(t)}>
+                        <Button className="rounded-xl font-bold" size="sm" variant="outline" onClick={() => startEdit(t)}>
                           <Eye className="h-4 w-4 mr-1" /> Configure
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => setAllowedDialog(t)}>
+                        <Button className="rounded-xl font-bold" size="sm" variant="outline" onClick={() => setAllowedDialog(t)}>
                           Allowed Spaces
                         </Button>
-                        <Button size="sm" variant="destructive" onClick={() => removeTemplate(t.id)}>
+                        <Button className="rounded-xl font-bold" size="sm" variant="destructive" onClick={() => removeTemplate(t.id)}>
                           <Trash2 className="h-4 w-4 mr-1" /> Delete
                         </Button>
                       </div>
@@ -150,38 +151,39 @@ export function SpaceLayoutsAdmin() {
           <DialogHeader>
             <DialogTitle>Edit Layout Template</DialogTitle>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-10 gap-4">
+          <DialogBody className="grid grid-cols-1 md:grid-cols-10 gap-4"> md:grid-cols-10 gap-4">
             <div className="md:col-span-7">
-              <Card>
+              <Card className="rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-base">Preview</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-80 bg-gray-50 border rounded" />
+                  <div className="h-80 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl" />
                 </CardContent>
               </Card>
             </div>
             <div className="md:col-span-3">
-              <Card>
+              <Card className="rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-base">Configuration</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <Label>Name</Label>
-                    <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                    <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Name</Label>
+                    <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
                   </div>
                   <div>
-                    <Label>Description</Label>
-                    <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                    <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Description</Label>
+                    <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
                   </div>
-                  <Button onClick={saveTemplate} className="w-full">
+                  <Button className="rounded-xl font-bold" onClick={saveTemplate} className="w-full">
                     <Save className="h-4 w-4 mr-2" /> Save
                   </Button>
                 </CardContent>
               </Card>
             </div>
           </div>
+          </DialogBody>
         </DialogContent>
       </Dialog>
 
@@ -191,13 +193,15 @@ export function SpaceLayoutsAdmin() {
           <DialogHeader>
             <DialogTitle>Allowed Spaces</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+          <DialogBody className="space-y-2 max-h-[60vh] overflow-y-auto"> max-h-[60vh] overflow-y-auto">
             {spacesLoading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="text-center space-y-2">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-                  <p className="text-sm text-muted-foreground">Loading spaces...</p>
-                </div>
+                <div className="w-full space-y-3 p-4">
+  <Skeleton className="h-10 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+</div>
               </div>
             ) : spaces.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -222,7 +226,7 @@ export function SpaceLayoutsAdmin() {
                 )
               })
             )}
-          </div>
+          </DialogBody>
         </DialogContent>
       </Dialog>
     </div>

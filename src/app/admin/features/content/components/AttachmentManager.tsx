@@ -1,13 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+'use client'
+
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
 import { 
   Cloud, 
   Plus, 
@@ -43,6 +46,7 @@ import {
   Search
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface Attachment {
   id: string
@@ -272,40 +276,42 @@ export function AttachmentManager() {
               Upload File
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
+          <DialogContent className="max-w-md p-0 overflow-hidden">
+            <DialogHeader className="p-6 pb-2">
               <DialogTitle>Upload File</DialogTitle>
               <DialogDescription>
                 Upload a new file to a space
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="file">Select File</Label>
-                <Input
-                  id="file"
-                  type="file"
-                  onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                  className="cursor-pointer"
-                />
+            <DialogBody className="p-6 pt-2 pb-4">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="file">Select File</Label>
+                  <Input
+                    id="file"
+                    type="file"
+                    onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                    className="cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="space">Target Space</Label>
+                  <Select value={uploadSpace} onValueChange={setUploadSpace}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select space" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {spaces.map(space => (
+                        <SelectItem key={space.id} value={space.id}>
+                          {space.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div>
-                <Label htmlFor="space">Target Space</Label>
-                <Select value={uploadSpace} onValueChange={setUploadSpace}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select space" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {spaces.map(space => (
-                      <SelectItem key={space.id} value={space.id}>
-                        {space.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <DialogFooter>
+            </DialogBody>
+            <DialogFooter className="p-6 pt-2">
               <Button variant="outline" onClick={() => setShowUploadDialog(false)}>
                 Cancel
               </Button>
@@ -380,9 +386,11 @@ export function AttachmentManager() {
       {/* Attachments Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {isLoading ? (
-          <div className="col-span-full text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading attachments...</p>
+          <div className="w-full space-y-3 p-4">
+            <Skeleton className="h-10 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-xl" />
           </div>
         ) : attachments.length === 0 ? (
           <div className="col-span-full text-center py-12">
@@ -468,8 +476,8 @@ export function AttachmentManager() {
       {/* Attachment Details Modal */}
       {selectedAttachment && (
         <Dialog open={!!selectedAttachment} onOpenChange={() => setSelectedAttachment(null)}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
+          <DialogContent className="max-w-2xl p-0 overflow-hidden">
+            <DialogHeader className="p-6 pb-2">
               <DialogTitle className="flex items-center gap-2">
                 {getFileIcon(selectedAttachment.mimeType)}
                 {selectedAttachment.name}
@@ -478,45 +486,47 @@ export function AttachmentManager() {
                 {selectedAttachment.spaceName} • {getFileTypeCategory(selectedAttachment.mimeType)}
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Original Name:</span> {selectedAttachment.originalName}
-                </div>
-                <div>
-                  <span className="font-medium">Size:</span> {formatFileSize(selectedAttachment.size)}
-                </div>
-                <div>
-                  <span className="font-medium">Type:</span> {selectedAttachment.mimeType}
-                </div>
-                <div>
-                  <span className="font-medium">Provider:</span> 
-                  <div className="flex items-center gap-1 mt-1">
-                    {getStorageProviderIcon(selectedAttachment.storageProvider)}
-                    <span className="capitalize">{selectedAttachment.storageProvider}</span>
+            <DialogBody className="p-6 pt-2 pb-4">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Original Name:</span> {selectedAttachment.originalName}
+                  </div>
+                  <div>
+                    <span className="font-medium">Size:</span> {formatFileSize(selectedAttachment.size)}
+                  </div>
+                  <div>
+                    <span className="font-medium">Type:</span> {selectedAttachment.mimeType}
+                  </div>
+                  <div>
+                    <span className="font-medium">Provider:</span> 
+                    <div className="flex items-center gap-1 mt-1">
+                      {getStorageProviderIcon(selectedAttachment.storageProvider)}
+                      <span className="capitalize">{selectedAttachment.storageProvider}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <span className="font-medium">Uploaded by:</span> {selectedAttachment.uploadedByName}
+                  </div>
+                  <div>
+                    <span className="font-medium">Created:</span> {new Date(selectedAttachment.createdAt).toLocaleDateString()}
                   </div>
                 </div>
-                <div>
-                  <span className="font-medium">Uploaded by:</span> {selectedAttachment.uploadedByName}
-                </div>
-                <div>
-                  <span className="font-medium">Created:</span> {new Date(selectedAttachment.createdAt).toLocaleDateString()}
-                </div>
+                
+                {selectedAttachment.url && (
+                  <div>
+                    <Label>URL</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Input value={selectedAttachment.url} readOnly className="text-xs" />
+                      <Button size="sm" variant="outline" onClick={() => navigator.clipboard.writeText(selectedAttachment.url)}>
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
-              
-              {selectedAttachment.url && (
-                <div>
-                  <Label>URL</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Input value={selectedAttachment.url} readOnly className="text-xs" />
-                    <Button size="sm" variant="outline" onClick={() => navigator.clipboard.writeText(selectedAttachment.url)}>
-                      Copy
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-            <DialogFooter>
+            </DialogBody>
+            <DialogFooter className="p-6 pt-2">
               <Button variant="outline" onClick={() => setSelectedAttachment(null)}>
                 Close
               </Button>

@@ -155,11 +155,11 @@ export function MessagesSection({ formData, setFormData }: MessagesSectionProps)
                   </FormRow>
                   <FormRow label="Background Color" description="Background color of the avatar circle">
                     <ColorInput
-                      value={formData.avatarBackgroundColor || '#3b82f6'}
+                      value={formData.avatarBackgroundColor || '#1e40af'}
                       onChange={(color) => setFormData({ ...formData, avatarBackgroundColor: color })}
                       allowImageVideo={false}
                       className="relative"
-                      placeholder="#3b82f6"
+                      placeholder="#1e40af"
                       inputClassName="h-8 text-xs pl-7"
                     />
                   </FormRow>
@@ -303,11 +303,11 @@ export function MessagesSection({ formData, setFormData }: MessagesSectionProps)
             <FormSection>
               <FormRow label="Background" description="User message background color">
                 <ColorInput
-                  value={formData.userMessageBackgroundColor || formData.primaryColor || '#3b82f6'}
+                  value={formData.userMessageBackgroundColor || formData.primaryColor || '#1e40af'}
                   onChange={(color) => setFormData({ ...formData, userMessageBackgroundColor: color })}
                   allowImageVideo={false}
                   className="relative"
-                  placeholder="#3b82f6"
+                  placeholder="#1e40af"
                   inputClassName="h-7 text-xs pl-7 w-full"
                 />
               </FormRow>

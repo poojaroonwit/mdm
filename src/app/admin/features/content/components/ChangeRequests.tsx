@@ -17,12 +17,9 @@ import {
   Search
 } from 'lucide-react'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogBody,
 } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import toast from 'react-hot-toast'
@@ -211,65 +208,67 @@ export function ChangeRequests() {
               Create Change Request
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
+          <DialogContent className="max-w-2xl p-0 overflow-hidden">
+            <DialogHeader className="p-6 pb-2">
               <DialogTitle>Create Change Request</DialogTitle>
               <DialogDescription>
                 Submit a database change for approval
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Title</label>
-                <Input
-                  value={newRequest.title}
-                  onChange={(e) => setNewRequest({ ...newRequest, title: e.target.value })}
-                  placeholder="e.g., Add email index to users table"
-                />
+            <DialogBody className="p-6 pt-2 pb-4">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">Title</label>
+                  <Input
+                    value={newRequest.title}
+                    onChange={(e) => setNewRequest({ ...newRequest, title: e.target.value })}
+                    placeholder="e.g., Add email index to users table"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Change Type</label>
+                  <select
+                    className="w-full p-2 border rounded"
+                    value={newRequest.changeType}
+                    onChange={(e) => setNewRequest({ ...newRequest, changeType: e.target.value })}
+                  >
+                    <option value="CREATE_TABLE">Create Table</option>
+                    <option value="ALTER_TABLE">Alter Table</option>
+                    <option value="DROP_TABLE">Drop Table</option>
+                    <option value="CREATE_INDEX">Create Index</option>
+                    <option value="DROP_INDEX">Drop Index</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">SQL Statement</label>
+                  <Textarea
+                    value={newRequest.sqlStatement}
+                    onChange={(e) => setNewRequest({ ...newRequest, sqlStatement: e.target.value })}
+                    placeholder="CREATE INDEX idx_users_email ON users(email);"
+                    rows={5}
+                    className="font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Rollback SQL (Optional)</label>
+                  <Textarea
+                    value={newRequest.rollbackSql}
+                    onChange={(e) => setNewRequest({ ...newRequest, rollbackSql: e.target.value })}
+                    placeholder="DROP INDEX idx_users_email;"
+                    rows={3}
+                    className="font-mono"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="text-sm font-medium">Change Type</label>
-                <select
-                  className="w-full p-2 border rounded"
-                  value={newRequest.changeType}
-                  onChange={(e) => setNewRequest({ ...newRequest, changeType: e.target.value })}
-                >
-                  <option value="CREATE_TABLE">Create Table</option>
-                  <option value="ALTER_TABLE">Alter Table</option>
-                  <option value="DROP_TABLE">Drop Table</option>
-                  <option value="CREATE_INDEX">Create Index</option>
-                  <option value="DROP_INDEX">Drop Index</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-sm font-medium">SQL Statement</label>
-                <Textarea
-                  value={newRequest.sqlStatement}
-                  onChange={(e) => setNewRequest({ ...newRequest, sqlStatement: e.target.value })}
-                  placeholder="CREATE INDEX idx_users_email ON users(email);"
-                  rows={5}
-                  className="font-mono"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Rollback SQL (Optional)</label>
-                <Textarea
-                  value={newRequest.rollbackSql}
-                  onChange={(e) => setNewRequest({ ...newRequest, rollbackSql: e.target.value })}
-                  placeholder="DROP INDEX idx_users_email;"
-                  rows={3}
-                  className="font-mono"
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={createChangeRequest} disabled={submitting}>
-                  {submitting ? 'Creating...' : 'Create Request'}
-                </Button>
-              </div>
-            </div>
+            </DialogBody>
+            <DialogFooter className="p-6 pt-2">
+              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={createChangeRequest} disabled={submitting}>
+                {submitting ? 'Creating...' : 'Create Request'}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>

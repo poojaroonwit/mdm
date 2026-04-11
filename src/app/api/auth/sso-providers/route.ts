@@ -12,8 +12,8 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('[SSO-Providers] CRITICAL ERROR:', error)
     return NextResponse.json({
-      google: !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET,
-      azure: !!(process.env.AZURE_AD_CLIENT_ID && process.env.AZURE_AD_CLIENT_SECRET && process.env.AZURE_AD_TENANT_ID),
+      google: false,
+      azure: false,
       error: error.message 
     })
   }

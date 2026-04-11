@@ -398,7 +398,7 @@ export function ChatbotList({
   const renderChatbots = (items: Chatbot[]) => {
     if (items.length === 0) {
       return (
-        <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+        <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
           No chatbots in this section.
         </div>
       )
@@ -451,22 +451,7 @@ export function ChatbotList({
 
   return (
     <div className="space-y-6">
-      {hasFolderFeatures && (
-        <div className="flex items-center justify-between gap-3 rounded-2xl border bg-card/50 px-4 py-3">
-          <div>
-            <div className="font-medium">Folders</div>
-            <div className="text-sm text-muted-foreground">
-              Organize chatbots into folders and drag them between sections.
-            </div>
-          </div>
-          {onCreateFolder && (
-            <Button variant="outline" onClick={onCreateFolder}>
-              <FolderPlus className="mr-2 h-4 w-4" />
-              New Folder
-            </Button>
-          )}
-        </div>
-      )}
+   
 
       <div
         className={cn(

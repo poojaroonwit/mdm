@@ -1,6 +1,7 @@
 import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit } from '@/lib/rate-limiter'
+import { getRealtimeProxyUrl } from '@/lib/realtime-proxy-settings'
 /**
  * OpenAI Realtime API WebSocket Endpoint
  * 
@@ -43,7 +44,8 @@ async function getHandler(request: NextRequest) {
 
   // Return WebSocket proxy server URL
   // In production, this should point to your WebSocket proxy server
-  const wsProxyUrl = process.env.WS_PROXY_URL || 'ws://localhost:3002/api/openai-realtime'
+  const fallbackHost = request.headers.get('host')?.split(':')[0] || 'localhost'
+  const wsProxyUrl = await getRealtimeProxyUrl(fallbackHost)
 
   return NextResponse.json({
     success: true,

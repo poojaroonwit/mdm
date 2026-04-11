@@ -8,6 +8,7 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const ts = require('typescript');
 
 // Colors for terminal output
 const colors = {
@@ -153,88 +154,23 @@ function scanJSX() {
 
       if (!filePath.endsWith('.tsx') && !filePath.endsWith('.jsx')) return;
 
-      const lines = content.split(/\r?\n/);
+      const sourceFile = ts.createSourceFile(
+        filePath,
+        content,
+        ts.ScriptTarget.Latest,
+        true,
+        filePath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.JSX
+      );
 
-      // Check for unclosed JSX tags
-      let openTags = [];
-      lines.forEach((line, idx) => {
-        // Match opening tags
-        const openTagMatches = line.matchAll(/<([A-Z][a-zA-Z0-9]*)\s*([^>]*)>/g);
-        for (const match of openTagMatches) {
-          const tagName = match[1];
-          const attributes = match[2];
-          const index = match.index;
-
-          // Check if it's a generic (preceded by word char, e.g. useRef<T>)
-          if (index > 0) {
-            const charBefore = line[index - 1];
-            if (/[a-zA-Z0-9_]/.test(charBefore)) {
-              continue; // It's likely a generic
-            }
-          }
-
-          // Skip self-closing tags (either empty or with attributes ending in /)
-          if (line.includes(`</${tagName}>`) || line.includes('/>') || attributes.trim().endsWith('/')) {
-            continue;
-          }
-
-          openTags.push({ tag: tagName, line: idx + 1 });
-        }
-
-        // Match closing tags
-        const closeTagMatches = line.matchAll(/<\/([A-Z][a-zA-Z0-9]*)>/g);
-        for (const match of closeTagMatches) {
-          const tagName = match[1];
-          const lastOpen = openTags.findLast(t => t.tag === tagName);
-          if (lastOpen) {
-            openTags = openTags.filter(t => t !== lastOpen);
-          }
-        }
-      });
-
-      // Check for duplicate attributes
-      lines.forEach((line, idx) => {
-        // Check for duplicate className - only if we suspect it's on the same tag
-        // Simple heuristic: if className count > tag count, likely duplicate
-        const classNameMatches = line.match(/className=/g);
-        const tagMatches = line.match(/<[A-Z][a-zA-Z0-9]*/g) || [];
-        const simpleTagMatches = line.match(/<[a-z]+/g) || []; // match div, span etc
-        const totalTags = tagMatches.length + simpleTagMatches.length;
-
-        if (classNameMatches && classNameMatches.length > 1) {
-          if (totalTags <= 1 || classNameMatches.length > totalTags) {
-            // Only report if we have more classNames than tags, or if there is only 1 tag (or 0 detected)
-            // This is still a heuristic but better than before
-            issues.jsx.push({
-              file: relativePath,
-              line: idx + 1,
-              message: 'Duplicate className attribute (potential)'
-            });
-          }
-        }
-
-        // Check for duplicate style
-        const styleMatches = line.match(/style=/g);
-        if (styleMatches && styleMatches.length > 1) {
-          if (totalTags <= 1 || styleMatches.length > totalTags) {
-            issues.jsx.push({
-              file: relativePath,
-              line: idx + 1,
-              message: 'Duplicate style attribute (potential)'
-            });
-          }
-        }
-      });
-
-      if (openTags.length > 0) {
-        openTags.forEach(({ tag, line: lineNum }) => {
-          issues.jsx.push({
-            file: relativePath,
-            line: lineNum,
-            message: `Potentially unclosed JSX tag: <${tag}>`
-          });
+      const diagnostics = sourceFile.parseDiagnostics || [];
+      diagnostics.forEach((diagnostic) => {
+        const position = sourceFile.getLineAndCharacterOfPosition(diagnostic.start || 0);
+        issues.jsx.push({
+          file: relativePath,
+          line: position.line + 1,
+          message: ts.flattenDiagnosticMessageText(diagnostic.messageText, ' ')
         });
-      }
+      });
     } catch (error) {
       // Skip files that can't be read
     }

@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
         spaceName: 'Analytics',
         userId: 'user-5',
         userName: 'Analyst User',
-        size: 700
+        size: 600
       },
       {
         id: '7',

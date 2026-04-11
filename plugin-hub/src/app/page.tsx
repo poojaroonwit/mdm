@@ -73,10 +73,10 @@ export default function HubHome() {
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '48px', opacity: 0.5, flexWrap: 'wrap' }}>
           {/* Placeholders for logos */}
-          <div style={{ fontSize: '24px', fontWeight: 700, color: 'hsl(var(--foreground))' }}>ACME Corp</div>
-          <div style={{ fontSize: '24px', fontWeight: 700, color: 'hsl(var(--foreground))' }}>Globex</div>
-          <div style={{ fontSize: '24px', fontWeight: 700, color: 'hsl(var(--foreground))' }}>Soylent</div>
-          <div style={{ fontSize: '24px', fontWeight: 700, color: 'hsl(var(--foreground))' }}>Initech</div>
+          <div style={{ fontSize: '24px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>ACME Corp</div>
+          <div style={{ fontSize: '24px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>Globex</div>
+          <div style={{ fontSize: '24px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>Soylent</div>
+          <div style={{ fontSize: '24px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>Initech</div>
         </div>
       </section>
     </div>

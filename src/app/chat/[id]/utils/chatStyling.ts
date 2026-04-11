@@ -508,11 +508,11 @@ export function getWidgetButtonStyle(chatbot: ChatbotConfig, chatkitOptions?: an
                      theme.color?.accent?.primary || 
                      theme.primaryColor || 
                      chatbot.primaryColor || 
-                     '#3b82f6'
+                     '#1e40af'
                      
   // Ensure we have a valid color value (not empty string)
   if (!widgetBgValue || (typeof widgetBgValue === 'string' && widgetBgValue.trim() === '')) {
-    widgetBgValue = '#3b82f6'
+    widgetBgValue = '#1e40af'
   }
   
   const blurAmount = (chatbot as any).widgetBackgroundBlur || 0
@@ -606,14 +606,14 @@ export function getWidgetButtonStyle(chatbot: ChatbotConfig, chatkitOptions?: an
         if (rgbMatch) {
           baseStyle.backgroundColor = `rgba(${rgbMatch[1]}, ${rgbMatch[2]}, ${rgbMatch[3]}, ${opacity / 100})`
         } else {
-          baseStyle.backgroundColor = widgetBgValue || '#3b82f6'
+          baseStyle.backgroundColor = widgetBgValue || '#1e40af'
         }
       } else {
-        baseStyle.backgroundColor = widgetBgValue ? `rgba(${hexToRgb(widgetBgValue)}, ${opacity / 100})` : '#3b82f6'
+        baseStyle.backgroundColor = widgetBgValue ? `rgba(${hexToRgb(widgetBgValue)}, ${opacity / 100})` : '#1e40af'
       }
     } else {
       // Always set background color, even if opacity is 100%
-      baseStyle.backgroundColor = widgetBgValue || '#3b82f6'
+      baseStyle.backgroundColor = widgetBgValue || '#1e40af'
     }
   }
 

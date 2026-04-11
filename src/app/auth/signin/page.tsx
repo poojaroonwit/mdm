@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getSession, signIn } from 'next-auth/react'
-import { useSearchParams } from 'next/navigation'
+import { getSession, signIn, useSession } from 'next-auth/react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Eye, EyeOff, Mail, Lock, AlertCircle, Layers, Smartphone, ArrowLeft } from 'lucide-react'
 import { loadBrandingConfig } from '@/lib/branding'
+import { getSafeCallbackUrl } from '@/lib/auth-callback'
 import { useSystemSettingsSafe } from '@/contexts/system-settings-context'
 
 export default function SignInPage() {
@@ -25,7 +26,10 @@ export default function SignInPage() {
   const [loginBgStyle, setLoginBgStyle] = useState<React.CSSProperties>({})
   const [loginBgVideo, setLoginBgVideo] = useState<string | undefined>(undefined)
   const { settings } = useSystemSettingsSafe()
+  const router = useRouter()
+  const { data: session, status } = useSession()
   const searchParams = useSearchParams()
+  const safeCallbackUrl = getSafeCallbackUrl(searchParams?.get('callbackUrl'), '/')
   const [appName, setAppName] = useState(settings?.siteName || 'Unified Data Platform')
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
 
@@ -113,13 +117,19 @@ export default function SignInPage() {
     loadSsoProviders()
   }, [])
 
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      router.replace(safeCallbackUrl)
+    }
+  }, [router, safeCallbackUrl, session, status])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
 
     try {
-      const callbackUrl = searchParams?.get('callbackUrl') || '/'
+      const callbackUrl = safeCallbackUrl
       // Sign in with NextAuth.js
       const result = await signIn('credentials', {
         email,
@@ -138,13 +148,13 @@ export default function SignInPage() {
           setError(result.error)
         }
       } else {
+        const targetUrl = getSafeCallbackUrl(result?.url, callbackUrl)
         const hasSession = await waitForSession()
         if (!hasSession) {
-          setError('Sign-in succeeded, but session was not established. Please check site auth configuration.')
-          return
+          console.warn('[signin] Session endpoint did not confirm in time; forcing navigation to target.', targetUrl)
         }
 
-        window.location.replace(result?.url || callbackUrl)
+        window.location.replace(targetUrl)
       }
     } catch (error) {
       setError('An error occurred. Please try again.')
@@ -164,7 +174,7 @@ export default function SignInPage() {
       setError('')
 
       try {
-        const callbackUrl = searchParams?.get('callbackUrl') || '/'
+        const callbackUrl = safeCallbackUrl
         const result = await signIn('credentials', {
             email,
             password,
@@ -176,13 +186,13 @@ export default function SignInPage() {
         if (result?.error) {
             setError(result.error)
         } else {
+             const targetUrl = getSafeCallbackUrl(result?.url, callbackUrl)
              const hasSession = await waitForSession()
              if (!hasSession) {
-               setError('Verification succeeded, but session was not established. Please check site auth configuration.')
-               return
+               console.warn('[signin] 2FA session endpoint did not confirm in time; forcing navigation to target.', targetUrl)
              }
 
-             window.location.replace(result?.url || callbackUrl)
+             window.location.replace(targetUrl)
         }
       } catch (error) {
           setError('An error occurred. Please try again.')
@@ -193,7 +203,7 @@ export default function SignInPage() {
 
   const handleGoogleSignIn = async () => {
     try {
-      const callbackUrl = searchParams?.get('callbackUrl') || '/'
+      const callbackUrl = safeCallbackUrl
       await signIn('google', { callbackUrl })
     } catch (error) {
       setError('An error occurred with Google sign-in.')
@@ -202,7 +212,7 @@ export default function SignInPage() {
 
   const handleAzureSignIn = async () => {
     try {
-      const callbackUrl = searchParams?.get('callbackUrl') || '/'
+      const callbackUrl = safeCallbackUrl
       await signIn('azure-ad', { callbackUrl })
     } catch (error) {
       setError('An error occurred with Azure sign-in.')
@@ -234,14 +244,14 @@ export default function SignInPage() {
       <div className="relative z-10 flex flex-col justify-start px-6 pb-6 pt-12 md:flex-1 md:justify-center md:p-12 lg:p-20">
         <div className="max-w-3xl space-y-4 md:space-y-6">
           <div className="mb-2 flex items-center space-x-4">
-            <div className="rounded-2xl border border-border bg-card/60 p-3 shadow-sm backdrop-blur-sm">
+            <div className="rounded-2xl border border-border bg-card/60 p-3 shadow-lg backdrop-blur-sm">
               {logoUrl ? (
                 <img src={logoUrl} alt="Logo" className="h-10 w-10 object-contain md:h-10 md:w-10" />
               ) : (
                 <Layers className="h-10 w-10 text-primary fill-primary/10" />
               )}
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 drop-shadow-sm md:text-5xl lg:text-6xl">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 drop-shadow-lg md:text-5xl lg:text-6xl">
               {appName}
             </h1>
           </div>

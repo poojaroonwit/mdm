@@ -97,7 +97,7 @@ export function LinkWidget({ props, style }: { props: BasicWidgetProps; style: R
         href={(props as any).linkUrl || '#'}
         target={(props as any).target || '_self'}
         className="text-primary hover:underline"
-        style={{ color: props.textColor || '#2563eb' }}
+        style={{ color: props.textColor || '#1e40af' }}
       >
         {(props as any).linkText || 'Link'}
       </a>
@@ -111,7 +111,7 @@ export function ButtonWidget({ props, style }: { props: BasicWidgetProps; style:
       <button
         className="px-4 py-2 rounded transition-colors"
         style={{
-          backgroundColor: props.backgroundColor || '#3b82f6',
+          backgroundColor: props.backgroundColor || '#1e40af',
           color: props.textColor || '#ffffff',
           fontSize: props.fontSize ? `${props.fontSize}px` : undefined,
           fontWeight: props.fontWeight || '500',

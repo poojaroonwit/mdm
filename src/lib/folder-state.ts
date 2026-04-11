@@ -70,7 +70,12 @@ function normalizeFolderState(input: any): FolderState {
   return { folders, assignments }
 }
 
-export async function resolveFolderSpaceId(userId: string, requestedSpaceId?: string | null) {
+export async function resolveFolderSpaceId(userId: string, requestedSpaceId?: string | null, type?: string) {
+  // Chatbot folders are global and do not depend on spaces
+  if (type === 'chatbot') {
+    return 'global'
+  }
+
   if (requestedSpaceId) {
     return requestedSpaceId
   }
@@ -85,7 +90,22 @@ export async function resolveFolderSpaceId(userId: string, requestedSpaceId?: st
     [userId]
   )
 
-  return rows[0]?.id || null
+  if (rows.length > 0) {
+    return rows[0].id
+  }
+
+  // Fallback: If no default space, use the first space they have access to
+  const fallback = await query(
+    `SELECT s.id
+     FROM public.spaces s
+     JOIN public.space_members sm ON sm.space_id = s.id AND sm.user_id::text = $1
+     WHERE s.deleted_at IS NULL
+     ORDER BY s.created_at ASC
+     LIMIT 1`,
+    [userId]
+  )
+
+  return fallback.rows[0]?.id || null
 }
 
 export async function getFolderState(spaceId: string, type: SupportedFolderType): Promise<FolderState> {

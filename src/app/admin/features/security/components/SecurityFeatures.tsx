@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -360,14 +360,14 @@ export function SecurityFeatures() {
                   Create Policy
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="p-0 overflow-hidden">
                 <DialogHeader>
                   <DialogTitle>Create Security Policy</DialogTitle>
                   <DialogDescription>
                     Create a new security policy to protect your system
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+                <DialogBody className="space-y-4 p-6 pt-2 pb-4">
                   <div>
                     <Label htmlFor="policy-name">Policy Name</Label>
                     <Input
@@ -402,7 +402,7 @@ export function SecurityFeatures() {
                       rows={3}
                     />
                   </div>
-                </div>
+                </DialogBody>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setShowCreatePolicy(false)}>
                     Cancel
@@ -510,14 +510,14 @@ export function SecurityFeatures() {
                   Add IP
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="p-0 overflow-hidden">
                 <DialogHeader>
                   <DialogTitle>Add IP Address</DialogTitle>
                   <DialogDescription>
                     Add an IP address to the whitelist
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+                <DialogBody className="space-y-4 p-6 pt-2 pb-4">
                   <div>
                     <Label htmlFor="ip-address">IP Address</Label>
                     <Input
@@ -536,7 +536,7 @@ export function SecurityFeatures() {
                       placeholder="Office network"
                     />
                   </div>
-                </div>
+                </DialogBody>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setShowCreateIP(false)}>
                     Cancel

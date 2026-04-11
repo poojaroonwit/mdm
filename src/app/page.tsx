@@ -154,7 +154,7 @@ export default function HomePage() {
   useEffect(() => {
     if (activeTab && activeTab !== 'overview') {
       const tabConfig = {
-        bigquery: { name: 'SQL Query', icon: 'Database', color: '#2563eb' },
+        bigquery: { name: 'SQL Query', icon: 'Database', color: '#1e40af' },
         notebook: { name: 'Data Science Notebooks', icon: 'BarChart3', color: '#16a34a' },
         'ai-analyst': { name: 'Chat with AI', icon: 'MessageCircle', color: '#9333ea' },
         'ai-chat-ui': { name: 'Agent Embed GUI', icon: 'Bot', color: '#10b981' },
@@ -306,7 +306,7 @@ export default function HomePage() {
                       >
                         <div className="flex items-start justify-between w-full">
                           <div
-                            className="w-10 h-10 rounded-md flex items-center justify-center shadow-sm transition-all group-hover:scale-110"
+                            className="w-10 h-10 rounded-md flex items-center justify-center shadow-lg transition-all group-hover:scale-110"
                             style={{
                               backgroundColor: item.color || '#6b7280',
                             }}

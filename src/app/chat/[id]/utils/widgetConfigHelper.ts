@@ -142,7 +142,7 @@ export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any, baseUrl?: s
     const avatarIcon = c.widgetAvatarIcon || c.avatarIcon || 'Bot'
 
     // 2. Colors
-    const backgroundColor = c.widgetBackgroundColor || chatKitAccentColor || c.primaryColor || '#3b82f6'
+    const backgroundColor = c.widgetBackgroundColor || chatKitAccentColor || c.primaryColor || '#1e40af'
     const labelColor = c.widgetLabelColor || '#ffffff'
 
     // 3. Icon Color Logic (Smart Fallback)

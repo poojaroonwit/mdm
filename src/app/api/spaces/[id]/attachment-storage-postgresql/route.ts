@@ -2,6 +2,7 @@ import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from 
 import { requireSpaceAccess } from '@/lib/space-access'
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/database'
+import { DEFAULT_STORAGE_CONFIG } from '@/lib/storage-config'
 
 async function getHandler(
   request: NextRequest,
@@ -41,13 +42,7 @@ async function getHandler(
       // Return default MinIO configuration
       return NextResponse.json({
         provider: 'minio',
-        config: {
-          endpoint: process.env.MINIO_ENDPOINT || 'http://localhost:9000',
-          accessKey: process.env.MINIO_ACCESS_KEY || 'minioadmin',
-          secretKey: process.env.MINIO_SECRET_KEY || 'minioadmin',
-          bucket: process.env.MINIO_BUCKET || 'attachments',
-          region: process.env.MINIO_REGION || 'us-east-1'
-        }
+        config: DEFAULT_STORAGE_CONFIG.minio
       })
     }
 

@@ -35,14 +35,14 @@ export async function GET(
       // Import helper to merge version config (similar to embed route)
       // We need to dynamically import or duplicate logic if not importable
       const { mergeVersionConfig, sanitizeChatbotConfig } = await import('@/lib/chatbot-helper')
-      chatbot = sanitizeChatbotConfig(mergeVersionConfig(chatbotData))
+      chatbot = await sanitizeChatbotConfig(mergeVersionConfig(chatbotData))
     }
 
     // Default values
     const defaultName = 'Chat Assistant'
     const defaultShortName = 'Chat'
     const defaultDescription = 'AI Chat Assistant'
-    const defaultThemeColor = '#3b82f6'
+    const defaultThemeColor = '#1e40af'
     const defaultBackgroundColor = '#ffffff'
     const defaultDisplayMode = 'standalone'
 
@@ -79,7 +79,7 @@ export async function GET(
       short_name: 'Chat',
       start_url: `/chat/${chatbotId}`,
       display: 'standalone',
-      theme_color: '#3b82f6',
+      theme_color: '#1e40af',
       background_color: '#ffffff',
       icons: [],
     }, {

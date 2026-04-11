@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer'
 import { query } from '@/lib/db'
+import { getSmtpSettings } from '@/lib/smtp-settings'
 
 /**
  * Email notification service for data sync and workflow events
@@ -10,14 +11,16 @@ export class NotificationService {
   private static readonly CONFIG_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
   /**
-   * Get SMTP configuration from database or env
+   * Get SMTP configuration from system settings or legacy integration config
    */
   private static async getSmtpConfig() {
-    // 1. Try DB first
+    const settingsConfig = await getSmtpSettings()
+    if (settingsConfig) {
+      return settingsConfig
+    }
+
+    // Fallback to legacy integration config if present
     try {
-      // Dynamic import to avoid circular dependencies
-      const { query } = await import('@/lib/db')
-      
       const sql = `
         SELECT config, is_enabled
         FROM platform_integrations
@@ -47,19 +50,18 @@ export class NotificationService {
         }
       }
     } catch (error) {
-      // Ignore DB errors and fall back to env
+      // Ignore DB errors and return an unconfigured state below
     }
 
-    // 2. Fallback to Env
     return {
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true',
+      host: '',
+      port: 587,
+      secure: false,
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD
+        user: '',
+        pass: ''
       },
-      from: process.env.SMTP_FROM || process.env.SMTP_USER
+      from: ''
     }
   }
 
@@ -167,7 +169,7 @@ export class NotificationService {
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #6b7280;">Records Updated:</td>
-              <td style="padding: 8px 0; font-weight: 600; text-align: right; color: #2563eb;">${details.records_updated.toLocaleString()}</td>
+              <td style="padding: 8px 0; font-weight: 600; text-align: right; color: #1e40af;">${details.records_updated.toLocaleString()}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #6b7280;">Duration:</td>

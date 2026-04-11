@@ -61,7 +61,7 @@ async function getHandler(
   const folderState = folderSpaceId ? await getFolderState(folderSpaceId, 'chatbot') : null
 
   // Merge version config and sanitize (rewrites MinIO URLs to proxy paths, strips API keys)
-  const mergedChatbot = sanitizeChatbotConfig({
+  const mergedChatbot = await sanitizeChatbotConfig({
     ...mergeVersionConfig(chatbot),
     folder_id: folderState?.assignments[chatbot.id] || null,
   })

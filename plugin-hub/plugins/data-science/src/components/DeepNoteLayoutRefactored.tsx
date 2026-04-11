@@ -270,7 +270,7 @@ export function DeepNoteLayoutRefactored({
       <div className="flex-1 flex min-h-0">
         {/* Left Sidebar */}
         {state.showSidebar && (
-          <div className="w-64 h-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-sm m-0 flex flex-col min-h-0">
+          <div className="w-64 h-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg m-0 flex flex-col min-h-0">
             <NotebookSidebar
               notebook={state.notebook}
               variables={state.variables}
@@ -292,7 +292,7 @@ export function DeepNoteLayoutRefactored({
         )}
 
               {/* Main Area Card - switches between Notebook and File viewers */}
-              <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-gray-900 relative border border-gray-200 dark:border-gray-700 shadow-sm m-0">
+              <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-gray-900 relative border border-gray-200 dark:border-gray-700 shadow-lg m-0">
                 {/* Folder toolbar removed from notebook; shown on projects page instead */}
                 {/* Notebook toolbar row (only when a notebook is selected) */}
             {(!openedFile || openedFile.type === 'ipynb') && (
@@ -507,7 +507,7 @@ export function DeepNoteLayoutRefactored({
                           {/* Insert Cell Buttons - Always visible below each cell */}
                           {effectiveCanEdit && (
                           <div className="flex items-center justify-center py-2">
-                            <div className="flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[5px] px-2 py-1.5 shadow-sm">
+                            <div className="flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[5px] px-2 py-1.5 shadow-lg">
                               <span className="text-xs text-gray-500 dark:text-gray-400 mr-1">Insert:</span>
                               <Button
                                 size="sm"

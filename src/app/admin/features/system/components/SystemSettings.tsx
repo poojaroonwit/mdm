@@ -36,6 +36,7 @@ import { SystemSettings as SystemSettingsType } from '../types'
 import { StorageConnections } from './StorageConnections'
 import { SystemIntegrations } from './SystemIntegrations'
 import { EmailTemplates } from './EmailTemplates'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function SystemSettings() {
   const [settings, setSettings] = useState<SystemSettingsType>({
@@ -68,6 +69,12 @@ export function SystemSettings() {
     smtpUser: '',
     smtpPassword: '',
     smtpSecure: false,
+    wsProxyUrl: '',
+    cronApiKey: '',
+    schedulerApiKey: '',
+    serviceDeskWebhookSecret: '',
+    gitWebhookSecret: '',
+    minioPublicUrl: '',
 
     // Security
     sessionTimeout: 24,
@@ -127,6 +134,17 @@ export function SystemSettings() {
           orgPhone: data.orgPhone || prev.orgPhone,
           orgEmail: data.orgEmail || prev.orgEmail,
           orgWebsite: data.orgWebsite || prev.orgWebsite,
+          smtpHost: data.smtpHost || prev.smtpHost,
+          smtpPort: data.smtpPort !== undefined ? Number(data.smtpPort) : prev.smtpPort,
+          smtpUser: data.smtpUser || prev.smtpUser,
+          smtpPassword: data.smtpPassword || prev.smtpPassword,
+          smtpSecure: data.smtpSecure !== undefined ? data.smtpSecure === 'true' || data.smtpSecure === true : prev.smtpSecure,
+          wsProxyUrl: data.wsProxyUrl || prev.wsProxyUrl,
+          cronApiKey: data.cronApiKey || prev.cronApiKey,
+          schedulerApiKey: data.schedulerApiKey || prev.schedulerApiKey,
+          serviceDeskWebhookSecret: data.serviceDeskWebhookSecret || prev.serviceDeskWebhookSecret,
+          gitWebhookSecret: data.gitWebhookSecret || prev.gitWebhookSecret,
+          minioPublicUrl: data.minioPublicUrl || prev.minioPublicUrl,
           uiProtectionEnabled: data.uiProtectionEnabled !== undefined 
             ? (data.uiProtectionEnabled === true || data.uiProtectionEnabled === 'true')
             : (data.disableRightClick !== undefined ? (data.disableRightClick === true || data.disableRightClick === 'true') : prev.uiProtectionEnabled),
@@ -170,6 +188,17 @@ export function SystemSettings() {
             orgPhone: settings.orgPhone,
             orgEmail: settings.orgEmail,
             orgWebsite: settings.orgWebsite,
+            smtpHost: settings.smtpHost,
+            smtpPort: settings.smtpPort,
+            smtpUser: settings.smtpUser,
+            smtpPassword: settings.smtpPassword,
+            smtpSecure: settings.smtpSecure,
+            wsProxyUrl: settings.wsProxyUrl,
+            cronApiKey: settings.cronApiKey,
+            schedulerApiKey: settings.schedulerApiKey,
+            serviceDeskWebhookSecret: settings.serviceDeskWebhookSecret,
+            gitWebhookSecret: settings.gitWebhookSecret,
+            minioPublicUrl: settings.minioPublicUrl,
             enableUserRegistration: settings.enableUserRegistration,
             enableGuestAccess: settings.enableGuestAccess,
             enableNotifications: settings.enableNotifications,
@@ -345,10 +374,12 @@ export function SystemSettings() {
 
   if (isLoading) {
     return (
-      <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-        <p className="text-muted-foreground">Loading settings...</p>
-      </div>
+      <div className="w-full space-y-3 p-4">
+  <Skeleton className="h-10 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+</div>
     )
   }
 
@@ -887,6 +918,32 @@ export function SystemSettings() {
                       <Label htmlFor="smtpSecure">Use SSL/TLS</Label>
                     </div>
 
+                    <div>
+                      <Label htmlFor="wsProxyUrl">Realtime Voice WebSocket URL</Label>
+                      <Input
+                        id="wsProxyUrl"
+                        value={settings.wsProxyUrl}
+                        onChange={(e) => setSettings({ ...settings, wsProxyUrl: e.target.value })}
+                        placeholder="ws://localhost:3002/api/openai-realtime"
+                      />
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Used by OpenAI Realtime voice clients. The standalone proxy server port still comes from `WS_PROXY_PORT`.
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="minioPublicUrl">MinIO Public URL</Label>
+                      <Input
+                        id="minioPublicUrl"
+                        value={settings.minioPublicUrl}
+                        onChange={(e) => setSettings({ ...settings, minioPublicUrl: e.target.value })}
+                        placeholder="https://storage.example.com"
+                      />
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Used for public asset proxying and rewriting legacy direct MinIO image URLs.
+                      </p>
+                    </div>
+
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
@@ -1002,6 +1059,55 @@ export function SystemSettings() {
                         id="requireEmailVerification"
                         checked={settings.requireEmailVerification}
                         onCheckedChange={(checked) => setSettings({ ...settings, requireEmailVerification: checked })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-medium mb-4">Automation & Webhooks</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="cronApiKey">Import/Export Cron API Key</Label>
+                      <Input
+                        id="cronApiKey"
+                        type="password"
+                        value={settings.cronApiKey}
+                        onChange={(e) => setSettings({ ...settings, cronApiKey: e.target.value })}
+                        placeholder="Optional API key for the import/export cron route"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="schedulerApiKey">Unified Scheduler API Key</Label>
+                      <Input
+                        id="schedulerApiKey"
+                        type="password"
+                        value={settings.schedulerApiKey}
+                        onChange={(e) => setSettings({ ...settings, schedulerApiKey: e.target.value })}
+                        placeholder="Optional API key for the unified scheduler"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 pt-4">
+                    <div>
+                      <Label htmlFor="serviceDeskWebhookSecret">ServiceDesk Webhook Secret</Label>
+                      <Input
+                        id="serviceDeskWebhookSecret"
+                        type="password"
+                        value={settings.serviceDeskWebhookSecret}
+                        onChange={(e) => setSettings({ ...settings, serviceDeskWebhookSecret: e.target.value })}
+                        placeholder="Secret used to verify ServiceDesk webhooks"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="gitWebhookSecret">Git Webhook Secret</Label>
+                      <Input
+                        id="gitWebhookSecret"
+                        type="password"
+                        value={settings.gitWebhookSecret}
+                        onChange={(e) => setSettings({ ...settings, gitWebhookSecret: e.target.value })}
+                        placeholder="Secret used to verify GitHub or GitLab webhooks"
                       />
                     </div>
                   </div>

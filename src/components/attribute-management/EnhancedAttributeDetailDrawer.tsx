@@ -70,7 +70,7 @@ export function EnhancedAttributeDetailDrawer({
   const [activityData, setActivityData] = useState<any[]>([])
   const [loadingActivity, setLoadingActivity] = useState(false)
   const [showNewOption, setShowNewOption] = useState(false)
-  const [newOption, setNewOption] = useState({ value: '', label: '', color: '#3B82F6' })
+  const [newOption, setNewOption] = useState({ value: '', label: '', color: '#1e40af' })
   const [incrementConfig, setIncrementConfig] = useState({
     enabled: false,
     prefix: '',
@@ -81,10 +81,10 @@ export function EnhancedAttributeDetailDrawer({
   const [qualityStats, setQualityStats] = useState<any>(null)
   const [loadingQuality, setLoadingQuality] = useState(false)
   const [editingOption, setEditingOption] = useState<number | null>(null)
-  const [editingOptionData, setEditingOptionData] = useState({ value: '', label: '', color: '#3B82F6' })
+  const [editingOptionData, setEditingOptionData] = useState({ value: '', label: '', color: '#1e40af' })
 
   const colorOptions = [
-    '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+    '#1e40af', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
     '#06B6D4', '#84CC16', '#F97316', '#EC4899', '#6B7280'
   ]
 
@@ -93,7 +93,7 @@ export function EnhancedAttributeDetailDrawer({
       setEditForm(attribute)
       setOptions((attribute.options || []).map(opt => ({
         ...opt,
-        color: opt.color || '#3B82F6'
+        color: opt.color || '#1e40af'
       })))
       loadAttributeActivity()
       loadQualityStats()
@@ -146,7 +146,7 @@ export function EnhancedAttributeDetailDrawer({
 
   const handleAddNewOption = () => {
     setShowNewOption(true)
-    setNewOption({ value: '', label: '', color: '#3B82F6' })
+    setNewOption({ value: '', label: '', color: '#1e40af' })
   }
 
   const handleSaveNewOption = async () => {
@@ -166,7 +166,7 @@ export function EnhancedAttributeDetailDrawer({
 
       if (response.ok) {
         setShowNewOption(false)
-        setNewOption({ value: '', label: '', color: '#3B82F6' })
+        setNewOption({ value: '', label: '', color: '#1e40af' })
         // Refresh the attribute data
         if (onSave) {
           onSave({ ...attribute, options: updatedOptions })
@@ -179,7 +179,7 @@ export function EnhancedAttributeDetailDrawer({
 
   const handleCancelNewOption = () => {
     setShowNewOption(false)
-    setNewOption({ value: '', label: '', color: '#3B82F6' })
+    setNewOption({ value: '', label: '', color: '#1e40af' })
   }
 
   const handleEditOption = (index: number, option: any) => {
@@ -215,7 +215,7 @@ export function EnhancedAttributeDetailDrawer({
 
   const handleCancelEditOption = () => {
     setEditingOption(null)
-    setEditingOptionData({ value: '', label: '', color: '#3B82F6' })
+    setEditingOptionData({ value: '', label: '', color: '#1e40af' })
   }
 
   const handleRemoveOption = async (index: number) => {
@@ -276,7 +276,7 @@ export function EnhancedAttributeDetailDrawer({
     }
 
     setOptions(prev => [...prev, option])
-    setNewOption({ value: '', label: '', color: '#3B82F6' })
+    setNewOption({ value: '', label: '', color: '#1e40af' })
   }
 
 
@@ -641,12 +641,12 @@ export function EnhancedAttributeDetailDrawer({
                             {/* Color Swatch */}
                             <div className="flex items-center gap-2">
                               <ColorInput
-                                value={option.color || '#3B82F6'}
+                                value={option.color || '#1e40af'}
                                 onChange={(color) => handleOptionChange(index, 'color', color)}
                                 allowImageVideo={false}
                                 disabled={!permissions.canEdit}
                                 className="relative"
-                                placeholder="#3B82F6"
+                                placeholder="#1e40af"
                                 inputClassName="h-8 text-xs pl-7"
                               />
                             </div>
@@ -699,7 +699,7 @@ export function EnhancedAttributeDetailDrawer({
                                   onChange={(color) => setNewOption({ ...newOption, color })}
                                   allowImageVideo={false}
                                   className="relative"
-                                  placeholder="#3B82F6"
+                                  placeholder="#1e40af"
                                   inputClassName="h-8 text-xs pl-7"
                                 />
                               </div>

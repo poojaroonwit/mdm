@@ -247,14 +247,14 @@ export function DataGovernance() {
         </Card>
 
         <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl p-0 overflow-hidden">
             <DialogHeader>
               <DialogTitle>OpenMetadata Configuration</DialogTitle>
               <DialogDescription>
                 Configure connection to your OpenMetadata instance
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
+            <DialogBody className="space-y-4 p-6 pt-2 pb-4">
               <div className="space-y-2">
                 <Label htmlFor="host">OpenMetadata Host</Label>
                 <Input
@@ -347,7 +347,7 @@ export function DataGovernance() {
                 />
                 <Label htmlFor="enabled">Enable Integration</Label>
               </div>
-            </div>
+            </DialogBody>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowConfigDialog(false)}>
                 Cancel
@@ -664,14 +664,14 @@ export function DataGovernance() {
       </div>
 
       <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle>OpenMetadata Configuration</DialogTitle>
             <DialogDescription>
               Configure connection to your OpenMetadata instance
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
             <div className="space-y-2">
               <Label htmlFor="host">OpenMetadata Host</Label>
               <Input
@@ -764,7 +764,7 @@ export function DataGovernance() {
               />
               <Label htmlFor="enabled">Enable Integration</Label>
             </div>
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowConfigDialog(false)}>
               Cancel

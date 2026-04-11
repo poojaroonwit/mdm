@@ -204,7 +204,7 @@ export default function DashboardPage() {
               <p className="text-muted-foreground">
                 {defaultDashboard
                   ? `Welcome to ${defaultDashboard.name}`
-                  : 'Welcome to your unified data platform'
+                  : 'Welcome to your Unified Data Platform'
                 }
               </p>
             )}
@@ -329,7 +329,7 @@ export default function DashboardPage() {
             <Card>
               <CardContent className="p-6">
                 <div
-                  className="relative min-h-96 bg-background rounded-lg shadow-sm"
+                  className="relative min-h-96 bg-background rounded-lg shadow-lg"
                   style={{
                     backgroundColor: defaultDashboard.background_color,
                     fontFamily: defaultDashboard.font_family,
@@ -358,7 +358,7 @@ export default function DashboardPage() {
                         .map((element) => (
                           <div
                             key={element.id}
-                            className="absolute border border-border rounded-lg shadow-sm bg-card"
+                            className="absolute border border-border rounded-lg shadow-lg bg-card"
                             style={{
                               left: `${(element.position_x / defaultDashboard.grid_size) * 100}%`,
                               top: `${(element.position_y / defaultDashboard.grid_size) * 100}%`,

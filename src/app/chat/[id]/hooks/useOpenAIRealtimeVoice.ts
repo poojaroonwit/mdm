@@ -8,6 +8,21 @@ interface UseOpenAIRealtimeVoiceProps {
   onAudioChunk?: (audioData: ArrayBuffer) => void
 }
 
+async function getRealtimeProxyUrl(chatbotId: string): Promise<string> {
+  const response = await fetch(`/api/openai-realtime?chatbotId=${encodeURIComponent(chatbotId)}`)
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}))
+    throw new Error(error.error || 'Failed to load Realtime voice configuration')
+  }
+
+  const data = await response.json()
+  if (!data.wsUrl) {
+    throw new Error('Realtime voice WebSocket URL is not configured')
+  }
+
+  return data.wsUrl as string
+}
+
 export function useOpenAIRealtimeVoice({
   chatbot,
   onTranscript,
@@ -197,7 +212,7 @@ export function useOpenAIRealtimeVoice({
   }
 
   const connectWebSocket = async (): Promise<boolean> => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
         // Use chatbotId for server-side key lookup (Security Best Practice)
         const chatbotId = chatbot?.id
@@ -210,7 +225,7 @@ export function useOpenAIRealtimeVoice({
 
         // Connect to WebSocket proxy server (default: localhost:3002, since 3001 may be used by Docker)
         // In production, this should be your WebSocket proxy server URL
-        const proxyUrl = process.env.NEXT_PUBLIC_WS_PROXY_URL || 'ws://localhost:3002/api/openai-realtime'
+        const proxyUrl = await getRealtimeProxyUrl(chatbotId)
         console.log('Connecting to WebSocket proxy:', proxyUrl)
         const ws = new WebSocket(proxyUrl)
 

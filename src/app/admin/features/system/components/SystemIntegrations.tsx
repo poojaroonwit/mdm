@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogBody, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -560,8 +560,8 @@ export function SystemIntegrations({ hideHeader = false }: SystemIntegrationsPro
               {selectedIntegration?.description}
             </DialogDescription>
           </DialogHeader>
-
-          <div className="space-y-4 py-4 px-6">
+                <DialogBody>
+<div className="space-y-4 py-4 px-6">
             {selectedIntegration && renderConfigForm(getConfigFields(selectedIntegration.type))}
 
             <div className="flex items-center justify-between p-4 bg-muted rounded-md">
@@ -580,8 +580,8 @@ export function SystemIntegrations({ hideHeader = false }: SystemIntegrationsPro
               />
             </div>
           </div>
-
-          <DialogFooter>
+                </DialogBody>
+                <DialogFooter>
             <Button variant="outline" onClick={() => setShowConfigDialog(false)}>
               Cancel
             </Button>

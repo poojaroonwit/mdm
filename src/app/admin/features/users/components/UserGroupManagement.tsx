@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -35,6 +35,7 @@ import {
 import toast from 'react-hot-toast'
 import { UserGroup, UserGroupMember, UserGroupFormData, User } from '../types'
 import { cn } from '@/lib/utils'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface GroupTreeNodeProps {
   group: UserGroup
@@ -67,9 +68,9 @@ function GroupTreeNode({
     <div>
       <div
         className={cn(
-          "flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all duration-300 group/node",
+          "flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-all duration-300 group/node",
           isSelected 
-            ? "bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-zinc-900 shadow-sm" 
+            ? "bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-zinc-900 shadow-lg" 
             : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400"
         )}
         style={{ paddingLeft: `${12 + level * 16}px` }}
@@ -487,9 +488,12 @@ export function UserGroupManagement() {
         <CardContent className="p-0">
           <ScrollArea className="h-[calc(100%-100px)]">
             {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
-              </div>
+              <div className="w-full space-y-3 p-4">
+  <Skeleton className="h-10 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+</div>
             ) : error ? (
               <div className="flex flex-col items-center justify-center py-8 px-4">
                 <AlertCircle className="h-8 w-8 text-destructive mb-2" />
@@ -570,9 +574,12 @@ export function UserGroupManagement() {
                 <div>
                   <h3 className="text-sm font-semibold mb-3">Members</h3>
                   {loadingMembers ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
-                    </div>
+                    <div className="w-full space-y-3 p-4">
+  <Skeleton className="h-10 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+</div>
                   ) : groupMembers.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <Users className="h-10 w-10 mx-auto mb-2 opacity-50" />
@@ -611,7 +618,7 @@ export function UserGroupManagement() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="h-8 w-8 p-0 text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
                               onClick={() => handleRemoveMember(member)}
                             >
                               <X className="h-4 w-4" />
@@ -636,7 +643,7 @@ export function UserGroupManagement() {
 
       {/* Create Group Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent>
+        <DialogContent className="p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle>Create User Group</DialogTitle>
             <DialogDescription>
@@ -645,7 +652,7 @@ export function UserGroupManagement() {
                 : 'Create a new root-level user group'}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
             <div className="space-y-2">
               <Label>Group Name *</Label>
               <Input
@@ -680,7 +687,7 @@ export function UserGroupManagement() {
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
             <Button onClick={handleCreateGroup}>Create Group</Button>
@@ -690,12 +697,12 @@ export function UserGroupManagement() {
 
       {/* Edit Group Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
+        <DialogContent className="p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle>Edit Group</DialogTitle>
             <DialogDescription>Update the group details</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
             <div className="space-y-2">
               <Label>Group Name *</Label>
               <Input
@@ -732,7 +739,7 @@ export function UserGroupManagement() {
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEditDialog(false)}>Cancel</Button>
             <Button onClick={handleUpdateGroup}>Save Changes</Button>
@@ -742,29 +749,32 @@ export function UserGroupManagement() {
 
       {/* Add Members Dialog */}
       <Dialog open={showAddMemberDialog} onOpenChange={setShowAddMemberDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle>Add Members to {selectedGroup?.name}</DialogTitle>
             <DialogDescription>Select users to add to this group</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
                 placeholder="Search users..."
-                className="pl-9"
+                className="pl-9 h-10 rounded-xl"
               />
             </div>
-            <ScrollArea className="h-[300px] border rounded-lg p-2">
+            <ScrollArea className="h-[300px] border rounded-xl p-2">
               {loadingUsers ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
+                <div className="w-full space-y-3 p-4">
+                  <Skeleton className="h-10 w-full rounded-xl" />
+                  <Skeleton className="h-12 w-full rounded-xl" />
+                  <Skeleton className="h-12 w-full rounded-xl" />
+                  <Skeleton className="h-12 w-full rounded-xl" />
                 </div>
               ) : filteredUsers.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <p className="text-sm">No users available to add</p>
+                  <p className="text-sm font-medium">No users available to add</p>
                 </div>
               ) : (
                 <div className="space-y-1">
@@ -772,9 +782,9 @@ export function UserGroupManagement() {
                     <div
                       key={user.id}
                       className={cn(
-                        "flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors",
+                        "flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-colors",
                         selectedUserIds.includes(user.id)
-                          ? "bg-primary/10 border border-primary/20"
+                          ? "bg-zinc-900/5 dark:bg-zinc-100/5 border border-zinc-900/10 dark:border-zinc-100/10"
                           : "hover:bg-muted/50"
                       )}
                       onClick={() => {
@@ -789,29 +799,32 @@ export function UserGroupManagement() {
                         type="checkbox"
                         checked={selectedUserIds.includes(user.id)}
                         onChange={() => {}}
-                        className="rounded"
+                        className="rounded cursor-pointer"
                       />
-                      <Avatar className="h-8 w-8">
+                      <Avatar className="h-8 w-8 border border-zinc-100 dark:border-zinc-800">
                         <AvatarImage src={user.avatar} />
-                        <AvatarFallback className="text-xs">
-                          {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        <AvatarFallback className="text-[10px] font-black">
+                          {(user.name || '').split(' ').map((n: string) => n[0]).join('').toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{user.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                        <p className="text-sm font-bold truncate tracking-tight text-zinc-900 dark:text-zinc-100">{user.name}</p>
+                        <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 truncate tracking-tight">{user.email}</p>
                       </div>
+                      <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest text-zinc-500 h-5">
+                        {user.role}
+                      </Badge>
                     </div>
                   ))}
                 </div>
               )}
             </ScrollArea>
             {selectedUserIds.length > 0 && (
-              <p className="text-sm text-muted-foreground">
-                {selectedUserIds.length} user(s) selected
+              <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                {selectedUserIds.length} user{selectedUserIds.length !== 1 ? 's' : ''} selected
               </p>
             )}
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddMemberDialog(false)}>Cancel</Button>
             <Button onClick={handleAddMembers} disabled={selectedUserIds.length === 0}>

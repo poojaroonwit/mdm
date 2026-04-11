@@ -218,7 +218,7 @@ export function MessagesList({
         {isLoading && <TypingIndicator chatbot={chatbot} />}
         
         {isSessionExpired && (
-          <div className="flex flex-col items-center justify-center p-6 border rounded-xl animate-in fade-in slide-in-from-bottom-4 duration-500"
+          <div className="flex flex-col items-center justify-center p-6 border rounded-md animate-in fade-in slide-in-from-bottom-4 duration-500"
                style={{ 
                  borderColor: chatbot.borderColor, 
                  backgroundColor: chatbot.botMessageBackgroundColor + '20', // Add some transparency

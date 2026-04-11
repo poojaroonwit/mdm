@@ -9,11 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { AvatarUpload } from '@/components/ui/avatar-upload'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -661,7 +662,7 @@ export function UserManagement() {
         </div>
 
         {/* Users Table - Supabase Style */}
-        <div className="bg-white/50 dark:bg-zinc-950/20 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl overflow-hidden backdrop-blur-xl shadow-sm">
+        <div className="bg-white/50 dark:bg-zinc-950/20 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl overflow-hidden backdrop-blur-xl shadow-lg">
           <div className="px-6 py-4 border-b border-zinc-200/60 dark:border-zinc-800/60 bg-zinc-50/30 dark:bg-zinc-900/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -679,9 +680,12 @@ export function UserManagement() {
           </div>
 
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent mb-3"></div>
-              <p className="text-sm text-muted-foreground">Loading users...</p>
+            <div className="w-full space-y-3 p-4">
+              <Skeleton className="h-10 w-full rounded-xl" />
+              <Skeleton className="h-12 w-full rounded-xl" />
+              <Skeleton className="h-12 w-full rounded-xl" />
+              <Skeleton className="h-12 w-full rounded-xl" />
+              <Skeleton className="h-12 w-full rounded-xl" />
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-16">
@@ -995,13 +999,15 @@ export function UserManagement() {
 
         {/* Edit User Dialog */}
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
+            <DialogHeader className="flex-shrink-0">
               <DialogTitle>Edit User</DialogTitle>
               <DialogDescription>
                 Update user information and permissions
               </DialogDescription>
             </DialogHeader>
+
+            <DialogBody className="flex-1 overflow-y-auto min-h-0 p-6 pt-2 pb-4">
 
             <div className="w-full">
               <Tabs value={editDialogTab} onValueChange={setEditDialogTab}>
@@ -1297,14 +1303,13 @@ export function UserManagement() {
                     )}
                   </div>
                 </TabsContent>
-              </Tabs>
-            </div>
+              </DialogBody>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+            <DialogFooter className="flex-shrink-0 border-t-0 p-6 pt-2">
+              <Button variant="outline" onClick={() => setShowEditDialog(false)} className="px-6 h-11 rounded-xl">
                 Cancel
               </Button>
-              <Button onClick={saveUser}>
+              <Button onClick={saveUser} className="px-8 h-11 rounded-xl bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 font-bold">
                 Save Changes
               </Button>
             </DialogFooter>
@@ -1313,13 +1318,14 @@ export function UserManagement() {
 
         {/* Create User Dialog */}
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
+          <DialogContent className="max-w-2xl flex flex-col p-0 overflow-hidden">
+            <DialogHeader className="flex-shrink-0">
               <DialogTitle>Create New User</DialogTitle>
               <DialogDescription>
                 Add a new user to the system
               </DialogDescription>
             </DialogHeader>
+            <DialogBody className="flex-1 overflow-y-auto p-6 pt-2 pb-4">
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -1495,12 +1501,12 @@ export function UserManagement() {
                   )}
                 </div>
               </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+            </DialogBody>
+            <DialogFooter className="flex-shrink-0 border-t-0 p-6 pt-2">
+              <Button variant="outline" onClick={() => setShowCreateDialog(false)} className="px-6 h-11 rounded-xl">
                 Cancel
               </Button>
-              <Button onClick={createUser} disabled={creatingUser}>
+              <Button onClick={createUser} disabled={creatingUser} className="px-8 h-11 rounded-xl bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 font-bold">
                 {creatingUser ? 'Creating...' : 'Create User'}
               </Button>
             </DialogFooter>
@@ -1509,14 +1515,14 @@ export function UserManagement() {
 
         {/* Bulk Operations Dialog */}
         <Dialog open={showBulkDialog} onOpenChange={setShowBulkDialog}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl p-0 overflow-hidden">
             <DialogHeader>
               <DialogTitle>Bulk Actions</DialogTitle>
               <DialogDescription>
                 Apply actions to {selectedUserIds.length} selected user(s)
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
+            <DialogBody className="space-y-4 p-6 pt-2 pb-4">
               <div>
                 <Label>Operation Type</Label>
                 <Select value={bulkOperation || ''} onValueChange={(value) => setBulkOperation(value as 'role' | 'space' | 'activate' | 'deactivate' | 'delete' | null)}>
@@ -1599,7 +1605,7 @@ export function UserManagement() {
                   </p>
                 </div>
               )}
-            </div>
+            </DialogBody>
             <DialogFooter>
               <Button variant="outline" onClick={() => {
                 setShowBulkDialog(false)
@@ -1680,13 +1686,14 @@ export function UserManagement() {
 
         {/* User Details Dialog */}
         <Dialog open={showUserDetails} onOpenChange={setShowUserDetails}>
-          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
+            <DialogHeader className="flex-shrink-0">
               <DialogTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
                 User Details
               </DialogTitle>
             </DialogHeader>
+            <DialogBody className="flex-1 overflow-y-auto p-6 pt-2 pb-4">
             {selectedUser && (
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
@@ -1762,85 +1769,56 @@ export function UserManagement() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 pt-4 border-t">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setShowUserDetails(false)
-                      openEditDialog(selectedUser)
-                    }}
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit User
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setShowUserDetails(false)
-                      setResetPasswordUser(selectedUser)
-                      setShowResetPasswordDialog(true)
-                    }}
-                  >
-                    <Key className="h-4 w-4 mr-2" />
-                    Reset Password
-                  </Button>
                 </div>
+              </DialogBody>
+              <DialogFooter className="flex-shrink-0 border-t p-4 px-6 flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowUserDetails(false)
+                    openEditDialog(selectedUser)
+                  }}
+                  className="rounded-xl h-10 px-4"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit User
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowUserDetails(false)
+                    setResetPasswordUser(selectedUser)
+                    setShowResetPasswordDialog(true)
+                  }}
+                  className="rounded-xl h-10 px-4"
+                >
+                  <Key className="h-4 w-4 mr-2" />
+                  Reset Password
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowUserDetails(false)}
+                  className="rounded-xl h-10 px-4"
+                >
+                  Close
+                </Button>
+              </DialogFooter>
               </div>
             )}
           </DialogContent>
         </Dialog>
 
-        {/* Reset Password Dialog */}
-        <Dialog open={showResetPasswordDialog} onOpenChange={setShowResetPasswordDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Reset Password</DialogTitle>
-              <DialogDescription>
-                Set a new password for {resetPasswordUser?.name}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="new-password">New Password</Label>
-                <Input
-                  id="new-password"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Enter new password"
-                />
-              </div>
-              <div>
-                <Label htmlFor="confirm-password">Confirm Password</Label>
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm new password"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)}>
-                Cancel
-              </Button>
-              <Button onClick={resetPassword} disabled={resettingPassword}>
-                {resettingPassword ? 'Resetting...' : 'Reset Password'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
       <Dialog open={showSyncSettingsDialog} onOpenChange={setShowSyncSettingsDialog}>
-        <DialogContent>
+        <DialogContent className="p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle>AD Sync Settings</DialogTitle>
             <DialogDescription>Configure automatic synchronization with Azure AD.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
              <div className="flex items-center justify-between">
                 <Label>Enable Automatic Sync</Label>
                 <Switch 
@@ -1866,7 +1844,7 @@ export function UserManagement() {
                     </div>
                  </>
              )}
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowSyncSettingsDialog(false)}>Cancel</Button>
             <Button onClick={saveSyncSettings} disabled={savingSyncSettings}>
@@ -1878,14 +1856,14 @@ export function UserManagement() {
       
         {/* Import Users Dialog */}
         <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl p-0 overflow-hidden">
             <DialogHeader>
               <DialogTitle>Import Users</DialogTitle>
               <DialogDescription>
                 Upload a CSV file to import users. Required columns: name, email, password. Optional: role, isActive
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
+            <DialogBody className="space-y-4 p-6 pt-2 pb-4">
               {!importResults ? (
                 <>
                   <div>
@@ -1937,7 +1915,7 @@ export function UserManagement() {
                   )}
                 </div>
               )}
-            </div>
+            </DialogBody>
             <DialogFooter>
               {importResults ? (
                 <>
@@ -2010,14 +1988,14 @@ export function UserManagement() {
         </Dialog>
         {/* Reset Password Dialog */}
         <Dialog open={showResetPasswordDialog} onOpenChange={setShowResetPasswordDialog}>
-          <DialogContent>
+          <DialogContent className="p-0 overflow-hidden">
             <DialogHeader>
               <DialogTitle>Reset Password</DialogTitle>
               <DialogDescription>
                 Set a new password for {resetPasswordUser?.name}.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <DialogBody className="space-y-4 p-6 pt-2 pb-4">
               <div className="space-y-2">
                 <Label htmlFor="new-password">New Password</Label>
                 <Input
@@ -2036,7 +2014,7 @@ export function UserManagement() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
               </div>
-            </div>
+            </DialogBody>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)}>
                 Cancel

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -278,7 +278,7 @@ export function ExportProfiles({ schemas, spaceId, onRunProfile }: ExportProfile
       </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>{editingProfile ? 'Edit Profile' : 'Create Export Profile'}</DialogTitle>
             <DialogDescription>
@@ -286,7 +286,7 @@ export function ExportProfiles({ schemas, spaceId, onRunProfile }: ExportProfile
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-6 py-4">
+          <DialogBody className="grid gap-6 p-6 pt-2 pb-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Name</Label>
@@ -489,7 +489,7 @@ export function ExportProfiles({ schemas, spaceId, onRunProfile }: ExportProfile
                  </div>
               </TabsContent>
             </Tabs>
-          </div>
+          </DialogBody>
 
           <DialogFooter>
              <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>

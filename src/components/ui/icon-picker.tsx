@@ -67,7 +67,7 @@ export function IconPicker({ value, onChange, placeholder = "Search icons...", g
         className={
           "relative flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer select-none " +
           (selected
-            ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold shadow-sm"
+            ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold shadow-lg"
             : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900")
         }
         title={name}
@@ -154,12 +154,12 @@ export function IconPicker({ value, onChange, placeholder = "Search icons...", g
             }
           }}
           placeholder={placeholder}
-          className="w-full border border-zinc-100/60 dark:border-zinc-800/60 hover:border-zinc-300 dark:hover:border-zinc-700 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-500/10 rounded-xl py-2 pl-9 pr-3 text-xs leading-5 text-zinc-900 dark:text-zinc-100 bg-white/50 dark:bg-zinc-950/50 focus:outline-none transition-all duration-200"
+          className="w-full border border-zinc-100/60 dark:border-zinc-800/60 hover:border-zinc-300 dark:hover:border-zinc-700 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-500/10 rounded-md py-2 pl-9 pr-3 text-xs leading-5 text-zinc-900 dark:text-zinc-100 bg-white/50 dark:bg-zinc-950/50 focus:outline-none transition-all duration-200"
           autoComplete="off"
         />
       </div>
       {filtered.length === 0 ? (
-        <div className="text-center text-xs text-zinc-400 dark:text-zinc-500 py-6 border border-zinc-100/60 dark:border-zinc-800/60 rounded-xl">No icons found</div>
+        <div className="text-center text-xs text-zinc-400 dark:text-zinc-500 py-6 border border-zinc-100/60 dark:border-zinc-800/60 rounded-md">No icons found</div>
       ) : grouped && groupedIcons && Array.isArray(groupedIcons) && groupedIcons.length > 0 ? (
         <div className="flex border border-zinc-100/60 dark:border-zinc-800/60 rounded-2xl overflow-hidden bg-white/50 dark:bg-zinc-950/50 backdrop-blur-xl shadow-inner-sm" style={{ height: 'calc(min(70vh, 450px))' }}>
           {/* Left: Category list — AppKit-aligned styling */}
@@ -175,7 +175,7 @@ export function IconPicker({ value, onChange, placeholder = "Search icons...", g
                       className={
                         "w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-all duration-200 " +
                         (activeCategory === category
-                          ? "bg-white dark:bg-zinc-900 shadow-sm border border-zinc-100/60 dark:border-zinc-800/60 font-semibold text-zinc-900 dark:text-zinc-100"
+                          ? "bg-white dark:bg-zinc-900 shadow-lg border border-zinc-100/60 dark:border-zinc-800/60 font-semibold text-zinc-900 dark:text-zinc-100"
                           : "text-zinc-500 dark:text-zinc-400 hover:bg-white/60 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-zinc-100 border border-transparent")
                       }
                     >
@@ -202,7 +202,7 @@ export function IconPicker({ value, onChange, placeholder = "Search icons...", g
           </div>
         </div>
       ) : (
-        <div className="max-h-72 overflow-auto border border-zinc-100/60 dark:border-zinc-800/60 rounded-xl p-1.5 space-y-0.5 shadow-inner-sm">
+        <div className="max-h-72 overflow-auto border border-zinc-100/60 dark:border-zinc-800/60 rounded-md p-1.5 space-y-0.5 shadow-inner-sm">
           {filtered?.map((name) => renderIconButton(name))}
         </div>
       )}

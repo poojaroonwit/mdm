@@ -4,6 +4,7 @@ import { getServiceDeskService } from '@/lib/manageengine-servicedesk-helper'
 import { createAuditLog } from '@/lib/audit'
 import { db } from '@/lib/db'
 import crypto from 'crypto'
+import { getServiceDeskWebhookSecret } from '@/lib/system-runtime-settings'
 
 // Webhook endpoint to receive updates from ServiceDesk
 export async function POST(request: NextRequest) {
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
                      request.headers.get('x-webhook-signature')
     
     // Verify webhook signature if configured
-    const webhookSecret = process.env.SERVICEDESK_WEBHOOK_SECRET
+    const webhookSecret = await getServiceDeskWebhookSecret()
     if (webhookSecret && signature) {
       const expectedSignature = crypto
         .createHmac('sha256', webhookSecret)

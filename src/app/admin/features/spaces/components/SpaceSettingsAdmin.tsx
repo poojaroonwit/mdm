@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Building2, ArrowRight } from 'lucide-react'
 import { Space } from '../types'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function SpaceSettingsAdmin({ selectedSpaceId }: { selectedSpaceId?: string }) {
   const router = useRouter()
@@ -60,10 +61,12 @@ export function SpaceSettingsAdmin({ selectedSpaceId }: { selectedSpaceId?: stri
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading spaces...</p>
-        </div>
+        <div className="w-full space-y-3 p-4">
+  <Skeleton className="h-10 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+</div>
       </div>
     )
   }

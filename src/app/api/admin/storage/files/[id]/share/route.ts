@@ -2,6 +2,7 @@ import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { AttachmentStorageService } from '@/lib/attachment-storage'
+import { getConfiguredSiteUrl } from '@/lib/system-runtime-settings'
 
 async function postHandler(
   request: NextRequest,
@@ -44,6 +45,7 @@ async function postHandler(
   }
 
   let publicUrl: string | null = null
+  const siteUrl = await getConfiguredSiteUrl(request)
 
   if (isPublic) {
     const storageConnection = await db.storageConnection.findFirst({
@@ -67,14 +69,10 @@ async function postHandler(
       if (urlResult.success && urlResult.url) {
         publicUrl = urlResult.url
       } else {
-        publicUrl = `${
-          process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-        }/api/admin/storage/files/${fileId}/content`
+        publicUrl = `${siteUrl}/api/admin/storage/files/${fileId}/content`
       }
     } else {
-      publicUrl = `${
-        process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-      }/api/admin/storage/files/${fileId}/content`
+      publicUrl = `${siteUrl}/api/admin/storage/files/${fileId}/content`
     }
   }
 

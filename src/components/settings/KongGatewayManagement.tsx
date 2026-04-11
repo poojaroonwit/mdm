@@ -250,7 +250,7 @@ export function KongGatewayManagement() {
   }
 
   return (
-    <Card className="w-full shadow-sm">
+    <Card className="w-full shadow-lg">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div>

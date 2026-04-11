@@ -3,6 +3,7 @@ import { requireSpaceAccess } from '@/lib/space-access'
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 import { checkAndRefreshToken } from '@/lib/utils/token-refresh'
+import { getGoogleOAuthConfig } from '@/lib/google-oauth-config'
 
 async function postHandler(request: NextRequest) {
   const authResult = await requireAuthWithId()
@@ -41,7 +42,8 @@ async function postHandler(request: NextRequest) {
     // TODO: Implement actual Looker Studio API connection test
     let success = false
     if (config.access_type === 'API') {
-      success = !!(configData.client_id && configData.client_secret && configData.refresh_token)
+      const googleConfig = await getGoogleOAuthConfig()
+      success = !!(googleConfig?.clientId && googleConfig?.clientSecret && configData.refresh_token)
     } else if (config.access_type === 'PUBLIC') {
       success = !!configData.public_link
     }

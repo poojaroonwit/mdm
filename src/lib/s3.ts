@@ -5,11 +5,10 @@ const CONFIG_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 let s3ClientInstance: S3Client | null = null
 let cachedConfigTime = 0
 
-async function getS3Config() {
-  // 1. Try DB first
+export async function getS3Config() {
   try {
     const { query } = await import('@/lib/db')
-    const sql = `
+    const integrationSql = `
       SELECT config, is_enabled
       FROM platform_integrations
       WHERE type = 'aws-s3'
@@ -17,15 +16,16 @@ async function getS3Config() {
         AND is_enabled = true
       LIMIT 1
     `
-    const { rows } = await query(sql, [], 5000)
+    const { rows } = await query(integrationSql, [], 5000)
     
     if (rows && rows.length > 0) {
       const config = rows[0].config as any
       if (config.accessKeyId && config.secretAccessKey) {
         return {
-          region: config.region || process.env.AWS_REGION || 'us-east-1',
-          endpoint: config.endpoint || process.env.S3_ENDPOINT || undefined,
-          forcePathStyle: config.forcePathStyle === true || config.forcePathStyle === 'true' || process.env.S3_FORCE_PATH_STYLE === 'true',
+          region: config.region || 'us-east-1',
+          endpoint: config.endpoint || undefined,
+          forcePathStyle: config.forcePathStyle === true || config.forcePathStyle === 'true',
+          bucket: config.bucket || '',
           credentials: {
             accessKeyId: config.accessKeyId,
             secretAccessKey: config.secretAccessKey,
@@ -33,40 +33,45 @@ async function getS3Config() {
         }
       }
     }
-  } catch (error) {
-    // Ignore DB errors
-  }
 
-  // 2. Fallback to Env
-  const minioEndpoint = process.env.MINIO_ENDPOINT
-  const minioPort = process.env.MINIO_PORT
-  
-  let endpoint = process.env.S3_ENDPOINT
-  if (!endpoint && minioEndpoint) {
-    if (minioEndpoint.startsWith('http')) {
-      endpoint = minioEndpoint
-    } else {
-      const protocol = minioPort === '443' ? 'https' : 'http'
-      const portSuffix = (minioPort && minioPort !== '80' && minioPort !== '443') ? `:${minioPort}` : ''
-      endpoint = `${protocol}://${minioEndpoint}${portSuffix}`
+    const storageSql = `
+      SELECT config
+      FROM storage_connections
+      WHERE type = 's3'
+        AND is_active = true
+      ORDER BY created_at DESC
+      LIMIT 1
+    `
+    const storageResult = await query(storageSql, [], 5000)
+    if (storageResult.rows.length > 0) {
+      const config = storageResult.rows[0].config as any
+      if (config?.access_key_id && config?.secret_access_key) {
+        return {
+          region: config.region || 'us-east-1',
+          endpoint: config.endpoint || undefined,
+          forcePathStyle: config.forcePathStyle === true || config.forcePathStyle === 'true',
+          bucket: config.bucket || '',
+          credentials: {
+            accessKeyId: config.access_key_id,
+            secretAccessKey: config.secret_access_key,
+          },
+        }
+      }
     }
+  } catch (error) {
+    // Ignore DB errors and let callers handle missing config
   }
 
-  return {
-    region: process.env.AWS_REGION || 'us-east-1',
-    endpoint: endpoint,
-    forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true' || !!minioEndpoint,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID || process.env.MINIO_ACCESS_KEY || '',
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || process.env.MINIO_SECRET_KEY || '',
-    },
-  }
+  return null
 }
 
 export async function getS3Client(): Promise<S3Client> {
   const now = Date.now()
   if (!s3ClientInstance || (now - cachedConfigTime > CONFIG_CACHE_TTL)) {
     const config = await getS3Config()
+    if (!config) {
+      throw new Error('AWS S3 is not configured in the UI')
+    }
     s3ClientInstance = new S3Client(config)
     cachedConfigTime = now
   }
@@ -97,5 +102,5 @@ export async function generatePresignedDownloadUrl(
 // Validate S3 configuration
 export async function validateS3Config(): Promise<boolean> {
   const config = await getS3Config()
-  return !!(config.credentials.accessKeyId && config.credentials.secretAccessKey)
+  return !!(config?.credentials.accessKeyId && config?.credentials.secretAccessKey)
 }

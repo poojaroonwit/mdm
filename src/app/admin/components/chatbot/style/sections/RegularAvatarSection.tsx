@@ -80,11 +80,11 @@ export function RegularAvatarSection({ formData, setFormData }: RegularAvatarSec
               </FormRow>
               <FormRow label="Background Color" description="Avatar background color">
                 <ColorInput
-                  value={formData.avatarBackgroundColor || '#3b82f6'}
+                  value={formData.avatarBackgroundColor || '#1e40af'}
                   onChange={(color) => setFormData({ ...formData, avatarBackgroundColor: color })}
                   allowImageVideo={false}
                   className="relative"
-                  placeholder="#3b82f6"
+                  placeholder="#1e40af"
                   inputClassName="h-8 text-xs pl-7"
                 />
               </FormRow>

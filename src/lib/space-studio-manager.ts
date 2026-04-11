@@ -225,7 +225,7 @@ export class SpacesEditorManager {
         backgroundColor: '#1e40af',
         gradient: {
           from: '#1e40af',
-          to: '#3b82f6',
+          to: '#1e40af',
           angle: 135
         },
         leftPanelWidth: '70%',

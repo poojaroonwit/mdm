@@ -327,7 +327,7 @@ export function PopoverSection({ formData, setFormData, chatkitOptions }: Sectio
             <FormSection className="pt-2 pb-4">
               <FormRow label="Accent Color (Primary)" description="Primary accent color">
                 <ColorInput
-                  value={chatkitOptions?.theme?.color?.accent?.primary || chatkitOptions?.theme?.primaryColor || '#3b82f6'}
+                  value={chatkitOptions?.theme?.color?.accent?.primary || chatkitOptions?.theme?.primaryColor || '#1e40af'}
                   onChange={(color) => {
                     const theme = chatkitOptions?.theme || {}
                     setFormData({
@@ -351,7 +351,7 @@ export function PopoverSection({ formData, setFormData, chatkitOptions }: Sectio
                   }}
                   allowImageVideo={false}
                   className="relative"
-                  placeholder="#3b82f6"
+                  placeholder="#1e40af"
                   inputClassName="h-8 text-xs pl-7"
                 />
               </FormRow>

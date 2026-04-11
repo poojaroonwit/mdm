@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { jobQueue } from '@/shared/lib/jobs/job-queue'
+import { getCronApiKey } from '@/lib/system-runtime-settings'
 
 /**
  * Cron job endpoint for processing pending import/export jobs
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
   try {
     // Optional: Verify API key for security
     const apiKey = request.headers.get('X-API-Key') || request.headers.get('x-api-key')
-    const expectedApiKey = process.env.CRON_API_KEY || process.env.JOB_QUEUE_API_KEY
+    const expectedApiKey = await getCronApiKey()
 
     if (expectedApiKey && apiKey !== expectedApiKey) {
       return NextResponse.json(

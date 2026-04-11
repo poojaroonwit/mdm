@@ -252,7 +252,7 @@ export function AvatarUpload({
                     key={avatar.id}
                     onClick={() => selectAvatarFromLibrary(avatar.url)}
                     disabled={uploading}
-                    className="relative aspect-square rounded-full overflow-hidden border border-zinc-100/60 dark:border-zinc-800/60 hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed group shadow-sm bg-zinc-50 dark:bg-zinc-900"
+                    className="relative aspect-square rounded-full overflow-hidden border border-zinc-100/60 dark:border-zinc-800/60 hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed group shadow-lg bg-zinc-50 dark:bg-zinc-900"
                     title={avatar.name}
                   >
                     <img
@@ -272,7 +272,7 @@ export function AvatarUpload({
                     key={avatar.id}
                     onClick={() => selectAvatarFromLibrary(avatar.url)}
                     disabled={uploading}
-                    className="relative aspect-square rounded-full overflow-hidden border border-zinc-100/60 dark:border-zinc-800/60 hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed group shadow-sm bg-zinc-50 dark:bg-zinc-900"
+                    className="relative aspect-square rounded-full overflow-hidden border border-zinc-100/60 dark:border-zinc-800/60 hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed group shadow-lg bg-zinc-50 dark:bg-zinc-900"
                     title={avatar.name}
                   >
                     <img
@@ -292,7 +292,7 @@ export function AvatarUpload({
                     key={avatar.id}
                     onClick={() => selectAvatarFromLibrary(avatar.url)}
                     disabled={uploading}
-                    className="relative aspect-square rounded-full overflow-hidden border border-zinc-100/60 dark:border-zinc-800/60 hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed group shadow-sm bg-zinc-50 dark:bg-zinc-900"
+                    className="relative aspect-square rounded-full overflow-hidden border border-zinc-100/60 dark:border-zinc-800/60 hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed group shadow-lg bg-zinc-50 dark:bg-zinc-900"
                     title={avatar.name}
                   >
                     <img
@@ -312,7 +312,7 @@ export function AvatarUpload({
                     key={avatar.id}
                     onClick={() => selectAvatarFromLibrary(avatar.url)}
                     disabled={uploading}
-                    className="relative aspect-square rounded-full overflow-hidden border border-zinc-100/60 dark:border-zinc-800/60 hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed group shadow-sm bg-zinc-50 dark:bg-zinc-900"
+                    className="relative aspect-square rounded-full overflow-hidden border border-zinc-100/60 dark:border-zinc-800/60 hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed group shadow-lg bg-zinc-50 dark:bg-zinc-900"
                     title={avatar.name}
                   >
                     <img

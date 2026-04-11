@@ -23,7 +23,7 @@ export const routeMetadata: Record<string, RouteMetadata> = {
   '/tools/bigquery': {
     name: 'SQL Query',
     icon: 'Database',
-    color: '#2563eb',
+    color: '#1e40af',
     category: 'tools',
     description: 'Query data across all spaces',
   },
@@ -289,7 +289,7 @@ export const routeMetadata: Record<string, RouteMetadata> = {
   '/dashboard': {
     name: 'Dashboard',
     icon: 'LayoutDashboard',
-    color: '#3b82f6',
+    color: '#1e40af',
     category: 'overview',
     description: 'Main dashboard',
   },

@@ -82,7 +82,7 @@ export function AttributeDetailDrawer({
   const [activityData, setActivityData] = useState<any[]>([])
   const [loadingActivity, setLoadingActivity] = useState(false)
   const [showNewOption, setShowNewOption] = useState(false)
-  const [newOption, setNewOption] = useState({ value: '', label: '', color: '#3B82F6' })
+  const [newOption, setNewOption] = useState({ value: '', label: '', color: '#1e40af' })
   const [incrementConfig, setIncrementConfig] = useState({
     enabled: false,
     prefix: '',
@@ -91,7 +91,7 @@ export function AttributeDetailDrawer({
     step: 1
   })
   const [editingOption, setEditingOption] = useState<number | null>(null)
-  const [editingOptionData, setEditingOptionData] = useState({ value: '', label: '', color: '#3B82F6' })
+  const [editingOptionData, setEditingOptionData] = useState({ value: '', label: '', color: '#1e40af' })
   const [qualityStats, setQualityStats] = useState<any>(null)
   const [loadingQuality, setLoadingQuality] = useState(false)
 
@@ -149,7 +149,7 @@ export function AttributeDetailDrawer({
 
   const handleAddNewOption = () => {
     setShowNewOption(true)
-    setNewOption({ value: '', label: '', color: '#3B82F6' })
+    setNewOption({ value: '', label: '', color: '#1e40af' })
   }
 
   const handleSaveNewOption = async () => {
@@ -169,7 +169,7 @@ export function AttributeDetailDrawer({
 
       if (response.ok) {
         setShowNewOption(false)
-        setNewOption({ value: '', label: '', color: '#3B82F6' })
+        setNewOption({ value: '', label: '', color: '#1e40af' })
         // Refresh the attribute data
         if (onSave) {
           onSave({ ...attribute, options: updatedOptions } as any)
@@ -182,7 +182,7 @@ export function AttributeDetailDrawer({
 
   const handleCancelNewOption = () => {
     setShowNewOption(false)
-    setNewOption({ value: '', label: '', color: '#3B82F6' })
+    setNewOption({ value: '', label: '', color: '#1e40af' })
   }
 
   const handleEditOption = (index: number, option: any) => {
@@ -218,7 +218,7 @@ export function AttributeDetailDrawer({
 
   const handleCancelEditOption = () => {
     setEditingOption(null)
-    setEditingOptionData({ value: '', label: '', color: '#3B82F6' })
+    setEditingOptionData({ value: '', label: '', color: '#1e40af' })
   }
 
   const handleRemoveOption = async (index: number) => {
@@ -726,7 +726,7 @@ export function AttributeDetailDrawer({
                         {/* Color Swatch */}
                         <div className="flex items-center gap-2">
                           <ColorInput
-                            value={editingOption === index ? editingOptionData.color : option.color || '#3B82F6'}
+                            value={editingOption === index ? editingOptionData.color : option.color || '#1e40af'}
                             onChange={(color) => {
                               if (editingOption === index) {
                                 setEditingOptionData({ ...editingOptionData, color })
@@ -739,7 +739,7 @@ export function AttributeDetailDrawer({
                             }}
                             allowImageVideo={false}
                             className="relative"
-                            placeholder="#3B82F6"
+                            placeholder="#1e40af"
                             inputClassName="h-8 text-xs pl-7"
                           />
                         </div>
@@ -849,7 +849,7 @@ export function AttributeDetailDrawer({
                             onChange={(color) => setNewOption({ ...newOption, color })}
                             allowImageVideo={false}
                             className="relative"
-                            placeholder="#3B82F6"
+                            placeholder="#1e40af"
                             inputClassName="h-8 text-xs pl-7"
                           />
                         </div>

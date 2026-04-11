@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -335,14 +335,14 @@ export function DataModelManagement() {
 
       {/* Share Model Dialog */}
       <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle>Share Data Model</DialogTitle>
             <DialogDescription>
               Share "{selectedModelForSharing?.display_name || selectedModelForSharing?.name}" with other spaces
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
             <div>
               <Label>Select Spaces to Share With</Label>
               <div className="text-sm text-muted-foreground mb-2">
@@ -382,7 +382,7 @@ export function DataModelManagement() {
                 )}
               </div>
             </div>
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowShareDialog(false)}>
               Cancel
@@ -396,14 +396,14 @@ export function DataModelManagement() {
 
       {/* Edit Folder Dialog */}
       <Dialog open={showEditFolderDialog} onOpenChange={setShowEditFolderDialog}>
-        <DialogContent>
+        <DialogContent className="p-0 overflow-hidden">
           <DialogHeader>
             <DialogTitle>Edit Folder</DialogTitle>
             <DialogDescription>
               Rename the folder "{editingFolder?.name}"
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
             <div>
               <Label htmlFor="folder-name">Folder Name</Label>
               <Input
@@ -418,7 +418,7 @@ export function DataModelManagement() {
                 }}
               />
             </div>
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEditFolderDialog(false)}>
               Cancel

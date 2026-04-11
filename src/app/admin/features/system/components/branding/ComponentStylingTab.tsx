@@ -77,7 +77,7 @@ export function ComponentStylingTab({
                         className={cn(
                             "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all",
                             !isDarkMode
-                                ? "bg-background text-foreground shadow-sm"
+                                ? "bg-background text-foreground shadow-lg"
                                 : "text-muted-foreground hover:text-foreground"
                         )}
                     >
@@ -90,7 +90,7 @@ export function ComponentStylingTab({
                         className={cn(
                             "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all",
                             isDarkMode
-                                ? "bg-background text-foreground shadow-sm"
+                                ? "bg-background text-foreground shadow-lg"
                                 : "text-muted-foreground hover:text-foreground"
                         )}
                     >

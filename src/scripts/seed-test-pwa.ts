@@ -27,7 +27,7 @@ async function main() {
             description: 'Test chatbot for PWA banner verification',
             apiEndpoint: 'https://api.openai.com/v1/chat/completions', // Required field
             apiAuthType: 'bearer',
-            primaryColor: '#3b82f6',
+            primaryColor: '#1e40af',
             fontColor: '#000000',
             fontFamily: 'Inter',
             fontSize: '14px',
@@ -53,14 +53,14 @@ async function main() {
                 pwaEnabled: true,
                 pwaInstallScope: 'website', // Top overlay mode - the fix we're testing!
                 pwaBannerText: 'Install for quick access',
-                pwaBannerBgColor: '#3b82f6',
+                pwaBannerBgColor: '#1e40af',
                 pwaBannerFontColor: '#ffffff',
                 pwaBannerButtonBgColor: '#ffffff',
-                pwaBannerButtonTextColor: '#3b82f6',
+                pwaBannerButtonTextColor: '#1e40af',
                 // Widget settings
                 widgetPosition: 'bottom-right',
                 widgetSize: '60px',
-                widgetBackgroundColor: '#3b82f6',
+                widgetBackgroundColor: '#1e40af',
                 chatbotEnabled: true,
             }
         }

@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { AzureGroupRoleMapping, SSOConfig } from '../types'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface SSOConfigurationProps {
   hideHeader?: boolean
@@ -156,10 +157,12 @@ export const SSOConfiguration = forwardRef<{ saveConfig: () => Promise<void> }, 
 
   if (isLoading) {
     return (
-      <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-        <p className="text-muted-foreground">Loading SSO configuration...</p>
-      </div>
+      <div className="w-full space-y-3 p-4">
+  <Skeleton className="h-10 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+  <Skeleton className="h-12 w-full rounded-xl" />
+</div>
     )
   }
 

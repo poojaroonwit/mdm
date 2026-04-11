@@ -223,7 +223,7 @@ const DropdownMenuContent = React.forwardRef<
       <div
         ref={contentRef}
         className={cn(
-          "min-w-[8rem] rounded-xl border border-zinc-100/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-950/90 p-1 text-zinc-900 dark:text-white shadow-2xl outline-none backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-300",
+          "min-w-[8rem] rounded-md border border-zinc-100/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-950/90 p-1 text-zinc-900 dark:text-white shadow-2xl outline-none backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-300",
           className
         )}
         style={{
@@ -383,7 +383,7 @@ const DropdownMenuSubContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "min-w-[8rem] rounded-xl border border-zinc-100/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-950/90 p-1 text-zinc-900 dark:text-white shadow-2xl outline-none backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-300",
+      "min-w-[8rem] rounded-md border border-zinc-100/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-950/90 p-1 text-zinc-900 dark:text-white shadow-2xl outline-none backdrop-blur-xl animate-in fade-in-0 zoom-in-95 duration-300",
       className
     )}
     style={{

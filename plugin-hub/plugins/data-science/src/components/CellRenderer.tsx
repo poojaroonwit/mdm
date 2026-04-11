@@ -515,7 +515,7 @@ export function CellRenderer({
     >
       {/* Cell Controls - Always visible on the right side */}
       {canEdit && (
-        <div className="absolute right-2 top-2 flex items-center gap-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-background rounded-lg shadow-sm border border-border p-1">
+        <div className="absolute right-2 top-2 flex items-center gap-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-background rounded-lg shadow-lg border border-border p-1">
           {/* Move Up Button */}
           {onMove && (
             <Button

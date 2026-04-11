@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 export async function POST(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN') {
@@ -15,8 +15,10 @@ export async function POST(
   }
 
   try {
+    const { id } = await params;
+
     await prisma.user.update({
-        where: { id: params.id },
+        where: { id },
         data: { 
             isTwoFactorEnabled: false,
             twoFactorSecret: null,

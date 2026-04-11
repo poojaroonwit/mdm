@@ -69,7 +69,7 @@ export async function triggerUserInvitationNotification(
       invitedUserId,
       'USER_INVITED',
       'You have been invited to join the team',
-      `${inviterName} (${inviterEmail}) has invited you to join the unified data platform.`,
+      `${inviterName} (${inviterEmail}) has invited you to join the Unified Data Platform.`,
       'MEDIUM',
       { inviter_name: inviterName, inviter_email: inviterEmail }
     );

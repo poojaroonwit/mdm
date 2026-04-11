@@ -158,7 +158,7 @@ export function FileUpload({
 
       {/* Upload Progress */}
       {uploading && (
-        <div className="flex items-center space-x-3 text-xs font-semibold text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-100/60 dark:border-zinc-800/60 shadow-sm animate-pulse">
+        <div className="flex items-center space-x-3 text-xs font-semibold text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-900 p-3 rounded-md border border-zinc-100/60 dark:border-zinc-800/60 shadow-lg animate-pulse">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="uppercase tracking-widest">Uploading files</span>
         </div>
@@ -172,7 +172,7 @@ export function FileUpload({
             {uploadedFiles.map((file) => (
               <div
                 key={file.id}
-                className="flex items-center justify-between p-3 bg-white/50 dark:bg-zinc-900/50 border border-zinc-100/60 dark:border-zinc-800/60 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+                className="flex items-center justify-between p-3 bg-white/50 dark:bg-zinc-900/50 border border-zinc-100/60 dark:border-zinc-800/60 rounded-md shadow-lg hover:shadow-md transition-all duration-200"
               >
                 <div className="flex items-center space-x-3">
                   <File className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />

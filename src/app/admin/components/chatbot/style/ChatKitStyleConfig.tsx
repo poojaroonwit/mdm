@@ -36,7 +36,7 @@ interface ChatKitStyleConfigProps {
 // Wrapper for section content to ensure consistent styling
 const SectionWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="w-full bg-white dark:bg-card rounded-lg border border-border/50 shadow-sm p-0 overflow-hidden">
+    <div className="w-full bg-white dark:bg-card rounded-lg border border-border/50 shadow-lg p-0 overflow-hidden">
       {children}
     </div>
   )
@@ -62,39 +62,39 @@ export function ChatKitStyleConfig({ formData, setFormData, chatkitOptions }: Ch
     <div className="space-y-6">
       <Tabs defaultValue="popover" value={activeTab} onValueChange={setActiveTab} className="flex flex-col md:flex-row w-full gap-6">
         <TabsList className="flex flex-col h-auto gap-1 bg-transparent p-0 w-full md:w-48 lg:w-64 shrink-0 justify-start">
-          <TabsTrigger value="animation" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
+          <TabsTrigger value="animation" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
             <Sparkles className="h-4 w-4" />
             Animation
           </TabsTrigger>
-          <TabsTrigger value="header" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
+          <TabsTrigger value="header" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
             <PanelTop className="h-4 w-4" />
             Header
           </TabsTrigger>
-          <TabsTrigger value="popover" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
+          <TabsTrigger value="popover" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
             <MessageSquare className="h-4 w-4" />
             Chat Container
           </TabsTrigger>
-          <TabsTrigger value="history" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
+          <TabsTrigger value="history" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
             <History className="h-4 w-4" />
             History Panel
           </TabsTrigger>
-          <TabsTrigger value="widget" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
+          <TabsTrigger value="widget" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
             <CircleDot className="h-4 w-4" />
             Widget Button
           </TabsTrigger>
-          <TabsTrigger value="persona" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
+          <TabsTrigger value="persona" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
             <UserCircle className="h-4 w-4" />
             Persona Picker
           </TabsTrigger>
-          <TabsTrigger value="avatar" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
+          <TabsTrigger value="avatar" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
             <UserCircle className="h-4 w-4" />
             Avatar
           </TabsTrigger>
-          <TabsTrigger value="locale" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
+          <TabsTrigger value="locale" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
             <Languages className="h-4 w-4" />
             Language
           </TabsTrigger>
-          <TabsTrigger value="settings" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-sm aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
+          <TabsTrigger value="settings" className="justify-start gap-3 px-3 py-2.5 rounded-md w-full aria-selected:bg-background aria-selected:shadow-lg aria-selected:font-semibold hover:bg-muted/50 transition-all text-sm">
             <Settings2 className="h-4 w-4" />
             General Settings
           </TabsTrigger>
@@ -104,7 +104,7 @@ export function ChatKitStyleConfig({ formData, setFormData, chatkitOptions }: Ch
         <div className="flex-1 min-w-0 space-y-6">
           {/* Animation */}
           <TabsContent value="animation" className="m-0 mt-0">
-            <div className="w-full bg-white dark:bg-card rounded-lg border shadow-sm p-6">
+            <div className="w-full bg-white dark:bg-card rounded-lg border shadow-lg p-6">
               <AnimationSection config={config} handleChange={handleChange} />
             </div>
           </TabsContent>
@@ -467,11 +467,11 @@ function ChatKitHeaderSection({ formData, setFormData }: { formData: Partial<Cha
               <div className="space-y-2">
                 <Label>Header Background Color</Label>
                 <ColorInput
-                  value={formData.headerBgColor || '#3b82f6'}
+                  value={formData.headerBgColor || '#1e40af'}
                   onChange={(color) => setFormData({ ...formData, headerBgColor: color })}
                   allowImageVideo={true}
                   className="relative"
-                  placeholder="#3b82f6"
+                  placeholder="#1e40af"
                   inputClassName="h-7 text-xs pl-7 w-full"
                 />
               </div>

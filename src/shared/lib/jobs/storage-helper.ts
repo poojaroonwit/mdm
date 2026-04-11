@@ -7,7 +7,6 @@ import { query } from '@/lib/db'
 export async function getStorageService(): Promise<AttachmentStorageService | null> {
   try {
     // Get active storage connection from database
-    // Try storage_connections table first, fallback to environment variables
     let storageResult
     try {
       storageResult = await query(
@@ -17,86 +16,11 @@ export async function getStorageService(): Promise<AttachmentStorageService | nu
          LIMIT 1`
       )
     } catch (error) {
-      // Table might not exist, use environment variables
+      // Table might not exist yet
       storageResult = { rows: [] }
     }
 
     if (storageResult.rows.length === 0) {
-      // Try environment variables as fallback
-      if (process.env.MINIO_ENDPOINT && process.env.MINIO_ACCESS_KEY) {
-        return new AttachmentStorageService({
-          provider: 'minio',
-          config: {
-            minio: {
-              endpoint: process.env.MINIO_ENDPOINT,
-              access_key: process.env.MINIO_ACCESS_KEY,
-              secret_key: process.env.MINIO_SECRET_KEY || '',
-              bucket: process.env.MINIO_BUCKET || 'import-export',
-              region: process.env.MINIO_REGION || 'us-east-1',
-              use_ssl: process.env.MINIO_USE_SSL === 'true',
-            },
-            s3: {
-              access_key_id: '',
-              secret_access_key: '',
-              bucket: '',
-              region: '',
-            },
-            sftp: {
-              host: '',
-              port: 22,
-              username: '',
-              password: '',
-              path: '',
-            },
-            ftp: {
-              host: '',
-              port: 21,
-              username: '',
-              password: '',
-              path: '',
-              passive: true,
-            },
-          },
-        })
-      }
-
-      if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_S3_BUCKET) {
-        return new AttachmentStorageService({
-          provider: 's3',
-          config: {
-            minio: {
-              endpoint: '',
-              access_key: '',
-              secret_key: '',
-              bucket: '',
-              region: '',
-              use_ssl: false,
-            },
-            s3: {
-              access_key_id: process.env.AWS_ACCESS_KEY_ID,
-              secret_access_key: process.env.AWS_SECRET_ACCESS_KEY || '',
-              bucket: process.env.AWS_S3_BUCKET,
-              region: process.env.AWS_REGION || 'us-east-1',
-            },
-            sftp: {
-              host: '',
-              port: 22,
-              username: '',
-              password: '',
-              path: '',
-            },
-            ftp: {
-              host: '',
-              port: 21,
-              username: '',
-              password: '',
-              path: '',
-              passive: true,
-            },
-          },
-        })
-      }
-
       return null
     }
 

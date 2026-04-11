@@ -1,18 +1,14 @@
 import OpenAI from 'openai';
-import { db } from '@/lib/db';
+import { getGlobalOpenAIApiKey } from '@/lib/openai-config';
 
 /**
- * Get an OpenAI client instance with the API key from the database or environment
+ * Get an OpenAI client instance with the API key from the configured provider settings
  */
 export async function getOpenAIClient(apiKeyOverride?: string) {
   let apiKey = apiKeyOverride;
 
   if (!apiKey) {
-    // Try to get from system settings/API configuration if not provided
-    const apiConfig = await db.apiConfiguration.findFirst({
-      where: { provider: 'openai' },
-    });
-    apiKey = apiConfig?.apiKey || process.env.OPENAI_API_KEY;
+    apiKey = await getGlobalOpenAIApiKey() || undefined;
   }
 
   if (!apiKey) {

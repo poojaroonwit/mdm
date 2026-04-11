@@ -1873,12 +1873,16 @@ export function TicketDetailModalEnhanced({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           {headerContent}
         </DialogHeader>
-        {bodyContent}
-        {footerContent}
+        <DialogBody className="flex-1 overflow-y-auto min-h-0 pt-4">
+          {bodyContent}
+        </DialogBody>
+        <DialogFooter className="flex-shrink-0 mt-0 pt-0 border-t-0">
+          {footerContent}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

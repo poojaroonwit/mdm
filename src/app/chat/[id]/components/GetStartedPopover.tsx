@@ -71,7 +71,7 @@ export function GetStartedPopover({
                 </div>
             ) : (
                 <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center mb-2 shadow-sm"
+                className="w-12 h-12 rounded-md flex items-center justify-center mb-2 shadow-lg"
                 style={{ backgroundColor: primaryColor }}
                 >
                 <Icon className="h-6 w-6 text-white" />

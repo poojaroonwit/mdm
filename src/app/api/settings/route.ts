@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger'
 import { validateBody } from '@/lib/api-validation'
 import { authOptions } from '@/lib/auth'
 import { addSecurityHeaders } from '@/lib/security-headers'
+import { clearSystemRuntimeSettingsCache } from '@/lib/system-runtime-settings'
 import { z } from 'zod'
 
 async function getHandler(request: NextRequest) {
@@ -23,7 +24,8 @@ async function getHandler(request: NextRequest) {
   // Define sensitive keys that should only be visible to admins
   const sensitiveKeys = [
     'dbPassword', 'smtpPassword', 'dbUser', 'smtpUser', 'dbHost', 'dbPort', 'dbName',
-    'smtpHost', 'smtpPort', 'smtpSecure'
+    'smtpHost', 'smtpPort', 'smtpSecure', 'cronApiKey', 'schedulerApiKey',
+    'serviceDeskWebhookSecret', 'gitWebhookSecret'
   ]
 
   const settingsObject = (rows || []).reduce((acc: Record<string, any>, setting: any) => {
@@ -123,6 +125,8 @@ async function putHandler(request: NextRequest) {
           })
         })
       )
+
+      clearSystemRuntimeSettingsCache()
     }
 
     // Create audit log

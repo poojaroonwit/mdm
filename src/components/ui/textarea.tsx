@@ -32,11 +32,11 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={textareaId}
           className={cn(
-            'flex min-h-[80px] w-full rounded-xl border border-zinc-100/60 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/50 px-3 py-2 text-sm',
+            'flex min-h-[80px] w-full rounded-md border-none bg-zinc-100/50 dark:bg-zinc-900/50 px-3 py-2 text-sm',
             'placeholder:text-zinc-400 dark:placeholder:text-zinc-500',
-            'focus-visible:outline-none focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-500',
-            'disabled:cursor-not-allowed disabled:opacity-40 backdrop-blur-sm transition-all duration-200',
-            error && 'border-destructive focus:ring-destructive',
+            'focus-visible:outline-none focus:ring-2 focus:ring-primary/20',
+            'disabled:cursor-not-allowed disabled:opacity-40 backdrop-blur-sm transition-all duration-200 shadow-none',
+            error && 'bg-destructive/5 focus:ring-destructive/20',
             className
           )}
           aria-invalid={error ? true : undefined}

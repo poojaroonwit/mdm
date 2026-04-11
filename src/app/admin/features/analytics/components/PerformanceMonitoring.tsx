@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -411,90 +411,92 @@ export function PerformanceMonitoring() {
                   Create Alert
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
+              <DialogContent className="p-0 overflow-hidden">
+                <DialogHeader className="p-6 pb-2">
                   <DialogTitle>Create Performance Alert</DialogTitle>
                   <DialogDescription>
                     Set up alerts for performance thresholds
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="alert-name">Alert Name</Label>
-                    <Input
-                      id="alert-name"
-                      value={newAlert.name}
-                      onChange={(e) => setNewAlert({ ...newAlert, name: e.target.value })}
-                      placeholder="Enter alert name"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
+                <DialogBody className="p-6 pt-2 pb-4">
+                  <div className="space-y-4">
                     <div>
-                      <Label htmlFor="alert-metric">Metric</Label>
-                      <Select value={newAlert.metric} onValueChange={(value: any) => setNewAlert({ ...newAlert, metric: value })}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="cpu">CPU Usage</SelectItem>
-                          <SelectItem value="memory">Memory Usage</SelectItem>
-                          <SelectItem value="disk">Disk Usage</SelectItem>
-                          <SelectItem value="responseTime">Response Time</SelectItem>
-                          <SelectItem value="errorRate">Error Rate</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="alert-operator">Operator</Label>
-                      <Select value={newAlert.operator} onValueChange={(value: any) => setNewAlert({ ...newAlert, operator: value })}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="gt">Greater Than</SelectItem>
-                          <SelectItem value="lt">Less Than</SelectItem>
-                          <SelectItem value="eq">Equals</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="alert-threshold">Threshold</Label>
+                      <Label htmlFor="alert-name">Alert Name</Label>
                       <Input
-                        id="alert-threshold"
-                        type="number"
-                        value={newAlert.threshold}
-                        onChange={(e) => setNewAlert({ ...newAlert, threshold: parseInt(e.target.value) })}
+                        id="alert-name"
+                        value={newAlert.name}
+                        onChange={(e) => setNewAlert({ ...newAlert, name: e.target.value })}
+                        placeholder="Enter alert name"
                       />
                     </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="alert-metric">Metric</Label>
+                        <Select value={newAlert.metric} onValueChange={(value: any) => setNewAlert({ ...newAlert, metric: value })}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="cpu">CPU Usage</SelectItem>
+                            <SelectItem value="memory">Memory Usage</SelectItem>
+                            <SelectItem value="disk">Disk Usage</SelectItem>
+                            <SelectItem value="responseTime">Response Time</SelectItem>
+                            <SelectItem value="errorRate">Error Rate</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="alert-operator">Operator</Label>
+                        <Select value={newAlert.operator} onValueChange={(value: any) => setNewAlert({ ...newAlert, operator: value })}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="gt">Greater Than</SelectItem>
+                            <SelectItem value="lt">Less Than</SelectItem>
+                            <SelectItem value="eq">Equals</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="alert-threshold">Threshold</Label>
+                        <Input
+                          id="alert-threshold"
+                          type="number"
+                          value={newAlert.threshold}
+                          onChange={(e) => setNewAlert({ ...newAlert, threshold: parseInt(e.target.value) })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="alert-severity">Severity</Label>
+                        <Select value={newAlert.severity} onValueChange={(value: any) => setNewAlert({ ...newAlert, severity: value })}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">Low</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="critical">Critical</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                     <div>
-                      <Label htmlFor="alert-severity">Severity</Label>
-                      <Select value={newAlert.severity} onValueChange={(value: any) => setNewAlert({ ...newAlert, severity: value })}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="critical">Critical</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label htmlFor="alert-description">Description</Label>
+                      <Textarea
+                        id="alert-description"
+                        value={newAlert.description}
+                        onChange={(e) => setNewAlert({ ...newAlert, description: e.target.value })}
+                        placeholder="Alert description"
+                        rows={3}
+                      />
                     </div>
                   </div>
-                  <div>
-                    <Label htmlFor="alert-description">Description</Label>
-                    <Textarea
-                      id="alert-description"
-                      value={newAlert.description}
-                      onChange={(e) => setNewAlert({ ...newAlert, description: e.target.value })}
-                      placeholder="Alert description"
-                      rows={3}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
+                </DialogBody>
+                <DialogFooter className="p-6 pt-2">
                   <Button variant="outline" onClick={() => setShowCreateAlert(false)}>
                     Cancel
                   </Button>

@@ -1,5 +1,7 @@
 'use client'
 
+import { Skeleton } from '@/components/ui/skeleton'
+
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDebouncedCallback } from 'use-debounce'
@@ -15,10 +17,11 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogBody,
+  DialogFooter,
 } from '@/components/ui/dialog'
 import {
   BarChart3,
@@ -517,8 +520,8 @@ export function MergedBIReports() {
           if (!open) resetCreateDialog()
         }}
       >
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="p-0 gap-0 overflow-hidden">
+          <DialogHeader className="px-6 pt-6 pb-2">
             <DialogTitle className="flex items-center gap-2">
               <LayoutDashboard className="h-5 w-5" />
               Create New Dashboard
@@ -530,79 +533,83 @@ export function MergedBIReports() {
             </DialogDescription>
           </DialogHeader>
 
-          {/* Step indicator */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className={dialogStep === 1 ? 'text-foreground font-medium' : ''}>1. Select Space</span>
-            <ChevronRight className="h-4 w-4" />
-            <span className={dialogStep === 2 ? 'text-foreground font-medium' : ''}>2. Select Page</span>
-          </div>
-
-          {dialogStep === 1 && (
-            <div className="py-2">
-              <SpaceSelector
-                value={createReportSpaceId}
-                onValueChange={setCreateReportSpaceId}
-                className="w-full"
-                showAllOption={false}
-              />
+          <DialogBody className="p-6 pt-2 pb-4">
+            {/* Step indicator */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground pb-4">
+              <span className={dialogStep === 1 ? 'text-foreground font-medium' : ''}>1. Select Space</span>
+              <ChevronRight className="h-4 w-4" />
+              <span className={dialogStep === 2 ? 'text-foreground font-medium' : ''}>2. Select Page</span>
             </div>
-          )}
 
-          {dialogStep === 2 && (
-            <div className="py-2 space-y-3 max-h-72 overflow-y-auto">
-              {pagesLoading ? (
-                <div className="flex items-center justify-center py-6">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                </div>
-              ) : (
-                <>
-                  {spacePages.length > 0 && (
-                    <div className="space-y-1">
-                      {spacePages.map((page) => (
-                        <button
-                          key={page.id}
-                          type="button"
-                          onClick={() => { setSelectedPageId(page.id); setPageMode('existing') }}
-                          className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors ${
-                            pageMode === 'existing' && selectedPageId === page.id
-                              ? 'bg-primary text-primary-foreground'
-                              : 'hover:bg-muted'
-                          }`}
-                        >
-                          <Layout className="h-4 w-4 shrink-0" />
-                          {page.title}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+            {dialogStep === 1 && (
+              <div className="space-y-4">
+                <SpaceSelector
+                  value={createReportSpaceId}
+                  onValueChange={setCreateReportSpaceId}
+                  className="w-full"
+                  showAllOption={false}
+                />
+              </div>
+            )}
 
-                  <button
-                    type="button"
-                    onClick={() => setPageMode('create')}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors ${
-                      pageMode === 'create'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'hover:bg-muted border border-dashed border-border'
-                    }`}
-                  >
-                    <Plus className="h-4 w-4 shrink-0" />
-                    Create new page
-                  </button>
+            {dialogStep === 2 && (
+              <div className="space-y-3 max-h-72 overflow-y-auto">
+                {pagesLoading ? (
+                  <div className="w-full space-y-2 py-2">
+                    <Skeleton className="h-9 w-full rounded-md" />
+                    <Skeleton className="h-9 w-full rounded-md" />
+                    <Skeleton className="h-9 w-2/3 rounded-md" />
+                  </div>
+                ) : (
+                  <>
+                    {spacePages.length > 0 && (
+                      <div className="space-y-1">
+                        {spacePages.map((page) => (
+                          <button
+                            key={page.id}
+                            type="button"
+                            onClick={() => { setSelectedPageId(page.id); setPageMode('existing') }}
+                            className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors ${
+                              pageMode === 'existing' && selectedPageId === page.id
+                                ? 'bg-primary text-primary-foreground'
+                                : 'hover:bg-muted'
+                            }`}
+                          >
+                            <Layout className="h-4 w-4 shrink-0" />
+                            {page.title}
+                          </button>
+                        ))}
+                      </div>
+                    )}
 
-                  {pageMode === 'create' && (
-                    <Input
-                      placeholder="Page name"
-                      value={newPageName}
-                      onChange={(e) => setNewPageName(e.target.value)}
-                      autoFocus
-                    />
-                  )}
-                </>
-              )}
-            </div>
-          )}
+                    <button
+                      type="button"
+                      onClick={() => setPageMode('create')}
+                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors ${
+                        pageMode === 'create'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'hover:bg-muted border border-dashed border-border'
+                      }`}
+                    >
+                      <Plus className="h-4 w-4 shrink-0" />
+                      Create new page
+                    </button>
 
-          <DialogFooter>
+                    {pageMode === 'create' && (
+                      <Input
+                        placeholder="Page name"
+                        value={newPageName}
+                        onChange={(e) => setNewPageName(e.target.value)}
+                        autoFocus
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </DialogBody>
+
+          <DialogFooter className="px-6 py-4 bg-muted/10">
             {dialogStep === 1 ? (
               <>
                 <Button variant="outline" onClick={() => setShowCreateReportDialog(false)}>

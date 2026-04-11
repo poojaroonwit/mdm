@@ -1,11 +1,13 @@
 'use client'
 
+import { Skeleton } from '@/components/ui/skeleton'
+
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -533,7 +535,7 @@ export function StorageManagement() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-foreground">Sources</h2>
             <div className="flex items-center gap-1">
-              <Button
+              <Button className="rounded-xl font-bold"
                 size="sm"
                 variant="ghost"
                 className="h-8 w-8 p-0"
@@ -542,7 +544,7 @@ export function StorageManagement() {
               >
                 <Plus className="h-4 w-4" />
               </Button>
-              <Button
+              <Button className="rounded-xl font-bold"
                 size="sm"
                 variant="ghost"
                 className="h-8 w-8 p-0"
@@ -553,7 +555,7 @@ export function StorageManagement() {
               </Button>
             </div>
           </div>
-          <Button
+          <Button className="rounded-xl font-bold"
             variant="outline"
             size="sm"
             className={cn(
@@ -569,7 +571,7 @@ export function StorageManagement() {
             <HardDrive className="h-4 w-4 mr-2" />
             All Sources
           </Button>
-          <Button
+          <Button className="rounded-xl font-bold"
             variant="outline"
             size="sm"
             className="w-full justify-start"
@@ -602,7 +604,7 @@ export function StorageManagement() {
                     <span className="truncate">{bucket.name}</span>
                   </div>
                   {bucket.public && (
-                    <Badge variant="outline" className="text-xs ml-2">Public</Badge>
+                    <Badge className="rounded-lg font-bold text-[10px]" variant="outline" className="text-xs ml-2">Public</Badge>
                   )}
                 </div>
                 <div className="text-xs text-muted-foreground mt-1 ml-6">
@@ -673,14 +675,14 @@ export function StorageManagement() {
 
             {/* Actions */}
             <div className="flex items-center gap-2">
-              <Button
+              <Button className="rounded-xl font-bold"
                 variant="outline"
                 size="sm"
                 onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
               >
                 {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid3x3 className="h-4 w-4" />}
               </Button>
-              <Button
+              <Button className="rounded-xl font-bold"
                 variant="outline"
                 size="sm"
                 onClick={() => loadFiles(selectedBucket!, currentPath)}
@@ -690,7 +692,7 @@ export function StorageManagement() {
               </Button>
               {selectedBucket && (
                 <>
-                  <Button
+                  <Button className="rounded-xl font-bold"
                     variant="outline"
                     size="sm"
                     onClick={() => setShowCreateFolder(true)}
@@ -698,7 +700,7 @@ export function StorageManagement() {
                     <FolderPlus className="h-4 w-4 mr-2" />
                     New folder
                   </Button>
-                  <Button
+                  <Button className="rounded-xl font-bold"
                     variant="outline"
                     size="sm"
                     onClick={() => setShowUploadDialog(true)}
@@ -715,7 +717,7 @@ export function StorageManagement() {
           <div className="flex items-center gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
+              <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
                 placeholder="Search files..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -769,12 +771,18 @@ export function StorageManagement() {
               </div>
             </div>
           ) : !selectedBucket && isLoading && files.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="w-full space-y-3 p-4">
+              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-16 w-full rounded-md" />
+              <Skeleton className="h-16 w-full rounded-md" />
+              <Skeleton className="h-16 w-full rounded-md" />
             </div>
           ) : selectedBucket && isLoading && files.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="w-full space-y-3 p-4">
+              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-16 w-full rounded-md" />
+              <Skeleton className="h-16 w-full rounded-md" />
+              <Skeleton className="h-16 w-full rounded-md" />
             </div>
           ) : filteredFiles.length === 0 ? (
             <div className="flex items-center justify-center h-full">
@@ -785,7 +793,7 @@ export function StorageManagement() {
                   {searchTerm ? 'Try a different search term' : 'Upload your first file to get started'}
                 </p>
                 {!searchTerm && (
-                  <Button onClick={() => setShowUploadDialog(true)}>
+                  <Button className="rounded-xl font-bold" onClick={() => setShowUploadDialog(true)}>
                     <Upload className="h-4 w-4 mr-2" />
                     Upload file
                   </Button>
@@ -808,7 +816,7 @@ export function StorageManagement() {
                             setSelectedFiles(new Set())
                           }
                         }}
-                        className="rounded border-border"
+                        className="rounded-lg border-zinc-200 dark:border-zinc-800"
                       />
                     </TableHead>
                     <TableHead>Name</TableHead>
@@ -852,7 +860,7 @@ export function StorageManagement() {
                             setSelectedFiles(newSelected)
                           }}
                           onClick={(e) => e.stopPropagation()}
-                          className="rounded border-border"
+                          className="rounded-lg border-zinc-200 dark:border-zinc-800"
                         />
                       </TableCell>
                       <TableCell>
@@ -875,7 +883,7 @@ export function StorageManagement() {
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Button className="rounded-xl font-bold" variant="ghost" size="sm" className="h-8 w-8 p-0">
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -1023,7 +1031,7 @@ export function StorageManagement() {
                           {isFolder ? 'Folder' : formatBytes(file.size)}
                         </p>
                         {(file as any).sourceName && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge className="rounded-lg font-bold text-[10px]" variant="outline" className="text-xs">
                             {(file as any).sourceType === 'bucket'
                               ? (file as any).sourceName
                               : (file as any).sourceType}
@@ -1033,7 +1041,7 @@ export function StorageManagement() {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100">
+                        <Button className="rounded-xl font-bold" variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100">
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -1148,7 +1156,7 @@ export function StorageManagement() {
               {selectedFiles.size} file{selectedFiles.size > 1 ? 's' : ''} selected
             </span>
             <div className="flex items-center gap-2">
-              <Button
+              <Button className="rounded-xl font-bold"
                 variant="outline"
                 size="sm"
                 onClick={() => handleDeleteFiles(Array.from(selectedFiles))}
@@ -1156,7 +1164,7 @@ export function StorageManagement() {
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
               </Button>
-              <Button
+              <Button className="rounded-xl font-bold"
                 variant="ghost"
                 size="sm"
                 onClick={() => setSelectedFiles(new Set())}
@@ -1170,49 +1178,50 @@ export function StorageManagement() {
 
       {/* Create Bucket Dialog */}
       <Dialog open={showCreateBucket} onOpenChange={setShowCreateBucket}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-2">
             <DialogTitle>Create new bucket</DialogTitle>
             <DialogDescription>
               Buckets are containers for your files. Choose a unique name for your bucket.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Name</label>
-              <Input
-                value={newBucketName}
-                onChange={(e) => setNewBucketName(e.target.value)}
-                placeholder="bucket-name"
-                className="font-mono"
-              />
-            </div>
-            <div className="flex items-center justify-between">
+          <DialogBody className="p-6 pt-2 pb-4">
+            <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Public bucket</label>
-                <p className="text-xs text-muted-foreground">Anyone with the URL can access files</p>
-              </div>
-              <button
-                onClick={() => setIsPublicBucket(!isPublicBucket)}
-                className={cn(
-                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                  isPublicBucket ? "bg-green-500" : "bg-muted"
-                )}
-              >
-                <span
-                  className={cn(
-                    "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                    isPublicBucket ? "translate-x-6" : "translate-x-1"
-                  )}
+                <label className="text-sm font-medium mb-2 block">Name</label>
+                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 font-mono"
+                  value={newBucketName}
+                  onChange={(e) => setNewBucketName(e.target.value)}
+                  placeholder="bucket-name"
                 />
-              </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-sm font-medium">Public bucket</label>
+                  <p className="text-xs text-muted-foreground">Anyone with the URL can access files</p>
+                </div>
+                <button
+                  onClick={() => setIsPublicBucket(!isPublicBucket)}
+                  className={cn(
+                    "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                    isPublicBucket ? "bg-green-500" : "bg-muted"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                      isPublicBucket ? "translate-x-6" : "translate-x-1"
+                    )}
+                  />
+                </button>
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateBucket(false)}>
+          </DialogBody>
+          <DialogFooter className="p-6 pt-2">
+            <Button className="rounded-xl font-bold" variant="outline" onClick={() => setShowCreateBucket(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCreateBucket} disabled={!newBucketName.trim()}>
+            <Button className="rounded-xl font-bold" onClick={handleCreateBucket} disabled={!newBucketName.trim()}>
               Create bucket
             </Button>
           </DialogFooter>
@@ -1221,50 +1230,52 @@ export function StorageManagement() {
 
       {/* Upload Dialog */}
       <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
+        <DialogContent className="max-w-2xl p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-2">
             <DialogTitle>Upload files</DialogTitle>
             <DialogDescription>
               Select files to upload to {currentBucket?.name || 'bucket'}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="border-2 border-dashed rounded-lg p-8 text-center">
-              <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <label htmlFor="file-upload" className="cursor-pointer">
-                <span className="text-sm font-medium text-primary">Click to upload</span>
-                <span className="text-sm text-muted-foreground"> or drag and drop</span>
-              </label>
-              <input
-                id="file-upload"
-                type="file"
-                multiple
-                className="hidden"
-                onChange={(e) => {
-                  const files = Array.from(e.target.files || [])
-                  setUploadFiles(files)
-                }}
-              />
-            </div>
-            {uploadFiles.length > 0 && (
-              <div className="space-y-2">
-                {uploadFiles.map((file, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
-                    <span className="text-sm">{file.name}</span>
-                    <span className="text-xs text-muted-foreground">{formatBytes(file.size)}</span>
-                  </div>
-                ))}
+          <DialogBody className="p-6 pt-2 pb-4">
+            <div className="space-y-4">
+              <div className="border-2 border-dashed rounded-xl p-8 text-center border-zinc-200 dark:border-zinc-800">
+                <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <label htmlFor="file-upload" className="cursor-pointer">
+                  <span className="text-sm font-medium text-primary">Click to upload</span>
+                  <span className="text-sm text-muted-foreground"> or drag and drop</span>
+                </label>
+                <input
+                  id="file-upload"
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || [])
+                    setUploadFiles(files)
+                  }}
+                />
               </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
+              {uploadFiles.length > 0 && (
+                <div className="space-y-2">
+                  {uploadFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
+                      <span className="text-sm">{file.name}</span>
+                      <span className="text-xs text-muted-foreground">{formatBytes(file.size)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </DialogBody>
+          <DialogFooter className="p-6 pt-2">
+            <Button className="rounded-xl font-bold" variant="outline" onClick={() => {
               setShowUploadDialog(false)
               setUploadFiles([])
             }}>
               Cancel
             </Button>
-            <Button onClick={handleUpload} disabled={uploadFiles.length === 0}>
+            <Button className="rounded-xl font-bold" onClick={handleUpload} disabled={uploadFiles.length === 0}>
               Upload {uploadFiles.length} file{uploadFiles.length > 1 ? 's' : ''}
             </Button>
           </DialogFooter>
@@ -1273,8 +1284,8 @@ export function StorageManagement() {
 
       {/* Create Folder Dialog */}
       <Dialog open={showCreateFolder} onOpenChange={setShowCreateFolder}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-2">
             <DialogTitle>Create new folder</DialogTitle>
             <DialogDescription>
               {currentPath.length > 0 
@@ -1282,14 +1293,13 @@ export function StorageManagement() {
                 : 'Create a folder in the current location'}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Folder name</label>
-              <Input
+          <DialogBody className="p-6 pt-2 pb-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-bold">Folder name</Label>
+              <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 font-mono"
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
                 placeholder="my-folder"
-                className="font-mono"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && newFolderName.trim()) {
                     handleCreateFolder()
@@ -1298,15 +1308,15 @@ export function StorageManagement() {
                 autoFocus
               />
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
+          </DialogBody>
+          <DialogFooter className="p-6 pt-2">
+            <Button className="rounded-xl font-bold" variant="outline" onClick={() => {
               setShowCreateFolder(false)
               setNewFolderName('')
             }}>
               Cancel
             </Button>
-            <Button onClick={handleCreateFolder} disabled={!newFolderName.trim()}>
+            <Button className="rounded-xl font-bold" onClick={handleCreateFolder} disabled={!newFolderName.trim()}>
               Create folder
             </Button>
           </DialogFooter>
@@ -1317,7 +1327,7 @@ export function StorageManagement() {
       {showFilePreview && (
         <Dialog open={!!showFilePreview} onOpenChange={() => setShowFilePreview(null)}>
           <DialogContent className="max-w-6xl max-h-[90vh]">
-            <DialogHeader>
+            <DialogHeader className="p-6 pb-2">
               <div className="flex items-center justify-between">
                 <div>
                   <DialogTitle className="flex items-center gap-2">
@@ -1329,7 +1339,7 @@ export function StorageManagement() {
                   </DialogDescription>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button
+                  <Button className="rounded-xl font-bold"
                     variant="outline"
                     size="sm"
                     onClick={() => handleDownload(showFilePreview)}
@@ -1337,7 +1347,7 @@ export function StorageManagement() {
                     <Download className="h-4 w-4 mr-2" />
                     Download
                   </Button>
-                  <Button
+                  <Button className="rounded-xl font-bold"
                     variant="outline"
                     size="sm"
                     onClick={() => setShowFilePreview(null)}
@@ -1347,29 +1357,29 @@ export function StorageManagement() {
                 </div>
               </div>
             </DialogHeader>
-            <div className="mt-4">
+            <DialogBody className="mt-4 p-0">
               <FileViewer
                 fileId={showFilePreview.id}
                 fileName={showFilePreview.name}
                 mimeType={showFilePreview.mimeType || 'application/octet-stream'}
                 publicUrl={showFilePreview.publicUrl}
               />
-            </div>
+            </DialogBody>
           </DialogContent>
         </Dialog>
       )}
 
       {/* Metadata Dialog */}
       <Dialog open={showMetadata} onOpenChange={setShowMetadata}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-2">
             <DialogTitle>File Metadata</DialogTitle>
             <DialogDescription>
               Detailed information about {selectedFileForAction?.name}
             </DialogDescription>
           </DialogHeader>
           {selectedFileForAction && (
-            <div className="space-y-4">
+            <DialogBody className="p-6 pt-2 pb-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">Name</label>
@@ -1408,11 +1418,11 @@ export function StorageManagement() {
                   <p className="text-sm mt-1">{selectedFileForAction.uploadedByName || 'Unknown'}</p>
                 </div>
                 {selectedFileForAction.publicUrl && (
-                  <div>
+                  <div className="col-span-2">
                     <label className="text-sm font-medium text-muted-foreground">Public URL</label>
                     <div className="flex items-center gap-2 mt-1">
-                      <Input value={selectedFileForAction.publicUrl} readOnly className="text-xs" />
-                      <Button
+                      <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 text-xs" value={selectedFileForAction.publicUrl} readOnly />
+                      <Button className="rounded-xl font-bold"
                         variant="outline"
                         size="sm"
                         onClick={() => handleCopyUrl(selectedFileForAction!)}
@@ -1423,71 +1433,73 @@ export function StorageManagement() {
                   </div>
                 )}
               </div>
-            </div>
+            </DialogBody>
           )}
-          <DialogFooter>
-            <Button onClick={() => setShowMetadata(false)}>Close</Button>
+          <DialogFooter className="p-6 pt-2">
+            <Button className="rounded-xl font-bold" onClick={() => setShowMetadata(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Permissions Dialog */}
       <Dialog open={showPermissions} onOpenChange={setShowPermissions}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-2">
             <DialogTitle>File Permissions</DialogTitle>
             <DialogDescription>
               Manage access permissions for {selectedFileForAction?.name}
             </DialogDescription>
           </DialogHeader>
           {selectedFileForAction && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium">Public Access</label>
-                  <p className="text-xs text-muted-foreground">Allow public access via URL</p>
-                </div>
-                <button
-                  onClick={async () => {
-                    if (selectedFileForAction) {
-                      const result = await handleShare(selectedFileForAction, !selectedFileForAction.publicUrl)
-                      if (result) {
-                        setSelectedFileForAction({ ...selectedFileForAction, publicUrl: result.publicUrl })
+            <DialogBody className="p-6 pt-2 pb-4">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-sm font-medium">Public Access</label>
+                    <p className="text-xs text-muted-foreground">Allow public access via URL</p>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      if (selectedFileForAction) {
+                        const result = await handleShare(selectedFileForAction, !selectedFileForAction.publicUrl)
+                        if (result) {
+                          setSelectedFileForAction({ ...selectedFileForAction, publicUrl: result.publicUrl })
+                        }
                       }
-                    }
-                  }}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                    selectedFileForAction.publicUrl ? "bg-green-500" : "bg-muted"
-                  )}
-                >
-                  <span
+                    }}
                     className={cn(
-                      "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                      selectedFileForAction.publicUrl ? "translate-x-6" : "translate-x-1"
+                      "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                      selectedFileForAction.publicUrl ? "bg-green-500" : "bg-muted"
                     )}
-                  />
-                </button>
-              </div>
-              <div className="border-t pt-4">
-                <label className="text-sm font-medium mb-2 block">Access Control</label>
-                <p className="text-xs text-muted-foreground mb-4">Fine-grained permissions coming soon</p>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between p-2 bg-muted rounded">
-                    <span className="text-sm">Owner</span>
-                    <Badge variant="outline">Full Access</Badge>
-                  </div>
-                  <div className="flex items-center justify-between p-2 bg-muted rounded">
-                    <span className="text-sm">Space Members</span>
-                    <Badge variant="outline">View</Badge>
+                  >
+                    <span
+                      className={cn(
+                        "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                        selectedFileForAction.publicUrl ? "translate-x-6" : "translate-x-1"
+                      )}
+                    />
+                  </button>
+                </div>
+                <div className="border-t pt-4">
+                  <label className="text-sm font-medium mb-2 block">Access Control</label>
+                  <p className="text-xs text-muted-foreground mb-4">Fine-grained permissions coming soon</p>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between p-2 bg-muted rounded">
+                      <span className="text-sm">Owner</span>
+                      <Badge className="rounded-lg font-bold text-[10px]" variant="outline">Full Access</Badge>
+                    </div>
+                    <div className="flex items-center justify-between p-2 bg-muted rounded">
+                      <span className="text-sm">Space Members</span>
+                      <Badge className="rounded-lg font-bold text-[10px]" variant="outline">View</Badge>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </DialogBody>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPermissions(false)}>Cancel</Button>
-            <Button onClick={() => {
+          <DialogFooter className="p-6 pt-2">
+            <Button className="rounded-xl font-bold" variant="outline" onClick={() => setShowPermissions(false)}>Cancel</Button>
+            <Button className="rounded-xl font-bold" onClick={() => {
               toast.success('Permissions updated')
               setShowPermissions(false)
             }}>Save</Button>
@@ -1497,17 +1509,17 @@ export function StorageManagement() {
 
       {/* Rename Dialog */}
       <Dialog open={showRename} onOpenChange={setShowRename}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-2">
             <DialogTitle>Rename {selectedFileForAction?.type === 'folder' ? 'Folder' : 'File'}</DialogTitle>
             <DialogDescription>
               Enter a new name for {selectedFileForAction?.name}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Name</label>
-              <Input
+          <DialogBody className="p-6 pt-2 pb-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-bold">Name</Label>
+              <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 font-mono"
                 value={renameValue}
                 onChange={(e) => setRenameValue(e.target.value)}
                 placeholder="Enter new name"
@@ -1519,29 +1531,29 @@ export function StorageManagement() {
                 autoFocus
               />
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
+          </DialogBody>
+          <DialogFooter className="p-6 pt-2">
+            <Button className="rounded-xl font-bold" variant="outline" onClick={() => {
               setShowRename(false)
               setRenameValue('')
             }}>Cancel</Button>
-            <Button onClick={handleRename} disabled={!renameValue.trim()}>Rename</Button>
+            <Button className="rounded-xl font-bold" onClick={handleRename} disabled={!renameValue.trim()}>Rename</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Move Dialog */}
       <Dialog open={showMove} onOpenChange={setShowMove}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-2">
             <DialogTitle>Move {selectedFileForAction?.type === 'folder' ? 'Folder' : 'File'}</DialogTitle>
             <DialogDescription>
               Select a destination folder for {selectedFileForAction?.name}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Destination</label>
+          <DialogBody className="p-6 pt-2 pb-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-bold">Destination</Label>
               <p className="text-xs text-muted-foreground mb-4">
                 Current location: {currentPath.length > 0 ? currentPath.join(' / ') : 'Root'}
               </p>
@@ -1549,10 +1561,10 @@ export function StorageManagement() {
                 <p className="text-sm text-muted-foreground">Folder selection coming soon</p>
               </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowMove(false)}>Cancel</Button>
-            <Button onClick={() => {
+          </DialogBody>
+          <DialogFooter className="p-6 pt-2">
+            <Button className="rounded-xl font-bold" variant="outline" onClick={() => setShowMove(false)}>Cancel</Button>
+            <Button className="rounded-xl font-bold" onClick={() => {
               toast.success('Move functionality coming soon')
               setShowMove(false)
             }}>Move</Button>
@@ -1560,8 +1572,19 @@ export function StorageManagement() {
         </DialogContent>
       </Dialog>
       <Dialog open={showConnectionsManager} onOpenChange={setShowConnectionsManager}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <StorageConnections />
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-2">
+            <DialogTitle>Storage Connections</DialogTitle>
+            <DialogDescription>
+              Manage your external storage providers and connections
+            </DialogDescription>
+          </DialogHeader>
+          <DialogBody className="p-6 pt-2 pb-4 overflow-y-auto">
+            <StorageConnections />
+          </DialogBody>
+          <DialogFooter className="p-6 pt-2">
+            <Button className="rounded-xl font-bold" onClick={() => setShowConnectionsManager(false)}>Close</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -33,6 +33,12 @@ export interface SystemSettings {
   smtpUser: string
   smtpPassword: string
   smtpSecure: boolean
+  wsProxyUrl: string
+  cronApiKey: string
+  schedulerApiKey: string
+  serviceDeskWebhookSecret: string
+  gitWebhookSecret: string
+  minioPublicUrl: string
 
   // Security
   sessionTimeout: number

@@ -70,7 +70,7 @@ const PRESET_THEMES: Theme[] = [
     id: 'light',
     name: 'Light Theme',
     colors: {
-      primary: '#3b82f6',
+      primary: '#1e40af',
       secondary: '#64748b',
       background: '#ffffff',
       surface: '#f8fafc',

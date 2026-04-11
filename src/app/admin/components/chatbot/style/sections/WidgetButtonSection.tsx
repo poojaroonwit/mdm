@@ -345,11 +345,11 @@ export function WidgetButtonSection({ formData, setFormData }: WidgetButtonSecti
             </FormRow>
             <FormRow label="Widget Background (Closed)" description="Background color or image when chat is closed">
               <ColorInput
-                value={formData.widgetBackgroundColor || '#3b82f6'}
+                value={formData.widgetBackgroundColor || '#1e40af'}
                 onChange={(color) => setFormData({ ...formData, widgetBackgroundColor: color })}
                 allowImageVideo={true}
                 className="relative"
-                placeholder="#3b82f6"
+                placeholder="#1e40af"
                 inputClassName="h-7 text-xs pl-7 w-full"
               />
             </FormRow>

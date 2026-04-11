@@ -260,7 +260,7 @@ export function CanvasWidget({
         <a
           href="#"
           data-icon-button
-          className="absolute z-50 flex items-center justify-center w-6 h-6 rounded transition-colors shadow-sm"
+          className="absolute z-50 flex items-center justify-center w-6 h-6 rounded transition-colors shadow-lg"
           style={{ 
             pointerEvents: 'auto',
             zIndex: Z_INDEX.canvasElementSelected + 10,
@@ -354,7 +354,7 @@ export function CanvasWidget({
         <>
           {/* Selected border indicator - square on top of border */}
           {isSelected && (
-            <div className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-2 h-2 z-30" style={{ backgroundColor: '#3b82f6' }} />
+            <div className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-2 h-2 z-30" style={{ backgroundColor: '#1e40af' }} />
           )}
           <div className="w-full h-full flex items-center">
             <WidgetRenderer widget={widget} isMobile={isMobile} spaceId={spaceId} />
@@ -366,7 +366,7 @@ export function CanvasWidget({
         }}>
           {/* Selected border indicator - square on top of border */}
           {isSelected && (
-            <div className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-2 h-2 z-30" style={{ backgroundColor: '#3b82f6' }} />
+            <div className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-2 h-2 z-30" style={{ backgroundColor: '#1e40af' }} />
           )}
           {/* Removed legacy canvas header bar to avoid duplicate headers; element header is now configurable via properties and rendered by the widget itself */}
           <div className="flex-1 overflow-hidden" style={{

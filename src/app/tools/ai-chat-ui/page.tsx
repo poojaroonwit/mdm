@@ -17,13 +17,17 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
+    DialogBody,
 } from '@/components/ui/dialog'
-import { Plus, ArrowLeft, Rocket, History } from 'lucide-react'
+import { Plus, ArrowLeft, Rocket, History, Folder as FolderIcon } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useSpace } from '@/contexts/space-context'
 
 export default function ChatEmbedUIPage() {
     const router = useRouter()
+    const { currentSpace } = useSpace()
     const [chatbots, setChatbots] = useState<Chatbot[]>([])
     const [folders, setFolders] = useState<ChatbotFolder[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -97,7 +101,7 @@ export default function ChatEmbedUIPage() {
 
             // ===== Default Style Settings =====
             // Primary colors
-            primaryColor: '#3b82f6',
+            primaryColor: '#1e40af',
             fontFamily: 'Inter',
 
             // Header settings
@@ -105,7 +109,7 @@ export default function ChatEmbedUIPage() {
             headerDescription: 'How can I help you today?',
             headerShowTitle: true,
             headerShowLogo: false,
-            headerBgColor: '#3b82f6',
+            headerBgColor: '#1e40af',
             headerFontColor: '#ffffff',
             headerBorderEnabled: true,
             headerBorderColor: '#e5e7eb',
@@ -117,7 +121,7 @@ export default function ChatEmbedUIPage() {
             widgetOffsetY: '20px',
             widgetSize: '60px',
             widgetAvatarStyle: 'circle',
-            widgetBackgroundColor: '#3b82f6',
+            widgetBackgroundColor: '#1e40af',
             widgetBorderRadius: '50%',
             widgetBorderWidth: '0px',
             widgetBorderColor: 'transparent',
@@ -132,7 +136,7 @@ export default function ChatEmbedUIPage() {
             chatBorderRadius: '12px',
 
             // Message bubble settings
-            userBubbleColor: '#3b82f6',
+            userBubbleColor: '#1e40af',
             userBubbleFontColor: '#ffffff',
             botBubbleColor: '#f3f4f6',
             botBubbleFontColor: '#1f2937',
@@ -204,7 +208,7 @@ export default function ChatEmbedUIPage() {
                     body: JSON.stringify({
                         name: trimmedName,
                         type: 'chatbot',
-                        space_id: folderSpaceId || undefined,
+                        // space_id is now handled globally on the backend for 'chatbot' type
                     })
                 })
                 if (!res.ok) {
@@ -223,7 +227,7 @@ export default function ChatEmbedUIPage() {
                     body: JSON.stringify({
                         name: trimmedName,
                         type: 'chatbot',
-                        space_id: folderSpaceId || undefined,
+                        // space_id is now handled globally on the backend for 'chatbot' type
                     })
                 })
                 if (!res.ok) {
@@ -284,7 +288,7 @@ export default function ChatEmbedUIPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     folder_id: folderId,
-                    folder_space_id: folderSpaceId || undefined,
+                    // folder_space_id is now handled globally on the backend for 'chatbot' type
                 })
             })
 
@@ -644,10 +648,26 @@ export default function ChatEmbedUIPage() {
                         Create and manage AI chatbots for your websites and applications.
                     </p>
                 </div>
-                <Button onClick={handleCreate}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    New Chatbot
-                </Button>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add New
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-48 p-2" align="end">
+                        <div className="flex flex-col gap-1">
+                            <Button variant="ghost" className="justify-start font-normal h-9" onClick={handleCreate}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Create Chat
+                            </Button>
+                            <Button variant="ghost" className="justify-start font-normal h-9" onClick={openCreateFolderDialog}>
+                                <FolderIcon className="mr-2 h-4 w-4" />
+                                Create Folder
+                            </Button>
+                        </div>
+                    </PopoverContent>
+                </Popover>
             </div>
 
             {isLoading ? (
@@ -683,7 +703,7 @@ export default function ChatEmbedUIPage() {
                                         : 'Update the folder name for this chatbot group.'}
                                 </DialogDescription>
                             </DialogHeader>
-                            <div className="p-6 pt-0">
+                             <DialogBody>
                                 <Input
                                     value={folderName}
                                     onChange={(e) => setFolderName(e.target.value)}
@@ -694,7 +714,7 @@ export default function ChatEmbedUIPage() {
                                         }
                                     }}
                                 />
-                            </div>
+                            </DialogBody>
                             <DialogFooter>
                                 <Button variant="outline" onClick={() => setFolderDialogOpen(false)}>
                                     Cancel

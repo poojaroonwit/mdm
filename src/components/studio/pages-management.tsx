@@ -225,7 +225,7 @@ export function PagesManagement({
           const template = page.templateId ? templates.find(t => t.id === page.templateId) : null
 
           return (
-            <Card key={page.id} className="hover:shadow-md transition-all duration-200 shadow-sm bg-transparent">
+            <Card key={page.id} className="hover:shadow-md transition-all duration-200 shadow-lg bg-transparent">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -323,7 +323,7 @@ export function PagesManagement({
 
       {/* Empty State */}
       {pages.length === 0 && (
-        <Card className="shadow-sm bg-transparent">
+        <Card className="shadow-lg bg-transparent">
           <CardContent className="py-12 text-center">
             <Layout className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No pages created yet</h3>

@@ -159,7 +159,7 @@ export function PwaEditor({ pwaId, onDataChange }: PwaEditorProps) {
                   className={cn(
                     "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
                     isActive
-                      ? "bg-primary text-primary-foreground shadow-sm"
+                      ? "bg-primary text-primary-foreground shadow-lg"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                 >

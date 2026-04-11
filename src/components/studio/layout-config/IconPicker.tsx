@@ -67,7 +67,7 @@ export function IconPicker({
     { name: 'Teal', value: '#14b8a6', color: 'bg-teal-500' },
     { name: 'Cyan', value: '#06b6d4', color: 'bg-cyan-500' },
     { name: 'Sky', value: '#0ea5e9', color: 'bg-sky-500' },
-    { name: 'Blue', value: '#3b82f6', color: 'bg-blue-500' },
+    { name: 'Blue', value: '#1e40af', color: 'bg-blue-500' },
     { name: 'Indigo', value: '#6366f1', color: 'bg-indigo-500' },
     { name: 'Violet', value: '#8b5cf6', color: 'bg-violet-500' },
     { name: 'Purple', value: '#a855f7', color: 'bg-purple-500' },

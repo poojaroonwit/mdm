@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -475,76 +475,78 @@ export function CacheManagement() {
                   Add Instance
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
+              <DialogContent className="p-0 overflow-hidden">
+                <DialogHeader className="p-6 pb-2">
                   <DialogTitle>Add Cache Instance</DialogTitle>
                   <DialogDescription>
                     Configure a new cache instance
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                <DialogBody className="p-6 pt-2 pb-4">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="instance-name">Instance Name</Label>
+                        <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
+                          id="instance-name"
+                          value={newInstance.name}
+                          onChange={(e) => setNewInstance({ ...newInstance, name: e.target.value })}
+                          placeholder="Redis Cache"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="instance-type">Cache Type</Label>
+                        <Select value={newInstance.type} onValueChange={(value: any) => setNewInstance({ ...newInstance, type: value })}>
+                          <SelectTrigger className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl">
+                            <SelectItem value="redis">Redis</SelectItem>
+                            <SelectItem value="memcached">Memcached</SelectItem>
+                            <SelectItem value="memory">In-Memory</SelectItem>
+                            <SelectItem value="file">File Cache</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="instance-host">Host</Label>
+                        <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
+                          id="instance-host"
+                          value={newInstance.host}
+                          onChange={(e) => setNewInstance({ ...newInstance, host: e.target.value })}
+                          placeholder="localhost"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="instance-port">Port</Label>
+                        <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
+                          id="instance-port"
+                          type="number"
+                          value={newInstance.port}
+                          onChange={(e) => setNewInstance({ ...newInstance, port: parseInt(e.target.value) })}
+                          placeholder="6379"
+                        />
+                      </div>
+                    </div>
                     <div>
-                      <Label htmlFor="instance-name">Instance Name</Label>
-                      <Input
-                        id="instance-name"
-                        value={newInstance.name}
-                        onChange={(e) => setNewInstance({ ...newInstance, name: e.target.value })}
-                        placeholder="Redis Cache"
+                      <Label htmlFor="instance-password">Password (Optional)</Label>
+                      <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
+                        id="instance-password"
+                        type="password"
+                        value={newInstance.password}
+                        onChange={(e) => setNewInstance({ ...newInstance, password: e.target.value })}
+                        placeholder="password"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="instance-type">Cache Type</Label>
-                      <Select value={newInstance.type} onValueChange={(value: any) => setNewInstance({ ...newInstance, type: value })}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="redis">Redis</SelectItem>
-                          <SelectItem value="memcached">Memcached</SelectItem>
-                          <SelectItem value="memory">In-Memory</SelectItem>
-                          <SelectItem value="file">File Cache</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="instance-host">Host</Label>
-                      <Input
-                        id="instance-host"
-                        value={newInstance.host}
-                        onChange={(e) => setNewInstance({ ...newInstance, host: e.target.value })}
-                        placeholder="localhost"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="instance-port">Port</Label>
-                      <Input
-                        id="instance-port"
-                        type="number"
-                        value={newInstance.port}
-                        onChange={(e) => setNewInstance({ ...newInstance, port: parseInt(e.target.value) })}
-                        placeholder="6379"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="instance-password">Password (Optional)</Label>
-                    <Input
-                      id="instance-password"
-                      type="password"
-                      value={newInstance.password}
-                      onChange={(e) => setNewInstance({ ...newInstance, password: e.target.value })}
-                      placeholder="password"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowCreateInstance(false)}>
+                </DialogBody>
+                <DialogFooter className="p-6 pt-2">
+                  <Button className="rounded-xl font-bold" variant="outline" onClick={() => setShowCreateInstance(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={createInstance} disabled={!newInstance.name || !newInstance.host}>
+                  <Button className="rounded-xl font-bold" onClick={createInstance} disabled={!newInstance.name || !newInstance.host}>
                     Create Instance
                   </Button>
                 </DialogFooter>
@@ -662,49 +664,51 @@ export function CacheManagement() {
                       Add Key
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
+                  <DialogContent className="p-0 overflow-hidden">
+                    <DialogHeader className="p-6 pb-2">
                       <DialogTitle>Add Cache Key</DialogTitle>
                       <DialogDescription>
                         Add a new key-value pair to the cache
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="key-name">Key</Label>
-                        <Input
-                          id="key-name"
-                          value={newKey.key}
-                          onChange={(e) => setNewKey({ ...newKey, key: e.target.value })}
-                          placeholder="user:123"
-                        />
+                    <DialogBody className="p-6 pt-2 pb-4">
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="key-name">Key</Label>
+                          <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
+                            id="key-name"
+                            value={newKey.key}
+                            onChange={(e) => setNewKey({ ...newKey, key: e.target.value })}
+                            placeholder="user:123"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="key-value">Value</Label>
+                          <Textarea className="rounded-xl border-zinc-200 dark:border-zinc-800"
+                            id="key-value"
+                            value={newKey.value}
+                            onChange={(e) => setNewKey({ ...newKey, value: e.target.value })}
+                            placeholder="Cache value"
+                            rows={4}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="key-ttl">TTL (seconds)</Label>
+                          <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
+                            id="key-ttl"
+                            type="number"
+                            value={newKey.ttl}
+                            onChange={(e) => setNewKey({ ...newKey, ttl: parseInt(e.target.value) })}
+                            placeholder="3600"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <Label htmlFor="key-value">Value</Label>
-                        <Textarea
-                          id="key-value"
-                          value={newKey.value}
-                          onChange={(e) => setNewKey({ ...newKey, value: e.target.value })}
-                          placeholder="Cache value"
-                          rows={4}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="key-ttl">TTL (seconds)</Label>
-                        <Input
-                          id="key-ttl"
-                          type="number"
-                          value={newKey.ttl}
-                          onChange={(e) => setNewKey({ ...newKey, ttl: parseInt(e.target.value) })}
-                          placeholder="3600"
-                        />
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setShowKeyDialog(false)}>
+                    </DialogBody>
+                    <DialogFooter className="p-6 pt-2">
+                      <Button className="rounded-xl font-bold" variant="outline" onClick={() => setShowKeyDialog(false)}>
                         Cancel
                       </Button>
-                      <Button onClick={createKey} disabled={!newKey.key || !newKey.value}>
+                      <Button className="rounded-xl font-bold" onClick={createKey} disabled={!newKey.key || !newKey.value}>
                         Add Key
                       </Button>
                     </DialogFooter>

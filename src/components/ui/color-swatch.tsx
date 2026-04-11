@@ -12,7 +12,7 @@ interface ColorSwatchProps {
 
 const predefinedColors = [
     '#ffffff', '#f8fafc', '#f1f5f9', '#e2e8f0', // Grays
-    '#3b82f6', '#2563eb', '#1d4ed8', // Blues
+    '#1e40af', '#1e40af', '#1d4ed8', // Blues
     '#ef4444', '#dc2626', '#b91c1c', // Reds
     '#10b981', '#059669', '#047857', // Greens
     '#f59e0b', '#d97706', '#b45309', // Ambers
@@ -34,7 +34,7 @@ export function ColorSwatch({
           variant="outline"
           size="sm"
           className={cn(
-            'w-8 h-8 p-0 border-2 rounded-full transition-all hover:scale-110 shadow-sm',
+            'w-8 h-8 p-0 border-2 rounded-full transition-all hover:scale-110 shadow-lg',
             selectedColor === color 
               ? 'border-primary ring-2 ring-primary/20' 
               : 'border-border/50 hover:border-primary/50'
@@ -45,7 +45,7 @@ export function ColorSwatch({
         >
           {selectedColor === color && (
             <div className={cn(
-              "w-2.5 h-2.5 rounded-full shadow-sm",
+              "w-2.5 h-2.5 rounded-full shadow-lg",
               color.toLowerCase() === '#ffffff' ? "bg-black/20" : "bg-white"
             )} />
           )}
@@ -72,7 +72,7 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
             type="color"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="w-11 h-11 border border-border/50 rounded-xl cursor-pointer p-0 overflow-hidden bg-transparent"
+            className="w-11 h-11 border border-border/50 rounded-md cursor-pointer p-0 overflow-hidden bg-transparent"
           />
           <div 
             className="absolute inset-1 rounded-lg pointer-events-none border border-black/5" 
@@ -83,7 +83,7 @@ export function ColorPicker({ value, onChange, label, className }: ColorPickerPr
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="flex-1 h-11 px-4 border border-border/50 rounded-xl text-sm bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase font-mono"
+          className="flex-1 h-11 px-4 border border-border/50 rounded-md text-sm bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase font-mono"
           placeholder="#000000"
         />
       </div>

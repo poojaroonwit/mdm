@@ -186,7 +186,7 @@ const ColorSwatchButton = React.memo(({
       title={color}
     >
       {isSelected && (
-        <div className="w-2 h-2 bg-background rounded-full mx-auto shadow-sm border border-border" />
+        <div className="w-2 h-2 bg-background rounded-full mx-auto shadow-lg border border-border" />
       )}
     </button>
   )
@@ -525,7 +525,7 @@ export function ColorPickerPopover({
   // Quick colors array
   const quickColors = [
     '#000000', '#ffffff', '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e',
-    '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7',
+    '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#1e40af', '#6366f1', '#8b5cf6', '#a855f7',
     '#d946ef', '#ec4899', '#f43f5e', '#6b7280', '#64748b', '#71717a', '#737373', '#78716c',
     '#1e40af', '#dc2626', '#16a34a', '#ca8a04', '#9333ea', '#ea580c', '#0891b2', '#be123c'
   ]
@@ -853,7 +853,7 @@ export function ColorPickerPopover({
     'Tailwind': [
       '#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16',
       '#22C55E', '#10B981', '#14B8A6', '#06B6D4', '#0EA5E9',
-      '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#D946EF',
+      '#1e40af', '#6366F1', '#8B5CF6', '#A855F7', '#D946EF',
       '#EC4899', '#F43F5E', '#6B7280', '#64748B', '#000000', '#FFFFFF'
     ],
     'Pastel': [
@@ -1360,7 +1360,7 @@ export function ColorPickerPopover({
                             onClick={() => setSelectedGradientStopIndex(index)}
                           >
                             <div
-                              className="w-6 h-6 rounded border shadow-sm flex-shrink-0"
+                              className="w-6 h-6 rounded border shadow-lg flex-shrink-0"
                               style={getSwatchStyle(stop.color)}
                             />
 
