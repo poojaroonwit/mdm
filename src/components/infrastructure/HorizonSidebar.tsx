@@ -202,8 +202,19 @@ export function HorizonSidebar({
     }
   }
 
+  const sidebarBg = 'var(--brand-secondary-sidebar-bg, hsl(var(--muted)))'
+  const sidebarText = 'var(--brand-secondary-sidebar-text, hsl(var(--muted-foreground)))'
+
   return (
-    <div className="flex flex-col h-full">
+    <div 
+      className="flex flex-col h-full"
+      data-sidebar="secondary"
+      data-component="horizon-sidebar"
+      style={{
+        backgroundColor: sidebarBg,
+        color: sidebarText
+      }}
+    >
       {/* Tabs */}
       <div className="flex-1 flex flex-col min-h-0">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'vms' | 'services')} className="flex-1 flex flex-col min-h-0">
@@ -220,7 +231,7 @@ export function HorizonSidebar({
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
-                <Server className="h-4 w-4" />
+                <Server className="h-4 w-4" strokeWidth={3} />
                 VMs
               </TabsTrigger>
               <TabsTrigger 
@@ -234,7 +245,7 @@ export function HorizonSidebar({
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-4 w-4" strokeWidth={3} />
                 Services
               </TabsTrigger>
             </TabsList>
@@ -243,7 +254,7 @@ export function HorizonSidebar({
           {/* Search Header - Below Tabs */}
           <div className="p-4 border-b border-border flex-shrink-0">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search strokeWidth={3} className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder={activeTab === 'vms' ? 'Search VMs...' : 'Search services...'}
@@ -257,7 +268,7 @@ export function HorizonSidebar({
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   aria-label="Clear search"
                 >
-                  <X className="h-4 w-4" />
+                  <X strokeWidth={3} className="h-4 w-4" />
                 </button>
               )}
             </div>
@@ -279,10 +290,10 @@ export function HorizonSidebar({
                 {onAddVm && (
                   <Button
                     variant="outline"
-                    className="w-full mb-2 justify-center"
+                    className="w-full mb-2 justify-start px-4"
                     onClick={onAddVm}
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus strokeWidth={3} className="h-4 w-4 mr-3" />
                     Add VM
                   </Button>
                 )}
@@ -297,30 +308,33 @@ export function HorizonSidebar({
                 ) : (
                   <div className="space-y-1">
                     {filteredVms.map((vm) => (
-                      <div
+                        <div
                         key={vm.id}
                         className={cn(
                           "flex items-center gap-1 w-full group",
-                          selectedVmId === vm.id && "bg-muted"
+                          selectedVmId === vm.id && "bg-transparent"
                         )}
                       >
                         <Button
-                          variant="ghost"
+                          variant={selectedVmId === vm.id ? "soft-blue" : "ghost"}
                           className={cn(
-                            "flex-1 justify-start items-center text-[13px] font-medium h-[34px] px-3 transition-colors duration-150 cursor-pointer",
+                            "platform-sidebar-menu-button flex-1 justify-start items-center text-[13px] font-medium h-[32px] px-4 transition-colors duration-150 cursor-pointer rounded-none gap-3",
                             selectedVmId === vm.id
-                              ? "bg-muted text-foreground"
-                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                              ? "font-bold rounded-sm"
+                              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
                           )}
                           onClick={() => handleVmClick(vm)}
                         >
-                          <div className="flex items-center gap-2 w-full min-w-0">
+                          <div className="flex items-center gap-3 w-full min-w-0">
                             <div className={cn(
                               "h-2 w-2 rounded-full flex-shrink-0",
                               getStatusColor(vm.status)
                             )} />
-                            <Server className="h-4 w-4 flex-shrink-0" />
-                            <div className="flex-1 min-w-0 text-left">
+                            <Server className={cn(
+                              "h-4 w-4 flex-shrink-0 transition-colors",
+                              selectedVmId !== vm.id && "text-zinc-400 dark:text-zinc-500"
+                            )} strokeWidth={3} />
+                            <div className="min-w-0">
                               <div className="truncate font-medium">{vm.name}</div>
                               <div className="truncate text-xs text-muted-foreground">
                                 {vm.host}
@@ -337,31 +351,31 @@ export function HorizonSidebar({
                               className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <MoreVertical className="h-4 w-4" />
+                              <MoreVertical strokeWidth={3} className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
                             <DropdownMenuItem onClick={() => onVmPermission?.(vm)}>
-                              <Shield className="h-4 w-4 mr-2" />
+                              <Shield strokeWidth={3} className="h-4 w-4 mr-2" />
                               Permission
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => onVmRemove?.(vm)}>
-                              <Trash2 className="h-4 w-4 mr-2" />
+                              <Trash2 strokeWidth={3} className="h-4 w-4 mr-2" />
                               Remove Instance
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => onVmReboot?.(vm)}>
-                              <RotateCw className="h-4 w-4 mr-2" />
+                              <RotateCw strokeWidth={3} className="h-4 w-4 mr-2" />
                               Reboot
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => onVmEdit?.(vm)}>
-                              <Edit className="h-4 w-4 mr-2" />
+                              <Edit strokeWidth={3} className="h-4 w-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => onVmAccess?.(vm)}>
-                              <Terminal className="h-4 w-4 mr-2" />
+                              <Terminal strokeWidth={3} className="h-4 w-4 mr-2" />
                               Access to VM
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -397,26 +411,31 @@ export function HorizonSidebar({
                           {/* Instance Header */}
                           <Button
                             variant="ghost"
-                            className="w-full justify-start items-center text-[13px] font-medium h-[34px] px-3 transition-colors duration-150 cursor-pointer text-muted-foreground hover:bg-muted hover:text-foreground"
+                            className="platform-sidebar-menu-button w-full justify-start items-center text-[13px] font-medium h-[32px] px-4 transition-colors duration-150 cursor-pointer text-foreground hover:!bg-transparent hover:!text-foreground rounded-none"
                             onClick={() => toggleInstanceExpansion(instance.id)}
                           >
                             <div className="flex items-center gap-2 w-full min-w-0">
                               {hasServices ? (
                                 isExpanded ? (
-                                  <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                                  <ChevronDown strokeWidth={3} className="h-4 w-4 flex-shrink-0" />
                                 ) : (
-                                  <ChevronRight className="h-4 w-4 flex-shrink-0" />
+                                  <ChevronRight strokeWidth={3} className="h-4 w-4 flex-shrink-0" />
                                 )
                               ) : (
                                 <div className="w-4" />
                               )}
-                              <Server className="h-4 w-4 flex-shrink-0" />
-                              <div className="flex-1 min-w-0 text-left">
-                                <div className="truncate font-medium">{instance.name}</div>
-                                <div className="truncate text-xs text-muted-foreground">
-                                  {instance.host}
-                                  {instance.port && `:${instance.port}`}
-                                  {hasServices && ` • ${instance.services.length} service${instance.services.length !== 1 ? 's' : ''}`}
+                              <div className="flex items-center gap-3 w-full min-w-0">
+                                <Server className={cn(
+                               "h-4 w-4 flex-shrink-0 transition-colors",
+                               selectedVmId !== vm.id && "text-zinc-400 dark:text-zinc-500"
+                             )} strokeWidth={3} />
+                                <div className="min-w-0 text-left">
+                                  <div className="truncate font-medium">{instance.name}</div>
+                                  <div className="truncate text-xs text-muted-foreground">
+                                    {instance.host}
+                                    {instance.port && `:${instance.port}`}
+                                    {hasServices && ` • ${instance.services.length} service${instance.services.length !== 1 ? 's' : ''}`}
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -426,23 +445,26 @@ export function HorizonSidebar({
                           {isExpanded && hasServices && (
                             <div className="ml-4 space-y-1 border-l border-border pl-2">
                               {instance.services.map((service) => (
-                                <Button
-                                  key={service.id}
-                                  variant="ghost"
-                                  className={cn(
-                                    "w-full justify-start items-center text-[13px] font-medium h-[34px] px-3 transition-colors duration-150 cursor-pointer",
-                                    selectedServiceId === service.id
-                                      ? "bg-muted text-foreground"
-                                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                                  )}
+                                  <Button
+                                    key={service.id}
+                                    variant={selectedServiceId === service.id ? "soft-blue" : "ghost"}
+                                    className={cn(
+                                      "platform-sidebar-menu-button w-full justify-start items-center text-[13px] font-medium h-[32px] px-4 transition-colors duration-150 cursor-pointer rounded-none gap-3",
+                                      selectedServiceId === service.id
+                                        ? "font-bold rounded-sm"
+                                        : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                                    )}
                                   onClick={() => handleServiceClick(service, instance)}
                                 >
-                                  <div className="flex items-center gap-2 w-full min-w-0">
+                                  <div className="flex items-center gap-3 w-full min-w-0">
                                   <div className={cn(
                                     "h-2 w-2 rounded-full flex-shrink-0",
                                     getServiceStatusColor(service.status)
                                   )} />
-                                  <Activity className="h-4 w-4 flex-shrink-0" />
+                                  <Activity className={cn(
+                                    "h-4 w-4 flex-shrink-0 transition-colors",
+                                    selectedServiceId !== service.id && "text-zinc-400 dark:text-zinc-500"
+                                  )} strokeWidth={3} />
                                   <div className="flex-1 min-w-0 text-left">
                                     <div className="truncate font-medium">{service.name}</div>
                                     <div className="truncate text-xs text-muted-foreground">

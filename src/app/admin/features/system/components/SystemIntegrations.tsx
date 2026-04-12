@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogBody, DialogFooter, Dia
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Settings,
   CheckCircle,
@@ -120,6 +121,40 @@ const SYSTEM_CONFIG_INTEGRATIONS: Omit<IntegrationConfig, 'id' | 'isConfigured' 
     category: 'communication'
   }
 ]
+
+function SystemIntegrationsSkeleton({ count = 6 }: { count?: number }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Array.from({ length: count }).map((_, i) => (
+        <Card key={i} className="animate-pulse">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-5 w-5 rounded-full" />
+                <Skeleton className="h-5 w-32" />
+              </div>
+              <Skeleton className="h-5 w-5 rounded-full" />
+            </div>
+            <div className="space-y-2 mt-2">
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-2/3" />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-5 w-16 rounded-full" />
+              <Skeleton className="h-5 w-24 rounded-full" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-8 flex-1 rounded-md" />
+              <Skeleton className="h-8 flex-1 rounded-md" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  )
+}
 
 interface SystemIntegrationsProps {
   hideHeader?: boolean
@@ -481,7 +516,10 @@ export function SystemIntegrations({ hideHeader = false }: SystemIntegrationsPro
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {isLoading && integrations.length === 0 ? (
+        <SystemIntegrationsSkeleton />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {integrations.map(integration => {
           const Icon = integration.icon
           return (
@@ -549,7 +587,8 @@ export function SystemIntegrations({ hideHeader = false }: SystemIntegrationsPro
             </Card>
           )
         })}
-      </div>
+        </div>
+      )}
 
       {/* Configuration Dialog */}
       <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>

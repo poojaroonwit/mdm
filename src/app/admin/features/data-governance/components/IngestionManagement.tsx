@@ -25,6 +25,7 @@ import {
   Settings,
   Zap
 } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 import toast from 'react-hot-toast'
 
 interface IngestionPipeline {
@@ -51,6 +52,45 @@ interface IngestionPipeline {
   lastRun?: Date
   lastRunStatus?: 'success' | 'failed'
   nextRun?: Date
+}
+
+function IngestionPipelineSkeleton({ count = 3 }: { count?: number }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Array.from({ length: count }).map((_, i) => (
+        <Card key={i} className="animate-pulse hover:shadow-md transition-all">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-6 w-1/2" />
+              <Skeleton className="h-4 w-4 rounded-full" />
+            </div>
+            <div className="mt-2 space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-4/5" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-5 w-24 rounded-full" />
+              </div>
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-4 w-12" />
+                <Skeleton className="h-5 w-20 rounded-full" />
+              </div>
+              <Skeleton className="h-4 w-40 mt-1" />
+              <div className="flex items-center gap-2 mt-3">
+                <Skeleton className="h-8 flex-1 rounded-md" />
+                <Skeleton className="h-5 w-10 rounded-full mx-2" />
+                <Skeleton className="h-8 w-8 rounded-md" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  )
 }
 
 export function IngestionManagement() {
@@ -198,8 +238,11 @@ export function IngestionManagement() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {pipelines.map((pipeline) => (
+      {isLoading && pipelines.length === 0 ? (
+        <IngestionPipelineSkeleton />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {pipelines.map((pipeline) => (
           <Card key={pipeline.id} className="hover:shadow-md transition-all">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -253,9 +296,10 @@ export function IngestionManagement() {
             </CardContent>
           </Card>
         ))}
-      </div>
+        </div>
+      )}
 
-      {pipelines.length === 0 && (
+      {!isLoading && pipelines.length === 0 && (
         <Card>
           <CardContent className="text-center py-8">
             <Database className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />

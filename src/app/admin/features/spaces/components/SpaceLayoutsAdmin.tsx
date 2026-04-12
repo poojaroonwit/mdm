@@ -151,7 +151,7 @@ export function SpaceLayoutsAdmin() {
           <DialogHeader>
             <DialogTitle>Edit Layout Template</DialogTitle>
           </DialogHeader>
-          <DialogBody className="grid grid-cols-1 md:grid-cols-10 gap-4"> md:grid-cols-10 gap-4">
+          <DialogBody className="grid grid-cols-1 md:grid-cols-10 gap-4">
             <div className="md:col-span-7">
               <Card className="rounded-xl border-zinc-200 dark:border-zinc-800 shadow-sm">
                 <CardHeader>
@@ -176,13 +176,12 @@ export function SpaceLayoutsAdmin() {
                     <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Description</Label>
                     <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
                   </div>
-                  <Button className="rounded-xl font-bold" onClick={saveTemplate} className="w-full">
+                  <Button className="rounded-xl font-bold w-full" onClick={saveTemplate}>
                     <Save className="h-4 w-4 mr-2" /> Save
                   </Button>
                 </CardContent>
               </Card>
             </div>
-          </div>
           </DialogBody>
         </DialogContent>
       </Dialog>
@@ -193,7 +192,7 @@ export function SpaceLayoutsAdmin() {
           <DialogHeader>
             <DialogTitle>Allowed Spaces</DialogTitle>
           </DialogHeader>
-          <DialogBody className="space-y-2 max-h-[60vh] overflow-y-auto"> max-h-[60vh] overflow-y-auto">
+          <DialogBody className="space-y-2 max-h-[60vh] overflow-y-auto">
             {spacesLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="w-full space-y-3 p-4">

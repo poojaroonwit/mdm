@@ -138,10 +138,10 @@ function SortablePageItem({
               onClick={() => onPageClick(page)}
               {...(editMode ? { ...attributes, ...listeners } : {})}
               className={cn(
-                "platform-sidebar-menu-button w-full justify-between text-[13px] font-medium h-[34px] px-4 transition-colors duration-150 cursor-pointer text-foreground hover:!bg-transparent hover:!text-foreground rounded-none",
+                "platform-sidebar-menu-button w-full justify-center text-[13px] font-medium h-[32px] px-4 transition-colors duration-150 cursor-pointer text-foreground hover:!bg-transparent hover:!text-foreground rounded-none gap-3",
                 editMode ? 'cursor-grab active:cursor-grabbing' : '',
                 isActive
-                  ? "platform-sidebar-menu-button-active !bg-muted !text-foreground rounded-sm"
+                  ? "bg-[var(--primary-light)]/10 text-[var(--primary-light)] font-bold rounded-sm shadow-sm"
                   : ""
               )}
               style={{ 
@@ -150,8 +150,8 @@ function SortablePageItem({
                 zIndex: Z_INDEX.sidebar + 1
               }}
             >
-              <IconComponent className="h-4 w-4 mr-3 flex-shrink-0" />
-              <span className="truncate flex-1 text-left">{page.displayName || page.name || 'Untitled Page'}</span>
+              <IconComponent className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">{page.displayName || page.name || 'Untitled Page'}</span>
               {editMode && <div className="h-8 w-8 flex-shrink-0" />}
             </Button>
             {editMode && (
@@ -548,7 +548,7 @@ export const SpaceSidebar = memo(function SpaceSidebar({
               variant="ghost"
               onClick={toggleSettingsExpanded}
               className={cn(
-                "platform-sidebar-menu-button w-full justify-start text-[13px] font-medium h-[34px] px-4 transition-colors duration-150 cursor-pointer text-foreground hover:!bg-transparent hover:!text-foreground rounded-none"
+                "platform-sidebar-menu-button w-full justify-start text-[13px] font-medium h-[32px] px-4 transition-colors duration-150 cursor-pointer text-foreground hover:!bg-transparent hover:!text-foreground rounded-none"
               )}
               style={{ 
                 pointerEvents: 'auto', 
@@ -578,9 +578,9 @@ export const SpaceSidebar = memo(function SpaceSidebar({
                           variant="ghost"
                           onClick={() => handleSettingsItemClick(item)}
                           className={cn(
-                            "platform-sidebar-menu-button w-full justify-start text-[13px] font-medium h-[34px] px-4 transition-colors duration-150 cursor-pointer text-foreground hover:!bg-transparent hover:!text-foreground rounded-none",
+                            "platform-sidebar-menu-button w-full justify-center text-[13px] font-medium h-[32px] px-4 transition-colors duration-150 cursor-pointer text-foreground hover:!bg-transparent hover:!text-foreground rounded-none gap-3",
                             isActive
-                              ? "platform-sidebar-menu-button-active !bg-muted !text-foreground rounded-sm"
+                              ? "bg-[var(--primary-light)]/10 text-[var(--primary-light)] font-bold rounded-sm shadow-sm"
                               : "",
                             isDanger ? "text-destructive hover:text-destructive/80 hover:bg-destructive/10" : ""
                           )}
@@ -590,7 +590,7 @@ export const SpaceSidebar = memo(function SpaceSidebar({
                             zIndex: Z_INDEX.sidebar + 1
                           }}
                         >
-                          <Icon className="h-4 w-4 mr-3 flex-shrink-0" />
+                          <Icon className="h-4 w-4 flex-shrink-0" />
                           <span className="truncate">{item.label}</span>
                         </Button>
                       </TooltipTrigger>

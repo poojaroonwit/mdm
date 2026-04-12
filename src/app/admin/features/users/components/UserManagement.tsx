@@ -680,12 +680,25 @@ export function UserManagement() {
           </div>
 
           {loading ? (
-            <div className="w-full space-y-3 p-4">
-              <Skeleton className="h-10 w-full rounded-xl" />
-              <Skeleton className="h-12 w-full rounded-xl" />
-              <Skeleton className="h-12 w-full rounded-xl" />
-              <Skeleton className="h-12 w-full rounded-xl" />
-              <Skeleton className="h-12 w-full rounded-xl" />
+            <div className="w-full space-y-1">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 animate-pulse">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <div className="space-y-1.5 flex-1">
+                      <Skeleton className="h-4 w-1/3" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-5 w-24 hidden md:block" />
+                  <Skeleton className="h-5 w-24 hidden lg:block" />
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-16">

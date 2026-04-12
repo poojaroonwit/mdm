@@ -218,7 +218,7 @@ export function ChatbotEmulator({
 
 
   return (
-    <div ref={containerRef} className="min-h-[800px] overflow-visible relative bg-muted/10 h-full flex flex-col" style={{ borderColor: formData.borderColor }}>
+    <div ref={containerRef} className="min-h-[90vh] overflow-visible relative bg-muted/10 h-full flex flex-col" style={{ borderColor: formData.borderColor }}>
       {/* Draggable resize handle on left border */}
       <div
         className={`absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize group flex items-center justify-center bg-border hover:bg-primary/20 transition-colors ${isResizing ? 'bg-primary/30' : ''}`}
@@ -373,7 +373,7 @@ export function ChatbotEmulator({
 
       {selectedChatbot?.id ? (
         <div
-          className="relative w-full flex-1 overflow-auto flex items-center justify-center p-8 bg-muted/10 transition-all duration-300"
+          className="relative w-full flex-1 overflow-auto flex items-center justify-center p-4 md:p-8 bg-muted/10 transition-all duration-300"
           style={{
             backgroundColor: (formData as any).pageBackgroundColor,
             backgroundImage: (formData as any).pageBackgroundImage ? `url(${(formData as any).pageBackgroundImage})` : undefined,

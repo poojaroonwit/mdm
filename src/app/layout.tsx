@@ -52,10 +52,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning style={{ fontFamily: 'var(--font-dm-sans), sans-serif', textRendering: 'optimizeLegibility' }}>
       <body
         className={`${dmSans.variable} ${ibmPlexSansThai.variable} font-sans antialiased`}
-        style={{ fontFamily: 'var(--font-dm-sans), "IBM Plex Sans Thai", sans-serif' }}
+        style={{ fontFamily: 'var(--font-dm-sans), sans-serif' }}
         suppressHydrationWarning
       >
         <GlobalErrorHandler />

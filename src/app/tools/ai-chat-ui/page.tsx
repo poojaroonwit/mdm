@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChatbotList } from '@/app/admin/components/chatbot/ChatbotList'
+import { ChatbotList, ChatbotListSkeleton } from '@/app/admin/components/chatbot/ChatbotList'
 import { ChatbotEditor } from '@/app/admin/components/chatbot/ChatbotEditor'
 import { Chatbot, ChatbotFolder } from '@/app/admin/components/chatbot/types'
 import { ChatbotEmulator } from '@/app/admin/components/chatbot/ChatbotEmulator'
@@ -671,9 +671,7 @@ export default function ChatEmbedUIPage() {
             </div>
 
             {isLoading ? (
-                <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
+                <ChatbotListSkeleton viewMode={viewMode} count={6} />
             ) : (
                 <>
                     <ChatbotList

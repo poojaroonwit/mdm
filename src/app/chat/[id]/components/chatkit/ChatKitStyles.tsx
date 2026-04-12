@@ -120,6 +120,8 @@ export const ChatKitGlobalStyles = ({ chatbot, chatkitOptions }: ChatKitGlobalSt
           textarea,
           select,
           p,
+          span,
+          div,
           label,
           [class*="chatkit"],
           [class*="ChatKit"],
@@ -127,6 +129,28 @@ export const ChatKitGlobalStyles = ({ chatbot, chatkitOptions }: ChatKitGlobalSt
           div[class*="Message"] {
             font-family: var(--ck-font-family) !important;
           }
+
+          /* Style Isolation: Neutralize platform global styles */
+          p, span, div, h1, h2, h3, h4, h5, h6 {
+            margin: 0;
+            padding: 0;
+            line-height: inherit;
+            color: inherit;
+          }
+
+          p {
+            margin-bottom: 0 !important;
+          }
+
+          /* Neutralize Shadcn/Platform specific button styles that might bleed in */
+          button {
+            text-transform: none;
+            overflow: visible;
+            -webkit-appearance: button;
+            background-color: transparent;
+            background-image: none;
+          }
+
 
           /* ChatKit Override Styles */
           

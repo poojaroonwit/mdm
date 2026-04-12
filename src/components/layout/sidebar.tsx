@@ -191,7 +191,7 @@ export function Sidebar({ className }: SidebarProps) {
   // Don't render until hydrated to prevent flash of default styles
   if (!isHydrated) {
     return (
-      <div className={cn('flex h-full flex-col border-r border-border w-64', className)}>
+      <div className={cn('flex h-full flex-col border-r border-border', className)}>
         <div className="p-6">
           <h1 className="text-xl font-bold">{currentSpace?.name || 'Customer Data'}</h1>
         </div>
@@ -238,7 +238,7 @@ export function Sidebar({ className }: SidebarProps) {
                   <ChevronDown className="ml-2 h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
+            <DropdownMenuContent className="w-64">
               {spaces.map((space) => (
                 <DropdownMenuItem
                   key={space.id}
@@ -350,8 +350,8 @@ export function Sidebar({ className }: SidebarProps) {
                                     <Button
                                       variant="ghost"
                                       className={cn(
-                                        "group h-9 w-full justify-start rounded-lg px-3 text-[13px] font-medium transition-all duration-150",
-                                        isActive(item.href) ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                        "group h-[32px] w-full justify-center rounded-sm px-4 text-[13px] font-medium transition-all duration-150",
+                                        isActive(item.href) ? "bg-[var(--primary-light)]/10 text-[var(--primary-light)] font-bold" : "text-muted-foreground hover:text-foreground hover:!bg-transparent hover:!text-foreground"
                                       )}
                                       style={{
                                         color: isActive(item.href) ? 'var(--brand-primary, hsl(var(--foreground)))' : undefined,
@@ -362,9 +362,6 @@ export function Sidebar({ className }: SidebarProps) {
                                         isActive(item.href) ? "text-zinc-900 dark:text-zinc-100" : "text-muted-foreground group-hover:text-foreground"
                                       )} />
                                       <span>{item.name}</span>
-                                      {isActive(item.href) && (
-                                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-zinc-100 shadow-lg" />
-                                      )}
                                     </Button>
                                   </Link>
                                 )}
@@ -392,8 +389,8 @@ export function Sidebar({ className }: SidebarProps) {
                                     <Button
                                       variant="ghost"
                                       className={cn(
-                                        "group h-9 w-full justify-start rounded-lg px-3 text-[13px] font-medium transition-all duration-150",
-                                        isActive(href) ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                                        "group h-[32px] w-full justify-center rounded-sm px-4 text-[13px] font-medium transition-all duration-150",
+                                        isActive(href) ? "bg-[var(--primary-light)]/10 text-[var(--primary-light)] font-bold" : "text-muted-foreground hover:text-foreground hover:!bg-transparent hover:!text-foreground"
                                       )}
                                       style={{
                                         color: isActive(href) ? 'var(--brand-primary, hsl(var(--foreground)))' : undefined,
@@ -419,9 +416,6 @@ export function Sidebar({ className }: SidebarProps) {
                                         </span>
                                       )}
                                       <span>{m.display_name || m.name}</span>
-                                      {isActive(href) && (
-                                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-zinc-100 shadow-lg" />
-                                      )}
                                     </Button>
                                   </Link>
                                 )

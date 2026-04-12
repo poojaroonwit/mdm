@@ -21,3 +21,38 @@ body {
   background-color: transparent !important;
   /* color-scheme: light !important; - Removed to prevent style="color-scheme: dark" attributes in iframe */
 }
+
+/* 
+ * Style Isolation Reset
+ * This ensures the chatbot doesn't inherit undesirable platform-wide global styles
+ * from globals.css while still allowing configuration-driven styles.
+ */
+* {
+  box-sizing: border-box;
+}
+
+div, p, span, h1, h2, h3, h4, h5, h6, ul, ol, li, button, input, textarea {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+  line-height: inherit;
+  color: inherit;
+}
+
+html.chat-embed-mode,
+html.chat-embed-mode body {
+  overflow: hidden !important;
+  height: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Neutralize common tailwind-reset margins on paragraphs */
+p {
+  margin-bottom: 0 !important;
+}
+

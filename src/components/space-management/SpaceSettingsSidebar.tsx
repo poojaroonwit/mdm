@@ -86,9 +86,9 @@ const SidebarItemComponent = memo(function SidebarItemComponent({
           variant="ghost"
           onClick={onClick}
           className={cn(
-            "platform-sidebar-menu-button w-full justify-start items-center text-sm h-9 px-4 transition-colors duration-150 cursor-pointer",
+            "platform-sidebar-menu-button w-full justify-center items-center text-[13px] font-medium h-[32px] px-4 transition-colors duration-150 cursor-pointer gap-3",
             isActive
-              ? "platform-sidebar-menu-button-active !bg-muted !text-foreground rounded-sm"
+              ? "bg-[var(--primary-light)]/10 text-[var(--primary-light)] font-bold rounded-sm shadow-sm"
               : "text-muted-foreground hover:!bg-transparent hover:!text-foreground rounded-none",
             className
           )}
@@ -98,8 +98,8 @@ const SidebarItemComponent = memo(function SidebarItemComponent({
             zIndex: Z_INDEX.sidebar + 1
           }}
         >
-          <Icon className="h-4 w-4 mr-3 flex-shrink-0" />
-          <span className="truncate text-left">{item.label}</span>
+          <Icon className="h-4 w-4 flex-shrink-0" />
+          <span className="truncate">{item.label}</span>
         </Button>
       </TooltipTrigger>
       <TooltipContent>

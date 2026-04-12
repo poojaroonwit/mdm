@@ -33,7 +33,7 @@ export function AccordionSectionWrapper({
                 value={value}
                 onValueChange={(val) => setValue(val as string)}
             >
-                <div className={cn("space-y-2", className)}>
+                <div className={cn(className)}>
                     {children}
                 </div>
             </Accordion>
@@ -68,15 +68,12 @@ export function AccordionSectionGroup({
     return (
         <AccordionItem 
             value={id} 
-            className="border rounded-lg px-4 bg-card"
-            style={{
-                borderColor: 'hsl(var(--border))',
-            }}
+            className="border-b border-border/50 px-4 last:border-b-0"
         >
             <AccordionTrigger className="hover:no-underline py-3">
                 <div className="flex items-center gap-2">
                     {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-                    <span className="text-sm font-semibold">{title}</span>
+                    <span className="text-sm font-medium">{title}</span>
                 </div>
             </AccordionTrigger>
             <AccordionContent className="pb-4">

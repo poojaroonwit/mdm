@@ -57,7 +57,7 @@ export function MultiSelect({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between min-h-10 h-auto border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-sm transition-all duration-200 focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-500"
+            className="w-full justify-between min-h-10 h-auto border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-sm transition-all duration-200 focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-500"
             disabled={disabled}
           >
             <div className="flex flex-wrap gap-1 flex-1">

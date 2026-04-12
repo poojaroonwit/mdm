@@ -179,55 +179,11 @@ export function SpaceSelection() {
     return (
       <div className="flex items-center justify-center p-12">
         <div className="w-full space-y-3 p-4">
-  <Skeleton className="h-10 w-full rounded-xl" />
-  <Skeleton className="h-12 w-full rounded-xl" />
-  <Skeleton className="h-12 w-full rounded-xl" />
-  <Skeleton className="h-12 w-full rounded-xl" />
-</div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Space Selection</h2>
-          <p className="text-muted-foreground">Select a workspace to continue</p>
+          <Skeleton className="h-10 w-full rounded-xl" />
+          <Skeleton className="h-12 w-full rounded-xl" />
+          <Skeleton className="h-12 w-full rounded-xl" />
+          <Skeleton className="h-12 w-full rounded-xl" />
         </div>
-        <div className="flex items-center gap-3">
-          <div className="w-64 relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search spaces..."
-              className="pl-8"
-            />
-          </div>
-          <div className="flex items-center gap-1 border rounded-md p-1">
-            <Button
-              variant={viewMode === 'cards' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('cards')}
-              className="h-8"
-            >
-              <Grid3X3 className="h-4 w-4 mr-2" />
-              Cards
-            </Button>
-            <Button
-              variant={viewMode === 'table' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('table')}
-              className="h-8"
-            >
-              <TableIcon className="h-4 w-4 mr-2" />
-              Table
-            </Button>
-          </div>
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-            <DialogTrigger asChild>
-</div>
       </div>
     )
   }
@@ -354,6 +310,20 @@ export function SpaceSelection() {
                     )}
                   </div>
                 </DialogBody>
+                <DialogFooter className="p-6 pt-0">
+                  <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading ? 'Creating...' : 'Create Space'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
       <div className="flex items-center gap-4 flex-wrap">
         {/* Status Filter */}
         <div className="flex items-center gap-2">
@@ -582,4 +552,3 @@ export function SpaceSelection() {
     </div>
   )
 }
-

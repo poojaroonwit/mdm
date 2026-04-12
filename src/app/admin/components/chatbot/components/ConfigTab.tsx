@@ -457,11 +457,11 @@ export function ConfigTab({ formData, setFormData }: ConfigTabProps) {
                 <DisclaimerSection formData={formData} setFormData={setFormData} chatkitOptions={chatkitOptions} />
                 <ModelPickerSection formData={formData} setFormData={setFormData} chatkitOptions={chatkitOptions} />
                 <PersonaPickerSection formData={formData} setFormData={setFormData} chatkitOptions={chatkitOptions} />
-                <AccordionItem value="get-started" className="border-b-0 border-border/50 px-4">
-                  <AccordionTrigger className="hover:no-underline py-4 text-md font-semibold">
+                <AccordionItem value="get-started" className="border-b border-border/50 px-4">
+                  <AccordionTrigger className="hover:no-underline py-3">
                     <div className="flex items-center gap-2">
-                      <Icons.PlayCircle className="h-4 w-4" />
-                      Get Started Popover
+                      <Icons.PlayCircle className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">Get Started Popover</span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>

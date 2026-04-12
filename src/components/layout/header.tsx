@@ -37,7 +37,7 @@ export function Header({ user }: HeaderProps) {
   }
 
   return (
-    <header className="h-16 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between px-4 lg:px-8 relative z-50 shrink-0 shadow-lg shadow-gray-200/20 dark:shadow-none transition-all duration-300">
+    <header className="h-14 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between px-4 lg:px-6 relative z-50 shrink-0 shadow-lg shadow-gray-200/20 dark:shadow-none transition-all duration-300">
       <div className="flex items-center space-x-4">
         <div className="relative group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors duration-200" />
@@ -46,12 +46,12 @@ export function Header({ user }: HeaderProps) {
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-10 w-80 rounded-md border border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30 pl-10 pr-4 text-sm transition-all duration-300 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-zinc-500/10 outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-zinc-100 font-medium"
+            className="h-9 w-80 rounded-md border border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30 pl-10 pr-4 text-sm transition-all duration-300 focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-zinc-500/10 outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-zinc-100 font-medium"
           />
         </div>
       </div>
 
-      <div className="flex items-center space-x-6">
+      <div className="flex items-center space-x-4">
         <NotificationBell />
 
         <DropdownMenu>

@@ -33,7 +33,7 @@ export function ChatKitIntegrationSection({ formData, setFormData }: ChatKitInte
   const chatbotEnabled = (formData as any).chatbotEnabled !== false // Default to true
 
   return (
-    <div className="space-y-2">
+    <div className="w-full">
       <Accordion
         type="single"
         collapsible

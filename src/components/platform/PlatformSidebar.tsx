@@ -359,7 +359,7 @@ export function PlatformSidebar({
         <div className={cn("py-2 px-2", mode === 'secondary' && "min-h-full")}>
           {mode === 'primary' ? (
             collapsed ? (
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {Object.entries(groupMetadata).filter(([groupId]) => groupId !== 'system').map(([groupId, group], index) => {
                   const Icon = group.icon
                   const isDataManagement = groupId === 'data-management'
@@ -368,15 +368,13 @@ export function PlatformSidebar({
                   return (
                     <div key={groupId}>
                       {isDataManagement && index > 0 && (
-                        <div className="border-t border-sidebar-border my-1 mx-2" />
+                        <div className="border-t border-sidebar-border my-0.5 mx-2" />
                       )}
                       <Button
-                        variant="ghost"
+                        variant={isActive ? "soft-blue" : "ghost"}
                         className={cn(
-                          "group relative w-11 h-11 flex items-center justify-center rounded-xl transition-all duration-200 cursor-pointer mx-auto p-0",
-                          isActive
-                            ? "bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-lg"
-                            : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+                          "group relative w-9 h-9 flex items-center justify-center rounded-lg transition-all duration-200 cursor-pointer mx-auto p-0",
+                          isActive ? "" : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
                         )}
                         onClick={() => handleGroupClick(groupId)}
                         onMouseEnter={() => {
@@ -390,11 +388,11 @@ export function PlatformSidebar({
                         }}
                         title={group.name}
                       >
-                        {isActive && (
-                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-zinc-900 dark:bg-zinc-100 rounded-r-full" />
-                        )}
-                        <Icon className={cn("h-5 w-5 flex-shrink-0 transition-all duration-200", 
-                          isActive ? "text-zinc-900 dark:text-zinc-100" : "group-hover:scale-105"
+                        
+                        <Icon 
+                          strokeWidth={2.5}
+                          className={cn("h-[18px] w-[18px] flex-shrink-0 transition-all duration-200", 
+                          isActive ? "" : "group-hover:scale-105"
                         )} />
                       </Button>
                     </div>
@@ -402,7 +400,7 @@ export function PlatformSidebar({
                 })}
               </div>
             ) : (
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {Object.entries(groupMetadata).filter(([groupId]) => groupId !== 'system').map(([groupId, group], index) => {
                   const Icon = group.icon
                   const isDataManagement = groupId === 'data-management'
@@ -411,15 +409,13 @@ export function PlatformSidebar({
                   return (
                     <div key={groupId}>
                       {isDataManagement && (
-                        <div className="border-t border-sidebar-border my-2 mx-4" />
+                        <div className="border-t border-sidebar-border my-1 mx-4" />
                       )}
                         <Button
-                          variant="ghost"
+                          variant={isActive ? "soft-blue" : "ghost"}
                           className={cn(
-                            "group flex w-full items-center justify-start rounded-lg px-3 transition-all duration-200 cursor-pointer h-[34px]",
-                            isActive
-                              ? "bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-semibold shadow-lg"
-                              : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-zinc-100"
+                            "group flex w-full items-center justify-start rounded-lg px-4 transition-all duration-200 cursor-pointer h-9 gap-3",
+                            isActive ? "font-bold" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
                           )}
                         onClick={() => handleGroupClick(groupId)}
                         onMouseEnter={() => {
@@ -433,14 +429,20 @@ export function PlatformSidebar({
                         }}
                       >
                         <span className={cn(
-                          "mr-3 flex h-5 w-5 items-center justify-center transition-colors",
-                          isActive ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300"
+                          "flex h-5 w-5 items-center justify-center transition-colors",
+                          !isActive && "text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300"
                         )}>
-                          <Icon className="w-[18px] h-[18px] flex-shrink-0 transition-colors" />
+                          <Icon 
+                            strokeWidth={2.5}
+                            className="w-[18px] h-[18px] flex-shrink-0 transition-colors" 
+                          />
                         </span>
-                        <span className="flex-1 text-left text-[13px] font-medium leading-[1]">{group.name}</span>
+                        <span className="text-[14px] font-medium leading-[1] whitespace-nowrap">{group.name}</span>
                         {!isDataManagement && groupId !== 'infrastructure' && (
-                          <ChevronRightIcon className="w-4 h-4 ml-auto text-zinc-400 opacity-50" />
+                          <ChevronRightIcon 
+                            strokeWidth={2.5}
+                            className="w-4 h-4 ml-auto text-zinc-400 opacity-50" 
+                          />
                         )}
                       </Button>
                     </div>
@@ -471,8 +473,8 @@ export function PlatformSidebar({
                     if (filteredItems.length === 0) return null
 
                     return (
-                      <div key={sectionName} className="px-3">
-                        <div className="px-3 py-1.5 text-[10px] uppercase font-black tracking-[0.1em] text-zinc-500 mb-1">
+                      <div key={sectionName} className="px-1">
+                        <div className="px-5 py-1.5 text-[10px] uppercase font-black tracking-[0.1em] text-zinc-500 mb-1">
                           {sectionName}
                         </div>
                         <div className="space-y-0.5">
@@ -481,31 +483,31 @@ export function PlatformSidebar({
                             return (
                               <Button
                                 key={tab.id}
-                                variant="ghost"
+                                variant={isActive ? "soft-blue" : "ghost"}
                                 className={cn(
-                                  "group flex w-full items-center justify-start rounded-lg px-3 transition-all duration-200 cursor-pointer h-[34px]",
+                                  "group flex w-full items-center justify-start rounded-lg px-4 transition-all duration-200 cursor-pointer h-9 gap-3",
                                   isActive
-                                    ? "bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-lg"
-                                    : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-zinc-100"
+                                    ? "font-bold"
+                                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
                                 )}
                                 onClick={() => handleTabClick(tab.id, tab.href)}
                               >
                                 <span className={cn(
-                                  "mr-3 flex h-5 w-5 items-center justify-center transition-colors",
-                                  isActive ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300"
+                                  "flex h-5 w-5 items-center justify-center transition-colors",
+                                  !isActive && "text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300"
                                 )}>
-                                  <tab.icon className="w-[18px] h-[18px] flex-shrink-0 transition-colors" />
+                                  <tab.icon 
+                                    strokeWidth={2.5}
+                                    className="w-[18px] h-[18px] flex-shrink-0 transition-colors" 
+                                  />
                                 </span>
-                                <span className="flex-1 truncate text-left text-[13px] font-medium leading-[1]">{tab.name}</span>
-                                {isActive && (
-                                  <span className="ml-auto h-1.5 w-1.5 flex-shrink-0 rounded-full bg-zinc-900 dark:bg-zinc-100" />
-                                )}
+                                <span className="truncate text-[14px] font-medium leading-[1] whitespace-nowrap">{tab.name}</span>
                               </Button>
                             )
                           })}
                         </div>
                         {sectionIndex < Object.entries(activeGroupSections).length - 1 && (
-                          <div className="border-t border-sidebar-border my-2 mx-0" />
+                          <div className="border-t border-sidebar-border my-2 mx-1" />
                         )}
                       </div>
                     )
@@ -529,13 +531,13 @@ export function PlatformSidebar({
             return (
               <div className="w-full mb-2 border-b border-sidebar-border pb-2">
                 <Button
-                  variant="ghost"
+                  variant={isActive ? "soft-blue" : "ghost"}
                   className={cn(
-                    "group flex w-full items-center transition-all duration-200 cursor-pointer h-auto",
-                    collapsed ? "w-11 h-11 rounded-xl justify-center p-0 mx-auto" : "rounded-lg px-3 py-2 justify-start",
+                    "group flex w-full items-center transition-all duration-200 cursor-pointer h-9",
+                    collapsed ? "w-9 h-9 rounded-lg justify-center p-0 mx-auto" : "rounded-lg px-4 justify-start",
                     isActive
-                      ? "bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-lg"
-                      : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-zinc-100"
+                      ? ""
+                      : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
                   )}
                   onClick={() => handleGroupClick(groupId)}
                 >
@@ -547,12 +549,18 @@ export function PlatformSidebar({
                     !collapsed && "mr-3",
                     isActive ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-500"
                   )}>
-                    <Icon className="w-[18px] h-[18px] flex-shrink-0" />
+                    <Icon 
+                      strokeWidth={2.5}
+                      className="w-[18px] h-[18px] flex-shrink-0" 
+                    />
                   </span>
                   {!collapsed && (
                     <>
-                      <span className="flex-1 text-left text-[13px] font-medium leading-[1]">{group.name}</span>
-                      <ChevronRightIcon className="w-4 h-4 ml-auto text-zinc-400 opacity-50" />
+                      <span className="flex-1 text-left text-[14px] font-medium leading-[1]">{group.name}</span>
+                      <ChevronRightIcon 
+                        strokeWidth={2.5}
+                        className="w-4 h-4 ml-auto text-zinc-400 opacity-50" 
+                      />
                     </>
                   )}
                 </Button>
@@ -566,15 +574,21 @@ export function PlatformSidebar({
             className={cn(
               "group relative flex items-center transition-all duration-200 h-auto",
               collapsed 
-                ? "w-11 h-11 rounded-xl justify-center p-0 mx-auto" 
-                : "w-full rounded-lg px-3 py-2 justify-start gap-2 text-left"
+                ? "w-9 h-9 rounded-lg justify-center p-0 mx-auto" 
+                : "w-full rounded-lg px-4 justify-start gap-2 text-left h-9"
             )}
           >
             {collapsed ? (
-              <ChevronRightIcon className="h-5 w-5 text-zinc-400" />
+              <ChevronRightIcon 
+                strokeWidth={2}
+                className="h-5 w-5 text-zinc-400" 
+              />
             ) : (
               <>
-                <ChevronLeftIcon className="h-4 w-4 text-zinc-400" />
+                <ChevronLeftIcon 
+                  strokeWidth={2}
+                  className="h-4 w-4 text-zinc-400" 
+                />
                 <span className="text-xs font-medium text-zinc-500">Collapse</span>
               </>
             )}

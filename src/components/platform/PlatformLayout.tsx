@@ -243,7 +243,7 @@ export function PlatformLayout({
           <div
             className={cn(
               "transition-all duration-300 ease-in-out flex-shrink-0 border-r border-sidebar-border",
-              sidebarCollapsed ? 'w-16' : 'w-52'
+              sidebarCollapsed ? 'w-16' : 'w-53'
             )}
             style={{ position: 'relative', zIndex: Z_INDEX.sidebar, pointerEvents: 'auto' }}
             onMouseEnter={() => setSidebarCollapsed(false)}
@@ -277,7 +277,7 @@ export function PlatformLayout({
             <div
               className={cn(
                 "flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden border-r border-sidebar-border",
-                secondarySidebarCollapsed ? 'w-0' : 'w-56'
+                secondarySidebarCollapsed ? 'w-0' : 'w-53'
               )}
               style={{ position: 'relative', zIndex: Z_INDEX.sidebar, pointerEvents: 'auto' }}
             >
@@ -297,7 +297,7 @@ export function PlatformLayout({
             <div
               className={cn(
                 "flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden border-r border-sidebar-border",
-                secondarySidebarCollapsed ? 'w-0' : 'w-56'
+                secondarySidebarCollapsed ? 'w-0' : 'w-53'
               )}
               style={{ position: 'relative', zIndex: Z_INDEX.sidebar, pointerEvents: 'auto', backgroundColor: 'var(--bg-surface)' }}
             >
@@ -320,7 +320,7 @@ export function PlatformLayout({
             <div
               className={cn(
                 "flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden border-r border-sidebar-border",
-                secondarySidebarCollapsed ? 'w-0' : 'w-56'
+                secondarySidebarCollapsed ? 'w-0' : 'w-53'
               )}
               style={{ position: 'relative', zIndex: Z_INDEX.sidebar, pointerEvents: 'auto', backgroundColor: 'var(--bg-surface)' }}
               onMouseEnter={() => displayGroup && setHoveredGroup(displayGroup)}

@@ -325,7 +325,7 @@ export function MergedBIReports() {
                 setShowCreateReportDialog(true)
               }}>
                 <LayoutDashboard className="h-4 w-4 mr-2" />
-                Create new building dashboard/report
+                Create new dashboard/report
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setShowIntegrationModal(true)}>
                 <Download className="h-4 w-4 mr-2" />
@@ -337,10 +337,7 @@ export function MergedBIReports() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button onClick={() => router.push('/reports/new')}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Report
-          </Button>
+     
         </div>
       </div>
 

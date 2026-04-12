@@ -14,10 +14,11 @@ export const buttonVariants = cva(
   'inline-flex items-center justify-center whitespace-nowrap font-medium transition-[background-color,border-color,box-shadow,color,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none select-none [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0',
   {
     variants: {
+      variant: {
         primary:
-          'bg-gradient-to-br from-[var(--primary-navy)] to-[var(--primary-blue)] text-primary-foreground border border-transparent shadow-[var(--shadow-blue-glow)] hover:-translate-y-px hover:shadow-[var(--shadow-blue-glow-hover)]',
+          'bg-gradient-to-br from-[var(--primary-light)] to-[var(--primary-blue)]  text-primary-foreground border border-transparent shadow-[var(--shadow-blue-glow)] hover:-translate-y-px hover:shadow-[var(--shadow-blue-glow-hover)]',
         default:
-          'bg-gradient-to-br from-[var(--primary-navy)] to-[var(--primary-blue)] text-primary-foreground border border-transparent shadow-[var(--shadow-blue-glow)] hover:-translate-y-px hover:shadow-[var(--shadow-blue-glow-hover)]',
+          'bg-gradient-to-br from-[var(--primary-light)] to-[var(--primary-blue)] text-primary-foreground border border-transparent shadow-[var(--shadow-blue-glow)] hover:-translate-y-px hover:shadow-[var(--shadow-blue-glow-hover)]',
         luxury:
           'bg-gradient-to-b from-[#1e40af] to-[#172554] text-white border border-white/10 shadow-[var(--shadow-blue-glow)] hover:shadow-[var(--shadow-blue-glow-hover)] hover:scale-[1.02] active:scale-[0.98]',
         gradient:
@@ -25,7 +26,9 @@ export const buttonVariants = cva(
         glass:
           'bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 shadow-xl',
         soft:
-          'bg-[var(--primary-blue-light)] text-[var(--primary-blue)] border border-transparent hover:bg-[color-mix(in_srgb,var(--primary-blue-light)_88%,black)]',
+          'bg-[var(--primary-blue-soft)] text-[var(--primary-blue)] border border-transparent hover:bg-[color-mix(in_srgb,var(--primary-blue-soft)_80%,var(--primary-blue))]',
+        'soft-blue':
+          'bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-200 border border-transparent hover:bg-blue-100 dark:hover:bg-blue-500/25',
         secondary:
           'bg-secondary text-secondary-foreground border border-border shadow-md hover:bg-secondary/80',
         danger:
@@ -40,12 +43,13 @@ export const buttonVariants = cva(
           'bg-transparent text-foreground border border-border hover:bg-accent hover:text-accent-foreground',
         ghost:
           'bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+      },
       size: {
         sm: 'h-8 px-3 text-xs rounded-md gap-1.5',
-        md: 'h-10 px-4 py-2 text-sm rounded-md gap-2',
-        default: 'h-10 px-4 py-2 text-sm rounded-md gap-2',
+        md: 'h-9 px-4 text-sm rounded-md gap-2',
+        default: 'h-9 px-4 text-sm rounded-md gap-2',
         lg: 'h-11 px-8 text-base rounded-md gap-2',
-        icon: 'h-10 w-10 rounded-md',
+        icon: 'h-9 w-9 rounded-md',
       },
     },
     defaultVariants: {

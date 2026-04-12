@@ -105,7 +105,7 @@ const SelectTrigger = React.forwardRef<
       onClick={handleClick}
       data-component="select-trigger"
       className={cn(
-        "flex min-h-11 w-full items-center justify-between rounded-md border-none bg-zinc-100/50 dark:bg-zinc-900/50 px-4 py-2 text-sm ring-offset-background transition-all duration-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-40 [&>span]:line-clamp-1 group shadow-none",
+        "flex h-9 w-full items-center justify-between rounded-md border-none bg-zinc-100/65 dark:bg-zinc-900/65 px-4 text-sm ring-offset-background transition-all duration-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-40 [&>span]:line-clamp-1 group shadow-none",
         className
       )}
       {...props}
@@ -306,7 +306,7 @@ const SelectItem = React.forwardRef<
       aria-selected={isSelected}
       onClick={handleClick}
       className={cn(
-        "relative flex min-h-10 w-full cursor-default select-none items-center rounded-lg py-2 pl-8 pr-3 text-sm outline-none transition-colors duration-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-40",
+        "relative flex h-9 w-full cursor-default select-none items-center rounded-lg pr-3 text-sm outline-none transition-colors duration-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-40",
         isSelected && "bg-zinc-100/80 dark:bg-zinc-800/80 font-black text-zinc-900 dark:text-white",
         className
       )}

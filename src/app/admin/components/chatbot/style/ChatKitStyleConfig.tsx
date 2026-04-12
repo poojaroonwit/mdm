@@ -186,12 +186,13 @@ function ChatKitHeaderSection({ formData, setFormData }: { formData: Partial<Cha
   const [openItem, setOpenItem] = useState('header-content')
 
   return (
-    <div className="space-y-2">
+    <div className="w-full">
       <Accordion
         type="single"
         collapsible
         value={openItem}
         onValueChange={(val) => setOpenItem(val as string)}
+        className="w-full"
       >
         {/* Header Content */}
         <AccordionItem value="header-content" className="border-b border-border/50 px-4">
@@ -491,7 +492,7 @@ function ChatKitHeaderSection({ formData, setFormData }: { formData: Partial<Cha
         </AccordionItem>
 
         {/* Header Border */}
-        <AccordionItem value="header-border" className="border-b-0 border-border/50 px-4">
+        <AccordionItem value="header-border" className="border-b border-border/50 px-4 last:border-b-0">
           <AccordionTrigger className="hover:no-underline py-3">
             <div className="flex items-center gap-2">
               <Square className="h-4 w-4 text-muted-foreground" />

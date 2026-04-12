@@ -49,6 +49,7 @@ import { showSuccess, showError, ToastMessages } from '@/lib/toast-utils'
 import { validateRequired, validateLength } from '@/lib/validation-utils'
 import { useModal } from '@/hooks/common'
 import { ReportPermissionsDialog } from './ReportPermissionsDialog'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Checkbox as UICheckbox } from '@/components/ui/checkbox'
 import type { Report, ReportCategory, ReportFolder } from '@/app/reports/page'
 
@@ -669,16 +670,24 @@ export function ReportsTreeView({
     return (
       <Card>
         <CardHeader>
-          <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-          <div className="h-4 w-64 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mt-2" />
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-9 w-32 rounded-md" />
+              <Skeleton className="h-9 w-32 rounded-md" />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
+          <div className="space-y-4">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className="h-4 w-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                <div className="h-4 w-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div key={i} className="flex items-center gap-3">
+                <Skeleton className="h-4 w-4 rounded-full" />
+                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-4 w-48" />
               </div>
             ))}
           </div>

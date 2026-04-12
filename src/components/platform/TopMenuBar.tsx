@@ -181,7 +181,7 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
               }}
             />
           ) : (
-            <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-white text-sm shadow-lg mr-4 group-hover:bg-zinc-800 transition-all duration-300 overflow-hidden bg-zinc-900 dark:bg-zinc-50 dark:text-zinc-900">
+            <div className="bg-gradient-to-br from-[var(--primary-light)] to-[var(--primary-blue)]  text-primary-foreground  w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-white text-sm shadow-lg mr-4 group-hover:bg-zinc-800 transition-all duration-300 overflow-hidden ">
               <span>{displayName.substring(0, 1).toUpperCase()}</span>
             </div>
           )}
@@ -348,7 +348,7 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
         <Popover open={profilePopoverOpen} onOpenChange={setProfilePopoverOpen}>
           <PopoverTrigger asChild>
             <button className="flex items-center space-x-3 p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-200 group outline-none">
-              <div className="w-9 h-9 rounded-full bg-zinc-900 dark:bg-zinc-50 flex items-center justify-center text-white dark:text-zinc-900 font-bold text-sm shadow-lg group-hover:bg-zinc-800 transition-all duration-300 overflow-hidden">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--primary-light)] to-[var(--primary-blue)]  text-primary-foreground  flex items-center justify-center text-white dark:text-zinc-900 font-bold text-sm shadow-lg group-hover:bg-zinc-800 transition-all duration-300 overflow-hidden">
                 {userImage ? (
                   <img src={userImage} alt={userName} className="h-full w-full object-cover" />
                 ) : userInitial}
