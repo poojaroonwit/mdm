@@ -119,12 +119,7 @@ export function getContainerStyle(
     backgroundStyle.backgroundRepeat = 'no-repeat'
   }
 
-  console.log('[chatStyling] getContainerStyle:', {
-    engineType: chatbot.engineType,
-    id: chatbot.id,
-    deploymentType: previewDeploymentType,
-    isChatKit: isChatKit(chatbot)
-  })
+
 
 
     // Common background logic helper

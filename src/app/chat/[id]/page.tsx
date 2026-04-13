@@ -47,7 +47,7 @@ export default function ChatPage() {
   const searchParams = useSearchParams()
   const isEmbed = searchParams.get('mode') === 'embed'
   const isPwaOnly = searchParams.get('mode') === 'pwa-only'
-  console.log('[ChatPage] Search Params:', searchParams.toString(), 'isEmbed:', isEmbed, 'isPwaOnly:', isPwaOnly);
+
   const urlDeploymentType = searchParams.get('deploymentType') || searchParams.get('type')
   // Parent viewport width passed by the embed script — more reliable than window.screen.width
   // inside the iframe (screen.width can return desktop resolution in DevTools Responsive mode)
@@ -548,7 +548,7 @@ export default function ChatPage() {
         }
       }
 
-      console.log('[ChatPage] Sending resize:', { isOpen, width, height, positionData, deploymentType: previewDeploymentType, isMobile: isMobileRef.current, isEmbed });
+
 
       window.parent.postMessage({
         type: 'chat-widget-resize',
@@ -763,15 +763,7 @@ export default function ChatPage() {
     (chatbot.engineType === 'chatkit' || chatbot.engineType === 'openai-agent-sdk') &&
     agentId
 
-  // Debug: Trace ChatKit rendering conditions
-  console.log('ChatKit Debug:', {
-    shouldRenderChatKit,
-    chatKitUnavailable,
-    engineType: chatbot.engineType,
-    agentId: agentId,
-    useChatKitInRegularStyle,
-    isMobile
-  })
+
 
   const isNativeChatKit = shouldRenderChatKit && !useChatKitInRegularStyle
 
@@ -921,43 +913,11 @@ export default function ChatPage() {
     )
   }
 
-  // Debug logging
-  console.log('ChatPage Render:', {
-    timestamp: Date.now(),
-    chatbotId,
-    previewDeploymentType,
-    isEmbed,
-    isInIframe,
-    isMobile,
-    isOpen,
-    shouldShowWidgetButton,
-    shouldShowContainer,
-    isNativeChatKit,
-    useChatKitInRegularStyle,
-    effectiveDeploymentType,
-    isDesktopPreview,
-    previewDevice
-  })
 
-  // Debug: Log container style for embed debugging
-  console.log('Container Style Debug:', {
-    effectiveDeploymentType,
-    isEmbed,
-    isMobile,
-    containerStyle,
-    shouldShowContainer,
-    shouldShowWidgetButton
-  })
 
-  // Debug: Get Started Popover
-  const getStartedConfig = (chatbot as any)?.chatkitOptions?.getStarted
-  console.log('Get Started Debug:', {
-    enabled: getStartedConfig?.enabled,
-    showGetStarted,
-    isOpen,
-    shouldShowWidgetButton,
-    chatbotId
-  })
+
+
+
 
   // Define the main chat UI content part to be wrapped in the device frame if needed
   const chatUI = (
@@ -998,7 +958,6 @@ export default function ChatPage() {
             widgetButtonStyle={widgetButtonStyle}
             popoverPositionStyle={popoverPositionStyle}
             onDebugToggle={() => {
-              console.log('Force toggling Get Started');
               setShowGetStarted(prev => !prev);
             }}
           />

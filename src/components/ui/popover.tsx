@@ -380,31 +380,7 @@ const PopoverContent = React.forwardRef<
         if (contentRef.current) {
           const rect = contentRef.current.getBoundingClientRect()
           const styles = window.getComputedStyle(contentRef.current)
-          console.log('🔍 PopoverContent Debug:', {
-            element: contentRef.current,
-            rect: {
-              top: rect.top,
-              left: rect.left,
-              width: rect.width,
-              height: rect.height,
-              bottom: rect.bottom,
-              right: rect.right,
-            },
-            viewport: {
-              width: window.innerWidth,
-              height: window.innerHeight,
-            },
-            styles: {
-              display: styles.display,
-              visibility: styles.visibility,
-              opacity: styles.opacity,
-              zIndex: styles.zIndex,
-              position: styles.position,
-              backgroundColor: styles.backgroundColor,
-            },
-            isVisible: rect.width > 0 && rect.height > 0 && styles.display !== 'none' && styles.visibility !== 'hidden' && parseFloat(styles.opacity) > 0,
-            isInViewport: rect.top >= 0 && rect.left >= 0 && rect.bottom <= window.innerHeight && rect.right <= window.innerWidth,
-          })
+
         } else {
           console.warn('⚠️ PopoverContent ref is null!')
         }
@@ -507,7 +483,7 @@ const PopoverContent = React.forwardRef<
     return null
   }
 
-  console.log('✅ Creating PopoverContent portal to body, position:', finalPosition)
+
   return createPortal(content, portalTarget)
 })
 PopoverContent.displayName = "PopoverContent"

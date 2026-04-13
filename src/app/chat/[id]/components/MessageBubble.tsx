@@ -1,11 +1,12 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { ThumbsUp, ThumbsDown, RotateCcw, Bot, User } from 'lucide-react'
+import { ThumbsUp, ThumbsDown, RotateCcw, Bot, User, BookOpen, Search } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Message, ChatbotConfig } from '../types'
 import { MarkdownRenderer } from '@/components/knowledge-base/MarkdownRenderer'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 
 // Component to convert URLs in plain text to clickable links
 function LinkifiedText({ content }: { content: string }) {
@@ -314,22 +315,34 @@ export function MessageBubble({
               <LinkifiedText content={message.content} />
             )
           )}
+          
           {message.citations && message.citations.length > 0 && (
-            <div className="mt-2 pt-2 border-t" style={{ borderColor: chatbot.borderColor }}>
-              <p className="text-xs font-semibold mb-1">Sources:</p>
-              <div className="space-y-1">
-                {message.citations.map((citation, idx) => (
-                  <a
-                    key={idx}
-                    href={citation}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs underline block"
-                  >
-                    {citation}
-                  </a>
-                ))}
-              </div>
+            <div className="mt-3">
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="sources" className="border-none">
+                  <AccordionTrigger className="hover:no-underline py-2 text-xs flex gap-2 font-semibold">
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="h-3 w-3" />
+                      Sources ({message.citations.length})
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-1 pb-2">
+                    <div className="space-y-1.5 pl-5 border-l-2 ml-1" style={{ borderColor: chatbot.borderColor || 'rgba(0,0,0,0.1)' }}>
+                      {message.citations.map((citation, idx) => (
+                        <a
+                          key={idx}
+                          href={citation}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs underline block opacity-80 hover:opacity-100 transition-opacity truncate"
+                        >
+                          {citation}
+                        </a>
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
           )}
 
@@ -465,7 +478,7 @@ export function MessageBubble({
             </div>
           )}
 
-          <div className="text-xs opacity-70 mt-1">
+          <div className="text-[10px] opacity-50 mt-1">
             {message.timestamp.toLocaleTimeString()}
           </div>
         </div>

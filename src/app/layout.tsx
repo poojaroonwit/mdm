@@ -1,15 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import { DM_Sans, IBM_Plex_Sans_Thai } from 'next/font/google'
-import './globals.css'
 import { Providers } from './providers'
-import { SidebarProvider } from '@/contexts/sidebar-context'
-import { SpaceProvider } from '@/contexts/space-context'
 import { DynamicFavicon } from '@/components/ui/dynamic-favicon'
-import { Suspense } from 'react'
-import { LoadingPage } from '@/components/ui/loading-spinner'
 import { GlobalErrorHandler } from '@/components/global-error-handler'
-import { SecurityProvider } from '@/components/providers/SecurityProvider'
-import { SystemSettingsProvider } from '@/contexts/system-settings-context'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -61,17 +54,7 @@ export default function RootLayout({
         <GlobalErrorHandler />
         <Providers>
           <DynamicFavicon />
-          <SecurityProvider>
-            <SidebarProvider>
-              <Suspense fallback={<LoadingPage />}>
-                <SystemSettingsProvider>
-                  <SpaceProvider>
-                    {children}
-                  </SpaceProvider>
-                </SystemSettingsProvider>
-              </Suspense>
-            </SidebarProvider>
-          </SecurityProvider>
+          {children}
         </Providers>
       </body>
     </html>
