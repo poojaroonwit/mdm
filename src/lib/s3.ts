@@ -62,6 +62,22 @@ export async function getS3Config() {
     // Ignore DB errors and let callers handle missing config
   }
 
+  // 3. Fallback to environment variables
+  if (process.env.MINIO_ENDPOINT && process.env.MINIO_ACCESS_KEY && process.env.MINIO_SECRET_KEY) {
+    return {
+      region: 'us-east-1',
+      endpoint: process.env.MINIO_PORT 
+        ? `http://${process.env.MINIO_ENDPOINT}:${process.env.MINIO_PORT}`
+        : `http://${process.env.MINIO_ENDPOINT}`,
+      forcePathStyle: true,
+      bucket: process.env.MINIO_UPLOADS_BUCKET || 'uploads',
+      credentials: {
+        accessKeyId: process.env.MINIO_ACCESS_KEY,
+        secretAccessKey: process.env.MINIO_SECRET_KEY,
+      },
+    }
+  }
+
   return null
 }
 

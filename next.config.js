@@ -99,6 +99,7 @@ const nextConfig = {
     'openai',
     'langfuse',
     'minio',
+    'bcryptjs',
   ],
 
   webpack: (config, { isServer, webpack }) => {
