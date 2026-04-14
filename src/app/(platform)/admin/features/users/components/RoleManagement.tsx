@@ -711,7 +711,7 @@ export function RoleManagement() {
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                    {analytics.globalRoles?.map((item: any) => (
+                    {analytics?.globalRoles?.map((item: any) => (
                       <div key={item.role_name} className="flex items-center justify-between p-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
                         <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{item.role_name}</span>
                         <Badge variant="secondary" className="font-black text-[10px] h-6 px-3 rounded-lg">{item.user_count} users</Badge>
@@ -727,7 +727,7 @@ export function RoleManagement() {
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                    {analytics.spaceRoles?.map((item: any) => (
+                    {analytics?.spaceRoles?.map((item: any) => (
                       <div key={item.role_name} className="flex items-center justify-between p-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
                         <div>
                           <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{item.role_name}</span>
@@ -746,7 +746,7 @@ export function RoleManagement() {
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                    {analytics.customRoles?.map((item: any) => (
+                    {analytics?.customRoles?.map((item: any) => (
                       <div key={item.id} className="flex items-center justify-between p-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
                         <div>
                           <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{item.name}</span>
@@ -755,7 +755,7 @@ export function RoleManagement() {
                         <Badge className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] h-6 px-3 rounded-lg font-black">{item.usage_count || 0} assignments</Badge>
                       </div>
                     ))}
-                    {(!analytics.customRoles || analytics.customRoles.length === 0) && (
+                    {(!analytics?.customRoles || analytics.customRoles.length === 0) && (
                       <p className="text-sm text-muted-foreground p-8 text-center italic">No custom roles defined</p>
                     )}
                   </div>

@@ -42,10 +42,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
     // TypeScript will show all errors, build will continue to collect all errors
   },
-  eslint: {
-    // Skip ESLint during build to save memory in restricted CI environments
-    ignoreDuringBuilds: true,
-  },
+
 
   // Expose package version to the client
   env: {
