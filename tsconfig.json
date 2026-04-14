@@ -32,6 +32,9 @@
     ],
     "baseUrl": ".",
     "paths": {
+      "@/app/admin/*": [
+        "./src/app/(platform)/admin/*"
+      ],
       "@/*": [
         "./src/*"
       ],
