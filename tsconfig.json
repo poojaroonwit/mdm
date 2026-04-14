@@ -35,6 +35,10 @@
       "@/app/admin/*": [
         "./src/app/(platform)/admin/*"
       ],
+      "@/app/*": [
+        "./src/app/*",
+        "./src/app/(platform)/*"
+      ],
       "@/*": [
         "./src/*"
       ],

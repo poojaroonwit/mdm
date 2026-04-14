@@ -1316,7 +1316,9 @@ export function UserManagement() {
                     )}
                   </div>
                 </TabsContent>
-              </DialogBody>
+              </Tabs>
+            </div>
+          </DialogBody>
 
             <DialogFooter className="flex-shrink-0 border-t-0 p-6 pt-2">
               <Button variant="outline" onClick={() => setShowEditDialog(false)} className="px-6 h-11 rounded-xl">
