@@ -50,7 +50,7 @@ ENV WEBPACK_PARALLELISM=2
 RUN NEXTAUTH_SECRET="dummy_secret_at_least_32_characters_long_for_build" \
     NEXT_PUBLIC_APP_VERSION=$(node -p "require('./package.json').version") \
     NODE_OPTIONS="--max-old-space-size=${BUILD_MEMORY_LIMIT} --max-semi-space-size=64" \
-    npx prisma generate && npm run build:docker
+    npx prisma@6.17.1 generate && npm run build:docker
 
 # Production image
 FROM node:20-alpine AS runner

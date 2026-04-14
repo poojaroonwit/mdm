@@ -43,20 +43,20 @@ fi
 # Generate Prisma client first to ensure latest schema
 echo ""
 echo "=== Generating Prisma client ==="
-npx prisma generate || {
+npx prisma@6.17.1 generate || {
   echo "⚠️  Prisma generate failed"
 }
 
 # Run Prisma migrations
 echo ""
 echo "=== Syncing Prisma schema with database ==="
-npx prisma db push --accept-data-loss || {
+npx prisma@6.17.1 db push --accept-data-loss || {
   echo "⚠️  Prisma db push failed (may already be synced)"
 }
 
 echo ""
 echo "=== Running Prisma migrations ==="
-npx prisma migrate deploy || {
+npx prisma@6.17.1 migrate deploy || {
   echo "⚠️  Prisma migrations failed (may already be applied)"
 }
 
