@@ -100,6 +100,8 @@ const nextConfig = {
     'langfuse',
     'minio',
     'bcryptjs',
+    'dotenv',
+    'pg',
   ],
 
   webpack: (config, { isServer, webpack }) => {
