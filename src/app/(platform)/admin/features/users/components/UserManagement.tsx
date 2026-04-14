@@ -1709,120 +1709,120 @@ export function UserManagement() {
                 User Details
               </DialogTitle>
             </DialogHeader>
-            <DialogBody className="flex-1 overflow-y-auto p-6 pt-2 pb-4">
             {selectedUser && (
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-20 w-20">
-                    <AvatarImage src={selectedUser.avatar} />
-                    <AvatarFallback className="text-2xl">
-                      {selectedUser.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold">{selectedUser.name}</h3>
-                    <p className="text-muted-foreground">{selectedUser.email}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      {getStatusIcon(selectedUser.isActive)}
-                      <Badge className={getRoleColor(selectedUser.role)}>
-                        {selectedUser.role}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-xs text-muted-foreground">User ID</Label>
-                    <p className="text-sm font-mono">{selectedUser.id}</p>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Status</Label>
-                    <p className="text-sm">{selectedUser.isActive ? 'Active' : 'Inactive'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Created</Label>
-                    <p className="text-sm">{new Date(selectedUser.createdAt).toLocaleString()}</p>
-                  </div>
-                  {selectedUser.lastLoginAt && (
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Last Login</Label>
-                      <p className="text-sm">{new Date(selectedUser.lastLoginAt).toLocaleString()}</p>
-                    </div>
-                  )}
-                  {selectedUser.defaultSpaceId && (
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Default Space</Label>
-                      <p className="text-sm">{spaces.find(s => s.id === selectedUser.defaultSpaceId)?.name || 'N/A'}</p>
-                    </div>
-                  )}
-                  <div className="col-span-2">
-                    <Label className="text-xs text-muted-foreground">Allowed Login Methods</Label>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {(selectedUser.allowedLoginMethods && selectedUser.allowedLoginMethods.length > 0
-                        ? selectedUser.allowedLoginMethods
-                        : ['all']
-                      ).map((method) => (
-                        <Badge key={method} variant="outline">
-                          {method === 'all' ? 'All Configured Methods' : formatLoginMethod(method)}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {selectedUser.spaces && selectedUser.spaces.length > 0 && (
-                  <div>
-                    <Label className="text-base font-semibold mb-2 block">Space Memberships</Label>
-                    <div className="space-y-2">
-                      {selectedUser.spaces.map((space, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-3 border rounded">
-                          <span className="text-sm font-medium">{space.spaceName}</span>
-                          <Badge variant="outline">{space.role}</Badge>
+              <>
+                <DialogBody className="flex-1 overflow-y-auto p-6 pt-2 pb-4">
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-20 w-20">
+                        <AvatarImage src={selectedUser.avatar} />
+                        <AvatarFallback className="text-2xl">
+                          {selectedUser.name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold">{selectedUser.name}</h3>
+                        <p className="text-muted-foreground">{selectedUser.email}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          {getStatusIcon(selectedUser.isActive)}
+                          <Badge className={getRoleColor(selectedUser.role)}>
+                            {selectedUser.role}
+                          </Badge>
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  </div>
-                )}
 
-                </div>
-              </DialogBody>
-              <DialogFooter className="flex-shrink-0 border-t p-4 px-6 flex justify-end gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setShowUserDetails(false)
-                    openEditDialog(selectedUser)
-                  }}
-                  className="rounded-xl h-10 px-4"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit User
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setShowUserDetails(false)
-                    setResetPasswordUser(selectedUser)
-                    setShowResetPasswordDialog(true)
-                  }}
-                  className="rounded-xl h-10 px-4"
-                >
-                  <Key className="h-4 w-4 mr-2" />
-                  Reset Password
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowUserDetails(false)}
-                  className="rounded-xl h-10 px-4"
-                >
-                  Close
-                </Button>
-              </DialogFooter>
-              </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">User ID</Label>
+                        <p className="text-sm font-mono">{selectedUser.id}</p>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Status</Label>
+                        <p className="text-sm">{selectedUser.isActive ? 'Active' : 'Inactive'}</p>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Created</Label>
+                        <p className="text-sm">{new Date(selectedUser.createdAt).toLocaleString()}</p>
+                      </div>
+                      {selectedUser.lastLoginAt && (
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Last Login</Label>
+                          <p className="text-sm">{new Date(selectedUser.lastLoginAt).toLocaleString()}</p>
+                        </div>
+                      )}
+                      {selectedUser.defaultSpaceId && (
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Default Space</Label>
+                          <p className="text-sm">{spaces.find(s => s.id === selectedUser.defaultSpaceId)?.name || 'N/A'}</p>
+                        </div>
+                      )}
+                      <div className="col-span-2">
+                        <Label className="text-xs text-muted-foreground">Allowed Login Methods</Label>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {(selectedUser.allowedLoginMethods && selectedUser.allowedLoginMethods.length > 0
+                            ? selectedUser.allowedLoginMethods
+                            : ['all']
+                          ).map((method) => (
+                            <Badge key={method} variant="outline">
+                              {method === 'all' ? 'All Configured Methods' : formatLoginMethod(method)}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {selectedUser.spaces && selectedUser.spaces.length > 0 && (
+                      <div>
+                        <Label className="text-base font-semibold mb-2 block">Space Memberships</Label>
+                        <div className="space-y-2">
+                          {selectedUser.spaces.map((space, idx) => (
+                            <div key={idx} className="flex items-center justify-between p-3 border rounded">
+                              <span className="text-sm font-medium">{space.spaceName}</span>
+                              <Badge variant="outline">{space.role}</Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </DialogBody>
+                <DialogFooter className="flex-shrink-0 border-t p-4 px-6 flex justify-end gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowUserDetails(false)
+                      openEditDialog(selectedUser)
+                    }}
+                    className="rounded-xl h-10 px-4"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit User
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowUserDetails(false)
+                      setResetPasswordUser(selectedUser)
+                      setShowResetPasswordDialog(true)
+                    }}
+                    className="rounded-xl h-10 px-4"
+                  >
+                    <Key className="h-4 w-4 mr-2" />
+                    Reset Password
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowUserDetails(false)}
+                    className="rounded-xl h-10 px-4"
+                  >
+                    Close
+                  </Button>
+                </DialogFooter>
+              </>
             )}
           </DialogContent>
         </Dialog>
