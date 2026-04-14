@@ -1516,7 +1516,8 @@ export function UserManagement() {
                   )}
                 </div>
               </div>
-            </DialogBody>
+            </div>
+          </DialogBody>
             <DialogFooter className="flex-shrink-0 border-t-0 p-6 pt-2">
               <Button variant="outline" onClick={() => setShowCreateDialog(false)} className="px-6 h-11 rounded-xl">
                 Cancel

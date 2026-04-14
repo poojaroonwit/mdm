@@ -1,1 +1,1 @@
-export { default } from '../../../data/entities/[model]/page'
+export { default } from '@/app/data/entities/[model]/page'
