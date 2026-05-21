@@ -131,7 +131,7 @@ const AlertDialogContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-6 border border-zinc-100/60 dark:border-zinc-800/60 bg-white/95 dark:bg-zinc-950/95 p-6 shadow-2xl duration-300 animate-in fade-in-0 zoom-in-95 sm:rounded-2xl backdrop-blur-xl",
+          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-5 border border-zinc-100/60 bg-white/95 px-6 py-5 shadow-2xl duration-300 animate-in fade-in-0 zoom-in-95 backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-950/95 sm:rounded-2xl",
           className
         )}
         style={{ zIndex: Z_INDEX.dialog }}
@@ -167,7 +167,7 @@ const AlertDialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      "flex flex-col-reverse gap-3 pt-1 sm:flex-row sm:justify-end sm:space-x-2 sm:gap-0",
       className
     )}
     {...props}

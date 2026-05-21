@@ -1,444 +1,297 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import type { CSSProperties } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { icons } from '../../components/icons'
 
-// Types (should ideally be shared)
 interface FileNode {
-    name: string
-    type: 'file' | 'directory'
-    children?: FileNode[]
-    content?: string
+  name: string
+  type: 'file' | 'directory'
+  children?: FileNode[]
+  content?: string
 }
 
 interface PluginDetail {
-    id: string
-    name: string
-    slug: string
-    description: string
-    version: string
-    provider: string
-    category: string
-    status: string
-    verified: boolean
-    files: FileNode[]
+  id: string
+  name: string
+  slug: string
+  description?: string
+  version: string
+  provider: string
+  category: string
+  status: string
+  verified?: boolean
+  documentationUrl?: string
+  supportUrl?: string
+  files: FileNode[]
+}
+
+interface Comment {
+  id: string
+  author: string
+  content: string
+  createdAt: string
+  rating: number
+  helpfulCount?: number
 }
 
 export default function PluginDetailPage() {
-    const params = useParams()
-    const [plugin, setPlugin] = useState<PluginDetail | null>(null)
-    const [error, setError] = useState<any>(null)
-    const [loading, setLoading] = useState(true)
-    const [activeTab, setActiveTab] = useState<'overview' | 'files' | 'reviews'>('overview')
-    const [comments, setComments] = useState<any[]>([])
+  const params = useParams<{ slug: string }>()
+  const slug = Array.isArray(params?.slug) ? params.slug[0] : params?.slug
+  const [plugin, setPlugin] = useState<PluginDetail | null>(null)
+  const [comments, setComments] = useState<Comment[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [reviewText, setReviewText] = useState('')
+  const [reviewAuthor, setReviewAuthor] = useState('')
+  const [posting, setPosting] = useState(false)
 
-    // Fetch comments when tab changes to reviews or on mount
-    useEffect(() => {
-        if (params.slug) {
-            fetch(`/api/plugins/${params.slug}/comments`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.comments) setComments(data.comments)
-                })
-                .catch(console.error)
+  useEffect(() => {
+    if (!slug) return
+
+    Promise.all([
+      fetch(`/api/plugins/${slug}`).then((res) => res.json()),
+      fetch(`/api/plugins/${slug}/comments`).then((res) => res.json()),
+    ])
+      .then(([pluginData, commentsData]) => {
+        if (pluginData.error) {
+          throw new Error(pluginData.error)
         }
-    }, [params.slug])
 
-    const handlePostComment = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        const formData = new FormData(e.currentTarget)
-        const author = formData.get('author')
-        const content = formData.get('content')
+        setPlugin(pluginData)
+        setComments(commentsData.comments || [])
+      })
+      .catch((loadError) => {
+        setError(loadError instanceof Error ? loadError.message : 'Failed to load plugin')
+      })
+      .finally(() => setLoading(false))
+  }, [slug])
 
-        if (!author || !content) return
+  const submitComment = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!slug || !reviewText.trim()) return
 
-        try {
-            const res = await fetch(`/api/plugins/${params.slug}/comments`, {
-                method: 'POST',
-                body: JSON.stringify({ author, content, rating: 5 }),
-                headers: { 'Content-Type': 'application/json' }
-            })
-            const data = await res.json()
-            if (data.comment) {
-                setComments(prev => [data.comment, ...prev])
-                // @ts-ignore
-                e.target.reset()
-            }
-        } catch (err) {
-            console.error(err)
-        }
+    try {
+      setPosting(true)
+      const response = await fetch(`/api/plugins/${slug}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          author: reviewAuthor || 'Anonymous',
+          content: reviewText,
+          rating: 5,
+        }),
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to post review')
+      }
+
+      setComments((current) => [data.comment, ...current])
+      setReviewText('')
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Failed to post review')
+    } finally {
+      setPosting(false)
     }
+  }
 
-    useEffect(() => {
-        if (params.slug) {
-            fetch(`/api/plugins/${params.slug}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.error) {
-                        setPlugin(data)
-                    } else {
-                        setError(data)
-                    }
-                    setLoading(false)
-                })
-                .catch(err => {
-                    console.error(err)
-                    setError({ error: err.message })
-                    setLoading(false)
-                })
-        }
-    }, [params.slug])
+  if (loading) {
+    return <div style={shellStyle}>Loading plugin details...</div>
+  }
 
-    if (loading) return (
-        <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'hsl(var(--background))' }}>
-            <div style={{
-                width: '40px', height: '40px',
-                border: '3px solid hsl(var(--border))',
-                borderTopColor: 'hsl(var(--foreground))',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite'
-            }} />
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-        </div>
-    )
-
-    if (!plugin) return (
-        <div style={{ minHeight: '100vh', padding: '100px', textAlign: 'center', background: 'hsl(var(--background))', color: 'hsl(var(--foreground))' }}>
-            <h1>Plugin not found</h1>
-            {error && <pre style={{ marginTop: '20px', textAlign: 'left', background: 'hsl(var(--muted))', padding: '20px', borderRadius: '8px', overflow: 'auto', maxWidth: '800px', margin: '20px auto' }}>{JSON.stringify(error, null, 2)}</pre>}
-            <Link href="/plugins" style={{ color: 'hsl(var(--primary))' }}>Back to Hub</Link>
-        </div>
-    )
-
+  if (!plugin) {
     return (
-        <div style={{ minHeight: '100vh', background: 'hsl(var(--background))', paddingBottom: '80px' }}>
-            {/* Header */}
-            <div style={{
-                background: 'linear-gradient(to bottom, hsl(var(--muted)), hsl(var(--background)))',
-                padding: '40px 24px',
-                borderBottom: '1px solid hsl(var(--border))'
-            }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                    <Link href="/plugins" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: 'hsl(var(--muted-foreground))', textDecoration: 'none', marginBottom: '24px', fontSize: '14px', fontWeight: 500 }}>
-                        <icons.check style={{ transform: 'rotate(180deg)', width: '16px', height: '16px' }} /> {/* Using Check as arrow fallback for now if arrowLeft missing, or just text */}
-                        Back to Plugins
-                    </Link>
+      <div style={shellStyle}>
+        <div style={panelStyle}>
+          <h1 style={{ marginTop: 0 }}>Plugin not found</h1>
+          <p style={{ color: 'hsl(var(--muted-foreground))' }}>{error || 'This plugin could not be loaded.'}</p>
+          <Link href="/plugins" style={linkStyle}>Back to plugins</Link>
+        </div>
+      </div>
+    )
+  }
 
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '24px' }}>
-                        <div style={{
-                            width: '80px', height: '80px',
-                            background: 'hsl(var(--card))',
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: '16px',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'hsl(var(--foreground))',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-                        }}>
-                            <icons.package style={{ width: '40px', height: '40px' }} />
-                        </div>
+  return (
+    <div style={shellStyle}>
+      <main style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gap: '24px' }}>
+        <section style={panelStyle}>
+          <Link href="/plugins" style={{ ...linkStyle, marginBottom: '16px', display: 'inline-block' }}>Back to plugins</Link>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+            <div>
+              <h1 style={{ margin: 0, fontSize: '36px' }}>{plugin.name}</h1>
+              <p style={{ color: 'hsl(var(--muted-foreground))', maxWidth: '720px' }}>
+                {plugin.description || 'No description provided.'}
+              </p>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <span style={softTagStyle}>{plugin.category}</span>
+                <span style={softTagStyle}>v{plugin.version}</span>
+                <span style={softTagStyle}>{plugin.provider}</span>
+                {plugin.verified && <span style={softTagStyle}>Verified</span>}
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <a href={plugin.documentationUrl || 'http://localhost:3000/marketplace/developer'} style={linkStyle}>Documentation</a>
+              <a href="http://localhost:3000/marketplace" style={primaryLinkStyle}>Open Marketplace</a>
+            </div>
+          </div>
+        </section>
 
-                        <div style={{ flex: 1 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                                <h1 style={{ fontSize: '32px', fontWeight: 600, color: 'hsl(var(--foreground))', margin: 0 }}>
-                                    {plugin.name}
-                                </h1>
-                                {plugin.verified && (
-                                    <span style={{
-                                        background: 'hsl(142, 76%, 36%, 0.1)',
-                                        color: 'hsl(142, 76%, 36%)',
-                                        padding: '4px 10px',
-                                        borderRadius: '20px',
-                                        fontSize: '12px',
-                                        fontWeight: 600,
-                                        display: 'flex', alignItems: 'center', gap: '4px'
-                                    }}>
-                                        <icons.check style={{ width: '14px', height: '14px' }} />
-                                        Verified
-                                    </span>
-                                )}
-                            </div>
-                            <p style={{ fontSize: '16px', color: 'hsl(var(--muted-foreground))', maxWidth: '600px', lineHeight: '1.6' }}>
-                                {plugin.description}
-                            </p>
+        {error && <div style={{ ...panelStyle, color: 'hsl(var(--destructive))' }}>{error}</div>}
 
-                            <div style={{ display: 'flex', gap: '24px', marginTop: '20px' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                    <span style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Version</span>
-                                    <span style={{ fontSize: '14px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>{plugin.version}</span>
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                    <span style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Provider</span>
-                                    <span style={{ fontSize: '14px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>{plugin.provider}</span>
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                    <span style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Category</span>
-                                    <span style={{ fontSize: '14px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>{plugin.category}</span>
-                                </div>
-                            </div>
-                        </div>
+        <section style={{ display: 'grid', gap: '24px', gridTemplateColumns: '2fr 1fr' }}>
+          <div style={panelStyle}>
+            <h2 style={{ marginTop: 0 }}>Source preview</h2>
+            <div style={{ display: 'grid', gap: '12px' }}>
+              <FileTree nodes={plugin.files} depth={0} />
+            </div>
+          </div>
 
-                        <div style={{ display: 'flex', gap: '12px' }}>
-                            <button style={{
-                                padding: '12px 24px',
-                                background: 'transparent',
-                                border: '1px solid hsl(var(--border))',
-                                borderRadius: '8px',
-                                color: 'hsl(var(--foreground))',
-                                fontWeight: 600,
-                                cursor: 'pointer'
-                            }}>
-                                Documentation
-                            </button>
-                            <button style={{
-                                padding: '12px 24px',
-                                background: 'var(--primary-gradient)',
-                                border: 'none',
-                                borderRadius: '8px',
-                                color: 'hsl(var(--primary-foreground))',
-                                fontWeight: 600,
-                                cursor: 'pointer',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                            }}>
-                                Install Plugin
-                            </button>
-                        </div>
-                    </div>
-                </div>
+          <div style={{ display: 'grid', gap: '24px' }}>
+            <div style={panelStyle}>
+              <h2 style={{ marginTop: 0 }}>Developer workflow</h2>
+              <p style={mutedText}>Use the main app to manage plugin records, installations, and MCP tools.</p>
+              <div style={{ display: 'grid', gap: '10px' }}>
+                <a href="http://localhost:3000/marketplace/developer" style={linkStyle}>Project developer docs</a>
+                <a href="http://localhost:3000/api/marketplace/templates/plugin-starter" style={linkStyle}>Download starter template</a>
+                <a href="http://localhost:3000/api/developer/mcp" style={linkStyle}>HTTP MCP endpoint</a>
+              </div>
             </div>
 
-            {/* Tabs & Content */}
-            <div style={{ maxWidth: '1200px', margin: '32px auto', padding: '0 24px', display: 'grid', gridTemplateColumns: '240px 1fr', gap: '48px' }}>
-                {/* Sidebar Tabs */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <button
-                        onClick={() => setActiveTab('overview')}
-                        style={{
-                            padding: '12px 16px',
-                            textAlign: 'left',
-                            background: activeTab === 'overview' ? 'hsl(var(--muted))' : 'transparent',
-                            border: 'none',
-                            borderRadius: '8px',
-                            color: activeTab === 'overview' ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                            transition: '0.15s ease'
-                        }}
-                    >
-                        Overview
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('files')}
-                        style={{
-                            padding: '12px 16px',
-                            textAlign: 'left',
-                            background: activeTab === 'files' ? 'hsl(var(--muted))' : 'transparent',
-                            border: 'none',
-                            borderRadius: '8px',
-                            color: activeTab === 'files' ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                            transition: '0.15s ease'
-                        }}
-                    >
-                        Source Code
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('reviews')}
-                        style={{
-                            padding: '12px 16px',
-                            textAlign: 'left',
-                            background: activeTab === 'reviews' ? 'hsl(var(--muted))' : 'transparent',
-                            border: 'none',
-                            borderRadius: '8px',
-                            color: activeTab === 'reviews' ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                            transition: '0.15s ease'
-                        }}
-                    >
-                        Reviews
-                    </button>
-                </div>
+            <div style={panelStyle}>
+              <h2 style={{ marginTop: 0 }}>Reviews</h2>
+              <form onSubmit={submitComment} style={{ display: 'grid', gap: '10px', marginBottom: '18px' }}>
+                <input
+                  value={reviewAuthor}
+                  onChange={(event) => setReviewAuthor(event.target.value)}
+                  placeholder="Your name"
+                  style={inputStyle}
+                />
+                <textarea
+                  value={reviewText}
+                  onChange={(event) => setReviewText(event.target.value)}
+                  rows={4}
+                  placeholder="Write a review"
+                  style={inputStyle}
+                />
+                <button type="submit" disabled={posting} style={primaryButtonStyle}>
+                  {posting ? 'Posting...' : 'Post review'}
+                </button>
+              </form>
 
-                {/* Main Content */}
-                <div style={{ minHeight: '400px', background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', padding: '24px' }}>
-                    {activeTab === 'overview' && (
-                        <div>
-                            <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '16px', color: 'hsl(var(--foreground))' }}>About this plugin</h3>
-                            <p style={{ lineHeight: '1.7', color: 'hsl(var(--muted-foreground))' }}>
-                                {plugin.description}
-                            </p>
-                            <div style={{ marginTop: '32px', padding: '20px', background: 'hsl(var(--muted))', borderRadius: '8px' }}>
-                                <h4 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '12px', color: 'hsl(var(--foreground))' }}>Dependencies</h4>
-                                <ul style={{ paddingLeft: '20px', color: 'hsl(var(--muted-foreground))' }}>
-                                    <li>mdm-core v{plugin.version}</li>
-                                    <li>react ^18.0.0</li>
-                                    <li>nodejs ^18.0.0</li>
-                                </ul>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'files' && (
-                        <div>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                                <h3 style={{ fontSize: '20px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>File Browser</h3>
-                                <span style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>Read-only implementation</span>
-                            </div>
-                            <div style={{ border: '1px solid hsl(var(--border))', borderRadius: '8px', overflow: 'hidden' }}>
-                                <FileTree nodes={plugin.files} />
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'reviews' && (
-                        <div>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-                                <h3 style={{ fontSize: '20px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>User Reviews</h3>
-                                <span style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))' }}>{comments.length} reviews</span>
-                            </div>
-
-                            {/* Comment List */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px' }}>
-                                {comments.length === 0 ? (
-                                    <p style={{ color: 'hsl(var(--muted-foreground))', fontStyle: 'italic' }}>No reviews yet. Be the first!</p>
-                                ) : (
-                                    comments.map((comment: any) => (
-                                        <div key={comment.id} style={{ paddingBottom: '20px', borderBottom: '1px solid hsl(var(--border))' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                                                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'hsl(var(--primary))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 600, fontSize: '14px' }}>
-                                                    {comment.author.charAt(0).toUpperCase()}
-                                                </div>
-                                                <div>
-                                                    <span style={{ fontWeight: 600, color: 'hsl(var(--foreground))', display: 'block', fontSize: '14px' }}>{comment.author}</span>
-                                                    <span style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>{new Date(comment.createdAt).toLocaleDateString()}</span>
-                                                </div>
-                                            </div>
-                                            <p style={{ fontSize: '14px', color: 'hsl(var(--muted-foreground))', lineHeight: '1.5', paddingLeft: '44px' }}>
-                                                {comment.content}
-                                            </p>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-
-                            {/* Comment Form */}
-                            <div style={{ background: 'hsl(var(--muted))', padding: '24px', borderRadius: '12px' }}>
-                                <h4 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'hsl(var(--foreground))' }}>Write a Review</h4>
-                                <form onSubmit={handlePostComment} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                    <div>
-                                        <input
-                                            name="author"
-                                            placeholder="Your Name (e.g. John Doe)"
-                                            required
-                                            style={{
-                                                width: '100%',
-                                                padding: '12px',
-                                                borderRadius: '8px',
-                                                border: '1px solid hsl(var(--border))',
-                                                background: 'hsl(var(--background))',
-                                                color: 'hsl(var(--foreground))',
-                                                fontSize: '14px'
-                                            }}
-                                        />
-                                    </div>
-                                    <div>
-                                        <textarea
-                                            name="content"
-                                            placeholder="Share your experience with this plugin..."
-                                            required
-                                            rows={4}
-                                            style={{
-                                                width: '100%',
-                                                padding: '12px',
-                                                borderRadius: '8px',
-                                                border: '1px solid hsl(var(--border))',
-                                                background: 'hsl(var(--background))',
-                                                color: 'hsl(var(--foreground))',
-                                                fontSize: '14px',
-                                                resize: 'vertical'
-                                            }}
-                                        />
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                        <button
-                                            type="submit"
-                                            style={{
-                                                padding: '10px 24px',
-                                                background: 'var(--primary-gradient)',
-                                                border: 'none',
-                                                borderRadius: '6px',
-                                                color: '#fff',
-                                                fontWeight: 600,
-                                                cursor: 'pointer',
-                                                fontSize: '14px'
-                                            }}
-                                        >
-                                            Post Review
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
-    )
-}
-
-function FileTree({ nodes, depth = 0 }: { nodes: FileNode[], depth?: number }) {
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {nodes.map((node, i) => (
-                <FileNodeItem key={i} node={node} depth={depth} />
-            ))}
-        </div>
-    )
-}
-
-function FileNodeItem({ node, depth }: { node: FileNode, depth: number }) {
-    const [expanded, setExpanded] = useState(false)
-    const isDir = node.type === 'directory'
-
-    return (
-        <div>
-            <div
-                onClick={() => isDir && setExpanded(!expanded)}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 12px',
-                    paddingLeft: `${depth * 20 + 12}px`,
-                    cursor: isDir ? 'pointer' : 'default',
-                    color: 'hsl(var(--foreground))',
-                    background: 'transparent',
-                    fontSize: '14px',
-                    borderBottom: '1px solid hsl(var(--border))' // grid lines style
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'hsl(var(--muted))'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-            >
-                <div style={{ width: '16px', display: 'flex', justifyContent: 'center', color: 'hsl(var(--muted-foreground))' }}>
-                    {isDir ? (
-                        <icons.folder style={{ width: '14px', height: '14px', fill: expanded ? 'currentColor' : 'none' }} />
-                    ) : (
-                        <icons.file style={{ width: '14px', height: '14px' }} />
-                    )}
-                </div>
-                <span style={{ flex: 1, fontFamily: 'monospace' }}>{node.name}</span>
-                {isDir && (
-                    <span style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))' }}>
-                        {expanded ? '▼' : '▶'}
-                    </span>
+              <div style={{ display: 'grid', gap: '12px' }}>
+                {comments.length === 0 ? (
+                  <p style={mutedText}>No reviews yet.</p>
+                ) : (
+                  comments.map((comment) => (
+                    <article key={comment.id} style={{ borderTop: '1px solid hsl(var(--border))', paddingTop: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
+                        <strong>{comment.author}</strong>
+                        <span style={mutedText}>{new Date(comment.createdAt).toLocaleDateString()}</span>
+                      </div>
+                      <p style={{ marginBottom: 0, color: 'hsl(var(--muted-foreground))' }}>{comment.content}</p>
+                    </article>
+                  ))
                 )}
+              </div>
             </div>
-            {isDir && expanded && node.children && (
-                <FileTree nodes={node.children} depth={depth + 1} />
+          </div>
+        </section>
+      </main>
+    </div>
+  )
+}
+
+function FileTree({ nodes, depth }: { nodes: FileNode[]; depth: number }) {
+  return (
+    <>
+      {nodes.map((node) => (
+        <div key={`${depth}-${node.name}`} style={{ paddingLeft: `${depth * 16}px`, borderLeft: depth > 0 ? '1px solid hsl(var(--border))' : 'none' }}>
+          <div style={{ padding: '10px 0' }}>
+            <div style={{ fontWeight: 600, fontSize: '14px' }}>
+              {node.type === 'directory' ? `${node.name}/` : node.name}
+            </div>
+            {node.content && (
+              <pre style={{
+                margin: '8px 0 0',
+                padding: '12px',
+                borderRadius: '12px',
+                background: 'hsl(var(--muted))',
+                overflowX: 'auto',
+                fontSize: '12px',
+              }}>
+                {node.content}
+              </pre>
             )}
+          </div>
+          {node.children && node.children.length > 0 && (
+            <FileTree nodes={node.children} depth={depth + 1} />
+          )}
         </div>
-    )
+      ))}
+    </>
+  )
+}
+
+const shellStyle: CSSProperties = {
+  minHeight: '100vh',
+  background: 'hsl(var(--background))',
+  padding: '32px 24px',
+}
+
+const panelStyle: CSSProperties = {
+  background: 'hsl(var(--card))',
+  border: '1px solid hsl(var(--border))',
+  borderRadius: '24px',
+  padding: '24px',
+}
+
+const mutedText: CSSProperties = {
+  color: 'hsl(var(--muted-foreground))',
+  fontSize: '14px',
+}
+
+const inputStyle: CSSProperties = {
+  width: '100%',
+  padding: '12px 14px',
+  borderRadius: '14px',
+  border: '1px solid hsl(var(--border))',
+  background: 'hsl(var(--background))',
+  color: 'hsl(var(--foreground))',
+}
+
+const linkStyle: CSSProperties = {
+  textDecoration: 'none',
+  color: 'hsl(var(--foreground))',
+  border: '1px solid hsl(var(--border))',
+  borderRadius: '999px',
+  padding: '10px 14px',
+  fontWeight: 600,
+}
+
+const primaryLinkStyle: CSSProperties = {
+  ...linkStyle,
+  background: 'var(--primary-gradient)',
+  color: 'hsl(var(--primary-foreground))',
+  border: '1px solid transparent',
+}
+
+const primaryButtonStyle: CSSProperties = {
+  borderRadius: '999px',
+  border: '1px solid transparent',
+  padding: '12px 16px',
+  background: 'var(--primary-gradient)',
+  color: 'hsl(var(--primary-foreground))',
+  fontWeight: 600,
+  cursor: 'pointer',
+}
+
+const softTagStyle: CSSProperties = {
+  background: 'hsl(var(--muted))',
+  color: 'hsl(var(--muted-foreground))',
+  borderRadius: '999px',
+  padding: '5px 10px',
+  fontSize: '12px',
 }

@@ -7,14 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { FileCode, History, ArrowUp, ArrowDown, Plus, Eye } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { CrudDialog } from '@/components/ui/crud-dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import toast from 'react-hot-toast'
 import { Migration } from '../types'
@@ -127,20 +121,30 @@ export function SchemaMigrations() {
             Manage version-controlled database schema migrations
           </p>
         </div>
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
+        <CrudDialog
+          open={showCreateDialog}
+          onOpenChange={setShowCreateDialog}
+          title="Create Schema Migration"
+          description="Create a new version-controlled schema migration"
+          contentClassName="max-w-2xl"
+          trigger={(
             <Button>
               <Plus className="w-4 h-4 mr-2" />
               Create Migration
             </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Create Schema Migration</DialogTitle>
-              <DialogDescription>
-                Create a new version-controlled schema migration
-              </DialogDescription>
-            </DialogHeader>
+          )}
+          bodyClassName="space-y-4"
+          footer={(
+            <>
+              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={createMigration} disabled={submitting}>
+                {submitting ? 'Creating...' : 'Create Migration'}
+              </Button>
+            </>
+          )}
+        >
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium">Version</label>
@@ -202,17 +206,8 @@ export function SchemaMigrations() {
                   className="font-mono"
                 />
               </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={createMigration} disabled={submitting}>
-                  {submitting ? 'Creating...' : 'Create Migration'}
-                </Button>
-              </div>
             </div>
-          </DialogContent>
-        </Dialog>
+        </CrudDialog>
       </div>
 
       {migrations.length === 0 ? (
@@ -316,8 +311,19 @@ export function SchemaMigrations() {
       )}
 
       {/* View Migration Dialog */}
-      <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <CrudDialog
+        open={showViewDialog}
+        onOpenChange={setShowViewDialog}
+        title={selectedMigration?.name || 'Migration Details'}
+        description={`Version ${selectedMigration?.version} • ${selectedMigration?.migrationType}`}
+        contentClassName="max-w-3xl max-h-[90vh]"
+        bodyClassName="space-y-4 overflow-y-auto"
+        footer={(
+          <Button variant="outline" onClick={() => setShowViewDialog(false)}>
+            Close
+          </Button>
+        )}
+      >
           <DialogHeader>
             <DialogTitle>{selectedMigration?.name}</DialogTitle>
             <DialogDescription>

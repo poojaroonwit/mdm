@@ -176,6 +176,9 @@ export function TicketsList({
   const [statusStyles, setStatusStyles] = useState<Record<string, KanbanStatusStyle>>(DEFAULT_STATUS_STYLES)
   const [customFieldTemplates, setCustomFieldTemplates] = useState<Array<{ name: string; displayName: string; type: string }>>([])
   const [newTemplateName, setNewTemplateName] = useState('')
+  const [isSpacePromptOpen, setIsSpacePromptOpen] = useState(false)
+  const [pendingTicketStatus, setPendingTicketStatus] = useState('BACKLOG')
+  const [spacePromptSelection, setSpacePromptSelection] = useState('')
 
   const effectiveSpaceId = showSpaceSelector
     ? selectedSpaceId === 'all'
@@ -217,13 +220,7 @@ export function TicketsList({
     setIsModalOpen(true)
   }
 
-  const handleAddTicket = async (status: string) => {
-    const effectiveSpace = effectiveSpaceId || currentSpace?.id
-    if (!effectiveSpace) {
-      alert('Please select a space to create a ticket')
-      return
-    }
-
+  const openNewTicketModal = (status: string) => {
     setSelectedTicket({
       title: '',
       description: '',
@@ -238,6 +235,18 @@ export function TicketsList({
       })),
     })
     setIsModalOpen(true)
+  }
+
+  const handleAddTicket = async (status: string) => {
+    const effectiveSpace = effectiveSpaceId || currentSpace?.id
+    if (!effectiveSpace) {
+      setPendingTicketStatus(status)
+      setSpacePromptSelection(selectedSpaceId !== 'all' ? selectedSpaceId : '')
+      setIsSpacePromptOpen(true)
+      return
+    }
+
+    openNewTicketModal(status)
   }
 
   const handleSaveTicket = async (ticketData: any) => {
@@ -297,6 +306,13 @@ export function TicketsList({
     if (success) refetch()
   }
 
+  const handleConfirmSpacePrompt = () => {
+    if (!spacePromptSelection) return
+    setSelectedSpaceId(spacePromptSelection)
+    setIsSpacePromptOpen(false)
+    openNewTicketModal(pendingTicketStatus)
+  }
+
   const filteredTickets = tickets.filter((ticket) => {
     if (!searchQuery) return true
     const query = searchQuery.toLowerCase()
@@ -330,11 +346,44 @@ export function TicketsList({
           {view === 'kanban' && (
             <Button variant="outline" onClick={openConfig}>Configure Board</Button>
           )}
-          <Button onClick={() => handleAddTicket('BACKLOG')} disabled={!effectiveSpaceId}>
+          <Button onClick={() => handleAddTicket('BACKLOG')}>
             New Ticket
           </Button>
         </div>
       </div>
+
+      <Dialog open={isSpacePromptOpen} onOpenChange={setIsSpacePromptOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Select or Create a Space</DialogTitle>
+            <DialogDescription>
+              Tickets must belong to a space. Choose an existing space or create a new data management space first.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogBody className="space-y-4">
+            <div className="space-y-2">
+              <Label>Select Space</Label>
+              <SpaceSelector
+                value={spacePromptSelection}
+                onValueChange={setSpacePromptSelection}
+                className="w-full"
+                showAllOption={false}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              The create action inside the dropdown will open a space creation form and auto-select the new space for this ticket.
+            </p>
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsSpacePromptOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmSpacePrompt} disabled={!spacePromptSelection}>
+              Continue to Ticket
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isConfigOpen} onOpenChange={setIsConfigOpen}>
         <DialogContent className="max-w-md">

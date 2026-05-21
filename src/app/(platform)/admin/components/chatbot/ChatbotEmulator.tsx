@@ -404,7 +404,7 @@ export function ChatbotEmulator({
                 </div>
                 {/* URL Bar */}
                 <div className="flex-1 mx-4">
-                  <div className="bg-white rounded-md border border-[#c0c0c0] px-3 py-1 text-xs text-gray-500 flex items-center gap-2 shadow-inner">
+                  <div className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1 text-xs text-muted-foreground shadow-inner">
                     <svg className="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
@@ -587,7 +587,7 @@ export function ChatbotEmulator({
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 w-full relative overflow-hidden bg-white">
+                <div className="relative flex-1 w-full overflow-hidden bg-background">
                   <iframe
                     ref={emulatorRef}
                     src={`/chat/${selectedChatbot.id}?preview=true&deploymentType=${previewMode}&previewDevice=${deviceType}`}
@@ -596,7 +596,7 @@ export function ChatbotEmulator({
                     style={{
                       position: 'relative',
                       zIndex: Z_INDEX.content,
-                      backgroundColor: '#ffffff',
+                      backgroundColor: 'hsl(var(--background))',
                       isolation: 'isolate'
                     }}
                   />
@@ -623,7 +623,7 @@ export function ChatbotEmulator({
                   </div>
                 ) : (
                   <div 
-                    className="w-full flex items-center justify-center shrink-0 bg-white"
+                    className="w-full shrink-0 flex items-center justify-center bg-background"
                     style={{ height: '24px' }}
                   >
                     <div 

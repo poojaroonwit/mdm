@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Progress } from '@/components/ui/progress'
 import { 
@@ -335,94 +335,91 @@ export function BackupRecovery() {
         <TabsContent value="backups" className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Backup Management</h3>
-            <Dialog open={showCreateBackup} onOpenChange={setShowCreateBackup}>
-              <DialogTrigger asChild>
+            <CrudDialog
+              open={showCreateBackup}
+              onOpenChange={setShowCreateBackup}
+              title="Create New Backup"
+              description="Create a manual backup of your system"
+              trigger={(
                 <Button className="rounded-xl font-bold">
                   <Database className="h-4 w-4 mr-2" />
                   Create Backup
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="p-0 overflow-hidden">
-                <DialogHeader className="p-6 pb-2">
-                  <DialogTitle>Create New Backup</DialogTitle>
-                  <DialogDescription>
-                    Create a manual backup of your system
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogBody className="p-6 pt-2 pb-4">
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="name">Backup Name</Label>
-                      <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
-                        id="name"
-                        value={newBackup.name}
-                        onChange={(e) => setNewBackup({ ...newBackup, name: e.target.value })}
-                        placeholder="Enter backup name"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="type">Backup Type</Label>
-                      <Select value={newBackup.type} onValueChange={(value: any) => setNewBackup({ ...newBackup, type: value })}>
-                        <SelectTrigger className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl">
-                          <SelectItem value="full">Full Backup</SelectItem>
-                          <SelectItem value="incremental">Incremental</SelectItem>
-                          <SelectItem value="differential">Differential</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="description">Description</Label>
-                      <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
-                        id="description"
-                        value={newBackup.description}
-                        onChange={(e) => setNewBackup({ ...newBackup, description: e.target.value })}
-                        placeholder="Optional description"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-bold">Include in Backup</Label>
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            id="database"
-                            checked={newBackup.includeDatabase}
-                            onCheckedChange={(checked) => setNewBackup({ ...newBackup, includeDatabase: checked })}
-                          />
-                          <Label htmlFor="database">Database</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            id="attachments"
-                            checked={newBackup.includeAttachments}
-                            onCheckedChange={(checked) => setNewBackup({ ...newBackup, includeAttachments: checked })}
-                          />
-                          <Label htmlFor="attachments">Attachments</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            id="settings"
-                            checked={newBackup.includeSettings}
-                            onCheckedChange={(checked) => setNewBackup({ ...newBackup, includeSettings: checked })}
-                          />
-                          <Label htmlFor="settings">Settings</Label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </DialogBody>
-                <DialogFooter className="p-6 pt-2">
+              )}
+              footer={(
+                <>
                   <Button className="rounded-xl font-bold" variant="outline" onClick={() => setShowCreateBackup(false)}>
                     Cancel
                   </Button>
                   <Button className="rounded-xl font-bold" onClick={createBackup} disabled={!newBackup.name}>
                     Create Backup
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </>
+              )}
+            >
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="name">Backup Name</Label>
+                  <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
+                    id="name"
+                    value={newBackup.name}
+                    onChange={(e) => setNewBackup({ ...newBackup, name: e.target.value })}
+                    placeholder="Enter backup name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="type">Backup Type</Label>
+                  <Select value={newBackup.type} onValueChange={(value: any) => setNewBackup({ ...newBackup, type: value })}>
+                    <SelectTrigger className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="full">Full Backup</SelectItem>
+                      <SelectItem value="incremental">Incremental</SelectItem>
+                      <SelectItem value="differential">Differential</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
+                    id="description"
+                    value={newBackup.description}
+                    onChange={(e) => setNewBackup({ ...newBackup, description: e.target.value })}
+                    placeholder="Optional description"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-bold">Include in Backup</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="database"
+                        checked={newBackup.includeDatabase}
+                        onCheckedChange={(checked) => setNewBackup({ ...newBackup, includeDatabase: checked })}
+                      />
+                      <Label htmlFor="database">Database</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="attachments"
+                        checked={newBackup.includeAttachments}
+                        onCheckedChange={(checked) => setNewBackup({ ...newBackup, includeAttachments: checked })}
+                      />
+                      <Label htmlFor="attachments">Attachments</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="settings"
+                        checked={newBackup.includeSettings}
+                        onCheckedChange={(checked) => setNewBackup({ ...newBackup, includeSettings: checked })}
+                      />
+                      <Label htmlFor="settings">Settings</Label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CrudDialog>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -503,79 +500,76 @@ export function BackupRecovery() {
         <TabsContent value="schedules" className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Backup Schedules</h3>
-            <Dialog open={showCreateSchedule} onOpenChange={setShowCreateSchedule}>
-              <DialogTrigger asChild>
+            <CrudDialog
+              open={showCreateSchedule}
+              onOpenChange={setShowCreateSchedule}
+              title="Create Backup Schedule"
+              description="Set up automated backup schedules"
+              trigger={(
                 <Button className="rounded-xl font-bold">
                   <Calendar className="h-4 w-4 mr-2" />
                   Create Schedule
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="p-0 overflow-hidden">
-                <DialogHeader className="p-6 pb-2">
-                  <DialogTitle>Create Backup Schedule</DialogTitle>
-                  <DialogDescription>
-                    Set up automated backup schedules
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogBody className="p-6 pt-2 pb-4">
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="schedule-name">Schedule Name</Label>
-                      <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
-                        id="schedule-name"
-                        value={newSchedule.name}
-                        onChange={(e) => setNewSchedule({ ...newSchedule, name: e.target.value })}
-                        placeholder="Enter schedule name"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="frequency">Frequency</Label>
-                        <Select value={newSchedule.frequency} onValueChange={(value: any) => setNewSchedule({ ...newSchedule, frequency: value })}>
-                          <SelectTrigger className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="rounded-xl">
-                            <SelectItem value="daily">Daily</SelectItem>
-                            <SelectItem value="weekly">Weekly</SelectItem>
-                            <SelectItem value="monthly">Monthly</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="time">Time</Label>
-                        <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
-                          id="time"
-                          type="time"
-                          value={newSchedule.time}
-                          onChange={(e) => setNewSchedule({ ...newSchedule, time: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="schedule-type">Backup Type</Label>
-                      <Select value={newSchedule.type} onValueChange={(value: any) => setNewSchedule({ ...newSchedule, type: value })}>
-                        <SelectTrigger className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl">
-                          <SelectItem value="full">Full Backup</SelectItem>
-                          <SelectItem value="incremental">Incremental</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </DialogBody>
-                <DialogFooter className="p-6 pt-2">
+              )}
+              footer={(
+                <>
                   <Button className="rounded-xl font-bold" variant="outline" onClick={() => setShowCreateSchedule(false)}>
                     Cancel
                   </Button>
                   <Button className="rounded-xl font-bold" onClick={createSchedule} disabled={!newSchedule.name}>
                     Create Schedule
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </>
+              )}
+            >
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="schedule-name">Schedule Name</Label>
+                  <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
+                    id="schedule-name"
+                    value={newSchedule.name}
+                    onChange={(e) => setNewSchedule({ ...newSchedule, name: e.target.value })}
+                    placeholder="Enter schedule name"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="frequency">Frequency</Label>
+                    <Select value={newSchedule.frequency} onValueChange={(value: any) => setNewSchedule({ ...newSchedule, frequency: value })}>
+                      <SelectTrigger className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="daily">Daily</SelectItem>
+                        <SelectItem value="weekly">Weekly</SelectItem>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="time">Time</Label>
+                    <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
+                      id="time"
+                      type="time"
+                      value={newSchedule.time}
+                      onChange={(e) => setNewSchedule({ ...newSchedule, time: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="schedule-type">Backup Type</Label>
+                  <Select value={newSchedule.type} onValueChange={(value: any) => setNewSchedule({ ...newSchedule, type: value })}>
+                    <SelectTrigger className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="full">Full Backup</SelectItem>
+                      <SelectItem value="incremental">Incremental</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CrudDialog>
           </div>
 
           <div className="space-y-4">

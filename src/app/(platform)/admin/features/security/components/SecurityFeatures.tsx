@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
+import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -353,21 +353,29 @@ export function SecurityFeatures() {
         <TabsContent value="policies" className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Security Policies</h3>
-            <Dialog open={showCreatePolicy} onOpenChange={setShowCreatePolicy}>
-              <DialogTrigger asChild>
+            <CrudDialog
+              open={showCreatePolicy}
+              onOpenChange={setShowCreatePolicy}
+              title="Create Security Policy"
+              description="Create a new security policy to protect your system"
+              trigger={(
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Policy
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="p-0 overflow-hidden">
-                <DialogHeader>
-                  <DialogTitle>Create Security Policy</DialogTitle>
-                  <DialogDescription>
-                    Create a new security policy to protect your system
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogBody className="space-y-4 p-6 pt-2 pb-4">
+              )}
+              bodyClassName="space-y-4"
+              footer={(
+                <>
+                  <Button variant="outline" onClick={() => setShowCreatePolicy(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={createPolicy} disabled={!newPolicy.name}>
+                    Create Policy
+                  </Button>
+                </>
+              )}
+            >
                   <div>
                     <Label htmlFor="policy-name">Policy Name</Label>
                     <Input
@@ -402,17 +410,7 @@ export function SecurityFeatures() {
                       rows={3}
                     />
                   </div>
-                </DialogBody>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowCreatePolicy(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={createPolicy} disabled={!newPolicy.name}>
-                    Create Policy
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            </CrudDialog>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -503,21 +501,29 @@ export function SecurityFeatures() {
         <TabsContent value="whitelist" className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">IP Whitelist</h3>
-            <Dialog open={showCreateIP} onOpenChange={setShowCreateIP}>
-              <DialogTrigger asChild>
+            <CrudDialog
+              open={showCreateIP}
+              onOpenChange={setShowCreateIP}
+              title="Add IP Address"
+              description="Add an IP address to the whitelist"
+              trigger={(
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
                   Add IP
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="p-0 overflow-hidden">
-                <DialogHeader>
-                  <DialogTitle>Add IP Address</DialogTitle>
-                  <DialogDescription>
-                    Add an IP address to the whitelist
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogBody className="space-y-4 p-6 pt-2 pb-4">
+              )}
+              bodyClassName="space-y-4"
+              footer={(
+                <>
+                  <Button variant="outline" onClick={() => setShowCreateIP(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={createIP} disabled={!newIP.ipAddress}>
+                    Add IP
+                  </Button>
+                </>
+              )}
+            >
                   <div>
                     <Label htmlFor="ip-address">IP Address</Label>
                     <Input
@@ -536,17 +542,7 @@ export function SecurityFeatures() {
                       placeholder="Office network"
                     />
                   </div>
-                </DialogBody>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowCreateIP(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={createIP} disabled={!newIP.ipAddress}>
-                    Add IP
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            </CrudDialog>
           </div>
 
           <div className="space-y-4">

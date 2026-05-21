@@ -47,7 +47,7 @@ export function MainLayout({ children, contentClassName }: MainLayoutProps) {
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header user={session.user} />
-        <main className={`flex-1 overflow-auto ${contentClassName ?? 'p-4'}`}>
+        <main className={`flex-1 overflow-auto ${contentClassName ?? 'p-6'}`}>
           {children}
         </main>
       </div>

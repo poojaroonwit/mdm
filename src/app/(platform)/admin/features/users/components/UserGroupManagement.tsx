@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
+import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -642,17 +642,23 @@ export function UserGroupManagement() {
       </Card>
 
       {/* Create Group Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="p-0 overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Create User Group</DialogTitle>
-            <DialogDescription>
-              {parentGroupId
-                ? 'Create a new child group under the selected parent'
-                : 'Create a new root-level user group'}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
+      <CrudDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        title="Create User Group"
+        description={
+          parentGroupId
+            ? 'Create a new child group under the selected parent'
+            : 'Create a new root-level user group'
+        }
+        bodyClassName="space-y-4"
+        footer={(
+          <>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
+            <Button onClick={handleCreateGroup}>Create Group</Button>
+          </>
+        )}
+      >
             <div className="space-y-2">
               <Label>Group Name *</Label>
               <Input
@@ -687,22 +693,22 @@ export function UserGroupManagement() {
                 </SelectContent>
               </Select>
             </div>
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
-            <Button onClick={handleCreateGroup}>Create Group</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </CrudDialog>
 
       {/* Edit Group Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="p-0 overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Edit Group</DialogTitle>
-            <DialogDescription>Update the group details</DialogDescription>
-          </DialogHeader>
-          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
+      <CrudDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        title="Edit Group"
+        description="Update the group details"
+        bodyClassName="space-y-4"
+        footer={(
+          <>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>Cancel</Button>
+            <Button onClick={handleUpdateGroup}>Save Changes</Button>
+          </>
+        )}
+      >
             <div className="space-y-2">
               <Label>Group Name *</Label>
               <Input
@@ -739,22 +745,25 @@ export function UserGroupManagement() {
                 </SelectContent>
               </Select>
             </div>
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>Cancel</Button>
-            <Button onClick={handleUpdateGroup}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </CrudDialog>
 
       {/* Add Members Dialog */}
-      <Dialog open={showAddMemberDialog} onOpenChange={setShowAddMemberDialog}>
-        <DialogContent className="max-w-lg p-0 overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Add Members to {selectedGroup?.name}</DialogTitle>
-            <DialogDescription>Select users to add to this group</DialogDescription>
-          </DialogHeader>
-          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
+      <CrudDialog
+        open={showAddMemberDialog}
+        onOpenChange={setShowAddMemberDialog}
+        title={`Add Members to ${selectedGroup?.name}`}
+        description="Select users to add to this group"
+        contentClassName="max-w-lg"
+        bodyClassName="space-y-4"
+        footer={(
+          <>
+            <Button variant="outline" onClick={() => setShowAddMemberDialog(false)}>Cancel</Button>
+            <Button onClick={handleAddMembers} disabled={selectedUserIds.length === 0}>
+              Add {selectedUserIds.length || ''} Member{selectedUserIds.length !== 1 ? 's' : ''}
+            </Button>
+          </>
+        )}
+      >
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -824,15 +833,7 @@ export function UserGroupManagement() {
                 {selectedUserIds.length} user{selectedUserIds.length !== 1 ? 's' : ''} selected
               </p>
             )}
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddMemberDialog(false)}>Cancel</Button>
-            <Button onClick={handleAddMembers} disabled={selectedUserIds.length === 0}>
-              Add {selectedUserIds.length || ''} Member{selectedUserIds.length !== 1 ? 's' : ''}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </CrudDialog>
     </div>
   )
 }

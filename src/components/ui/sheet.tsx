@@ -67,18 +67,29 @@ const SheetHeader = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn('flex flex-col space-y-2 text-left', className)}
+    className={cn('flex flex-col space-y-2 border-b border-zinc-100/60 px-6 py-5 text-left dark:border-zinc-800/60', className)}
     {...props}
   />
 )
 SheetHeader.displayName = 'SheetHeader'
+
+const SheetBody = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn('px-6 py-5', className)}
+    {...props}
+  />
+)
+SheetBody.displayName = 'SheetBody'
 
 const SheetFooter = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)}
+    className={cn('flex flex-col-reverse gap-3 px-6 py-5 pt-0 sm:flex-row sm:justify-end sm:space-x-2 sm:gap-0', className)}
     {...props}
   />
 )
@@ -116,6 +127,7 @@ export {
   SheetClose,
   SheetContent,
   SheetHeader,
+  SheetBody,
   SheetFooter,
   SheetTitle,
   SheetDescription,

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { 
@@ -231,14 +231,22 @@ export function WebhooksAlerts() {
       )}
 
       {/* Create Webhook Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Create Webhook</DialogTitle>
-            <DialogDescription>
-              Configure a webhook to receive OpenMetadata events
-            </DialogDescription>
-          </DialogHeader>
+      <CrudDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        title="Create Webhook"
+        description="Configure a webhook to receive OpenMetadata events"
+        contentClassName="max-w-2xl"
+        bodyClassName="space-y-4"
+        footer={(
+          <>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={createWebhook}>Create Webhook</Button>
+          </>
+        )}
+      >
           <div className="space-y-4">
             <div>
               <Label htmlFor="webhook-name">Webhook Name</Label>
@@ -287,14 +295,7 @@ export function WebhooksAlerts() {
               <Label htmlFor="enabled">Enable Webhook</Label>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={createWebhook}>Create Webhook</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </CrudDialog>
     </div>
   )
 }

@@ -187,7 +187,7 @@ export function MobilePlatformNav({
 
   return (
     <>
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200/70 bg-white/90 px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 shadow-[0_-12px_32px_rgba(15,23,42,0.08)] backdrop-blur-xl md:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/90 px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 shadow-[0_-12px_32px_rgba(15,23,42,0.08)] backdrop-blur-xl md:hidden">
         <div className="flex items-stretch gap-1 overflow-x-auto pb-1">
           {groups.map((group) => {
             const Icon = group.icon
@@ -203,7 +203,7 @@ export function MobilePlatformNav({
                   'h-16 min-w-[78px] flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-3 text-[11px] font-semibold',
                   isActive
                     ? 'bg-primary/10 text-primary'
-                    : 'text-zinc-500 hover:bg-zinc-100/80 hover:text-zinc-900'
+                    : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground'
                 )}
               >
                 <Icon className="h-5 w-5" />
@@ -217,10 +217,10 @@ export function MobilePlatformNav({
       <Sheet open={!!openGroupId} onOpenChange={(open) => !open && setOpenGroupId(null)}>
         <SheetContent
           side="bottom"
-          className="h-[78vh] rounded-t-[32px] border-x-0 border-b-0 bg-white/95 px-0 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-0 md:hidden"
+          className="h-[78vh] rounded-t-[32px] border-x-0 border-b-0 bg-background/95 px-0 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-0 md:hidden"
         >
-          <div className="mx-auto mt-3 h-1.5 w-16 rounded-full bg-zinc-300" />
-          <SheetHeader className="border-b border-zinc-100 px-5 pb-4 pt-5">
+          <div className="mx-auto mt-3 h-1.5 w-16 rounded-full bg-border" />
+          <SheetHeader className="border-b border-border px-5 pb-4 pt-5">
             <SheetTitle>{currentGroup?.name || 'Navigation'}</SheetTitle>
             <SheetDescription>
               Choose a module to open from this section.
@@ -231,7 +231,7 @@ export function MobilePlatformNav({
             <div className="space-y-6">
               {sectionedItems.map(([sectionName, items]) => (
                 <div key={sectionName} className="space-y-2">
-                  <div className="px-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-400">
+                  <div className="px-2 text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
                     {sectionName}
                   </div>
                   <div className="space-y-2">
@@ -243,18 +243,18 @@ export function MobilePlatformNav({
                           key={item.id}
                           type="button"
                           onClick={() => navigateToItem(item)}
-                          className="flex w-full items-start gap-3 rounded-2xl border border-zinc-200/70 bg-zinc-50/80 px-4 py-4 text-left transition hover:border-primary/30 hover:bg-primary/5"
+                          className="flex w-full items-start gap-3 rounded-2xl border border-border/70 bg-card/80 px-4 py-4 text-left transition hover:border-primary/30 hover:bg-primary/5"
                         >
-                          <div className="mt-0.5 rounded-2xl bg-white p-2 text-primary shadow-lg">
+                          <div className="mt-0.5 rounded-2xl bg-background p-2 text-primary shadow-lg">
                             <Icon className="h-5 w-5" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="text-sm font-semibold text-zinc-900">{item.name}</div>
-                            <div className="mt-1 text-xs leading-5 text-zinc-500">
+                            <div className="text-sm font-semibold text-foreground">{item.name}</div>
+                            <div className="mt-1 text-xs leading-5 text-muted-foreground">
                               {getItemDescription(item, currentGroup?.name)}
                             </div>
                           </div>
-                          <ChevronRightIcon className="mt-1 h-4 w-4 flex-shrink-0 text-zinc-400" />
+                          <ChevronRightIcon className="mt-1 h-4 w-4 flex-shrink-0 text-muted-foreground" />
                         </button>
                       )
                     })}

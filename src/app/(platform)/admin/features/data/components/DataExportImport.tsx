@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
+import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -373,21 +373,30 @@ export function DataExportImport() {
         <TabsContent value="export" className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Export Jobs</h3>
-            <Dialog open={showCreateExport} onOpenChange={setShowCreateExport}>
-              <DialogTrigger asChild>
+            <CrudDialog
+              open={showCreateExport}
+              onOpenChange={setShowCreateExport}
+              title="Create Export Job"
+              description="Create a new data export with custom filters and format options"
+              contentClassName="max-w-2xl"
+              trigger={(
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Export
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl p-0 overflow-hidden">
-                <DialogHeader>
-                  <DialogTitle>Create Export Job</DialogTitle>
-                  <DialogDescription>
-                    Create a new data export with custom filters and format options
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogBody className="space-y-4 p-6 pt-2 pb-4">
+              )}
+              bodyClassName="space-y-4"
+              footer={(
+                <>
+                  <Button variant="outline" onClick={() => setShowCreateExport(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={createExportJob} disabled={!newExport.name}>
+                    Create Export
+                  </Button>
+                </>
+              )}
+            >
                   <div>
                     <Label htmlFor="export-name">Export Name</Label>
                     <Input
@@ -455,17 +464,7 @@ export function DataExportImport() {
                       ))}
                     </div>
                   </div>
-                </DialogBody>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowCreateExport(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={createExportJob} disabled={!newExport.name}>
-                    Create Export
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            </CrudDialog>
           </div>
 
           <div className="space-y-4">
@@ -519,21 +518,29 @@ export function DataExportImport() {
         <TabsContent value="import" className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Import Jobs</h3>
-            <Dialog open={showCreateImport} onOpenChange={setShowCreateImport}>
-              <DialogTrigger asChild>
+            <CrudDialog
+              open={showCreateImport}
+              onOpenChange={setShowCreateImport}
+              title="Create Import Job"
+              description="Import data from a file with format detection and validation"
+              trigger={(
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Import
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="p-0 overflow-hidden">
-                <DialogHeader>
-                  <DialogTitle>Create Import Job</DialogTitle>
-                  <DialogDescription>
-                    Import data from a file with format detection and validation
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogBody className="space-y-4 p-6 pt-2 pb-4">
+              )}
+              bodyClassName="space-y-4"
+              footer={(
+                <>
+                  <Button variant="outline" onClick={() => setShowCreateImport(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={createImportJob} disabled={!newImport.name || !selectedFile}>
+                    Create Import
+                  </Button>
+                </>
+              )}
+            >
                   <div>
                     <Label htmlFor="import-name">Import Name</Label>
                     <Input
@@ -570,17 +577,7 @@ export function DataExportImport() {
                       accept=".json,.csv,.xml,.sql"
                     />
                   </div>
-                </DialogBody>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowCreateImport(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={createImportJob} disabled={!newImport.name || !selectedFile}>
-                    Create Import
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            </CrudDialog>
           </div>
 
           <div className="space-y-4">

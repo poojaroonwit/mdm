@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
+import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -404,22 +404,29 @@ export function PerformanceMonitoring() {
         <TabsContent value="alerts" className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Performance Alerts</h3>
-            <Dialog open={showCreateAlert} onOpenChange={setShowCreateAlert}>
-              <DialogTrigger asChild>
+            <CrudDialog
+              open={showCreateAlert}
+              onOpenChange={setShowCreateAlert}
+              title="Create Performance Alert"
+              description="Set up alerts for performance thresholds"
+              trigger={(
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Alert
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="p-0 overflow-hidden">
-                <DialogHeader className="p-6 pb-2">
-                  <DialogTitle>Create Performance Alert</DialogTitle>
-                  <DialogDescription>
-                    Set up alerts for performance thresholds
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogBody className="p-6 pt-2 pb-4">
-                  <div className="space-y-4">
+              )}
+              bodyClassName="space-y-4"
+              footer={(
+                <>
+                  <Button variant="outline" onClick={() => setShowCreateAlert(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={createAlert} disabled={!newAlert.name}>
+                    Create Alert
+                  </Button>
+                </>
+              )}
+            >
                     <div>
                       <Label htmlFor="alert-name">Alert Name</Label>
                       <Input
@@ -494,18 +501,7 @@ export function PerformanceMonitoring() {
                         rows={3}
                       />
                     </div>
-                  </div>
-                </DialogBody>
-                <DialogFooter className="p-6 pt-2">
-                  <Button variant="outline" onClick={() => setShowCreateAlert(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={createAlert} disabled={!newAlert.name}>
-                    Create Alert
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            </CrudDialog>
           </div>
 
           <div className="space-y-4">

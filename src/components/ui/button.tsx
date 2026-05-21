@@ -28,7 +28,7 @@ export const buttonVariants = cva(
         soft:
           'bg-[var(--primary-blue-soft)] text-[var(--primary-blue)] border border-transparent hover:bg-[color-mix(in_srgb,var(--primary-blue-soft)_80%,var(--primary-blue))]',
         'soft-blue':
-          'bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-200 border border-transparent hover:bg-blue-100 dark:hover:bg-blue-500/25',
+          'bg-[color:color-mix(in_srgb,var(--primary-blue)_10%,transparent)] text-[var(--primary-blue)] border border-transparent hover:bg-[color:color-mix(in_srgb,var(--primary-blue)_16%,transparent)]',
         secondary:
           'bg-secondary text-secondary-foreground border border-border shadow-md hover:bg-secondary/80',
         danger:

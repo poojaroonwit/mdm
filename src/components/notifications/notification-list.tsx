@@ -62,9 +62,9 @@ export function NotificationList({
       case 'MEDIUM':
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'LOW':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -123,8 +123,8 @@ export function NotificationList({
   return (
     <div className="space-y-4">
       {showActions && selectedNotifications.length > 0 && (
-        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-          <span className="text-sm text-gray-600">
+        <div className="flex items-center gap-2 rounded-lg bg-muted/60 p-3">
+          <span className="text-sm text-muted-foreground">
             {selectedNotifications.length} selected
           </span>
           <Button
@@ -153,7 +153,7 @@ export function NotificationList({
           <span className="ml-2">Loading notifications...</span>
         </div>
       ) : filteredNotifications.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
           <Info className="h-8 w-8 mb-2" />
           <p>No notifications found</p>
         </div>
@@ -162,7 +162,7 @@ export function NotificationList({
           {filteredNotifications.map((notification, index) => (
             <div key={notification.id}>
               <Card className={`transition-colors hover:shadow-md ${
-                notification.status === 'UNREAD' ? 'border-l-4 border-l-blue-500 bg-blue-50' : ''
+                notification.status === 'UNREAD' ? 'border-l-4 border-l-blue-500 bg-blue-500/8' : ''
               }`}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
@@ -181,7 +181,7 @@ export function NotificationList({
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
-                        <h4 className="text-sm font-medium text-gray-900">
+                        <h4 className="text-sm font-medium text-foreground">
                           {notification.title}
                         </h4>
                         <Badge 
@@ -195,12 +195,12 @@ export function NotificationList({
                         )}
                       </div>
                       
-                      <p className="text-sm text-gray-600 mb-3">
+                      <p className="mb-3 text-sm text-muted-foreground">
                         {notification.message}
                       </p>
                       
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                         </span>
                         

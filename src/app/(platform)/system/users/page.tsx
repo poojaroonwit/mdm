@@ -6,7 +6,7 @@ import { UserManagement, RoleManagement } from '@/app/admin/features/users'
 
 export default function UsersAndRolesPage() {
   return (
-    <div className="p-4 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-4">
         <h1 className="text-2xl font-bold flex items-center gap-3">

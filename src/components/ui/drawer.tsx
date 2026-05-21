@@ -385,7 +385,7 @@ const DrawerHeader = ({ className, style, ...props }: React.HTMLAttributes<HTMLD
   
   return (
     <div 
-      className={cn("border-b border-zinc-100/60 dark:border-zinc-800/60 px-6 py-6 bg-white/50 dark:bg-zinc-950/20 backdrop-blur-md", className)} 
+      className={cn("border-b border-zinc-100/60 bg-white/50 px-6 py-5 backdrop-blur-md dark:border-zinc-800/60 dark:bg-zinc-950/20", className)} 
       style={{
         borderTopLeftRadius: borderRadius,
         borderTopRightRadius: borderRadius,
@@ -395,6 +395,21 @@ const DrawerHeader = ({ className, style, ...props }: React.HTMLAttributes<HTMLD
     />
   )
 }
+
+const DrawerBody = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn("px-6 py-5", className)}
+    {...props}
+  />
+)
+
+const DrawerFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn("flex flex-col-reverse gap-3 px-6 py-5 pt-0 sm:flex-row sm:justify-end sm:space-x-2 sm:gap-0", className)}
+    {...props}
+  />
+)
+
 const DrawerTitle = ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h2 className={cn("text-lg font-black uppercase tracking-tight text-zinc-900 dark:text-zinc-100", className)} {...props} />
 )
@@ -403,4 +418,4 @@ const DrawerDescription = ({ className, ...props }: React.HTMLAttributes<HTMLPar
   <p className={cn("text-sm font-medium text-zinc-500 dark:text-zinc-400", className)} {...props} />
 )
 
-export { Drawer, DrawerTrigger, DrawerClose, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription }
+export { Drawer, DrawerTrigger, DrawerClose, DrawerContent, DrawerHeader, DrawerBody, DrawerFooter, DrawerTitle, DrawerDescription }

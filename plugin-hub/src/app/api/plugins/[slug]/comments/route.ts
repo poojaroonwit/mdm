@@ -1,77 +1,82 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { proxyMainApp } from '../../../../../lib/hub-data'
 
-interface Comment {
-    id: string
-    pluginSlug: string
-    author: string
-    content: string
-    createdAt: string
-    rating: number
+function mapReview(review: any) {
+  return {
+    id: review.id,
+    pluginSlug: review.slug,
+    author: review.user?.name || review.user?.email || 'Anonymous',
+    content: review.comment || review.title || '',
+    createdAt: review.createdAt,
+    rating: review.rating || 5,
+    helpfulCount: review.helpfulCount || 0,
+  }
 }
 
-// In-memory store (resets on restart)
-// Pre-populate with a few nice comments
-const commentsStore: Comment[] = [
-    {
-        id: 'c1',
-        pluginSlug: 'postgresql-management',
-        author: 'Sarah Dev',
-        content: 'This plugin saved me so much time managing my local Postgres instances. Highly recommended!',
-        createdAt: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
-        rating: 5
-    },
-    {
-        id: 'c2',
-        pluginSlug: 'postgresql-management',
-        author: 'Mike Johnson',
-        content: 'Great UI, but I wish it supported more backup options out of the box.',
-        createdAt: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
-        rating: 4
-    }
-]
-
 export async function GET(
-    request: NextRequest,
-    props: { params: Promise<{ slug: string }> }
+  request: NextRequest,
+  props: { params: Promise<{ slug: string }> }
 ) {
-    const params = await props.params;
-    const slug = params.slug
-    const comments = commentsStore.filter(c => c.pluginSlug === slug)
+  const params = await props.params
 
-    // Sort by newest first
-    comments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  try {
+    const response = await proxyMainApp(
+      `/api/marketplace/plugins/${params.slug}/reviews`,
+      { method: 'GET', cookie: request.headers.get('cookie') }
+    )
 
-    return NextResponse.json({ comments })
+    if (!response.ok) {
+      return NextResponse.json({ comments: [] })
+    }
+
+    const data = await response.json()
+    return NextResponse.json({
+      comments: (data.reviews || []).map(mapReview),
+    })
+  } catch (error) {
+    console.error('Error fetching plugin comments:', error)
+    return NextResponse.json({ comments: [] })
+  }
 }
 
 export async function POST(
-    request: NextRequest,
-    props: { params: Promise<{ slug: string }> }
+  request: NextRequest,
+  props: { params: Promise<{ slug: string }> }
 ) {
-    try {
-        const params = await props.params;
-        const slug = params.slug
-        const body = await request.json()
-        const { author, content, rating } = body
+  const params = await props.params
 
-        if (!author || !content) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
-        }
+  try {
+    const body = await request.json()
+    const response = await proxyMainApp(
+      `/api/marketplace/plugins/${params.slug}/reviews`,
+      {
+        method: 'POST',
+        cookie: request.headers.get('cookie'),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rating: body.rating || 5,
+          title: body.title || null,
+          comment: body.content || body.comment || '',
+        }),
+      }
+    )
 
-        const newComment: Comment = {
-            id: Math.random().toString(36).substring(7),
-            pluginSlug: slug,
-            author,
-            content,
-            createdAt: new Date().toISOString(),
-            rating: rating || 5
-        }
-
-        commentsStore.push(newComment)
-
-        return NextResponse.json({ comment: newComment }, { status: 201 })
-    } catch (error) {
-        console.error('Error creating comment:', error)
-        return NextResponse.json({ error: 'Failed to create comment' }, { status: 500 })
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data.error || 'Failed to create comment' },
+        { status: response.status }
+      )
     }
+
+    return NextResponse.json({
+      comment: mapReview(data.review),
+    }, { status: response.status })
+  } catch (error) {
+    console.error('Error creating plugin comment:', error)
+    return NextResponse.json(
+      { error: 'Failed to create comment' },
+      { status: 500 }
+    )
+  }
 }

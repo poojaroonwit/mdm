@@ -7,8 +7,9 @@ import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -1178,98 +1179,63 @@ export function StorageManagement() {
       </div>
 
       {/* Create Bucket Dialog */}
-      <Dialog open={showCreateBucket} onOpenChange={setShowCreateBucket}>
-        <DialogContent className="p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle>Create new bucket</DialogTitle>
-            <DialogDescription>
-              Buckets are containers for your files. Choose a unique name for your bucket.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody className="p-6 pt-2 pb-4">
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Name</label>
-                <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 font-mono"
-                  value={newBucketName}
-                  onChange={(e) => setNewBucketName(e.target.value)}
-                  placeholder="bucket-name"
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-sm font-medium">Public bucket</label>
-                  <p className="text-xs text-muted-foreground">Anyone with the URL can access files</p>
-                </div>
-                <button
-                  onClick={() => setIsPublicBucket(!isPublicBucket)}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                    isPublicBucket ? "bg-green-500" : "bg-muted"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                      isPublicBucket ? "translate-x-6" : "translate-x-1"
-                    )}
-                  />
-                </button>
-              </div>
-            </div>
-          </DialogBody>
-          <DialogFooter className="p-6 pt-2">
+      <CrudDialog
+        open={showCreateBucket}
+        onOpenChange={setShowCreateBucket}
+        title="Create new bucket"
+        description="Buckets are containers for your files. Choose a unique name for your bucket."
+        footer={(
+          <>
             <Button className="rounded-xl font-bold" variant="outline" onClick={() => setShowCreateBucket(false)}>
               Cancel
             </Button>
             <Button className="rounded-xl font-bold" onClick={handleCreateBucket} disabled={!newBucketName.trim()}>
               Create bucket
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </>
+        )}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">Name</label>
+            <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 font-mono"
+              value={newBucketName}
+              onChange={(e) => setNewBucketName(e.target.value)}
+              placeholder="bucket-name"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium">Public bucket</label>
+              <p className="text-xs text-muted-foreground">Anyone with the URL can access files</p>
+            </div>
+            <button
+              onClick={() => setIsPublicBucket(!isPublicBucket)}
+              className={cn(
+                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                isPublicBucket ? "bg-green-500" : "bg-muted"
+              )}
+            >
+              <span
+                className={cn(
+                  "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                  isPublicBucket ? "translate-x-6" : "translate-x-1"
+                )}
+              />
+            </button>
+          </div>
+        </div>
+      </CrudDialog>
 
       {/* Upload Dialog */}
-      <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle>Upload files</DialogTitle>
-            <DialogDescription>
-              Select files to upload to {currentBucket?.name || 'bucket'}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody className="p-6 pt-2 pb-4">
-            <div className="space-y-4">
-              <div className="border-2 border-dashed rounded-xl p-8 text-center border-zinc-200 dark:border-zinc-800">
-                <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <label htmlFor="file-upload" className="cursor-pointer">
-                  <span className="text-sm font-medium text-primary">Click to upload</span>
-                  <span className="text-sm text-muted-foreground"> or drag and drop</span>
-                </label>
-                <input
-                  id="file-upload"
-                  type="file"
-                  multiple
-                  className="hidden"
-                  onChange={(e) => {
-                    const files = Array.from(e.target.files || [])
-                    setUploadFiles(files)
-                  }}
-                />
-              </div>
-              {uploadFiles.length > 0 && (
-                <div className="space-y-2">
-                  {uploadFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
-                      <span className="text-sm">{file.name}</span>
-                      <span className="text-xs text-muted-foreground">{formatBytes(file.size)}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </DialogBody>
-          <DialogFooter className="p-6 pt-2">
+      <CrudDialog
+        open={showUploadDialog}
+        onOpenChange={setShowUploadDialog}
+        title="Upload files"
+        description={`Select files to upload to ${currentBucket?.name || 'bucket'}`}
+        contentClassName="max-w-2xl"
+        footer={(
+          <>
             <Button className="rounded-xl font-bold" variant="outline" onClick={() => {
               setShowUploadDialog(false)
               setUploadFiles([])
@@ -1279,38 +1245,52 @@ export function StorageManagement() {
             <Button className="rounded-xl font-bold" onClick={handleUpload} disabled={uploadFiles.length === 0}>
               Upload {uploadFiles.length} file{uploadFiles.length > 1 ? 's' : ''}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </>
+        )}
+      >
+        <div className="space-y-4">
+          <div className="border-2 border-dashed rounded-xl p-8 text-center border-zinc-200 dark:border-zinc-800">
+            <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <label htmlFor="file-upload" className="cursor-pointer">
+              <span className="text-sm font-medium text-primary">Click to upload</span>
+              <span className="text-sm text-muted-foreground"> or drag and drop</span>
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                const files = Array.from(e.target.files || [])
+                setUploadFiles(files)
+              }}
+            />
+          </div>
+          {uploadFiles.length > 0 && (
+            <div className="space-y-2">
+              {uploadFiles.map((file, index) => (
+                <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
+                  <span className="text-sm">{file.name}</span>
+                  <span className="text-xs text-muted-foreground">{formatBytes(file.size)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </CrudDialog>
 
       {/* Create Folder Dialog */}
-      <Dialog open={showCreateFolder} onOpenChange={setShowCreateFolder}>
-        <DialogContent className="p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle>Create new folder</DialogTitle>
-            <DialogDescription>
-              {currentPath.length > 0 
-                ? `Create a folder in ${currentPath.join(' / ')}`
-                : 'Create a folder in the current location'}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody className="p-6 pt-2 pb-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-bold">Folder name</Label>
-              <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 font-mono"
-                value={newFolderName}
-                onChange={(e) => setNewFolderName(e.target.value)}
-                placeholder="my-folder"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && newFolderName.trim()) {
-                    handleCreateFolder()
-                  }
-                }}
-                autoFocus
-              />
-            </div>
-          </DialogBody>
-          <DialogFooter className="p-6 pt-2">
+      <CrudDialog
+        open={showCreateFolder}
+        onOpenChange={setShowCreateFolder}
+        title="Create new folder"
+        description={
+          currentPath.length > 0
+            ? `Create a folder in ${currentPath.join(' / ')}`
+            : 'Create a folder in the current location'
+        }
+        footer={(
+          <>
             <Button className="rounded-xl font-bold" variant="outline" onClick={() => {
               setShowCreateFolder(false)
               setNewFolderName('')
@@ -1320,9 +1300,24 @@ export function StorageManagement() {
             <Button className="rounded-xl font-bold" onClick={handleCreateFolder} disabled={!newFolderName.trim()}>
               Create folder
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </>
+        )}
+      >
+        <div className="space-y-2">
+          <Label className="text-sm font-bold">Folder name</Label>
+          <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 font-mono"
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+            placeholder="my-folder"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && newFolderName.trim()) {
+                handleCreateFolder()
+              }
+            }}
+            autoFocus
+          />
+        </div>
+      </CrudDialog>
 
       {/* File Preview Dialog */}
       {showFilePreview && (
@@ -1371,223 +1366,204 @@ export function StorageManagement() {
       )}
 
       {/* Metadata Dialog */}
-      <Dialog open={showMetadata} onOpenChange={setShowMetadata}>
-        <DialogContent className="p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle>File Metadata</DialogTitle>
-            <DialogDescription>
-              Detailed information about {selectedFileForAction?.name}
-            </DialogDescription>
-          </DialogHeader>
-          {selectedFileForAction && (
-            <DialogBody className="p-6 pt-2 pb-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Name</label>
-                  <p className="text-sm mt-1">{selectedFileForAction.name}</p>
+      <CrudDialog
+        open={showMetadata}
+        onOpenChange={setShowMetadata}
+        title="File Metadata"
+        description={`Detailed information about ${selectedFileForAction?.name}`}
+        footer={(
+          <Button className="rounded-xl font-bold" onClick={() => setShowMetadata(false)}>Close</Button>
+        )}
+      >
+        {selectedFileForAction ? (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Name</label>
+              <p className="text-sm mt-1">{selectedFileForAction.name}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Size</label>
+              <p className="text-sm mt-1">{formatBytes(selectedFileForAction.size)}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">MIME Type</label>
+              <p className="text-sm mt-1">{selectedFileForAction.mimeType || 'Unknown'}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Type</label>
+              <p className="text-sm mt-1">{selectedFileForAction.type || 'file'}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Path</label>
+              <p className="text-sm mt-1">{selectedFileForAction.path || 'Root'}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Bucket</label>
+              <p className="text-sm mt-1">{selectedFileForAction.bucketName}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Created</label>
+              <p className="text-sm mt-1">{formatDateTime(selectedFileForAction.createdAt)}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Last Modified</label>
+              <p className="text-sm mt-1">{formatDateTime(selectedFileForAction.updatedAt)}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Uploaded By</label>
+              <p className="text-sm mt-1">{selectedFileForAction.uploadedByName || 'Unknown'}</p>
+            </div>
+            {selectedFileForAction.publicUrl && (
+              <div className="col-span-2">
+                <label className="text-sm font-medium text-muted-foreground">Public URL</label>
+                <div className="flex items-center gap-2 mt-1">
+                  <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 text-xs" value={selectedFileForAction.publicUrl} readOnly />
+                  <Button className="rounded-xl font-bold"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCopyUrl(selectedFileForAction)}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Size</label>
-                  <p className="text-sm mt-1">{formatBytes(selectedFileForAction.size)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">MIME Type</label>
-                  <p className="text-sm mt-1">{selectedFileForAction.mimeType || 'Unknown'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Type</label>
-                  <p className="text-sm mt-1">{selectedFileForAction.type || 'file'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Path</label>
-                  <p className="text-sm mt-1">{selectedFileForAction.path || 'Root'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Bucket</label>
-                  <p className="text-sm mt-1">{selectedFileForAction.bucketName}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Created</label>
-                  <p className="text-sm mt-1">{formatDateTime(selectedFileForAction.createdAt)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Last Modified</label>
-                  <p className="text-sm mt-1">{formatDateTime(selectedFileForAction.updatedAt)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Uploaded By</label>
-                  <p className="text-sm mt-1">{selectedFileForAction.uploadedByName || 'Unknown'}</p>
-                </div>
-                {selectedFileForAction.publicUrl && (
-                  <div className="col-span-2">
-                    <label className="text-sm font-medium text-muted-foreground">Public URL</label>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 text-xs" value={selectedFileForAction.publicUrl} readOnly />
-                      <Button className="rounded-xl font-bold"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCopyUrl(selectedFileForAction!)}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
               </div>
-            </DialogBody>
-          )}
-          <DialogFooter className="p-6 pt-2">
-            <Button className="rounded-xl font-bold" onClick={() => setShowMetadata(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            )}
+          </div>
+        ) : null}
+      </CrudDialog>
 
       {/* Permissions Dialog */}
-      <Dialog open={showPermissions} onOpenChange={setShowPermissions}>
-        <DialogContent className="p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle>File Permissions</DialogTitle>
-            <DialogDescription>
-              Manage access permissions for {selectedFileForAction?.name}
-            </DialogDescription>
-          </DialogHeader>
-          {selectedFileForAction && (
-            <DialogBody className="p-6 pt-2 pb-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <label className="text-sm font-medium">Public Access</label>
-                    <p className="text-xs text-muted-foreground">Allow public access via URL</p>
-                  </div>
-                  <button
-                    onClick={async () => {
-                      if (selectedFileForAction) {
-                        const result = await handleShare(selectedFileForAction, !selectedFileForAction.publicUrl)
-                        if (result) {
-                          setSelectedFileForAction({ ...selectedFileForAction, publicUrl: result.publicUrl })
-                        }
-                      }
-                    }}
-                    className={cn(
-                      "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                      selectedFileForAction.publicUrl ? "bg-green-500" : "bg-muted"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                        selectedFileForAction.publicUrl ? "translate-x-6" : "translate-x-1"
-                      )}
-                    />
-                  </button>
-                </div>
-                <div className="border-t pt-4">
-                  <label className="text-sm font-medium mb-2 block">Access Control</label>
-                  <p className="text-xs text-muted-foreground mb-4">Fine-grained permissions coming soon</p>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between p-2 bg-muted rounded">
-                      <span className="text-sm">Owner</span>
-                      <Badge className="rounded-lg font-bold text-[10px]" variant="outline">Full Access</Badge>
-                    </div>
-                    <div className="flex items-center justify-between p-2 bg-muted rounded">
-                      <span className="text-sm">Space Members</span>
-                      <Badge className="rounded-lg font-bold text-[10px]" variant="outline">View</Badge>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </DialogBody>
-          )}
-          <DialogFooter className="p-6 pt-2">
+      <CrudDialog
+        open={showPermissions}
+        onOpenChange={setShowPermissions}
+        title="File Permissions"
+        description={`Manage access permissions for ${selectedFileForAction?.name}`}
+        footer={(
+          <>
             <Button className="rounded-xl font-bold" variant="outline" onClick={() => setShowPermissions(false)}>Cancel</Button>
             <Button className="rounded-xl font-bold" onClick={() => {
               toast.success('Permissions updated')
               setShowPermissions(false)
             }}>Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Rename Dialog */}
-      <Dialog open={showRename} onOpenChange={setShowRename}>
-        <DialogContent className="p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle>Rename {selectedFileForAction?.type === 'folder' ? 'Folder' : 'File'}</DialogTitle>
-            <DialogDescription>
-              Enter a new name for {selectedFileForAction?.name}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody className="p-6 pt-2 pb-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-bold">Name</Label>
-              <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 font-mono"
-                value={renameValue}
-                onChange={(e) => setRenameValue(e.target.value)}
-                placeholder="Enter new name"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && renameValue.trim()) {
-                    handleRename()
+          </>
+        )}
+      >
+        {selectedFileForAction ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium">Public Access</label>
+                <p className="text-xs text-muted-foreground">Allow public access via URL</p>
+              </div>
+              <button
+                onClick={async () => {
+                  const result = await handleShare(selectedFileForAction, !selectedFileForAction.publicUrl)
+                  if (result) {
+                    setSelectedFileForAction({ ...selectedFileForAction, publicUrl: result.publicUrl })
                   }
                 }}
-                autoFocus
-              />
+                className={cn(
+                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                  selectedFileForAction.publicUrl ? "bg-green-500" : "bg-muted"
+                )}
+              >
+                <span
+                  className={cn(
+                    "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                    selectedFileForAction.publicUrl ? "translate-x-6" : "translate-x-1"
+                  )}
+                />
+              </button>
             </div>
-          </DialogBody>
-          <DialogFooter className="p-6 pt-2">
+            <div className="border-t pt-4">
+              <label className="text-sm font-medium mb-2 block">Access Control</label>
+              <p className="text-xs text-muted-foreground mb-4">Fine-grained permissions coming soon</p>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-2 bg-muted rounded">
+                  <span className="text-sm">Owner</span>
+                  <Badge className="rounded-lg font-bold text-[10px]" variant="outline">Full Access</Badge>
+                </div>
+                <div className="flex items-center justify-between p-2 bg-muted rounded">
+                  <span className="text-sm">Space Members</span>
+                  <Badge className="rounded-lg font-bold text-[10px]" variant="outline">View</Badge>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </CrudDialog>
+
+      {/* Rename Dialog */}
+      <CrudDialog
+        open={showRename}
+        onOpenChange={setShowRename}
+        title={`Rename ${selectedFileForAction?.type === 'folder' ? 'Folder' : 'File'}`}
+        description={`Enter a new name for ${selectedFileForAction?.name}`}
+        footer={(
+          <>
             <Button className="rounded-xl font-bold" variant="outline" onClick={() => {
               setShowRename(false)
               setRenameValue('')
             }}>Cancel</Button>
             <Button className="rounded-xl font-bold" onClick={handleRename} disabled={!renameValue.trim()}>Rename</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </>
+        )}
+      >
+        <div className="space-y-2">
+          <Label className="text-sm font-bold">Name</Label>
+          <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 font-mono"
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            placeholder="Enter new name"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && renameValue.trim()) {
+                handleRename()
+              }
+            }}
+            autoFocus
+          />
+        </div>
+      </CrudDialog>
 
       {/* Move Dialog */}
-      <Dialog open={showMove} onOpenChange={setShowMove}>
-        <DialogContent className="p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle>Move {selectedFileForAction?.type === 'folder' ? 'Folder' : 'File'}</DialogTitle>
-            <DialogDescription>
-              Select a destination folder for {selectedFileForAction?.name}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody className="p-6 pt-2 pb-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-bold">Destination</Label>
-              <p className="text-xs text-muted-foreground mb-4">
-                Current location: {currentPath.length > 0 ? currentPath.join(' / ') : 'Root'}
-              </p>
-              <div className="border rounded-lg p-4 bg-muted">
-                <p className="text-sm text-muted-foreground">Folder selection coming soon</p>
-              </div>
-            </div>
-          </DialogBody>
-          <DialogFooter className="p-6 pt-2">
+      <CrudDialog
+        open={showMove}
+        onOpenChange={setShowMove}
+        title={`Move ${selectedFileForAction?.type === 'folder' ? 'Folder' : 'File'}`}
+        description={`Select a destination folder for ${selectedFileForAction?.name}`}
+        footer={(
+          <>
             <Button className="rounded-xl font-bold" variant="outline" onClick={() => setShowMove(false)}>Cancel</Button>
             <Button className="rounded-xl font-bold" onClick={() => {
               toast.success('Move functionality coming soon')
               setShowMove(false)
             }}>Move</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <Dialog open={showConnectionsManager} onOpenChange={setShowConnectionsManager}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle>Storage Connections</DialogTitle>
-            <DialogDescription>
-              Manage your external storage providers and connections
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody className="p-6 pt-2 pb-4 overflow-y-auto">
-            <StorageConnections />
-          </DialogBody>
-          <DialogFooter className="p-6 pt-2">
-            <Button className="rounded-xl font-bold" onClick={() => setShowConnectionsManager(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </>
+        )}
+      >
+        <div className="space-y-2">
+          <Label className="text-sm font-bold">Destination</Label>
+          <p className="text-xs text-muted-foreground mb-4">
+            Current location: {currentPath.length > 0 ? currentPath.join(' / ') : 'Root'}
+          </p>
+          <div className="border rounded-lg p-4 bg-muted">
+            <p className="text-sm text-muted-foreground">Folder selection coming soon</p>
+          </div>
+        </div>
+      </CrudDialog>
+      <CrudDialog
+        open={showConnectionsManager}
+        onOpenChange={setShowConnectionsManager}
+        title="Storage Connections"
+        description="Manage your external storage providers and connections"
+        contentClassName="max-w-4xl max-h-[90vh]"
+        bodyClassName="p-6 pt-2 pb-4 overflow-y-auto"
+        footer={(
+          <Button className="rounded-xl font-bold" onClick={() => setShowConnectionsManager(false)}>Close</Button>
+        )}
+      >
+        <StorageConnections />
+      </CrudDialog>
     </div>
   )
 }

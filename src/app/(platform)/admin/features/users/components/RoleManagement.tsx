@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
+import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
@@ -433,15 +433,24 @@ export function RoleManagement() {
       </Tabs>
 
       {/* Create Role Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Create New {selectedLevel === 'global' ? 'Global' : 'Space'} Role</DialogTitle>
-            <DialogDescription>
-              Create a new role and assign permissions
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
+      <CrudDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        title={`Create New ${selectedLevel === 'global' ? 'Global' : 'Space'} Role`}
+        description="Create a new role and assign permissions"
+        contentClassName="max-w-4xl max-h-[90vh]"
+        bodyClassName="space-y-4"
+        footer={(
+          <>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={createRole}>
+              Create Role
+            </Button>
+          </>
+        )}
+      >
             <div>
               <Label htmlFor="role-name" className="text-sm font-bold">Role Name *</Label>
               <Input
@@ -522,28 +531,28 @@ export function RoleManagement() {
                 </ScrollArea>
               </div>
             </div>
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={createRole}>
-              Create Role
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </CrudDialog>
 
       {/* Edit Role Permissions Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Edit Role Permissions</DialogTitle>
-            <DialogDescription>
-              Update permissions for {editingRole?.name}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
+      <CrudDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        title="Edit Role Permissions"
+        description={`Update permissions for ${editingRole?.name}`}
+        contentClassName="max-w-4xl max-h-[90vh]"
+        bodyClassName="space-y-4"
+        footer={(
+          <>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={updateRolePermissions}>
+              <Save className="h-4 w-4 mr-2" />
+              Save Permissions
+            </Button>
+          </>
+        )}
+      >
             <div>
               <Label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Role Information</Label>
               <div className="mt-1 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800">
@@ -606,57 +615,17 @@ export function RoleManagement() {
                 </ScrollArea>
               </div>
             </div>
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={updateRolePermissions}>
-              <Save className="h-4 w-4 mr-2" />
-              Save Permissions
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </CrudDialog>
 
       {/* Clone Role Dialog */}
-      <Dialog open={showCloneDialog} onOpenChange={setShowCloneDialog}>
-        <DialogContent className="p-0 overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Clone Role</DialogTitle>
-            <DialogDescription>
-              Create a copy of {cloningRole?.name} with the same permissions
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody className="space-y-6 p-6 pt-2 pb-4">
-            <div className="space-y-2">
-              <Label htmlFor="clone-name" className="text-sm font-bold">New Role Name *</Label>
-              <Input
-                id="clone-name"
-                value={cloneForm.name}
-                onChange={(e) => setCloneForm({ ...cloneForm, name: e.target.value })}
-                placeholder="Enter new role name"
-                className="h-11 rounded-xl"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="clone-description" className="text-sm font-bold">Description</Label>
-              <Textarea
-                id="clone-description"
-                value={cloneForm.description}
-                onChange={(e) => setCloneForm({ ...cloneForm, description: e.target.value })}
-                placeholder="Enter role description"
-                rows={3}
-                className="rounded-xl"
-              />
-            </div>
-            <div className="p-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800">
-               <p className="text-xs text-zinc-500 text-center">
-                 Cloning will copy all {cloningRole?.permissions?.length || 0} permissions from <strong>{cloningRole?.name}</strong> to the new role.
-               </p>
-            </div>
-          </DialogBody>
-          <DialogFooter>
+      <CrudDialog
+        open={showCloneDialog}
+        onOpenChange={setShowCloneDialog}
+        title="Clone Role"
+        description={`Create a copy of ${cloningRole?.name} with the same permissions`}
+        bodyClassName="space-y-6"
+        footer={(
+          <>
             <Button variant="outline" onClick={() => {
               setShowCloneDialog(false)
               setCloningRole(null)
@@ -690,20 +659,51 @@ export function RoleManagement() {
               <Copy className="h-4 w-4 mr-2" />
               Clone Role
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </>
+        )}
+      >
+            <div className="space-y-2">
+              <Label htmlFor="clone-name" className="text-sm font-bold">New Role Name *</Label>
+              <Input
+                id="clone-name"
+                value={cloneForm.name}
+                onChange={(e) => setCloneForm({ ...cloneForm, name: e.target.value })}
+                placeholder="Enter new role name"
+                className="h-11 rounded-xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="clone-description" className="text-sm font-bold">Description</Label>
+              <Textarea
+                id="clone-description"
+                value={cloneForm.description}
+                onChange={(e) => setCloneForm({ ...cloneForm, description: e.target.value })}
+                placeholder="Enter role description"
+                rows={3}
+                className="rounded-xl"
+              />
+            </div>
+            <div className="p-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800">
+               <p className="text-xs text-zinc-500 text-center">
+                 Cloning will copy all {cloningRole?.permissions?.length || 0} permissions from <strong>{cloningRole?.name}</strong> to the new role.
+               </p>
+            </div>
+      </CrudDialog>
 
       {/* Analytics Dialog */}
-      <Dialog open={showAnalytics} onOpenChange={setShowAnalytics}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Role Usage Analytics</DialogTitle>
-            <DialogDescription>
-              Statistics on role usage across the system
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody className="max-h-[70vh] overflow-y-auto p-6 pt-2 pb-4">
+      <CrudDialog
+        open={showAnalytics}
+        onOpenChange={setShowAnalytics}
+        title="Role Usage Analytics"
+        description="Statistics on role usage across the system"
+        contentClassName="max-w-4xl max-h-[90vh]"
+        bodyClassName="max-h-[70vh] overflow-y-auto"
+        footer={(
+          <Button variant="outline" onClick={() => setShowAnalytics(false)}>
+            Close
+          </Button>
+        )}
+      >
             <div className="space-y-6">
               <Card className="border-zinc-100 dark:border-zinc-800 shadow-none rounded-xl overflow-hidden">
                 <CardHeader className="bg-zinc-50/50 dark:bg-zinc-900/50 border-b border-zinc-100 dark:border-zinc-800 p-4">
@@ -762,25 +762,60 @@ export function RoleManagement() {
                 </CardContent>
               </Card>
             </div>
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAnalytics(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </CrudDialog>
 
       {/* Role Templates Dialog */}
-      <Dialog open={showTemplatesDialog} onOpenChange={setShowTemplatesDialog}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Create Role from Template</DialogTitle>
-            <DialogDescription>
-              Select a template to quickly create a role with predefined permissions
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody className="space-y-6 p-6 pt-2 pb-4">
+      <CrudDialog
+        open={showTemplatesDialog}
+        onOpenChange={setShowTemplatesDialog}
+        title="Create Role from Template"
+        description="Select a template to quickly create a role with predefined permissions"
+        contentClassName="max-w-2xl"
+        bodyClassName="space-y-6"
+        footer={(
+          <>
+            <Button variant="outline" onClick={() => {
+              setShowTemplatesDialog(false)
+              setSelectedTemplate(null)
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={async () => {
+              if (!selectedTemplate || !roleForm.name) {
+                toast.error('Please select template and enter role name')
+                return
+              }
+              try {
+                const response = await fetch('/api/admin/roles/templates', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    templateName: selectedTemplate.name,
+                    level: selectedTemplate.level,
+                    customName: roleForm.name,
+                    customDescription: roleForm.description
+                  })
+                })
+                if (response.ok) {
+                  toast.success('Role created from template successfully')
+                  setShowTemplatesDialog(false)
+                  setSelectedTemplate(null)
+                  setRoleForm({ name: '', description: '', level: selectedLevel })
+                  loadRoles()
+                } else {
+                  const error = await response.json()
+                  toast.error(error.error || 'Failed to create role')
+                }
+              } catch (error) {
+                console.error('Error creating role from template:', error)
+                toast.error('Failed to create role')
+              }
+            }} disabled={!selectedTemplate || !roleForm.name}>
+              Create from Template
+            </Button>
+          </>
+        )}
+      >
             <div>
               <Label className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Pick a Template</Label>
               <Select value={selectedTemplate?.name || ''} onValueChange={(value) => {
@@ -843,50 +878,7 @@ export function RoleManagement() {
                 </div>
               </div>
             )}
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setShowTemplatesDialog(false)
-              setSelectedTemplate(null)
-            }}>
-              Cancel
-            </Button>
-            <Button onClick={async () => {
-              if (!selectedTemplate || !roleForm.name) {
-                toast.error('Please select template and enter role name')
-                return
-              }
-              try {
-                const response = await fetch('/api/admin/roles/templates', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    templateName: selectedTemplate.name,
-                    level: selectedTemplate.level,
-                    customName: roleForm.name,
-                    customDescription: roleForm.description
-                  })
-                })
-                if (response.ok) {
-                  toast.success('Role created from template successfully')
-                  setShowTemplatesDialog(false)
-                  setSelectedTemplate(null)
-                  setRoleForm({ name: '', description: '', level: selectedLevel })
-                  loadRoles()
-                } else {
-                  const error = await response.json()
-                  toast.error(error.error || 'Failed to create role')
-                }
-              } catch (error) {
-                console.error('Error creating role from template:', error)
-                toast.error('Failed to create role')
-              }
-            }} disabled={!selectedTemplate || !roleForm.name}>
-              Create from Template
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </CrudDialog>
     </div>
   )
 }

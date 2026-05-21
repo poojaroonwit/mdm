@@ -351,7 +351,7 @@ export function DataModelExplorer({
   }
 
   return (
-    <div className={cn("flex flex-col h-full bg-white border-l", className)}>
+    <div className={cn("flex h-full flex-col border-l bg-card text-card-foreground", className)}>
       <div className="p-3 border-b">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-semibold">Data Models</h3>
@@ -370,7 +370,7 @@ export function DataModelExplorer({
           placeholder="Search models or attributes..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-2 py-1.5 text-xs border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
         />
       </div>
 
@@ -717,7 +717,7 @@ export function DataModelExplorer({
                       whiteSpace: 'pre-wrap',
                       wordBreak: 'break-word',
                       color: 'transparent',
-                      caretColor: 'black'
+                      caretColor: 'hsl(var(--foreground))'
                     }}
                     placeholder={sqlStatement ? '' : 'SELECT attribute_name * 2 AS calculated_value FROM table...'}
                   />

@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useMarketplacePlugins } from '../hooks/useMarketplacePlugins'
 import { usePluginInstallation } from '../hooks/usePluginInstallation'
 import { PluginDefinition, PluginCategory } from '../types'
 import { SpaceSelector } from '@/components/project-management/SpaceSelector'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -20,10 +21,11 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Search, Download, Star, ExternalLink, Loader, AlertCircle, RefreshCw, Plus, BarChart3, Activity, Database, HardDrive, Globe, Settings, Workflow, TrendingUp, Shield, Code, Package, FileText, Upload, ShieldCheck } from 'lucide-react'
 import { useSpace } from '@/contexts/space-context'
 import { PluginCard } from './PluginCard'
 import { InstallationWizard } from './InstallationWizard'
+import { InstallationManageDialog, PluginEditDialog, type InstallationEditorValue } from './PluginManagementDialogs'
+import { PROJECT_DEVELOPER_DOCS_ROUTE, PROJECT_MCP_ENDPOINT, PROJECT_PLUGIN_TEMPLATE_ROUTE } from '@/lib/project-developer'
 
 // Add Plugin functionality moved to Plugin Hub
 
@@ -61,6 +63,12 @@ export function MarketplaceHome({
   const [complianceFilter, setComplianceFilter] = useState(false)
   const [selectedPlugin, setSelectedPlugin] = useState<PluginDefinition | null>(null)
   const [showInstallWizard, setShowInstallWizard] = useState(false)
+  const [editPlugin, setEditPlugin] = useState<PluginDefinition | null>(null)
+  const [managePlugin, setManagePlugin] = useState<PluginDefinition | null>(null)
+  const [manageInstallationId, setManageInstallationId] = useState<string | null>(null)
+  const [manageInstallationValue, setManageInstallationValue] = useState<InstallationEditorValue | null>(null)
+  const [dialogLoading, setDialogLoading] = useState(false)
+  const [dialogError, setDialogError] = useState<string | null>(null)
 
   // Add Plugin functionality moved to Plugin Hub
 
@@ -202,11 +210,6 @@ export function MarketplaceHome({
   }
 
   const handleUninstall = async (plugin: PluginDefinition) => {
-    const effectiveSpace = effectiveSpaceId || currentSpace?.id
-    if (!effectiveSpace) {
-      return
-    }
-
     const installationId = installations.get(plugin.id)
     if (!installationId) {
       return
@@ -224,20 +227,142 @@ export function MarketplaceHome({
     }
   }
 
+  const handleEditPlugin = (plugin: PluginDefinition) => {
+    setDialogError(null)
+    setEditPlugin(plugin)
+  }
+
+  const handleSavePlugin = async (patch: Record<string, any>) => {
+    if (!editPlugin) return
+
+    try {
+      setDialogLoading(true)
+      setDialogError(null)
+      const response = await fetch(`/api/marketplace/plugins/${editPlugin.slug}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      })
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}))
+        throw new Error(errorBody.error || 'Failed to update plugin')
+      }
+
+      setEditPlugin(null)
+      await refetch()
+    } catch (saveError) {
+      setDialogError(saveError instanceof Error ? saveError.message : 'Failed to update plugin')
+    } finally {
+      setDialogLoading(false)
+    }
+  }
+
+  const handleDeletePlugin = async (plugin: PluginDefinition) => {
+    if (!confirm(`Delete marketplace plugin "${plugin.name}"?`)) {
+      return
+    }
+
+    try {
+      setDialogLoading(true)
+      setDialogError(null)
+      const response = await fetch(`/api/marketplace/plugins/${plugin.slug}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}))
+        throw new Error(errorBody.error || 'Failed to delete plugin')
+      }
+
+      await refetch()
+      await fetchInstallations()
+    } catch (deleteError) {
+      setDialogError(deleteError instanceof Error ? deleteError.message : 'Failed to delete plugin')
+    } finally {
+      setDialogLoading(false)
+    }
+  }
+
+  const handleManageInstallation = async (plugin: PluginDefinition) => {
+    const installationId = installations.get(plugin.id)
+    if (!installationId) {
+      return
+    }
+
+    try {
+      setDialogLoading(true)
+      setDialogError(null)
+      const response = await fetch(`/api/marketplace/installations/${installationId}`)
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}))
+        throw new Error(errorBody.error || 'Failed to load installation')
+      }
+
+      const data = await response.json()
+      setManagePlugin(plugin)
+      setManageInstallationId(installationId)
+      setManageInstallationValue({
+        config: data.installation?.config || {},
+        credentials: {},
+        status: data.installation?.status || 'active',
+        healthStatus: data.installation?.healthStatus || '',
+      })
+    } catch (manageError) {
+      setDialogError(manageError instanceof Error ? manageError.message : 'Failed to load installation')
+    } finally {
+      setDialogLoading(false)
+    }
+  }
+
+  const handleSaveInstallation = async (payload: InstallationEditorValue) => {
+    if (!manageInstallationId) return
+
+    try {
+      setDialogLoading(true)
+      setDialogError(null)
+      const response = await fetch(`/api/marketplace/installations/${manageInstallationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          config: payload.config,
+          credentials: payload.credentials || {},
+          status: payload.status,
+          healthStatus: payload.healthStatus,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}))
+        throw new Error(errorBody.error || 'Failed to update installation')
+      }
+
+      setManagePlugin(null)
+      setManageInstallationId(null)
+      setManageInstallationValue(null)
+      await fetchInstallations()
+      await refetch()
+    } catch (saveError) {
+      setDialogError(saveError instanceof Error ? saveError.message : 'Failed to update installation')
+    } finally {
+      setDialogLoading(false)
+    }
+  }
+
   const categories: Array<{ value: PluginCategory | 'all'; label: string; icon: any }> = [
-    { value: 'all', label: 'All Categories', icon: Package },
-    { value: 'business-intelligence', label: 'Business Intelligence', icon: BarChart3 },
-    { value: 'monitoring-observability', label: 'Monitoring & Observability', icon: Activity },
-    { value: 'database-management', label: 'Database Management', icon: Database },
-    { value: 'storage-management', label: 'Storage Management', icon: HardDrive },
-    { value: 'api-gateway', label: 'API Gateway', icon: Globe },
-    { value: 'service-management', label: 'Service Management', icon: Settings },
-    { value: 'data-integration', label: 'Data Integration', icon: Workflow },
-    { value: 'automation', label: 'Automation', icon: Workflow },
-    { value: 'analytics', label: 'Analytics', icon: TrendingUp },
-    { value: 'security', label: 'Security', icon: Shield },
-    { value: 'development-tools', label: 'Development Tools', icon: Code },
-    { value: 'other', label: 'Other', icon: Package },
+    { value: 'all', label: 'All Categories', icon: null },
+    { value: 'business-intelligence', label: 'Business Intelligence', icon: null },
+    { value: 'monitoring-observability', label: 'Monitoring & Observability', icon: null },
+    { value: 'database-management', label: 'Database Management', icon: null },
+    { value: 'storage-management', label: 'Storage Management', icon: null },
+    { value: 'api-gateway', label: 'API Gateway', icon: null },
+    { value: 'service-management', label: 'Service Management', icon: null },
+    { value: 'data-integration', label: 'Data Integration', icon: null },
+    { value: 'automation', label: 'Automation', icon: null },
+    { value: 'analytics', label: 'Analytics', icon: null },
+    { value: 'security', label: 'Security', icon: null },
+    { value: 'development-tools', label: 'Development Tools', icon: null },
+    { value: 'other', label: 'Other', icon: null },
   ]
 
   return (
@@ -256,7 +381,6 @@ export function MarketplaceHome({
               variant="outline"
               onClick={() => refetch()}
             >
-              <RefreshCw className="mr-2 h-4 w-4" />
               Fetch Updates
             </Button>
           </div>
@@ -266,7 +390,6 @@ export function MarketplaceHome({
       {/* Error Messages */}
       {error && (
         <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             {error}
 
@@ -274,12 +397,65 @@ export function MarketplaceHome({
         </Alert>
       )}
 
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Plugin developer toolkit</CardTitle>
+            <CardDescription>
+              Build marketplace plugins with the new HTTP MCP endpoint, live project docs, and a downloadable starter bundle.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="rounded-xl border bg-muted/30 p-3">
+                <p className="text-sm font-medium">HTTP MCP</p>
+                <code className="mt-2 block overflow-x-auto text-xs text-muted-foreground">{PROJECT_MCP_ENDPOINT}</code>
+              </div>
+              <div className="rounded-xl border bg-muted/30 p-3">
+                <p className="text-sm font-medium">Developer docs</p>
+                <code className="mt-2 block overflow-x-auto text-xs text-muted-foreground">{PROJECT_DEVELOPER_DOCS_ROUTE}</code>
+              </div>
+              <div className="rounded-xl border bg-muted/30 p-3">
+                <p className="text-sm font-medium">Starter bundle</p>
+                <code className="mt-2 block overflow-x-auto text-xs text-muted-foreground">{PROJECT_PLUGIN_TEMPLATE_ROUTE}</code>
+              </div>
+            </div>
 
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href={PROJECT_PLUGIN_TEMPLATE_ROUTE}
+                className={buttonVariants({ variant: 'default', size: 'default' })}
+              >
+                Download starter
+              </Link>
+              <Link
+                href={PROJECT_DEVELOPER_DOCS_ROUTE}
+                className={buttonVariants({ variant: 'outline', size: 'default' })}
+              >
+                Open developer docs
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>MCP tools</CardTitle>
+            <CardDescription>
+              One endpoint now handles project-module reads plus marketplace read, update, and delete actions.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <p>`list_project_modules` and `read_project_module` map the repo.</p>
+            <p>`get_plugin`, `update_plugin`, and `delete_plugin` manage plugin records.</p>
+            <p>`get_installation`, `update_installation`, and `delete_installation` manage installs.</p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Categories Section */}
       <div className="flex flex-wrap gap-2">
         {categories.map((cat) => {
-          const Icon = cat.icon
           // Count plugins in this category
           const categoryCount = cat.value === 'all'
             ? plugins.length
@@ -309,7 +485,6 @@ export function MarketplaceHome({
                 }
               }}
             >
-              <Icon className="h-4 w-4" />
               {cat.label}
               {categoryCount > 0 && (
                 <Badge
@@ -348,7 +523,6 @@ export function MarketplaceHome({
             }
           }}
         >
-          <ShieldCheck className="h-4 w-4" />
           Is Compliance
         </Badge>
       </div>
@@ -366,12 +540,10 @@ export function MarketplaceHome({
 
         <div className="flex-1 flex items-center gap-2">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search plugins..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
             />
           </div>
         </div>
@@ -381,7 +553,7 @@ export function MarketplaceHome({
       <div className="space-y-8">
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Loading marketplace plugins...</p>
           </div>
         ) : filteredPlugins.length === 0 ? (
           <div className="text-center py-12 space-y-4">
@@ -398,12 +570,10 @@ export function MarketplaceHome({
         ) : (
           Object.entries(displayPluginsByCategory).map(([category, categoryPlugins]) => {
             const categoryInfo = getCategoryInfo(category)
-            const Icon = categoryInfo.icon
             return (
               <div key={category} className="space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <Icon className="h-5 w-5 text-muted-foreground" />
                     <h3 className="text-lg font-semibold">{categoryInfo.label}</h3>
                   </div>
                   <div className="flex-1 border-t"></div>
@@ -417,8 +587,12 @@ export function MarketplaceHome({
                         plugin={plugin}
                         onInstall={() => handleInstall(plugin)}
                         onUninstall={isInstalled ? () => handleUninstall(plugin) : undefined}
+                        onManageInstallation={isInstalled ? () => handleManageInstallation(plugin) : undefined}
+                        onEditPlugin={isAdmin ? () => handleEditPlugin(plugin) : undefined}
+                        onDeletePlugin={isAdmin ? () => handleDeletePlugin(plugin) : undefined}
                         installing={installing}
                         installed={isInstalled}
+                        isAdmin={isAdmin}
                       />
                     )
                   })}
@@ -439,6 +613,38 @@ export function MarketplaceHome({
           onComplete={handleInstallationComplete}
         />
       )}
+
+      <PluginEditDialog
+        plugin={editPlugin}
+        open={!!editPlugin}
+        loading={dialogLoading}
+        error={dialogError}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditPlugin(null)
+            setDialogError(null)
+          }
+        }}
+        onSave={handleSavePlugin}
+      />
+
+      <InstallationManageDialog
+        plugin={managePlugin}
+        installationId={manageInstallationId}
+        open={!!managePlugin && !!manageInstallationId}
+        loading={dialogLoading}
+        error={dialogError}
+        initialValue={manageInstallationValue}
+        onOpenChange={(open) => {
+          if (!open) {
+            setManagePlugin(null)
+            setManageInstallationId(null)
+            setManageInstallationValue(null)
+            setDialogError(null)
+          }
+        }}
+        onSave={handleSaveInstallation}
+      />
 
       {/* Add Plugin functionality moved to Plugin Hub */}
       {/* Use the marketplace to add new plugins */}

@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogBody, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { CrudDialog } from "@/components/ui/crud-dialog"
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -278,22 +278,30 @@ export function NotificationCenter() {
         <TabsContent value="templates" className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Notification Templates</h3>
-            <Dialog open={showCreateTemplate} onOpenChange={setShowCreateTemplate}>
-              <DialogTrigger asChild>
+            <CrudDialog
+              open={showCreateTemplate}
+              onOpenChange={setShowCreateTemplate}
+              title="Create Notification Template"
+              description="Create a new notification template for automated messaging"
+              contentClassName="max-w-2xl"
+              trigger={(
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Template
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Create Notification Template</DialogTitle>
-                  <DialogDescription>
-                    Create a new notification template for automated messaging
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogBody>
-<div className="space-y-4">
+              )}
+              bodyClassName="space-y-4"
+              footer={(
+                <>
+                  <Button variant="outline" onClick={() => setShowCreateTemplate(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={createTemplate} disabled={!newTemplate.name || !newTemplate.content}>
+                    Create Template
+                  </Button>
+                </>
+              )}
+            >
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="template-name">Template Name</Label>
@@ -363,18 +371,7 @@ export function NotificationCenter() {
                       ))}
                     </div>
                   </div>
-                </div>
-                </DialogBody>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowCreateTemplate(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={createTemplate} disabled={!newTemplate.name || !newTemplate.content}>
-                    Create Template
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            </CrudDialog>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

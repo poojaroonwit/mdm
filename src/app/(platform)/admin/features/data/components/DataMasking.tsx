@@ -6,14 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { ShieldCheck, Plus, Eye, EyeOff, Edit, Trash2, ToggleLeft, ToggleRight } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { CrudDialog } from '@/components/ui/crud-dialog'
 import toast from 'react-hot-toast'
 import { MaskingRule } from '../types'
 
@@ -164,20 +157,29 @@ export function DataMasking() {
             Configure data masking rules for sensitive information
           </p>
         </div>
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
+        <CrudDialog
+          open={showCreateDialog}
+          onOpenChange={setShowCreateDialog}
+          title="Create Masking Rule"
+          description="Define how sensitive data should be masked"
+          trigger={(
             <Button>
               <Plus className="w-4 h-4 mr-2" />
               Create Masking Rule
             </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create Masking Rule</DialogTitle>
-              <DialogDescription>
-                Define how sensitive data should be masked
-              </DialogDescription>
-            </DialogHeader>
+          )}
+          bodyClassName="space-y-4"
+          footer={(
+            <>
+              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={createRule} disabled={submitting}>
+                {submitting ? 'Creating...' : 'Create Rule'}
+              </Button>
+            </>
+          )}
+        >
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium">Rule Name</label>
@@ -217,17 +219,8 @@ export function DataMasking() {
                   <option value="redact">Redact</option>
                 </select>
               </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={createRule} disabled={submitting}>
-                  {submitting ? 'Creating...' : 'Create Rule'}
-                </Button>
-              </div>
             </div>
-          </DialogContent>
-        </Dialog>
+        </CrudDialog>
       </div>
 
       {rules.length === 0 ? (
@@ -306,14 +299,65 @@ export function DataMasking() {
       )}
 
       {/* Edit Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Masking Rule</DialogTitle>
-            <DialogDescription>
-              Update the masking rule configuration
-            </DialogDescription>
-          </DialogHeader>
+      <CrudDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        title="Edit Masking Rule"
+        description="Update the masking rule configuration"
+        bodyClassName="space-y-4"
+        footer={(
+          <>
+            <Button variant="outline" onClick={() => {
+              setShowEditDialog(false)
+              setEditingRule(null)
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={async () => {
+              if (!editingRule) return
+              
+              if (!newRule.name.trim()) {
+                toast.error('Rule name is required')
+                return
+              }
+              if (!newRule.tableName.trim()) {
+                toast.error('Table name is required')
+                return
+              }
+              if (!newRule.columnName.trim()) {
+                toast.error('Column name is required')
+                return
+              }
+
+              setSubmitting(true)
+              try {
+                const response = await fetch(`/api/data-masking/rules/${editingRule.id}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(newRule)
+                })
+
+                if (response.ok) {
+                  toast.success('Rule updated')
+                  setShowEditDialog(false)
+                  setEditingRule(null)
+                  loadRules()
+                } else {
+                  const error = await response.json()
+                  toast.error(error.error || 'Failed to update rule')
+                }
+              } catch (error) {
+                console.error('Failed to update rule:', error)
+                toast.error('Failed to update rule')
+              } finally {
+                setSubmitting(false)
+              }
+            }} disabled={submitting}>
+              {submitting ? 'Updating...' : 'Update Rule'}
+            </Button>
+          </>
+        )}
+      >
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium">Rule Name</label>
@@ -353,59 +397,8 @@ export function DataMasking() {
                 <option value="redact">Redact</option>
               </select>
             </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => {
-                setShowEditDialog(false)
-                setEditingRule(null)
-              }}>
-                Cancel
-              </Button>
-              <Button onClick={async () => {
-                if (!editingRule) return
-                
-                if (!newRule.name.trim()) {
-                  toast.error('Rule name is required')
-                  return
-                }
-                if (!newRule.tableName.trim()) {
-                  toast.error('Table name is required')
-                  return
-                }
-                if (!newRule.columnName.trim()) {
-                  toast.error('Column name is required')
-                  return
-                }
-
-                setSubmitting(true)
-                try {
-                  const response = await fetch(`/api/data-masking/rules/${editingRule.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newRule)
-                  })
-
-                  if (response.ok) {
-                    toast.success('Rule updated')
-                    setShowEditDialog(false)
-                    setEditingRule(null)
-                    loadRules()
-                  } else {
-                    const error = await response.json()
-                    toast.error(error.error || 'Failed to update rule')
-                  }
-                } catch (error) {
-                  console.error('Failed to update rule:', error)
-                  toast.error('Failed to update rule')
-                } finally {
-                  setSubmitting(false)
-                }
-              }} disabled={submitting}>
-                {submitting ? 'Updating...' : 'Update Rule'}
-              </Button>
-            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+      </CrudDialog>
     </div>
   )
 }

@@ -5,10 +5,10 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Building2, Search, Plus, ArrowRight, Layout, Settings, FolderPlus, Shield, Database, BarChart3 } from 'lucide-react'
 import { useSpace } from '@/contexts/space-context'
 import toast from 'react-hot-toast'
@@ -20,6 +20,84 @@ interface Space {
   slug?: string
   is_default: boolean
   member_count?: number
+}
+
+interface SpaceFormDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSubmit: (e: React.FormEvent) => void
+  formData: {
+    name: string
+    description: string
+  }
+  setFormData: React.Dispatch<React.SetStateAction<{
+    name: string
+    description: string
+    is_default: boolean
+  }>>
+  isSubmitting: boolean
+  title: string
+  description: string
+}
+
+function SpaceFormDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+  formData,
+  setFormData,
+  isSubmitting,
+  title,
+  description,
+}: SpaceFormDialogProps) {
+  return (
+    <CrudDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={title}
+      description={description}
+      contentClassName="sm:max-w-md"
+      footerClassName="mt-6"
+      footer={(
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" form="create-space-form" disabled={isSubmitting}>
+            {isSubmitting ? 'Creating...' : 'Create Space'}
+          </Button>
+        </>
+      )}
+    >
+      <form id="create-space-form" onSubmit={onSubmit} className="space-y-4">
+        <div>
+          <Label htmlFor="space-name">Space Name</Label>
+          <Input
+            id="space-name"
+            value={formData.name}
+            onChange={(e) => setFormData((current) => ({ ...current, name: e.target.value }))}
+            placeholder="Enter space name"
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="space-description">Description (Optional)</Label>
+          <Textarea
+            id="space-description"
+            value={formData.description}
+            onChange={(e) => setFormData((current) => ({ ...current, description: e.target.value }))}
+            placeholder="Enter space description"
+            rows={3}
+          />
+        </div>
+      </form>
+    </CrudDialog>
+  )
 }
 
 export default function SpaceSelectionPage() {
@@ -135,7 +213,7 @@ export default function SpaceSelectionPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto p-4 space-y-4">
+      <div className="max-w-6xl mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Select a workspace</h1>
@@ -161,59 +239,20 @@ export default function SpaceSelectionPage() {
                 className="pl-8"
               />
             </div>
-            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <Plus className="h-4 w-4 mr-2" />
-                  New
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Create New Space</DialogTitle>
-                  <DialogDescription>
-                    Create a new workspace to organize your data and collaborate with your team.
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleCreateSpace}>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="name">Space Name</Label>
-                      <Input
-                        id="name"
-                        value={createFormData.name}
-                        onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
-                        placeholder="Enter space name"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="description">Description (Optional)</Label>
-                      <Textarea
-                        id="description"
-                        value={createFormData.description}
-                        onChange={(e) => setCreateFormData({ ...createFormData, description: e.target.value })}
-                        placeholder="Enter space description"
-                        rows={3}
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter className="mt-6">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsCreateDialogOpen(false)}
-                      disabled={isCreating}
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit" disabled={isCreating}>
-                      {isCreating ? 'Creating...' : 'Create Space'}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
+            <SpaceFormDialog
+              open={isCreateDialogOpen}
+              onOpenChange={setIsCreateDialogOpen}
+              onSubmit={handleCreateSpace}
+              formData={createFormData}
+              setFormData={setCreateFormData}
+              isSubmitting={isCreating}
+              title="Create New Space"
+              description="Create a new workspace to organize your data and collaborate with your team."
+            />
+            <Button variant="outline" onClick={() => setIsCreateDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              New
+            </Button>
           </div>
         </div>
 
@@ -227,59 +266,20 @@ export default function SpaceSelectionPage() {
                   <div className="text-muted-foreground mb-6 max-w-md mx-auto">
                     You don't have access to any workspaces yet. Create your first space to get started with organizing your data and collaborating with your team.
                   </div>
-                  <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button size="lg">
-                        <Plus className="h-5 w-5 mr-2" />
-                        Create your first space
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>Create New Space</DialogTitle>
-                        <DialogDescription>
-                          Create your first workspace to organize your data and collaborate with your team.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <form onSubmit={handleCreateSpace}>
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="name">Space Name</Label>
-                            <Input
-                              id="name"
-                              value={createFormData.name}
-                              onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
-                              placeholder="Enter space name"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="description">Description (Optional)</Label>
-                            <Textarea
-                              id="description"
-                              value={createFormData.description}
-                              onChange={(e) => setCreateFormData({ ...createFormData, description: e.target.value })}
-                              placeholder="Enter space description"
-                              rows={3}
-                            />
-                          </div>
-                        </div>
-                        <DialogFooter className="mt-6">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setIsCreateDialogOpen(false)}
-                            disabled={isCreating}
-                          >
-                            Cancel
-                          </Button>
-                          <Button type="submit" disabled={isCreating}>
-                            {isCreating ? 'Creating...' : 'Create Space'}
-                          </Button>
-                        </DialogFooter>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
+                  <SpaceFormDialog
+                    open={isCreateDialogOpen}
+                    onOpenChange={setIsCreateDialogOpen}
+                    onSubmit={handleCreateSpace}
+                    formData={createFormData}
+                    setFormData={setCreateFormData}
+                    isSubmitting={isCreating}
+                    title="Create New Space"
+                    description="Create your first workspace to organize your data and collaborate with your team."
+                  />
+                  <Button size="lg" onClick={() => setIsCreateDialogOpen(true)}>
+                    <Plus className="h-5 w-5 mr-2" />
+                    Create your first space
+                  </Button>
                 </>
               ) : (
                 <>

@@ -61,9 +61,9 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
       case 'MEDIUM':
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'LOW':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -135,7 +135,7 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
               <span className="ml-2">Loading notifications...</span>
             </div>
           ) : notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
               <Bell className="h-8 w-8 mb-2" />
               <p>No notifications yet</p>
             </div>
@@ -144,8 +144,8 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
               {notifications.map((notification, index) => (
                 <div key={notification.id}>
                   <div
-                    className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                      notification.status === 'UNREAD' ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
+                    className={`cursor-pointer p-4 transition-colors hover:bg-muted/60 ${
+                      notification.status === 'UNREAD' ? 'border-l-4 border-l-blue-500 bg-blue-500/8' : ''
                     }`}
                     onClick={() => handleNotificationClick(notification)}
                   >
@@ -156,7 +156,7 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="text-sm font-medium text-gray-900 truncate">
+                          <h4 className="truncate text-sm font-medium text-foreground">
                             {notification.title}
                           </h4>
                           <Badge 
@@ -167,12 +167,12 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
                           </Badge>
                         </div>
                         
-                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                        <p className="mb-2 line-clamp-2 text-sm text-muted-foreground">
                           {notification.message}
                         </p>
                         
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                           </span>
                           
@@ -184,7 +184,7 @@ export function NotificationDropdown({ isOpen, onClose }: NotificationDropdownPr
                               variant="ghost"
                               size="sm"
                               onClick={(e) => handleDeleteNotification(notification.id, e)}
-                              className="h-6 w-6 p-0 hover:bg-red-100"
+                              className="h-6 w-6 p-0 hover:bg-red-500/10"
                             >
                               <Trash2 className="h-3 w-3 text-red-500" />
                             </Button>

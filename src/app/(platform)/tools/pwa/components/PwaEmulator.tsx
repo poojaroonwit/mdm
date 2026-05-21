@@ -84,7 +84,7 @@ export function PwaEmulator({ config }: PwaEmulatorProps) {
             </div>
          </div>
 
-         <div className="relative w-[300px] h-[600px] bg-black rounded-[40px] shadow-2xl border-[8px] border-gray-800 overflow-hidden flex flex-col" style={{ transform: 'translateZ(0)' }}>
+         <div className="relative w-[300px] h-[600px] overflow-hidden rounded-[40px] border-[8px] border-gray-800 bg-black shadow-2xl flex flex-col" style={{ transform: 'translateZ(0)' }}>
             {/* Status Bar */}
             <div className="h-8 w-full flex items-center justify-between px-6 text-[10px] font-bold z-10 transition-colors duration-300" style={{ backgroundColor: statusBarColor, color: statusBarTextColor }}>
                <span>9:41</span>
@@ -96,12 +96,12 @@ export function PwaEmulator({ config }: PwaEmulatorProps) {
             </div>
 
             {/* App Content Simulation */}
-            <div className="flex-1 w-full relative overflow-hidden" style={{ backgroundColor: '#ffffff' }}>
+            <div className="relative flex-1 w-full overflow-hidden" style={{ backgroundColor: bgColor }}>
 
                {/* MODE: LOADING SCREEN (SPLASH) */}
                {previewMode === 'splash' && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center animate-in fade-in duration-300 z-20" style={{ backgroundColor: loaderBgColor }}>
-                     <div className="w-24 h-24 rounded-2xl mb-6 shadow-xl flex items-center justify-center bg-white overflow-hidden scale-110">
+                     <div className="absolute inset-0 z-20 flex animate-in fade-in flex-col items-center justify-center duration-300" style={{ backgroundColor: loaderBgColor }}>
+                     <div className="mb-6 flex w-24 h-24 scale-110 items-center justify-center overflow-hidden rounded-2xl bg-card shadow-xl">
                         {iconUrl ? (
                            <img src={iconUrl} alt="icon" className="w-full h-full object-cover" />
                         ) : (
@@ -122,21 +122,21 @@ export function PwaEmulator({ config }: PwaEmulatorProps) {
                {previewMode === 'banner' && (
                   <div className="absolute inset-0 flex flex-col animate-in fade-in duration-300">
                      {/* Fake browser bar */}
-                     <div className="h-14 bg-gray-100 border-b flex items-center px-4 space-x-2 shrink-0">
-                        <div className="flex-1 bg-white rounded-md h-8 flex items-center px-3 text-xs text-gray-500 shadow-lg">
+                     <div className="flex h-14 shrink-0 items-center space-x-2 border-b border-border bg-muted/70 px-4">
+                        <div className="flex h-8 flex-1 items-center rounded-md bg-background px-3 text-xs text-muted-foreground shadow-lg">
                            <span className="truncate">{config.url || 'https://your-pwa.com'}</span>
                         </div>
-                        <RefreshCw className="h-4 w-4 text-gray-500" />
+                        <RefreshCw className="h-4 w-4 text-muted-foreground" />
                      </div>
 
                      {/* Web Content Placeholder */}
-                     <div className="flex-1 bg-white p-4 space-y-4 overflow-y-auto">
-                        <div className="h-40 bg-gray-100 rounded-lg animate-pulse" />
+                     <div className="flex-1 space-y-4 overflow-y-auto bg-background p-4">
+                        <div className="h-40 animate-pulse rounded-lg bg-muted" />
                         <div className="space-y-2">
-                           <div className="h-4 bg-gray-100 rounded w-3/4 animate-pulse" />
-                           <div className="h-4 bg-gray-100 rounded w-1/2 animate-pulse" />
+                           <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+                           <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
                         </div>
-                        <div className="h-40 bg-gray-100 rounded-lg animate-pulse" />
+                        <div className="h-40 animate-pulse rounded-lg bg-muted" />
                      </div>
 
                      {/* Install Banner Component */}

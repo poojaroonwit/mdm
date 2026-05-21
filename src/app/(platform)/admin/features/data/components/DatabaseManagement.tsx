@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
+import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -449,21 +449,29 @@ export function DatabaseManagement() {
         <TabsContent value="connections" className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Database Connections</h3>
-            <Dialog open={showCreateConnection} onOpenChange={setShowCreateConnection}>
-              <DialogTrigger asChild>
+            <CrudDialog
+              open={showCreateConnection}
+              onOpenChange={setShowCreateConnection}
+              title="Add Database Connection"
+              description="Configure a new database connection"
+              trigger={(
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Connection
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="p-0 overflow-hidden">
-                <DialogHeader>
-                  <DialogTitle>Add Database Connection</DialogTitle>
-                  <DialogDescription>
-                    Configure a new database connection
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogBody className="space-y-4 p-6 pt-2 pb-4">
+              )}
+              bodyClassName="space-y-4"
+              footer={(
+                <>
+                  <Button variant="outline" onClick={() => setShowCreateConnection(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={createConnection} disabled={!newConnection.name || !newConnection.host}>
+                    Create Connection
+                  </Button>
+                </>
+              )}
+            >
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="conn-name">Connection Name</Label>
@@ -568,17 +576,7 @@ export function DatabaseManagement() {
                       />
                     </div>
                   </div>
-                </DialogBody>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowCreateConnection(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={createConnection} disabled={!newConnection.name || !newConnection.host}>
-                    Create Connection
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            </CrudDialog>
           </div>
 
           {isLoading && connections.length === 0 ? (

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -30,13 +30,24 @@ export function AddMemberDialog({ open, onOpenChange, onAdd }: AddMemberDialogPr
   const [role, setRole] = useState<ProjectRole>('member')
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add Member</DialogTitle>
-          <DialogDescription>Add a member to the project by user ID or email</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
+    <CrudDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Add Member"
+      description="Add a member to the project by user ID or email"
+      footer={(
+        <>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button
+            onClick={() => onAdd({ identifier: identifier.trim(), role })}
+            disabled={identifier.trim().length === 0}
+          >
+            Add Member
+          </Button>
+        </>
+      )}
+    >
+      <div className="space-y-4">
           <div className="space-y-2">
             <Label>User ID or Email</Label>
             <Input
@@ -63,18 +74,8 @@ export function AddMemberDialog({ open, onOpenChange, onAdd }: AddMemberDialogPr
               </SelectContent>
             </Select>
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button
-            onClick={() => onAdd({ identifier: identifier.trim(), role })}
-            disabled={identifier.trim().length === 0}
-          >
-            Add Member
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </CrudDialog>
   )
 }
 
@@ -91,19 +92,25 @@ export function AddLinkDialog({ open, onOpenChange, onAdd }: AddLinkDialogProps)
   const [description, setDescription] = useState('')
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
+    <CrudDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Add Link"
+      description="Add a repository, drive, or other link"
+      trigger={(
         <Button>
           <Plus className="h-4 w-4 mr-2" />
           Add Link
         </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add Link</DialogTitle>
-          <DialogDescription>Add a repository, drive, or other link</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
+      )}
+      footer={(
+        <>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button onClick={() => onAdd({ type, name, url, description })}>Add Link</Button>
+        </>
+      )}
+    >
+      <div className="space-y-4">
           <div className="space-y-2">
             <Label>Type</Label>
             <Select value={type} onValueChange={(value) => setType(value as LinkType)}>
@@ -141,13 +148,8 @@ export function AddLinkDialog({ open, onOpenChange, onAdd }: AddLinkDialogProps)
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => onAdd({ type, name, url, description })}>Add Link</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </CrudDialog>
   )
 }
 
@@ -163,19 +165,25 @@ export function AddAssetDialog({ open, onOpenChange, onAdd }: AddAssetDialogProp
   const [assetDescription, setAssetDescription] = useState('')
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
+    <CrudDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Add Asset"
+      description="Link an infrastructure asset to this project"
+      trigger={(
         <Button>
           <Plus className="h-4 w-4 mr-2" />
           Add Asset
         </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add Asset</DialogTitle>
-          <DialogDescription>Link an infrastructure asset to this project</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
+      )}
+      footer={(
+        <>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button onClick={() => onAdd({ assetType, assetName, assetDescription })}>Add Asset</Button>
+        </>
+      )}
+    >
+      <div className="space-y-4">
           <div className="space-y-2">
             <Label>Asset Type</Label>
             <Select value={assetType} onValueChange={(value) => setAssetType(value as AssetType)}>
@@ -205,13 +213,8 @@ export function AddAssetDialog({ open, onOpenChange, onAdd }: AddAssetDialogProp
               onChange={(e) => setAssetDescription(e.target.value)}
             />
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => onAdd({ assetType, assetName, assetDescription })}>Add Asset</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </CrudDialog>
   )
 }
 
@@ -272,13 +275,24 @@ export function AddDataModelDialog({
   const selectableModels = availableModels.filter((model) => !linkedDataModelIds.includes(model.id))
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Link Data Model</DialogTitle>
-          <DialogDescription>Associate an existing data model with this project</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
+    <CrudDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Link Data Model"
+      description="Associate an existing data model with this project"
+      footer={(
+        <>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button
+            onClick={() => onAdd({ dataModelId, relationship })}
+            disabled={!dataModelId || isLoading}
+          >
+            Link Data Model
+          </Button>
+        </>
+      )}
+    >
+      <div className="space-y-4">
           <div className="space-y-2">
             <Label>Data Model</Label>
             <Select value={dataModelId} onValueChange={setDataModelId}>
@@ -312,17 +326,7 @@ export function AddDataModelDialog({
               </SelectContent>
             </Select>
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button
-            onClick={() => onAdd({ dataModelId, relationship })}
-            disabled={!dataModelId || isLoading}
-          >
-            Link Data Model
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </CrudDialog>
   )
 }
