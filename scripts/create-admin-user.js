@@ -1,11 +1,12 @@
-const { Pool } = require('pg')
+const { PrismaClient } = require('@prisma/client')
 const bcrypt = require('bcryptjs')
-const { randomUUID } = require('crypto')
 require('dotenv').config()
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
-})
+const prisma = new PrismaClient()
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'admin@example.com').trim().toLowerCase()
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'password123'
+const ADMIN_NAME = (process.env.ADMIN_NAME || 'Admin User').trim()
+const ADMIN_ROLE = process.env.ADMIN_ROLE || 'ADMIN'
 
 if (!process.env.DATABASE_URL) {
   console.error('Missing required DATABASE_URL environment variable')
@@ -13,89 +14,82 @@ if (!process.env.DATABASE_URL) {
 }
 
 async function createAdminUser() {
-  const client = await pool.connect()
-
   try {
-    console.log('🚀 Creating admin user...')
+    console.log(`Creating admin user bootstrap for ${ADMIN_EMAIL}...`)
 
-    // Check if admin user already exists
-    const existingUser = await client.query(`
-      SELECT * FROM public.users 
-      WHERE email = $1
-      LIMIT 1
-    `, ['admin@example.com'])
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash('password123', 12)
-
-    if (existingUser.rows.length > 0) {
-      console.log(`✅ Admin user already exists. Updating password and resetting security flags...`)
-
-      const updatedUser = await client.query(`
-        UPDATE public.users 
-        SET 
-          password = $2, 
-          role = 'ADMIN', 
-          is_active = true, 
-          lockout_until = NULL, 
-          failed_login_attempts = 0,
-          allowed_login_methods = $3,
-          updated_at = NOW()
-        WHERE email = $1
-        RETURNING *
-      `, ['admin@example.com', hashedPassword, ['email', 'credentials']])
-
-      console.log(`✅ Updated admin user:`)
-      console.log(`   - Password reset`)
-      console.log(`   - Set to Active`)
-      console.log(`   - Unlocked (cleared failed attempts/lockout)`)
-      console.log(`   - Allowed login methods: email, credentials`)
-      return updatedUser.rows[0]
+    if (!ADMIN_PASSWORD || ADMIN_PASSWORD.length < 8) {
+      throw new Error('ADMIN_PASSWORD must be at least 8 characters long')
     }
 
-    // Create admin user
-    const userId = randomUUID()
-    const result = await client.query(`
-      INSERT INTO public.users (id, email, name, password, role, is_active, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, true, NOW(), NOW())
-      RETURNING *
-    `, [
-      userId,
-      'admin@example.com',
-      'Admin User',
-      hashedPassword,
-      'ADMIN'
-    ])
+    const existingUser = await prisma.user.findUnique({
+      where: { email: ADMIN_EMAIL }
+    })
 
-    const adminUser = result.rows[0]
-    console.log(`✅ Created admin user:`)
+    const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 12)
+    const allowedLoginMethods = ['email']
+
+    if (existingUser) {
+      console.log('Admin user already exists. Updating password and resetting security flags...')
+
+      const updatedUser = await prisma.user.update({
+        where: { email: ADMIN_EMAIL },
+        data: {
+          name: ADMIN_NAME,
+          password: hashedPassword,
+          role: ADMIN_ROLE,
+          isActive: true,
+          lockoutUntil: null,
+          failedLoginAttempts: 0,
+          requiresPasswordChange: false,
+          allowedLoginMethods
+        }
+      })
+
+      console.log('Updated admin user:')
+      console.log('  - Password reset')
+      console.log('  - Set to active')
+      console.log('  - Unlocked account')
+      console.log('  - Allowed login methods: email')
+      return updatedUser
+    }
+
+    const adminUser = await prisma.user.create({
+      data: {
+        email: ADMIN_EMAIL,
+        name: ADMIN_NAME,
+        password: hashedPassword,
+        role: ADMIN_ROLE,
+        isActive: true,
+        allowedLoginMethods
+      }
+    })
+
+    console.log('Created admin user:')
     console.log(`   Email: ${adminUser.email}`)
-    console.log(`   Password: password123`)
+    console.log(`   Password: ${ADMIN_PASSWORD}`)
     console.log(`   Role: ${adminUser.role}`)
     console.log(`   ID: ${adminUser.id}`)
 
     return adminUser
-
   } catch (error) {
-    console.error('❌ Error creating admin user:', error)
+    console.error('Error creating admin user:', error)
     throw error
-  } finally {
-    client.release()
   }
 }
 
-// Run the script
 if (require.main === module) {
   createAdminUser()
     .then(() => {
-      console.log('✅ Admin user creation completed successfully')
+      console.log('Admin user creation completed successfully')
       process.exit(0)
     })
     .catch((error) => {
-      console.error('❌ Admin user creation failed:', error)
+      console.error('Admin user creation failed:', error)
       process.exit(1)
+    })
+    .finally(async () => {
+      await prisma.$disconnect()
     })
 }
 
 module.exports = { createAdminUser }
-

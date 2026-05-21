@@ -1,0 +1,58 @@
+{
+  "collapse-filter": true,
+  "search": "",
+  "showTags": true,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": true,
+  "colorGroups": [
+    {
+      "query": "tag:#auth",
+      "color": {
+        "a": 1,
+        "rgb": 15597568
+      }
+    },
+    {
+      "query": "tag:#theme",
+      "color": {
+        "a": 1,
+        "rgb": 5865645
+      }
+    },
+    {
+      "query": "tag:#database",
+      "color": {
+        "a": 1,
+        "rgb": 5094068
+      }
+    },
+    {
+      "query": "tag:#ai",
+      "color": {
+        "a": 1,
+        "rgb": 13227706
+      }
+    },
+    {
+      "query": "tag:#admin",
+      "color": {
+        "a": 1,
+        "rgb": 16753920
+      }
+    }
+  ],
+  "collapse-display": true,
+  "showArrow": false,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": true,
+  "centerStrength": 0.518713248970312,
+  "repelStrength": 10,
+  "linkStrength": 1,
+  "linkDistance": 250,
+  "scale": 0.8737057115375543,
+  "close": true
+}
