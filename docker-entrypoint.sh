@@ -70,9 +70,7 @@ node scripts/run-migration.js || {
 # Create admin user (always runs - script checks if user exists)
 echo ""
 echo "=== Creating admin user ==="
-node scripts/create-admin-user.js || {
-  echo "⚠️  Admin user creation failed (may already exist)"
-}
+node scripts/create-admin-user.js
 
 # Seed initial data (always runs on first startup)
 echo ""

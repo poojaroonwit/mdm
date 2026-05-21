@@ -1,6 +1,5 @@
 const { PrismaClient } = require('@prisma/client')
 const bcrypt = require('bcryptjs')
-require('dotenv').config()
 
 const prisma = new PrismaClient()
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'admin@example.com').trim().toLowerCase()

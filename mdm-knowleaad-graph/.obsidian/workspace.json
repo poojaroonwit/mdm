@@ -49,7 +49,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "tag:#srs",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -70,7 +70,8 @@
               "title": "Bookmarks"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -178,10 +179,11 @@
   },
   "active": "bb6538f55fb62bce",
   "lastOpenFiles": [
+    "Untitled.canvas",
+    "16 SRS Summary.md",
     "19 Best Practices & Review.md",
     "18 Documentation Drift & Gaps.md",
     "17 Architecture Summary.md",
-    "16 SRS Summary.md",
     "15 BRD Summary.md",
     "13 Code Map.md",
     "Welcome.md",
