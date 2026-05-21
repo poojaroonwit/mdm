@@ -176,13 +176,19 @@ function createBaseAuthOptions(
         },
         async authorize(credentials) {
           if (!credentials?.email || !credentials?.password) return null
+          const normalizedEmail = credentials.email.trim().toLowerCase()
 
           const user = await (prisma as any).user.findUnique({
-            where: { email: credentials.email },
+            where: { email: normalizedEmail },
           })
 
           if (!user || !user.password || !user.isActive) return null
-          if (!isLoginMethodAllowed(user.allowedLoginMethods, "email")) return null
+          if (
+            !isLoginMethodAllowed(user.allowedLoginMethods, "email") &&
+            !isLoginMethodAllowed(user.allowedLoginMethods, "credentials")
+          ) {
+            return null
+          }
 
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
           if (!isPasswordValid) return null

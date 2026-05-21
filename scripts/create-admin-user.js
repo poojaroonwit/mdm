@@ -26,7 +26,7 @@ async function createAdminUser() {
     })
 
     const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 12)
-    const allowedLoginMethods = ['email']
+    const allowedLoginMethods = ['email', 'credentials']
 
     if (existingUser) {
       console.log('Admin user already exists. Updating password and resetting security flags...')
@@ -49,7 +49,7 @@ async function createAdminUser() {
       console.log('  - Password reset')
       console.log('  - Set to active')
       console.log('  - Unlocked account')
-      console.log('  - Allowed login methods: email')
+      console.log('  - Allowed login methods: email, credentials')
       return updatedUser
     }
 

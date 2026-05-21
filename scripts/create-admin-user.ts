@@ -32,7 +32,7 @@ async function main() {
         lockoutUntil: null,
         failedLoginAttempts: 0,
         requiresPasswordChange: false,
-        allowedLoginMethods: ['email']
+        allowedLoginMethods: ['email', 'credentials']
       }
     })
 
@@ -50,7 +50,7 @@ async function main() {
       password: hashedPassword,
       role,
       isActive: true,
-      allowedLoginMethods: ['email']
+      allowedLoginMethods: ['email', 'credentials']
     }
   })
 
