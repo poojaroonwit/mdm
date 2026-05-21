@@ -5,6 +5,8 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogBody,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -97,7 +99,17 @@ export function TicketDetailModalEnhanced({
   const [editStatus, setEditStatus] = useState('BACKLOG')
   const [editPriority, setEditPriority] = useState('MEDIUM')
   const [editDueDate, setEditDueDate] = useState('')
+  const [editStartDate, setEditStartDate] = useState('')
   const [editEstimate, setEditEstimate] = useState('')
+  const [customFields, setCustomFields] = useState<Array<{
+    id?: string
+    name: string
+    displayName: string
+    type: string
+    value?: string | null
+    isRequired?: boolean
+  }>>([])
+  const [newCustomFieldName, setNewCustomFieldName] = useState('')
 
   const [activeTab, setActiveTab] = useState('details')
   const [comments, setComments] = useState<any[]>([])
@@ -144,7 +156,18 @@ export function TicketDetailModalEnhanced({
       setEditStatus(ticket.status || 'BACKLOG')
       setEditPriority(ticket.priority || 'MEDIUM')
       setEditDueDate((ticket as any).dueDate || '')
+      setEditStartDate((ticket as any).startDate || '')
       setEditEstimate((ticket as any).estimate?.toString() || '')
+      setCustomFields(
+        (ticket.attributes || []).map((attribute: any) => ({
+          id: attribute.id,
+          name: attribute.name,
+          displayName: attribute.displayName || attribute.name,
+          type: attribute.type || 'TEXT',
+          value: attribute.value || '',
+          isRequired: attribute.isRequired || false,
+        }))
+      )
     }
   }, [ticket, open])
 
@@ -897,6 +920,22 @@ export function TicketDetailModalEnhanced({
   const totalHours = timeLogs.reduce((sum, log) => sum + Number(log.hours), 0)
 
   const handleSave = async () => {
+    const nextAttributes = customFields.filter((field) => field.name.trim())
+    const normalizedTicketType = ticketType.trim()
+    const attributeList = normalizedTicketType
+      ? [
+          ...nextAttributes.filter(
+            (field) => !['ticket type', 'type', 'tickettype'].includes(field.name.toLowerCase())
+          ),
+          {
+            name: 'Ticket Type',
+            displayName: 'Ticket Type',
+            type: 'SELECT',
+            value: normalizedTicketType,
+          },
+        ]
+      : nextAttributes
+
     const updatedTicket = {
       ...ticket,
       title: editTitle,
@@ -904,60 +943,13 @@ export function TicketDetailModalEnhanced({
       status: editStatus,
       priority: editPriority,
       dueDate: editDueDate || null,
+      startDate: editStartDate || null,
       estimate: editEstimate ? Number(editEstimate) : null,
       projectId: selectedProject || null,
       moduleId: selectedModule || null,
       milestoneId: selectedMilestone || null,
       releaseId: selectedRelease || null,
-    }
-
-    if (ticket?.id) {
-      try {
-        const updateData: any = {}
-        if (selectedProject) updateData.projectId = selectedProject
-        else updateData.projectId = null
-        if (selectedModule) updateData.moduleId = selectedModule
-        else updateData.moduleId = null
-        if (selectedMilestone) updateData.milestoneId = selectedMilestone
-        else updateData.milestoneId = null
-        if (selectedRelease) updateData.releaseId = selectedRelease
-        else updateData.releaseId = null
-
-        if (Object.keys(updateData).length > 0) {
-          await fetch(`/api/tickets/${ticket.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updateData)
-          })
-        }
-      } catch (error) {
-        console.error('Error saving project/module:', error)
-      }
-
-      if (ticketType && ticket?.id) {
-        try {
-          const existingAttr = ticket.attributes?.find(attr =>
-            attr.name.toLowerCase() === 'ticket type' ||
-            attr.name.toLowerCase() === 'type' ||
-            attr.name.toLowerCase() === 'tickettype'
-          )
-          if (existingAttr && (existingAttr as any).id) {
-            await fetch(`/api/tickets/${ticket.id}/attributes`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ attributeId: (existingAttr as any).id, value: ticketType })
-            })
-          } else {
-            await fetch(`/api/tickets/${ticket.id}/attributes`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name: 'Ticket Type', displayName: 'Ticket Type', type: 'SELECT', value: ticketType })
-            })
-          }
-        } catch (error) {
-          console.error('Error saving ticket type:', error)
-        }
-      }
+      attributes: attributeList,
     }
 
     onSave?.(updatedTicket)
@@ -1067,7 +1059,16 @@ export function TicketDetailModalEnhanced({
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label>Start Date</Label>
+              <Input
+                type="date"
+                value={editStartDate}
+                onChange={(e) => setEditStartDate(e.target.value)}
+                className="mt-1"
+              />
+            </div>
             <div>
               <Label>Due Date</Label>
               <Input
@@ -1089,6 +1090,112 @@ export function TicketDetailModalEnhanced({
                 className="mt-1"
               />
             </div>
+          </div>
+          <div className="space-y-3 rounded-xl border border-border p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <Label>Custom Fields</Label>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Add management fields now or inherit them from the reusable templates.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  value={newCustomFieldName}
+                  onChange={(e) => setNewCustomFieldName(e.target.value)}
+                  placeholder="Field name"
+                  className="h-9 w-40"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    const trimmed = newCustomFieldName.trim()
+                    if (!trimmed) return
+                    const machineName = trimmed.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
+                    setCustomFields((prev) => [
+                      ...prev,
+                      {
+                        name: machineName || `field_${prev.length + 1}`,
+                        displayName: trimmed,
+                        type: 'TEXT',
+                        value: '',
+                      },
+                    ])
+                    setNewCustomFieldName('')
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add
+                </Button>
+              </div>
+            </div>
+            {customFields.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
+                No custom fields yet.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {customFields.map((field, index) => (
+                  <div key={`${field.name}-${index}`} className="grid grid-cols-[minmax(0,1fr)_140px_44px] gap-3">
+                    <div className="space-y-2">
+                      <Input
+                        value={field.displayName}
+                        onChange={(e) =>
+                          setCustomFields((prev) =>
+                            prev.map((item, itemIndex) =>
+                              itemIndex === index ? { ...item, displayName: e.target.value } : item
+                            )
+                          )
+                        }
+                        placeholder="Display name"
+                      />
+                      <Input
+                        value={field.value || ''}
+                        onChange={(e) =>
+                          setCustomFields((prev) =>
+                            prev.map((item, itemIndex) =>
+                              itemIndex === index ? { ...item, value: e.target.value } : item
+                            )
+                          )
+                        }
+                        placeholder="Value"
+                      />
+                    </div>
+                    <Select
+                      value={field.type}
+                      onValueChange={(value) =>
+                        setCustomFields((prev) =>
+                          prev.map((item, itemIndex) =>
+                            itemIndex === index ? { ...item, type: value } : item
+                          )
+                        )
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="TEXT">Text</SelectItem>
+                        <SelectItem value="NUMBER">Number</SelectItem>
+                        <SelectItem value="DATE">Date</SelectItem>
+                        <SelectItem value="SELECT">Select</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() =>
+                        setCustomFields((prev) => prev.filter((_, itemIndex) => itemIndex !== index))
+                      }
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       ) : (
@@ -1152,7 +1259,16 @@ export function TicketDetailModalEnhanced({
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>Start Date</Label>
+                <Input
+                  type="date"
+                  value={editStartDate}
+                  onChange={(e) => setEditStartDate(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
               <div>
                 <Label>Due Date</Label>
                 <Input
@@ -1308,6 +1424,112 @@ export function TicketDetailModalEnhanced({
                 </div>
               </div>
             )}
+            <div className="space-y-3 rounded-xl border border-border p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <Label>Custom Fields</Label>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Add planning and management metadata directly on the ticket.
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={newCustomFieldName}
+                    onChange={(e) => setNewCustomFieldName(e.target.value)}
+                    placeholder="Field name"
+                    className="h-9 w-40"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const trimmed = newCustomFieldName.trim()
+                      if (!trimmed) return
+                      const machineName = trimmed.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
+                      setCustomFields((prev) => [
+                        ...prev,
+                        {
+                          name: machineName || `field_${prev.length + 1}`,
+                          displayName: trimmed,
+                          type: 'TEXT',
+                          value: '',
+                        },
+                      ])
+                      setNewCustomFieldName('')
+                    }}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add
+                  </Button>
+                </div>
+              </div>
+              {customFields.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
+                  No custom fields yet.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {customFields.map((field, index) => (
+                    <div key={`${field.name}-${index}`} className="grid grid-cols-[minmax(0,1fr)_140px_44px] gap-3">
+                      <div className="space-y-2">
+                        <Input
+                          value={field.displayName}
+                          onChange={(e) =>
+                            setCustomFields((prev) =>
+                              prev.map((item, itemIndex) =>
+                                itemIndex === index ? { ...item, displayName: e.target.value } : item
+                              )
+                            )
+                          }
+                          placeholder="Display name"
+                        />
+                        <Input
+                          value={field.value || ''}
+                          onChange={(e) =>
+                            setCustomFields((prev) =>
+                              prev.map((item, itemIndex) =>
+                                itemIndex === index ? { ...item, value: e.target.value } : item
+                              )
+                            )
+                          }
+                          placeholder="Value"
+                        />
+                      </div>
+                      <Select
+                        value={field.type}
+                        onValueChange={(value) =>
+                          setCustomFields((prev) =>
+                            prev.map((item, itemIndex) =>
+                              itemIndex === index ? { ...item, type: value } : item
+                            )
+                          )
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="TEXT">Text</SelectItem>
+                          <SelectItem value="NUMBER">Number</SelectItem>
+                          <SelectItem value="DATE">Date</SelectItem>
+                          <SelectItem value="SELECT">Select</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          setCustomFields((prev) => prev.filter((_, itemIndex) => itemIndex !== index))
+                        }
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="comments" className="space-y-4 mt-4">

@@ -24,7 +24,7 @@ export function useTicketActions(): UseTicketActionsResult {
       setLoading(true)
       setError(null)
 
-      const response = await fetch('/api/v1/tickets', {
+      const response = await fetch('/api/tickets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ticket),
@@ -51,7 +51,7 @@ export function useTicketActions(): UseTicketActionsResult {
       setLoading(true)
       setError(null)
 
-      const response = await fetch(`/api/v1/tickets/${id}`, {
+      const response = await fetch(`/api/tickets/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ticket),
@@ -78,7 +78,7 @@ export function useTicketActions(): UseTicketActionsResult {
       setLoading(true)
       setError(null)
 
-      const response = await fetch(`/api/v1/tickets/${id}`, {
+      const response = await fetch(`/api/tickets/${id}`, {
         method: 'DELETE',
       })
 
@@ -102,7 +102,7 @@ export function useTicketActions(): UseTicketActionsResult {
       setLoading(true)
       setError(null)
 
-      const response = await fetch(`/api/v1/tickets/${id}`, {
+      const response = await fetch(`/api/tickets/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),

@@ -22,6 +22,7 @@ export const FALLBACK_MENU_CONFIG = {
             icon: 'FlaskConical',
             priority: 20,
             items: [
+                { id: 'project-management', slug: 'project-management', name: 'Project Management', icon: 'Kanban', href: '/tools/projects', section: 'Workspace', priority: 5, isBuiltin: true, sourcePluginId: null, requiredRoles: ['USER'], isVisible: true },
                 { id: 'ai-chat-ui', slug: 'ai-chat-ui', name: 'AI Chat', icon: 'MessageCircle', href: '/tools/ai-chat-ui', section: 'AI', priority: 10, isBuiltin: true, sourcePluginId: null, requiredRoles: ['USER'], isVisible: true },
                 { id: 'bi', slug: 'bi', name: 'Business Intelligence', icon: 'BarChart3', href: '/tools/bi', section: 'Analytics', priority: 15, isBuiltin: true, sourcePluginId: null, requiredRoles: ['USER'], isVisible: true },
                 { id: 'marketplace', slug: 'marketplace', name: 'Marketplace', icon: 'Store', href: '/marketplace', section: 'Extensions', priority: 20, isBuiltin: true, sourcePluginId: null, requiredRoles: ['USER'], isVisible: true },

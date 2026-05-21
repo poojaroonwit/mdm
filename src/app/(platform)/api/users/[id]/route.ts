@@ -1,20 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
-import { requireRole } from '@/lib/rbac'
 import { createAuditLog } from '@/lib/audit'
 import { logger } from '@/lib/logger'
 import { validateParams, validateBody, commonSchemas } from '@/lib/api-validation'
-import { handleApiError } from '@/lib/api-middleware'
+import { handleApiError, requireAuthWithId } from '@/lib/api-middleware'
+import { requireRole } from '@/lib/rbac'
 import { addSecurityHeaders } from '@/lib/security-headers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { z } from 'zod'
 
-// GET /api/users/[id] - get user (MANAGER+)
+function canManageUsers(role?: string | null) {
+  return !!role && ['MANAGER', 'ADMIN', 'SUPER_ADMIN'].includes(role)
+}
+
+// GET /api/users/[id] - get own user profile or manage users (MANAGER+)
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const startTime = Date.now()
-  const forbidden = await requireRole(request, 'MANAGER')
-  if (forbidden) return addSecurityHeaders(forbidden)
+  const authResult = await requireAuthWithId()
+  if (!authResult.success) return addSecurityHeaders(authResult.response)
   try {
     const resolvedParams = await params
     const paramValidation = validateParams(resolvedParams, z.object({
@@ -27,9 +31,17 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const { id } = paramValidation.data
     logger.apiRequest('GET', `/api/users/${id}`)
+    const { session } = authResult
+
+    const isOwnProfile = session.user.id === id
+    if (!isOwnProfile && !canManageUsers(session.user.role)) {
+      logger.warn('Forbidden user profile access attempt', { targetUserId: id, userId: session.user.id })
+      return addSecurityHeaders(NextResponse.json({ error: 'Forbidden' }, { status: 403 }))
+    }
+
     const { rows } = await query(`
       SELECT 
-        u.id, u.email, u.name, u.role, u.is_active, u.created_at, u.updated_at,
+        u.id, u.email, u.name, u.avatar, u.role, u.is_active, u.created_at, u.updated_at,
         COALESCE(
           (SELECT json_agg(
             json_build_object(
@@ -61,11 +73,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
-// PUT /api/users/[id] - update user (MANAGER+); role changes require ADMIN+
+// PUT /api/users/[id] - update own profile or manage users; role changes require ADMIN+
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const startTime = Date.now()
-  const forbidden = await requireRole(request, 'MANAGER')
-  if (forbidden) return addSecurityHeaders(forbidden)
+  const authResult = await requireAuthWithId()
+  if (!authResult.success) return addSecurityHeaders(authResult.response)
   try {
     const resolvedParams = await params
     const paramValidation = validateParams(resolvedParams, z.object({
@@ -78,6 +90,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const { id } = paramValidation.data
     logger.apiRequest('PUT', `/api/users/${id}`)
+    const { session } = authResult
+
+    const isOwnProfile = session.user.id === id
+    if (!isOwnProfile && !canManageUsers(session.user.role)) {
+      logger.warn('Forbidden user update attempt', { targetUserId: id, userId: session.user.id })
+      return addSecurityHeaders(NextResponse.json({ error: 'Forbidden' }, { status: 403 }))
+    }
 
     const bodySchema = z.object({
       email: z.string().email().optional(),
@@ -98,10 +117,18 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const { email, name, role, is_active, password, spaces } = bodyValidation.data
 
+    if (isOwnProfile && (role || typeof is_active === 'boolean' || typeof spaces !== 'undefined')) {
+      return addSecurityHeaders(
+        NextResponse.json(
+          { error: 'You cannot update role, status, or space access on your own profile' },
+          { status: 403 }
+        )
+      )
+    }
+
     // Role changes require ADMIN or higher to prevent privilege escalation
-    if (role) {
-      const adminForbidden = await requireRole(request, 'ADMIN')
-      if (adminForbidden) return addSecurityHeaders(adminForbidden)
+    if (role && !['ADMIN', 'SUPER_ADMIN'].includes(session.user.role || '')) {
+      return addSecurityHeaders(NextResponse.json({ error: 'Forbidden' }, { status: 403 }))
     }
 
     const sets: string[] = []
@@ -129,7 +156,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const currentData = currentDataResult.rows[0]
 
     values.push(id)
-    const sql = `UPDATE users SET ${sets.join(', ')}, updated_at = NOW() WHERE id::text = $${values.length} RETURNING id, email, name, role, is_active, created_at, updated_at`
+    const sql = `UPDATE users SET ${sets.join(', ')}, updated_at = NOW() WHERE id::text = $${values.length} RETURNING id, email, name, avatar, role, is_active, created_at, updated_at`
 
     const { rows } = await query(sql, values)
     if (!rows.length) {
@@ -152,14 +179,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Get session to record the actor in audit log
-    const session = await getServerSession(authOptions)
+    const auditSession = await getServerSession(authOptions)
     await createAuditLog({
       action: 'UPDATE',
       entityType: 'User',
       entityId: id,
       oldValue: currentData,
       newValue: rows[0],
-      userId: session?.user?.id || id,
+      userId: auditSession?.user?.id || id,
       ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
       userAgent: request.headers.get('user-agent') || 'unknown'
     })

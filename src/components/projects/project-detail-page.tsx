@@ -57,6 +57,7 @@ import {
   ProjectChatbot,
   ProjectStatus,
   ProjectRole,
+  DataModelRelationship,
   PROJECT_STATUSES,
   PROJECT_ROLES,
   LINK_TYPES,
@@ -151,16 +152,12 @@ export function ProjectDetailPage({ projectId, spaceId, onViewChange }: ProjectD
   }
 
   // Add member
-  const handleAddMember = async (member: { userId: string; role: ProjectRole }) => {
+  const handleAddMember = async (member: { identifier: string; role: ProjectRole }) => {
     if (!project) return
     
     const members = [...(project.members || []), {
-      id: `member-${Date.now()}`,
-      userId: member.userId,
-      projectId: project.id,
+      userId: member.identifier,
       role: member.role,
-      user: { id: member.userId, name: 'New Member', email: '' },
-      joinedAt: new Date().toISOString(),
     }]
     
     try {
@@ -174,9 +171,62 @@ export function ProjectDetailPage({ projectId, spaceId, onViewChange }: ProjectD
         await fetchProject()
         setAddMemberOpen(false)
         toast.success('Member added')
+      } else {
+        const error = await response.json().catch(() => null)
+        throw new Error(error?.error || 'Failed to add member')
       }
     } catch (error) {
-      toast.error('Failed to add member')
+      toast.error(error instanceof Error ? error.message : 'Failed to add member')
+    }
+  }
+
+  const handleUpdateMemberRole = async (memberId: string, role: ProjectRole) => {
+    if (!project) return
+
+    const members = (project.members || []).map((member) =>
+      member.id === memberId ? { ...member, role } : member
+    )
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ members }),
+      })
+
+      if (response.ok) {
+        await fetchProject()
+        toast.success('Member role updated')
+      } else {
+        const error = await response.json().catch(() => null)
+        throw new Error(error?.error || 'Failed to update member role')
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to update member role')
+    }
+  }
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!project) return
+
+    const members = (project.members || []).filter((member) => member.id !== memberId)
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ members }),
+      })
+
+      if (response.ok) {
+        await fetchProject()
+        toast.success('Member removed')
+      } else {
+        const error = await response.json().catch(() => null)
+        throw new Error(error?.error || 'Failed to remove member')
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to remove member')
     }
   }
 
@@ -257,6 +307,55 @@ export function ProjectDetailPage({ projectId, spaceId, onViewChange }: ProjectD
       }
     } catch (error) {
       toast.error('Failed to add asset')
+    }
+  }
+
+  const handleAddDataModel = async (dataModel: { dataModelId: string; relationship: DataModelRelationship }) => {
+    if (!project) return
+
+    const dataModels = [...(project.dataModels || []), dataModel]
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dataModels }),
+      })
+
+      if (response.ok) {
+        await fetchProject()
+        setAddDataModelOpen(false)
+        toast.success('Data model linked')
+      } else {
+        const error = await response.json().catch(() => null)
+        throw new Error(error?.error || 'Failed to link data model')
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to link data model')
+    }
+  }
+
+  const handleRemoveDataModel = async (dataModelId: string) => {
+    if (!project) return
+
+    const dataModels = (project.dataModels || []).filter((item) => item.dataModelId !== dataModelId)
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dataModels }),
+      })
+
+      if (response.ok) {
+        await fetchProject()
+        toast.success('Data model removed')
+      } else {
+        const error = await response.json().catch(() => null)
+        throw new Error(error?.error || 'Failed to remove data model')
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to remove data model')
     }
   }
 
@@ -642,8 +741,20 @@ export function ProjectDetailPage({ projectId, spaceId, onViewChange }: ProjectD
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem>Change Role</DropdownMenuItem>
-                                <DropdownMenuItem className="text-destructive">Remove</DropdownMenuItem>
+                                {PROJECT_ROLES.map((roleOption) => (
+                                  <DropdownMenuItem
+                                    key={roleOption.value}
+                                    onClick={() => handleUpdateMemberRole(member.id, roleOption.value)}
+                                  >
+                                    Set as {roleOption.label}
+                                  </DropdownMenuItem>
+                                ))}
+                                <DropdownMenuItem
+                                  className="text-destructive"
+                                  onClick={() => handleRemoveMember(member.id)}
+                                >
+                                  Remove
+                                </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
@@ -804,14 +915,23 @@ export function ProjectDetailPage({ projectId, spaceId, onViewChange }: ProjectD
                             <div className="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">
                               <Database className="h-5 w-5 text-purple-600" />
                             </div>
-                            <div>
+                          <div>
                               <p className="font-medium">{dm.dataModel?.name}</p>
                               <p className="text-sm text-muted-foreground">
                                 {dm.dataModel?.description || 'No description'}
                               </p>
                             </div>
                           </div>
-                          <Badge>{dm.relationship}</Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge>{dm.relationship}</Badge>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleRemoveDataModel(dm.dataModelId)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -827,6 +947,13 @@ export function ProjectDetailPage({ projectId, spaceId, onViewChange }: ProjectD
                   )}
                 </CardContent>
               </Card>
+              <AddDataModelDialog
+                open={addDataModelOpen}
+                onOpenChange={setAddDataModelOpen}
+                onAdd={handleAddDataModel}
+                spaceId={spaceId || project.spaceId}
+                linkedDataModelIds={(project.dataModels || []).map((item) => item.dataModelId)}
+              />
             </TabsContent>
 
             {/* Tools & Agents Tab */}
@@ -973,9 +1100,9 @@ function ProjectDetailSkeleton() {
 function AddMemberDialog({ open, onOpenChange, onAdd }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onAdd: (member: { userId: string; role: ProjectRole }) => void
+  onAdd: (member: { identifier: string; role: ProjectRole }) => void
 }) {
-  const [userId, setUserId] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [role, setRole] = useState<ProjectRole>('developer')
 
   return (
@@ -996,8 +1123,8 @@ function AddMemberDialog({ open, onOpenChange, onAdd }: {
             <Label>User</Label>
             <Input
               placeholder="Enter user ID or email"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -1021,7 +1148,12 @@ function AddMemberDialog({ open, onOpenChange, onAdd }: {
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={() => onAdd({ userId, role })}>Add Member</Button>
+          <Button
+            onClick={() => onAdd({ identifier: identifier.trim(), role })}
+            disabled={identifier.trim().length === 0}
+          >
+            Add Member
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -1157,6 +1289,110 @@ function AddAssetDialog({ open, onOpenChange, onAdd }: {
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button onClick={() => onAdd({ assetType, assetName, assetDescription })}>Add Asset</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function AddDataModelDialog({ open, onOpenChange, onAdd, spaceId, linkedDataModelIds }: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onAdd: (dataModel: { dataModelId: string; relationship: DataModelRelationship }) => void
+  spaceId?: string
+  linkedDataModelIds: string[]
+}) {
+  const [availableModels, setAvailableModels] = useState<Array<{ id: string; name: string; description?: string }>>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [dataModelId, setDataModelId] = useState('')
+  const [relationship, setRelationship] = useState<DataModelRelationship>('reference')
+
+  useEffect(() => {
+    if (!open || !spaceId) {
+      return
+    }
+
+    const controller = new AbortController()
+
+    const loadDataModels = async () => {
+      try {
+        setIsLoading(true)
+        const response = await fetch(`/api/spaces/${spaceId}/data-models`, {
+          signal: controller.signal,
+        })
+        const data = await response.json().catch(() => null)
+
+        if (!response.ok) {
+          throw new Error(data?.error || 'Failed to load data models')
+        }
+
+        setAvailableModels(Array.isArray(data?.dataModels) ? data.dataModels : [])
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          toast.error(error instanceof Error ? error.message : 'Failed to load data models')
+        }
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadDataModels()
+
+    return () => controller.abort()
+  }, [open, spaceId])
+
+  const selectableModels = availableModels.filter((model) => !linkedDataModelIds.includes(model.id))
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Link Data Model</DialogTitle>
+          <DialogDescription>Associate an existing data model with this project</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label>Data Model</Label>
+            <Select value={dataModelId} onValueChange={setDataModelId}>
+              <SelectTrigger>
+                <SelectValue placeholder={isLoading ? 'Loading data models...' : 'Select data model'} />
+              </SelectTrigger>
+              <SelectContent>
+                {selectableModels.map((model) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    {model.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {!isLoading && selectableModels.length === 0 && (
+              <p className="text-sm text-muted-foreground">All available data models are already linked.</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label>Relationship</Label>
+            <Select value={relationship} onValueChange={(value) => setRelationship(value as DataModelRelationship)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="primary">Primary</SelectItem>
+                <SelectItem value="secondary">Secondary</SelectItem>
+                <SelectItem value="reference">Reference</SelectItem>
+                <SelectItem value="deprecated">Deprecated</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button
+            onClick={() => onAdd({ dataModelId, relationship })}
+            disabled={!dataModelId || isLoading}
+          >
+            Link Data Model
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

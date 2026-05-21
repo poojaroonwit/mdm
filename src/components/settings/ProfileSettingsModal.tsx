@@ -20,8 +20,6 @@ import {
   Palette,
   Bell,
   Mail,
-  Phone,
-  MapPin,
   Moon,
   Sun,
   Monitor,
@@ -29,7 +27,6 @@ import {
 import { toast } from 'react-hot-toast'
 import { useTheme } from 'next-themes'
 import { useThemeContext } from '@/contexts/theme-context'
-import type { ThemeConfig } from '@/lib/themes'
 
 interface ProfileSettingsModalProps {
   open: boolean
@@ -45,22 +42,16 @@ interface ProfileSettingsModalProps {
 interface ProfileData {
   name: string
   email: string
-  phone: string
-  location: string
-  bio: string
 }
 
 const defaultProfile: ProfileData = {
   name: '',
   email: '',
-  phone: '',
-  location: '',
-  bio: '',
 }
 
 export function ProfileSettingsModal({ open, onOpenChange, user }: ProfileSettingsModalProps) {
   const { theme, setTheme } = useTheme()
-  const { currentTheme, setThemeById, lightThemes, darkThemes, mounted } = useThemeContext()
+  const { currentTheme, setThemeById, lightThemes, darkThemes } = useThemeContext()
   
   const [profile, setProfile] = useState<ProfileData>(defaultProfile)
   const [isLoading, setIsLoading] = useState(false)
@@ -71,28 +62,34 @@ export function ProfileSettingsModal({ open, onOpenChange, user }: ProfileSettin
       setProfile({
         name: user.name || '',
         email: user.email || '',
-        phone: '',
-        location: '',
-        bio: '',
       })
       setHasChanges(false)
     }
   }, [open, user])
 
   const handleSave = async () => {
+    if (!user) return
+
     setIsLoading(true)
     try {
-      // TODO: Replace with actual API call
-      // await fetch('/api/profile', {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(profile)
-      // })
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: profile.name,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Failed to update profile')
+      }
+
       toast.success('Profile updated successfully')
       setHasChanges(false)
     } catch (error) {
       console.error('Failed to save profile:', error)
-      toast.error('Failed to save profile')
+      toast.error(error instanceof Error ? error.message : 'Failed to save profile')
     } finally {
       setIsLoading(false)
     }
@@ -143,7 +140,7 @@ export function ProfileSettingsModal({ open, onOpenChange, user }: ProfileSettin
               <CardHeader>
                 <CardTitle>Personal Information</CardTitle>
                 <CardDescription>
-                  Update your personal details and contact information
+                  Update the profile details stored on your account
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -178,44 +175,6 @@ export function ProfileSettingsModal({ open, onOpenChange, user }: ProfileSettin
                       Email cannot be changed
                     </p>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">
-                      <Phone className="h-4 w-4 inline mr-2" />
-                      Phone Number
-                    </Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={profile.phone}
-                      onChange={(e) => updateProfile('phone', e.target.value)}
-                      placeholder="+1 (555) 123-4567"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="location">
-                      <MapPin className="h-4 w-4 inline mr-2" />
-                      Location
-                    </Label>
-                    <Input
-                      id="location"
-                      value={profile.location}
-                      onChange={(e) => updateProfile('location', e.target.value)}
-                      placeholder="City, Country"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <textarea
-                    id="bio"
-                    value={profile.bio}
-                    onChange={(e) => updateProfile('bio', e.target.value)}
-                    placeholder="Tell us about yourself..."
-                    className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  />
                 </div>
               </CardContent>
             </Card>

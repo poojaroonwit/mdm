@@ -1,4 +1,4 @@
-import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from '@/lib/api-middleware'
+import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { requireSpaceAccess } from '@/lib/space-access'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
@@ -9,7 +9,6 @@ async function postHandler(request: NextRequest) {
     const authResult = await requireAuthWithId()
     if (!authResult.success) return authResult.response
     const { session } = authResult
-    // TODO: Add requireSpaceAccess check if spaceId is available
 
     const formData = await request.formData()
     const file = formData.get('file') as File
@@ -22,18 +21,8 @@ async function postHandler(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Check if user has access to this space using Prisma
-    const spaceMember = await db.spaceMember.findFirst({
-      where: {
-        spaceId: spaceId,
-        userId: session.user.id
-      },
-      select: { role: true }
-    })
-
-    if (!spaceMember) {
-      return NextResponse.json({ error: 'Space not found or access denied' }, { status: 404 })
-    }
+    const accessResult = await requireSpaceAccess(spaceId, session.user.id, 'Space not found or access denied')
+    if (!accessResult.success) return accessResult.response
 
     // Get active storage connection
     const storageConnection = await db.storageConnection.findFirst({

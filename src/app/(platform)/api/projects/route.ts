@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAuth, requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
+import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { requireSpaceAccess } from '@/lib/space-access'
 import { db } from '@/lib/db'
 
 async function getHandler(request: NextRequest) {
-  const authResult = await requireAuth()
+  const authResult = await requireAuthWithId()
   if (!authResult.success) return authResult.response
+  const { session } = authResult
 
   const { searchParams } = new URL(request.url)
   const spaceId = searchParams.get('spaceId') || searchParams.get('space_id')
@@ -16,7 +17,35 @@ async function getHandler(request: NextRequest) {
   }
 
   if (spaceId) {
+    const accessResult = await requireSpaceAccess(spaceId, session.user.id!)
+    if (!accessResult.success) return accessResult.response
     where.spaceId = spaceId
+  } else {
+    const [spaceMembers, ownedSpaces] = await Promise.all([
+      db.spaceMember.findMany({
+        where: { userId: session.user.id },
+        select: { spaceId: true }
+      }),
+      db.space.findMany({
+        where: { createdBy: session.user.id, deletedAt: null },
+        select: { id: true }
+      })
+    ])
+
+    const accessibleSpaceIds = Array.from(
+      new Set([
+        ...spaceMembers.map((member) => member.spaceId),
+        ...ownedSpaces.map((space) => space.id),
+      ])
+    )
+
+    if (accessibleSpaceIds.length === 0) {
+      return NextResponse.json({ projects: [] })
+    }
+
+    where.spaceId = {
+      in: accessibleSpaceIds
+    }
   }
 
   if (status) {

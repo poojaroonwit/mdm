@@ -37,6 +37,48 @@ export interface UseMenuConfigResult {
     refetch: () => Promise<void>
 }
 
+const REQUIRED_ITEMS: Array<{ groupSlug: string; item: MenuItemConfig }> = [
+    {
+        groupSlug: 'tools',
+        item: {
+            id: 'project-management',
+            slug: 'project-management',
+            name: 'Project Management',
+            icon: 'Kanban',
+            href: '/tools/projects',
+            section: 'Workspace',
+            priority: 5,
+            isBuiltin: true,
+            sourcePluginId: null,
+            requiredRoles: ['USER'],
+            isVisible: true,
+        },
+    },
+]
+
+function ensureRequiredMenuItems(config: MenuConfig): MenuConfig {
+    const groups = [...config.groups]
+
+    for (const requirement of REQUIRED_ITEMS) {
+        const groupIndex = groups.findIndex((group) => group.slug === requirement.groupSlug)
+        if (groupIndex === -1) continue
+
+        const group = groups[groupIndex]
+        const exists = group.items.some(
+            (item) => item.href === requirement.item.href || item.slug === requirement.item.slug
+        )
+
+        if (exists) continue
+
+        groups[groupIndex] = {
+            ...group,
+            items: [...group.items, requirement.item].sort((a, b) => a.priority - b.priority),
+        }
+    }
+
+    return { groups }
+}
+
 /**
  * Hook to fetch menu configuration from the database
  */
@@ -57,12 +99,13 @@ export function useMenuConfig(): UseMenuConfigResult {
 
             const data = await response.json()
             const groups = Array.isArray(data.menuConfig) ? data.menuConfig : []
-            setMenuConfig(groups.length > 0 ? { groups } : FALLBACK_MENU_CONFIG)
+            const nextConfig = groups.length > 0 ? { groups } : FALLBACK_MENU_CONFIG
+            setMenuConfig(ensureRequiredMenuItems(nextConfig))
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Failed to load menu configuration'
             setError(message)
             console.error('Error fetching menu config:', err)
-            setMenuConfig(FALLBACK_MENU_CONFIG)
+            setMenuConfig(ensureRequiredMenuItems(FALLBACK_MENU_CONFIG))
         } finally {
             setLoading(false)
         }

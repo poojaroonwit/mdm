@@ -57,7 +57,7 @@ export function useTickets(options: UseTicketsOptions = {}): UseTicketsResult {
         params.append('priority', filters.priority)
       }
       if (filters.assigneeId) {
-        params.append('assigneeId', filters.assigneeId)
+        params.append('assignedTo', filters.assigneeId)
       }
       if (filters.projectId) {
         params.append('projectId', filters.projectId)
@@ -72,7 +72,7 @@ export function useTickets(options: UseTicketsOptions = {}): UseTicketsResult {
         params.append('sortOrder', filters.sortOrder || 'asc')
       }
 
-      const response = await fetch(`/api/v1/tickets?${params.toString()}`)
+      const response = await fetch(`/api/tickets?${params.toString()}`)
 
       if (!response.ok) {
         throw new Error('Failed to fetch tickets')

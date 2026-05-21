@@ -317,18 +317,10 @@ async function getLegacyAvailabilityFallback() {
 
 export async function getPublicSSOAvailability() {
   const providers = await getResolvedSSOProviders()
-  const availability = {
+  return {
     google: providers.some((provider) => provider.providerName === "google"),
     azure: providers.some((provider) => provider.providerName === "azure-ad"),
   }
-
-  if (!availability.google || !availability.azure) {
-    const legacyAvailability = await getLegacyAvailabilityFallback()
-    availability.google = availability.google || legacyAvailability.google
-    availability.azure = availability.azure || legacyAvailability.azure
-  }
-
-  return availability
 }
 
 export async function createNextAuthSSOProviders(): Promise<Provider[]> {

@@ -131,6 +131,10 @@ async function putHandler(request: NextRequest) {
         clientSecret: secretRaw,
         scopes: ['openid', 'email', 'profile'],
         allowedDomains: [],
+        allowSignup: false,
+        requireEmailVerified: true,
+        autoLinkByEmail: false,
+        defaultRole: null,
         displayOrder: 1,
       }
 
