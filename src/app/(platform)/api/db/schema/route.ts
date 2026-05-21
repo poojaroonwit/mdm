@@ -1,16 +1,10 @@
-import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from '@/lib/api-middleware'
-import { requireSpaceAccess } from '@/lib/space-access'
+import { requireAdmin, withErrorHandling } from '@/lib/api-middleware'
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 
-async function getHandler(request: NextRequest) {
-  const authResult = await requireAuth()
+async function getHandler() {
+  const authResult = await requireAdmin()
   if (!authResult.success) return authResult.response
-  const { session } = authResult
-  // TODO: Add requireSpaceAccess check if spaceId is available
-
-    const { searchParams } = new URL(request.url)
-    const spaceId = searchParams.get('spaceId')
 
     // Get all tables in the public schema
     const tablesResult = await query(`

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware';
 import { db } from '@/lib/db';
+import { canAccessChatbot } from '@/lib/chatbot-access';
 
 // POST - Publish a chatbot (set isPublished to true and mark latest version as published)
 async function postHandler(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ chatbotId: string }> }
 ) {
   const authResult = await requireAuthWithId();
@@ -18,10 +19,6 @@ async function postHandler(
     where: {
       id: chatbotId,
       deletedAt: null,
-      OR: [
-        { createdBy: session.user.id },
-        { space: { members: { some: { userId: session.user.id } } } }
-      ]
     },
     include: {
       versions: {
@@ -31,7 +28,7 @@ async function postHandler(
     }
   });
 
-  if (!existingChatbot) {
+  if (!existingChatbot || !(await canAccessChatbot(session.user.id!, existingChatbot))) {
     return NextResponse.json({ error: 'Chatbot not found' }, { status: 404 });
   }
 
@@ -62,7 +59,7 @@ async function postHandler(
 
 // DELETE - Unpublish a chatbot (set isPublished to false)
 async function deleteHandler(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ chatbotId: string }> }
 ) {
   const authResult = await requireAuthWithId();
@@ -76,14 +73,10 @@ async function deleteHandler(
     where: {
       id: chatbotId,
       deletedAt: null,
-      OR: [
-        { createdBy: session.user.id },
-        { space: { members: { some: { userId: session.user.id } } } }
-      ]
     }
   });
 
-  if (!existingChatbot) {
+  if (!existingChatbot || !(await canAccessChatbot(session.user.id!, existingChatbot))) {
     return NextResponse.json({ error: 'Chatbot not found' }, { status: 404 });
   }
 

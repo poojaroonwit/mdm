@@ -1,18 +1,25 @@
-import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from '@/lib/api-middleware'
+import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { requireSpaceAccess } from '@/lib/space-access'
 import { NextRequest, NextResponse } from 'next/server'
 import { db as prisma } from '@/lib/db'
 
-async function getHandler() {
+async function getHandler(request: NextRequest) {
   const authResult = await requireAuthWithId()
   if (!authResult.success) return authResult.response
   const { session } = authResult
-  // TODO: Add requireSpaceAccess check if spaceId is available
+  const { searchParams } = new URL(request.url)
+  const spaceId = searchParams.get('spaceId') || searchParams.get('space_id')
+
+  if (spaceId) {
+    const accessResult = await requireSpaceAccess(spaceId, session.user.id!)
+    if (!accessResult.success) return accessResult.response
+  }
 
   const chatSessions = await prisma.chatSession.findMany({
     where: {
       userId: session.user.id,
       deletedAt: null,
+      ...(spaceId ? { spaceId } : {}),
     },
     include: {
       user: {
@@ -68,10 +75,14 @@ async function postHandler(request: NextRequest) {
   const authResult = await requireAuthWithId()
   if (!authResult.success) return authResult.response
   const { session } = authResult
-  // TODO: Add requireSpaceAccess check if spaceId is available
 
   const body = await request.json()
   const { title, description, isPrivate, spaceId, modelId } = body
+
+  if (spaceId) {
+    const accessResult = await requireSpaceAccess(spaceId, session.user.id!)
+    if (!accessResult.success) return accessResult.response
+  }
 
   const chatSession = await prisma.chatSession.create({
     data: {
@@ -132,4 +143,4 @@ async function postHandler(request: NextRequest) {
 export const POST = withErrorHandling(postHandler, 'POST /api/admin/chat-sessions')
 
 
-export const GET = withErrorHandling(getHandler, 'GET GET /api/admin/chat-sessions')
+export const GET = withErrorHandling(getHandler, 'GET /api/admin/chat-sessions')

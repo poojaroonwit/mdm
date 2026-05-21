@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { db } from '@/lib/db'
 import { mergeVersionConfig, sanitizeChatbotConfig } from '@/lib/chatbot-helper'
+import { requireSpaceAccess } from '@/lib/space-access'
+import { canAccessChatbot } from '@/lib/chatbot-access'
 import {
   assignResourceFolder,
   clearResourceFolderAssignments,
@@ -11,9 +13,46 @@ import {
 
 export const dynamic = 'force-dynamic'
 
+async function getAuthorizedChatbot(chatbotId: string, userId: string) {
+  const chatbot = await db.chatbot.findUnique({
+    where: { id: chatbotId },
+    include: {
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      space: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+      versions: {
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      },
+    },
+  })
+
+  if (!chatbot || chatbot.deletedAt) {
+    return null
+  }
+
+  const hasAccess = await canAccessChatbot(userId, chatbot)
+  if (!hasAccess) {
+    return null
+  }
+
+  return chatbot
+}
+
 // GET - Fetch a specific chatbot by ID
 async function getHandler(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ chatbotId: string }> }
 ) {
   const authResult = await requireAuthWithId()
@@ -22,42 +61,13 @@ async function getHandler(
 
   const { chatbotId } = await params
 
-  const chatbot = await db.chatbot.findFirst({
-    where: {
-      id: chatbotId,
-      deletedAt: null,
-      OR: [
-        { createdBy: session.user.id },
-        { space: { members: { some: { userId: session.user.id } } } }
-      ]
-    },
-    include: {
-      creator: {
-        select: {
-          id: true,
-          name: true,
-          email: true
-        }
-      },
-      space: {
-        select: {
-          id: true,
-          name: true,
-          slug: true
-        }
-      },
-      versions: {
-        orderBy: { createdAt: 'desc' },
-        take: 10
-      }
-    }
-  })
+  const chatbot = await getAuthorizedChatbot(chatbotId, session.user.id!)
 
   if (!chatbot) {
     return NextResponse.json({ error: 'Chatbot not found' }, { status: 404 })
   }
 
-  const folderSpaceId = await resolveFolderSpaceId(session.user.id!, chatbot.spaceId || null)
+  const folderSpaceId = await resolveFolderSpaceId(session.user.id!, chatbot.spaceId || null, 'chatbot')
   const folderState = folderSpaceId ? await getFolderState(folderSpaceId, 'chatbot') : null
 
   // Merge version config and sanitize (rewrites MinIO URLs to proxy paths, strips API keys)
@@ -83,34 +93,27 @@ async function putHandler(
   let body: any
   try {
     const rawBody = await request.text()
-    console.log('[PUT /api/chatbots] Raw body length:', rawBody.length)
     if (!rawBody) {
-      console.error('[PUT /api/chatbots] Empty request body')
       return NextResponse.json({ error: 'Empty request body' }, { status: 400 })
     }
     body = JSON.parse(rawBody)
-    console.log('[PUT /api/chatbots] Request body parsed successfully')
   } catch (parseError: any) {
-    console.error('[PUT /api/chatbots] Failed to parse request body:', parseError)
     return NextResponse.json({
       error: 'Invalid JSON body',
       details: parseError.message
     }, { status: 400 })
   }
 
-  // Check if chatbot exists and user has access
-  const existingChatbot = await db.chatbot.findFirst({
-    where: {
-      id: chatbotId,
-      deletedAt: null,
-      OR: [
-        { createdBy: session.user.id },
-        { space: { members: { some: { userId: session.user.id } } } }
-      ]
-    }
+  const existingChatbot = await db.chatbot.findUnique({
+    where: { id: chatbotId },
   })
 
-  if (!existingChatbot) {
+  if (!existingChatbot || existingChatbot.deletedAt) {
+    return NextResponse.json({ error: 'Chatbot not found' }, { status: 404 })
+  }
+
+  const hasAccess = await canAccessChatbot(session.user.id!, existingChatbot)
+  if (!hasAccess) {
     return NextResponse.json({ error: 'Chatbot not found' }, { status: 404 })
   }
 
@@ -165,6 +168,13 @@ async function putHandler(
     ...versionConfig
   } = body
 
+  const normalizedSpaceId = spaceId === 'global' ? null : spaceId
+
+  if (normalizedSpaceId) {
+    const accessResult = await requireSpaceAccess(normalizedSpaceId, session.user.id!)
+    if (!accessResult.success) return accessResult.response
+  }
+
   // Check if there are version-specific config updates
   // Filter out any remaining internal fields that might have slipped through
   const internalFields = ['id', 'createdAt', 'updatedAt', 'deletedAt', 'versions', 'creator', 'space', 'createdBy']
@@ -208,8 +218,8 @@ async function putHandler(
         isPublished: (hasVersionConfig || name || description || logo || primaryColor || messageBoxColor) ? false : (isPublished !== undefined ? isPublished : undefined),
         ...(currentVersion !== undefined && { currentVersion }),
         ...(spaceId !== undefined && {
-          space: spaceId
-            ? { connect: { id: spaceId } }
+          space: normalizedSpaceId
+            ? { connect: { id: normalizedSpaceId } }
             : { disconnect: true }
         }),
         ...(customEmbedDomain !== undefined && { customEmbedDomain }),
@@ -237,10 +247,7 @@ async function putHandler(
         }
       }
     })
-    console.log('[PUT /api/chatbots] Chatbot updated successfully:', updatedChatbot.id)
   } catch (updateError: any) {
-    console.error('[PUT /api/chatbots] Failed to update chatbot:', updateError.message)
-    console.error('[PUT /api/chatbots] Error details:', updateError)
     throw updateError
   }
 
@@ -300,36 +307,15 @@ async function putHandler(
 
   const resolvedFolderSpaceId = await resolveFolderSpaceId(
     session.user.id!,
-    folderSpaceId || spaceId || existingChatbot.spaceId || null
+    folderSpaceId || normalizedSpaceId || existingChatbot.spaceId || null,
+    'chatbot'
   )
   if (resolvedFolderSpaceId && (folderId !== undefined || folderSpaceId !== undefined || spaceId !== undefined)) {
     await assignResourceFolder(resolvedFolderSpaceId, 'chatbot', chatbotId, folderId || null)
   }
 
   // Refetch with updated versions
-  const finalChatbot = await db.chatbot.findUnique({
-    where: { id: chatbotId },
-    include: {
-      creator: {
-        select: {
-          id: true,
-          name: true,
-          email: true
-        }
-      },
-      space: {
-        select: {
-          id: true,
-          name: true,
-          slug: true
-        }
-      },
-      versions: {
-        orderBy: { createdAt: 'desc' },
-        take: 5
-      }
-    }
-  })
+  const finalChatbot = await getAuthorizedChatbot(chatbotId, session.user.id!)
 
   const finalFolderState = resolvedFolderSpaceId
     ? await getFolderState(resolvedFolderSpaceId, 'chatbot')
@@ -346,7 +332,7 @@ async function putHandler(
 
 // DELETE - Soft delete a chatbot
 async function deleteHandler(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ chatbotId: string }> }
 ) {
   const authResult = await requireAuthWithId()

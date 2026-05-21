@@ -7,6 +7,7 @@ import { getSecretsManager } from '@/lib/secrets-manager'
 import { createAuditContext } from '@/lib/audit-context-helper'
 import { requireSpaceAccess } from '@/lib/space-access'
 import { checkRateLimit } from '@/lib/rate-limiter'
+import { getAccessibleSpaceIds } from '@/lib/chatbot-access'
 import {
   assignResourceFolder,
   getFolderState,
@@ -103,23 +104,32 @@ async function getHandler(request: NextRequest) {
     )
   }
 
-  // TODO: Add requireSpaceAccess check if spaceId is available
-
   const { searchParams } = new URL(request.url)
-  const spaceId = searchParams.get('spaceId') || searchParams.get('space_id')
+  const requestedSpaceId = searchParams.get('spaceId') || searchParams.get('space_id')
   const isPublished = searchParams.get('isPublished')
-  const folderSpaceId = await resolveFolderSpaceId(session.user.id!, spaceId, 'chatbot')
+  const normalizedSpaceId = requestedSpaceId === 'global' ? null : requestedSpaceId
 
-  const where: any = {
-    deletedAt: null,
-    OR: [
-      { createdBy: session.user.id },
-      { space: { members: { some: { userId: session.user.id } } } }
-    ]
+  if (normalizedSpaceId) {
+    const accessResult = await requireSpaceAccess(normalizedSpaceId, session.user.id!)
+    if (!accessResult.success) return accessResult.response
   }
 
-  if (spaceId && spaceId !== 'global') {
-    where.spaceId = spaceId
+  const folderSpaceId = await resolveFolderSpaceId(session.user.id!, normalizedSpaceId, 'chatbot')
+  const accessibleSpaceIds = await getAccessibleSpaceIds(session.user.id!)
+  const where: any = {
+    deletedAt: null,
+  }
+
+  if (requestedSpaceId === 'global') {
+    where.createdBy = session.user.id
+    where.spaceId = null
+  } else if (normalizedSpaceId) {
+    where.spaceId = normalizedSpaceId
+  } else {
+    where.OR = [
+      { createdBy: session.user.id },
+      ...(accessibleSpaceIds.length > 0 ? [{ spaceId: { in: accessibleSpaceIds } }] : []),
+    ]
   }
 
   if (isPublished !== null) {
@@ -172,8 +182,6 @@ async function postHandler(request: NextRequest) {
   const authResult = await requireAuthWithId()
   if (!authResult.success) return authResult.response
   const { session } = authResult
-  
-  console.log('[DEBUG] Chatbot POST - Session User:', JSON.stringify(session.user));
 
   // Rate limiting for creating chatbots
   const rateLimitResult = await checkRateLimit('create-chatbot', session.user.id, {
@@ -188,8 +196,6 @@ async function postHandler(request: NextRequest) {
       { status: 429 }
     )
   }
-
-  // TODO: Add requireSpaceAccess check if spaceId is available
 
   const body = await request.json()
   const {
@@ -414,6 +420,13 @@ async function postHandler(request: NextRequest) {
     pwaBannerButtonFontSize
   } = body
 
+  const normalizedSpaceId = spaceId === 'global' ? null : spaceId || null
+
+  if (normalizedSpaceId) {
+    const accessResult = await requireSpaceAccess(normalizedSpaceId, session.user.id!)
+    if (!accessResult.success) return accessResult.response
+  }
+
   // Validate required fields based on engine type
   if (!name || !website) {
     return NextResponse.json({ error: 'Missing required fields: name and website are required' }, { status: 400 })
@@ -478,7 +491,7 @@ async function postHandler(request: NextRequest) {
         isPublished: false,
         currentVersion: currentVersion || null,
         createdBy: session.user.id,
-        spaceId: (spaceId && spaceId !== 'global') ? spaceId : null,
+        spaceId: normalizedSpaceId,
         versions: {
           create: {
             version: currentVersion || '1.0.0',
@@ -729,7 +742,11 @@ async function postHandler(request: NextRequest) {
       }
     })
 
-    const resolvedFolderSpaceId = await resolveFolderSpaceId(session.user.id!, folderSpaceId || spaceId || null)
+    const resolvedFolderSpaceId = await resolveFolderSpaceId(
+      session.user.id!,
+      folderSpaceId || normalizedSpaceId,
+      'chatbot'
+    )
     if (resolvedFolderSpaceId) {
       await assignResourceFolder(resolvedFolderSpaceId, 'chatbot', chatbot.id, folderId || null)
     }
