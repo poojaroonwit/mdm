@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ComponentType } from 'react'
 import { getSession, signIn, useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,17 @@ import { Eye, EyeOff, Mail, Lock, AlertCircle, Layers, Smartphone, ArrowLeft } f
 import { loadBrandingConfig } from '@/lib/branding'
 import { getSafeCallbackUrl } from '@/lib/auth-callback'
 import { useSystemSettingsSafe } from '@/contexts/system-settings-context'
+
+type IconComponent = ComponentType<{ className?: string }>
+
+const EyeIcon = Eye as unknown as IconComponent
+const EyeOffIcon = EyeOff as unknown as IconComponent
+const MailIcon = Mail as unknown as IconComponent
+const LockIcon = Lock as unknown as IconComponent
+const AlertCircleIcon = AlertCircle as unknown as IconComponent
+const LayersIcon = Layers as unknown as IconComponent
+const SmartphoneIcon = Smartphone as unknown as IconComponent
+const ArrowLeftIcon = ArrowLeft as unknown as IconComponent
 
 export default function SignInPage() {
   const [email, setEmail] = useState('')
@@ -86,10 +97,9 @@ export default function SignInPage() {
         setLoginBgStyle(style)
         setLoginBgVideo(videoUrl)
       } else {
-        // Default light grey background
         setLoginBgStyle({
-          background: 'linear-gradient(135deg, #f9fafb 0%, #d1d5db 100%)',
-          backgroundColor: '#f3f4f6'
+          background: 'linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%)',
+          backgroundColor: 'hsl(var(--background))'
         })
       }
     })
@@ -220,10 +230,9 @@ export default function SignInPage() {
   }
 
   const hasAnySSO = ssoProviders.google || ssoProviders.azure
-  const hasCustomBg = Object.keys(loginBgStyle).length > 0 && !loginBgStyle.background?.toString().includes('radial-gradient')
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-hidden text-foreground md:h-screen md:flex-row" style={loginBgStyle}>
+    <div className="relative flex min-h-screen w-full flex-col overflow-hidden bg-background text-foreground md:h-screen md:flex-row" style={loginBgStyle}>
 
       {/* Helper for video background */}
       {loginBgVideo && (
@@ -244,18 +253,18 @@ export default function SignInPage() {
       <div className="relative z-10 flex flex-col justify-start px-6 pb-6 pt-12 md:flex-1 md:justify-center md:p-12 lg:p-20">
         <div className="max-w-3xl space-y-4 md:space-y-6">
           <div className="mb-2 flex items-center space-x-4">
-            <div className="rounded-2xl border border-border bg-card/60 p-3 shadow-lg backdrop-blur-sm">
+            <div className="rounded-2xl border border-border/60 bg-card/70 p-3 shadow-lg backdrop-blur-sm">
               {logoUrl ? (
                 <img src={logoUrl} alt="Logo" className="h-10 w-10 object-contain md:h-10 md:w-10" />
               ) : (
-                <Layers className="h-10 w-10 text-primary fill-primary/10" />
+                <LayersIcon className="h-10 w-10 fill-primary/10 text-primary" />
               )}
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 drop-shadow-lg md:text-5xl lg:text-6xl">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground drop-shadow-lg md:text-5xl lg:text-6xl">
               {appName}
             </h1>
           </div>
-          <p className="ml-1 max-w-lg text-base font-light leading-relaxed text-gray-600 md:text-2xl">
+          <p className="ml-1 max-w-lg text-base font-light leading-relaxed text-foreground/75 md:text-2xl">
             Experience the future of data management. Secure, scalable, and simple.
           </p>
         </div>
@@ -266,9 +275,9 @@ export default function SignInPage() {
         <Card
           className="relative flex min-h-[68vh] w-full flex-col justify-center rounded-t-[32px] border-x-0 border-b-0 border-t border-gray-200 shadow-[0_-24px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl md:h-full md:min-h-0 md:rounded-2xl md:border md:shadow-2xl"
           style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
-            color: '#1f2937',
-            borderColor: 'rgba(229, 231, 235, 0.5)',
+            backgroundColor: 'color-mix(in srgb, hsl(var(--card)) 82%, transparent)',
+            color: 'hsl(var(--card-foreground))',
+            borderColor: 'color-mix(in srgb, hsl(var(--border)) 60%, transparent)',
           }}
         >
           <CardHeader className="flex flex-col items-center space-y-1 px-6 pb-2 pt-8 md:px-6 md:pt-6">
@@ -284,7 +293,7 @@ export default function SignInPage() {
                 <form onSubmit={handle2FASubmit} className="space-y-4">
                      <div className="flex flex-col items-center space-y-2 mb-4">
                          <div className="p-3 bg-primary/10 rounded-full">
-                             <Smartphone className="h-8 w-8 text-primary" />
+                             <SmartphoneIcon className="h-8 w-8 text-primary" />
                          </div>
                          <h3 className="text-xl font-semibold">Two-Factor Authentication</h3>
                          <p className="text-sm text-muted-foreground text-center">
@@ -313,7 +322,7 @@ export default function SignInPage() {
 
                     {error && (
                         <Alert variant="destructive" className="border-red-500">
-                        <AlertCircle className="h-4 w-4" />
+                        <AlertCircleIcon className="h-4 w-4" />
                         <AlertTitle>Error</AlertTitle>
                         <AlertDescription>{error}</AlertDescription>
                         </Alert>
@@ -333,7 +342,7 @@ export default function SignInPage() {
                             setError('')
                         }}
                     >
-                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        <ArrowLeftIcon className="mr-2 h-4 w-4" />
                         Back to Login
                     </Button>
                 </form>
@@ -342,7 +351,7 @@ export default function SignInPage() {
               <div className="space-y-2">
                 <Label htmlFor="email" className="font-medium">Email</Label>
                 <div className="relative group">
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                  <MailIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                   <Input
                     id="email"
                     type="email"
@@ -358,7 +367,7 @@ export default function SignInPage() {
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative group">
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                  <LockIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
@@ -376,9 +385,9 @@ export default function SignInPage() {
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      <EyeOffIcon className="h-4 w-4 text-muted-foreground" />
                     ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <EyeIcon className="h-4 w-4 text-muted-foreground" />
                     )}
                   </Button>
                 </div>
@@ -386,7 +395,7 @@ export default function SignInPage() {
 
               {error && (
                 <Alert variant="destructive" className="border-red-500 animate-in fade-in zoom-in-95 duration-200">
-                  <AlertCircle className="h-4 w-4" />
+                  <AlertCircleIcon className="h-4 w-4" />
                   <AlertTitle>Error</AlertTitle>
                   <AlertDescription>
                     {error}

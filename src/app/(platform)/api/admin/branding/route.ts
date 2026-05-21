@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin, withErrorHandling } from '@/lib/api-middleware'
 import { prisma } from '@/lib/db'
 import { defaultBrandingConfig } from '@/config/branding'
-import type { BrandingConfig } from '@/app/admin/features/system/types'
+import type { BrandingConfig } from '@/types/branding'
 
 async function getHandler(request: NextRequest) {
   // Allow unauthenticated access for branding (used in public pages like signin)

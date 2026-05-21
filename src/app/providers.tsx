@@ -19,8 +19,8 @@ import { Toaster } from "react-hot-toast"
 import { NotificationProvider } from "@/contexts/notification-context"
 import { QueryProvider } from "@/lib/providers/query-provider"
 import { ThemeProvider } from "@/contexts/theme-context"
-import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
+import { SessionTimeoutWatcher } from "@/components/providers/SessionTimeoutWatcher"
 
 
 function ThemedToaster() {
@@ -78,7 +78,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const isChatRoute = pathname?.startsWith('/chat/')
 
   return (
-    <SessionProvider refetchInterval={5 * 60} refetchOnWindowFocus={true}>
+    <SessionProvider refetchInterval={60} refetchOnWindowFocus={true}>
       <NextThemeProvider
         attribute="class"
         defaultTheme="system"
@@ -88,6 +88,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableColorScheme={false}
       >
         <ThemeProvider>
+          <SessionTimeoutWatcher />
           <QueryProvider>
             <NotificationProvider>
               {children}

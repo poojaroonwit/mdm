@@ -1,6 +1,6 @@
 'use client'
 
-import { BrandingConfig } from '@/app/admin/features/system/types'
+import type { BrandingConfig } from '@/types/branding'
 import { ComponentStyle } from './types'
 
 /**

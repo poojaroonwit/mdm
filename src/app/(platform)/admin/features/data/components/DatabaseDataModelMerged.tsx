@@ -55,7 +55,7 @@ import { DatabaseConnection } from '../types'
 import { getDatabaseTypes, type Asset } from '@/lib/assets'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
-import { BrandingConfig } from '@/app/admin/features/system/types'
+import type { BrandingConfig } from '@/types/branding'
 
 // Built-in database constant
 const BUILTIN_DATABASE: DatabaseConnection = {

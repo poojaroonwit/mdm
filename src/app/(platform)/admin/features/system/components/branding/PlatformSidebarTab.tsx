@@ -15,7 +15,7 @@ import {
     Zap,
     Move
 } from 'lucide-react'
-import { BrandingConfig } from '@/app/admin/features/system/types'
+import type { BrandingConfig } from '@/types/branding'
 
 interface PlatformSidebarTabProps {
     branding: BrandingConfig

@@ -15,8 +15,15 @@
  */
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
+import type { ThemeMode, ThemePreference, ThemeState } from '@/types/theme'
 
-export function useThemeSafe() {
+export interface UseThemeSafeResult extends ThemeState {
+  theme?: ThemePreference
+  systemTheme?: ThemeMode
+  setTheme: (theme: ThemePreference) => void
+}
+
+export function useThemeSafe(): UseThemeSafeResult {
   const { theme, systemTheme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -25,20 +32,20 @@ export function useThemeSafe() {
   }, [])
 
   // Resolve the effective theme (handles 'system' mode)
-  const resolvedTheme = mounted
-    ? (theme === 'system' ? systemTheme : theme)
+  const resolvedTheme: ThemeMode = mounted
+    ? (((theme === 'system' ? systemTheme : theme) as ThemeMode | undefined) ?? 'light')
     : 'light'
 
   const isDark = resolvedTheme === 'dark'
   const isLight = resolvedTheme === 'light'
 
   return {
-    theme,
-    systemTheme,
+    theme: theme as ThemePreference | undefined,
+    systemTheme: systemTheme as ThemeMode | undefined,
     resolvedTheme,
     isDark,
     isLight,
-    setTheme,
+    setTheme: setTheme as (theme: ThemePreference) => void,
     mounted,
   }
 }

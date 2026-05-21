@@ -1,4 +1,4 @@
-import { BrandingConfig } from '@/app/admin/features/system/types'
+import type { BrandingConfig } from '@/types/branding'
 
 /**
  * Default branding configuration

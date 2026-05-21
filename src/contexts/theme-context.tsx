@@ -4,10 +4,11 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { useTheme as useNextTheme } from 'next-themes'
 import { ThemeConfig, getThemeById, getThemeByVariant, lightThemes, darkThemes } from '@/lib/themes'
 import { THEME_STORAGE_KEYS, THEME_DEFAULTS, THEME_ERROR_MESSAGES } from '@/lib/theme-constants'
+import type { ThemeMode } from '@/types/theme'
 
 interface ThemeContextType {
   currentTheme: ThemeConfig | null
-  setThemeVariant: (variant: string, mode: 'light' | 'dark') => void
+  setThemeVariant: (variant: string, mode: ThemeMode) => void
   setThemeById: (id: string) => void
   lightThemes: ThemeConfig[]
   darkThemes: ThemeConfig[]
@@ -18,7 +19,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 // Fallback theme for error cases
-const getFallbackTheme = (mode: 'light' | 'dark'): ThemeConfig | null => {
+const getFallbackTheme = (mode: ThemeMode): ThemeConfig | null => {
   return getThemeByVariant(THEME_DEFAULTS.VARIANT, mode) || null
 }
 
@@ -68,11 +69,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!mounted || typeof window === 'undefined') return
 
-    const getResolvedTheme = (): 'light' | 'dark' => {
+    const getResolvedTheme = (): ThemeMode => {
       if (theme === 'system') {
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
       }
-      return (theme as 'light' | 'dark') || THEME_DEFAULTS.MODE
+      return (theme as ThemeMode) || THEME_DEFAULTS.MODE
     }
 
     const loadTheme = () => {
@@ -135,7 +136,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme, mounted, applyTheme])
 
-  const setThemeVariant = useCallback((variant: string, mode: 'light' | 'dark') => {
+  const setThemeVariant = useCallback((variant: string, mode: ThemeMode) => {
     try {
       const newTheme = getThemeByVariant(variant as any, mode)
       if (newTheme) {

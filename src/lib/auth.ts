@@ -36,6 +36,7 @@ const JWT_SECRET = new TextEncoder().encode(
 )
 
 const CACHE_TTL_MS = 10 * 60 * 1000
+const DEFAULT_SESSION_TIMEOUT_SECONDS = 24 * 3600
 let sessionTimeoutCache: { data: number; timestamp: number } | null = null
 const nextAuthUrl = process.env.NEXTAUTH_URL?.trim()
 const isSecureAuthUrl = nextAuthUrl?.startsWith("https://") ?? false
@@ -130,7 +131,7 @@ async function getSessionTimeoutSeconds(): Promise<number> {
     return sessionTimeoutCache.data
   }
 
-  let timeout = 24 * 3600
+  let timeout = DEFAULT_SESSION_TIMEOUT_SECONDS
   try {
     const [timeoutSetting, legacyPolicySetting] = await Promise.all([
       (prisma as any).systemSetting.findUnique({ where: { key: "sessionTimeout" } }),
@@ -157,10 +158,13 @@ async function getSessionTimeoutSeconds(): Promise<number> {
   return timeout
 }
 
-function createBaseAuthOptions(providers: NonNullable<NextAuthOptions["providers"]>): NextAuthOptions {
+function createBaseAuthOptions(
+  providers: NonNullable<NextAuthOptions["providers"]>,
+  sessionMaxAgeSeconds: number = DEFAULT_SESSION_TIMEOUT_SECONDS
+): NextAuthOptions {
   return {
     secret: getAuthSecret(),
-    trustHost: true,
+    ...({ trustHost: true } as Record<string, boolean>),
     useSecureCookies: isSecureAuthUrl,
     providers: [
       CredentialsProvider({
@@ -199,7 +203,14 @@ function createBaseAuthOptions(providers: NonNullable<NextAuthOptions["providers
       }),
       ...providers,
     ],
-    session: { strategy: "jwt" },
+    session: {
+      strategy: "jwt",
+      maxAge: sessionMaxAgeSeconds,
+      updateAge: 0,
+    },
+    jwt: {
+      maxAge: sessionMaxAgeSeconds,
+    },
     cookies: {
       sessionToken: {
         name: isSecureAuthUrl ? "__Secure-next-auth.session-token" : "next-auth.session-token",
@@ -277,6 +288,11 @@ function createBaseAuthOptions(providers: NonNullable<NextAuthOptions["providers
         return true
       },
       async jwt({ token, user }) {
+        if (typeof token.exp === "number" && token.exp <= Math.floor(Date.now() / 1000)) {
+          token.exp = 0
+          return token
+        }
+
         if (user) {
           token.id = user.id
           token.role = (user as any).role
@@ -327,5 +343,6 @@ export const authOptions: NextAuthOptions = createBaseAuthOptions([])
 
 export async function buildAuthOptions(): Promise<NextAuthOptions> {
   const providers = await createNextAuthSSOProviders()
-  return createBaseAuthOptions(providers)
+  const sessionTimeoutSeconds = await getSessionTimeoutSeconds()
+  return createBaseAuthOptions(providers, sessionTimeoutSeconds)
 }

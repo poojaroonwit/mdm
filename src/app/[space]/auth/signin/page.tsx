@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ComponentType } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { getSession, signIn, useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,17 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Eye, EyeOff, Mail, Lock, AlertCircle, Layers, Smartphone, ArrowLeft } from 'lucide-react'
 import { loadBrandingConfig } from '@/lib/branding'
 import { getSafeCallbackUrl } from '@/lib/auth-callback'
+
+type IconComponent = ComponentType<{ className?: string }>
+
+const EyeIcon = Eye as unknown as IconComponent
+const EyeOffIcon = EyeOff as unknown as IconComponent
+const MailIcon = Mail as unknown as IconComponent
+const LockIcon = Lock as unknown as IconComponent
+const AlertCircleIcon = AlertCircle as unknown as IconComponent
+const LayersIcon = Layers as unknown as IconComponent
+const SmartphoneIcon = Smartphone as unknown as IconComponent
+const ArrowLeftIcon = ArrowLeft as unknown as IconComponent
 
 export default function SpaceSignInPage() {
   const params = useParams() as { space: string }
@@ -192,15 +203,15 @@ export default function SpaceSignInPage() {
       return { background: `linear-gradient(${angle}deg, ${from}, ${to})` }
     }
 
-    // Default light grey background
+    // Default token-based background
     return {
-      background: 'linear-gradient(135deg, #f9fafb 0%, #d1d5db 100%)',
-      backgroundColor: '#f3f4f6'
+      background: 'linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%)',
+      backgroundColor: 'hsl(var(--background))'
     }
   }
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-hidden md:h-screen md:flex-row" style={getBackgroundStyle()}>
+    <div className="relative flex min-h-screen w-full flex-col overflow-hidden bg-background text-foreground md:h-screen md:flex-row" style={getBackgroundStyle()}>
       {/* Animated background blobs for default style - Removed to match clean white/pink/blue design */}
       {/* {!bgType && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -214,18 +225,18 @@ export default function SpaceSignInPage() {
       <div className="relative z-10 flex flex-col justify-start px-6 pb-6 pt-12 md:flex-1 md:justify-center md:p-12 lg:p-20">
         <div className="max-w-3xl space-y-4 md:space-y-6">
           <div className="mb-2 flex items-center space-x-4">
-            <div className="rounded-2xl border border-gray-200 bg-white/60 p-3 shadow-lg backdrop-blur-sm">
+            <div className="rounded-2xl border border-border/60 bg-card/70 p-3 shadow-lg backdrop-blur-sm">
               {branding?.applicationLogo ? (
                 <img src={branding.applicationLogo} alt="Logo" className="h-10 w-10 object-contain" />
               ) : (
-                <Layers className="h-10 w-10 text-primary fill-primary/10" />
+                <LayersIcon className="h-10 w-10 fill-primary/10 text-primary" />
               )}
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 drop-shadow-lg md:text-5xl lg:text-6xl">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground drop-shadow-lg md:text-5xl lg:text-6xl">
               {branding?.applicationName || 'Unified Data Platform'}
             </h1>
           </div>
-          <p className="ml-1 max-w-lg text-base font-light leading-relaxed text-gray-600 md:text-2xl">
+          <p className="ml-1 max-w-lg text-base font-light leading-relaxed text-foreground/75 md:text-2xl">
             {branding?.applicationDescription || 'Experience the future of data management. Secure, scalable, and simple.'}
           </p>
         </div>
@@ -236,9 +247,9 @@ export default function SpaceSignInPage() {
         <Card
           className="relative flex min-h-[68vh] w-full flex-col justify-center rounded-t-[32px] border-x-0 border-b-0 border-t border-gray-200 shadow-[0_-24px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl md:h-full md:min-h-0 md:rounded-2xl md:border md:shadow-2xl"
           style={{
-            backgroundColor: config.cardStyle?.backgroundColor || 'rgba(255, 255, 255, 0.8)',
-            color: config.cardStyle?.textColor || '#1f2937',
-            borderColor: config.cardStyle?.borderColor || 'rgba(229, 231, 235, 0.5)',
+            backgroundColor: config.cardStyle?.backgroundColor || 'color-mix(in srgb, hsl(var(--card)) 82%, transparent)',
+            color: config.cardStyle?.textColor || 'hsl(var(--card-foreground))',
+            borderColor: config.cardStyle?.borderColor || 'color-mix(in srgb, hsl(var(--border)) 60%, transparent)',
             boxShadow: config.cardStyle?.shadow !== false ? '0 4px 6px -1px rgb(0 0 0 / 0.1)' : 'none'
           }}
         >
@@ -251,7 +262,7 @@ export default function SpaceSignInPage() {
                 <form onSubmit={handle2FASubmit} className="space-y-4">
                      <div className="flex flex-col items-center space-y-2 mb-4">
                          <div className="p-3 bg-primary/10 rounded-full">
-                             <Smartphone className="h-8 w-8 text-primary" />
+                             <SmartphoneIcon className="h-8 w-8 text-primary" />
                          </div>
                          <h3 className="text-xl font-semibold">Two-Factor Authentication</h3>
                          <p className="text-sm text-muted-foreground text-center">
@@ -279,7 +290,7 @@ export default function SpaceSignInPage() {
 
                     {error && (
                         <Alert variant="destructive" className="border-red-500">
-                        <AlertCircle className="h-4 w-4" />
+                        <AlertCircleIcon className="h-4 w-4" />
                         <AlertTitle>Error</AlertTitle>
                         <AlertDescription>{error}</AlertDescription>
                         </Alert>
@@ -299,7 +310,7 @@ export default function SpaceSignInPage() {
                             setError('')
                         }}
                     >
-                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        <ArrowLeftIcon className="mr-2 h-4 w-4" />
                         Back to Login
                     </Button>
                 </form>
@@ -308,13 +319,13 @@ export default function SpaceSignInPage() {
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative group">
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                  <MailIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                   <Input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 bg-white/50 border-white/30 focus:bg-white/80 transition-all hover:bg-white/60"
+                    className="pl-10 bg-card/50 border-border/30 focus:bg-card/90 transition-all hover:bg-card/70"
                     placeholder="name@example.com"
                     required
                   />
@@ -323,24 +334,24 @@ export default function SpaceSignInPage() {
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative group">
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                  <LockIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 bg-white/50 border-white/30 focus:bg-white/80 transition-all hover:bg-white/60"
+                    className="pl-10 pr-10 bg-card/50 border-border/30 focus:bg-card/90 transition-all hover:bg-card/70"
                     required
                   />
                   <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
-                    {showPassword ? (<EyeOff className="h-4 w-4 text-muted-foreground" />) : (<Eye className="h-4 w-4 text-muted-foreground" />)}
+                    {showPassword ? (<EyeOffIcon className="h-4 w-4 text-muted-foreground" />) : (<EyeIcon className="h-4 w-4 text-muted-foreground" />)}
                   </Button>
                 </div>
               </div>
 
               {error && (
                 <Alert variant="destructive" className="border-red-500 animate-in fade-in zoom-in-95 duration-200">
-                  <AlertCircle className="h-4 w-4" />
+                  <AlertCircleIcon className="h-4 w-4" />
                   <AlertTitle>Error</AlertTitle>
                   <AlertDescription>
                     {error}
@@ -364,7 +375,7 @@ export default function SpaceSignInPage() {
                 </div>
                 <div className="grid gap-2">
                   {ssoProviders.google && (
-                    <Button variant="outline" className="w-full bg-white/50 hover:bg-white/80 border-white/40" onClick={async () => {
+                    <Button variant="outline" className="w-full bg-card/50 hover:bg-card/80 border-border/40" onClick={async () => {
                       try {
                         const requestedCallbackUrl = getSafeCallbackUrl(searchParams?.get('callbackUrl'), fallbackCallbackUrl)
                         const spaceRes = await fetch(`/api/spaces/${params.space}/default-page`)
@@ -384,7 +395,7 @@ export default function SpaceSignInPage() {
                     </Button>
                   )}
                   {ssoProviders.azure && (
-                    <Button variant="outline" className="w-full bg-white/50 hover:bg-white/80 border-white/40" onClick={async () => {
+                    <Button variant="outline" className="w-full bg-card/50 hover:bg-card/80 border-border/40" onClick={async () => {
                       try {
                         const requestedCallbackUrl = getSafeCallbackUrl(searchParams?.get('callbackUrl'), fallbackCallbackUrl)
                         const spaceRes = await fetch(`/api/spaces/${params.space}/default-page`)

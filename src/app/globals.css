@@ -125,6 +125,18 @@
     --z-chat-widget-preview: 10004;
   }
 
+  html {
+    background-color: var(--bg-default);
+  }
+
+  html:not(.chat-embed-mode) {
+    color-scheme: light;
+  }
+
+  html.dark:not(.chat-embed-mode) {
+    color-scheme: dark;
+  }
+
   .dark {
     --bg-default: #000000;
     --bg-surface: #111111;
@@ -175,7 +187,7 @@
     --ring: 240 4.9% 83.9%;
   }
 
-  /* Fix Tailwind v4: border utility defaults to currentColor — set correct default.
+  /* Fix Tailwind v4: border utility defaults to currentColor, so set a token-backed default.
      Use --border-default (plain hex, e.g. #e5e7eb) instead of hsl(var(--border))
      to avoid HSL triplet parsing issues in the PostCSS build pipeline. */
   *, *::before, *::after {
@@ -342,7 +354,7 @@ html.chat-embed-mode body {
   }
 }
 
-/* Tailwind utility overrides — unlayered so they win over @layer utilities */
+/* Legacy utility remaps for older screens that still rely on semantic gray/white classes. */
 .bg-white { background-color: var(--bg-surface); }
 .bg-gray-50 { background-color: var(--bg-default); }
 .bg-gray-100 { background-color: var(--bg-surface-hover); }
