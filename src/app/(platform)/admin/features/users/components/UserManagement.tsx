@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
+import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Switch } from '@/components/ui/switch'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { AvatarUpload } from '@/components/ui/avatar-upload'
@@ -1828,13 +1829,21 @@ export function UserManagement() {
         </Dialog>
 
 
-      <Dialog open={showSyncSettingsDialog} onOpenChange={setShowSyncSettingsDialog}>
-        <DialogContent className="p-0 overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>AD Sync Settings</DialogTitle>
-            <DialogDescription>Configure automatic synchronization with Azure AD.</DialogDescription>
-          </DialogHeader>
-          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
+      <CrudDialog
+        open={showSyncSettingsDialog}
+        onOpenChange={setShowSyncSettingsDialog}
+        title="AD Sync Settings"
+        description="Configure automatic synchronization with Azure AD."
+        bodyClassName="space-y-4"
+        footer={(
+          <>
+            <Button variant="outline" onClick={() => setShowSyncSettingsDialog(false)}>Cancel</Button>
+            <Button onClick={saveSyncSettings} disabled={savingSyncSettings}>
+              {savingSyncSettings ? <RefreshCw className="h-4 w-4 animate-spin" /> : 'Save'}
+            </Button>
+          </>
+        )}
+      >
              <div className="flex items-center justify-between">
                 <Label>Enable Automatic Sync</Label>
                 <Switch 
@@ -1860,15 +1869,7 @@ export function UserManagement() {
                     </div>
                  </>
              )}
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowSyncSettingsDialog(false)}>Cancel</Button>
-            <Button onClick={saveSyncSettings} disabled={savingSyncSettings}>
-                {savingSyncSettings ? <RefreshCw className="h-4 w-4 animate-spin" /> : 'Save'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </CrudDialog>
       
         {/* Import Users Dialog */}
         <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
@@ -2003,35 +2004,14 @@ export function UserManagement() {
           </DialogContent>
         </Dialog>
         {/* Reset Password Dialog */}
-        <Dialog open={showResetPasswordDialog} onOpenChange={setShowResetPasswordDialog}>
-          <DialogContent className="p-0 overflow-hidden">
-            <DialogHeader>
-              <DialogTitle>Reset Password</DialogTitle>
-              <DialogDescription>
-                Set a new password for {resetPasswordUser?.name}.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogBody className="space-y-4 p-6 pt-2 pb-4">
-              <div className="space-y-2">
-                <Label htmlFor="new-password">New Password</Label>
-                <Input
-                  id="new-password"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm Password</Label>
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-              </div>
-            </DialogBody>
-            <DialogFooter>
+        <CrudDialog
+          open={showResetPasswordDialog}
+          onOpenChange={setShowResetPasswordDialog}
+          title="Reset Password"
+          description={`Set a new password for ${resetPasswordUser?.name}.`}
+          bodyClassName="space-y-4"
+          footer={(
+            <>
               <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)}>
                 Cancel
               </Button>
@@ -2063,9 +2043,28 @@ export function UserManagement() {
               >
                 {resettingPassword ? 'Resetting...' : 'Reset Password'}
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </>
+          )}
+        >
+              <div className="space-y-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </div>
+        </CrudDialog>
       </div>
     </div>
   )

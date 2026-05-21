@@ -8,10 +8,10 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { FileCode, History, ArrowUp, ArrowDown, Plus, Eye } from 'lucide-react'
 import { CrudDialog } from '@/components/ui/crud-dialog'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import toast from 'react-hot-toast'
 import { Migration } from '../types'
+import { runApiAction } from '@/lib/api-action'
 
 export function SchemaMigrations() {
   const [migrations, setMigrations] = useState<Migration[]>([])
@@ -26,7 +26,7 @@ export function SchemaMigrations() {
     description: '',
     migrationType: 'CREATE_TABLE',
     upSql: '',
-    downSql: ''
+    downSql: '',
   })
 
   useEffect(() => {
@@ -64,24 +64,30 @@ export function SchemaMigrations() {
 
     setSubmitting(true)
     try {
-      const response = await fetch('/api/schema/migrations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newMigration)
+      await runApiAction({
+        request: () => fetch('/api/schema/migrations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newMigration),
+        }),
+        successMessage: 'Migration created',
+        errorMessage: 'Failed to create migration',
+        onSuccess: async () => {
+          setShowCreateDialog(false)
+          setNewMigration({
+            version: '',
+            name: '',
+            description: '',
+            migrationType: 'CREATE_TABLE',
+            upSql: '',
+            downSql: '',
+          })
+          await loadMigrations()
+        },
+        onError: (error) => {
+          console.error('Failed to create migration:', error)
+        }
       })
-
-      if (response.ok) {
-        toast.success('Migration created')
-        setShowCreateDialog(false)
-        setNewMigration({ version: '', name: '', description: '', migrationType: 'CREATE_TABLE', upSql: '', downSql: '' })
-        loadMigrations()
-      } else {
-        const error = await response.json()
-        toast.error(error.error || 'Failed to create migration')
-      }
-    } catch (error) {
-      console.error('Failed to create migration:', error)
-      toast.error('Failed to create migration')
     } finally {
       setSubmitting(false)
     }
@@ -91,14 +97,10 @@ export function SchemaMigrations() {
     const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
       pending: 'secondary',
       applied: 'default',
-      rolled_back: 'destructive'
+      rolled_back: 'destructive',
     }
 
-    return (
-      <Badge variant={variants[status] || 'default'}>
-        {status.replace('_', ' ').toUpperCase()}
-      </Badge>
-    )
+    return <Badge variant={variants[status] || 'default'}>{status.replace('_', ' ').toUpperCase()}</Badge>
   }
 
   if (loading) {
@@ -117,9 +119,7 @@ export function SchemaMigrations() {
             <FileCode className="w-8 h-8" />
             Schema Migrations
           </h1>
-          <p className="text-muted-foreground mt-2">
-            Manage version-controlled database schema migrations
-          </p>
+          <p className="text-muted-foreground mt-2">Manage version-controlled database schema migrations</p>
         </div>
         <CrudDialog
           open={showCreateDialog}
@@ -145,68 +145,68 @@ export function SchemaMigrations() {
             </>
           )}
         >
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Version</label>
-                <Input
-                  value={newMigration.version}
-                  onChange={(e) => setNewMigration({ ...newMigration, version: e.target.value })}
-                  placeholder="e.g., 001"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Name</label>
-                <Input
-                  value={newMigration.name}
-                  onChange={(e) => setNewMigration({ ...newMigration, name: e.target.value })}
-                  placeholder="e.g., Add users table"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Description (Optional)</label>
-                <Input
-                  value={newMigration.description}
-                  onChange={(e) => setNewMigration({ ...newMigration, description: e.target.value })}
-                  placeholder="Migration description"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Migration Type</label>
-                <select
-                  className="w-full p-2 border rounded"
-                  value={newMigration.migrationType}
-                  onChange={(e) => setNewMigration({ ...newMigration, migrationType: e.target.value })}
-                >
-                  <option value="CREATE_TABLE">Create Table</option>
-                  <option value="ALTER_TABLE">Alter Table</option>
-                  <option value="DROP_TABLE">Drop Table</option>
-                  <option value="CREATE_INDEX">Create Index</option>
-                  <option value="DROP_INDEX">Drop Index</option>
-                  <option value="DATA_MIGRATION">Data Migration</option>
-                  <option value="CUSTOM">Custom</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-sm font-medium">Up SQL</label>
-                <Textarea
-                  value={newMigration.upSql}
-                  onChange={(e) => setNewMigration({ ...newMigration, upSql: e.target.value })}
-                  placeholder="CREATE TABLE users (...);"
-                  rows={5}
-                  className="font-mono"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Down SQL (Rollback)</label>
-                <Textarea
-                  value={newMigration.downSql}
-                  onChange={(e) => setNewMigration({ ...newMigration, downSql: e.target.value })}
-                  placeholder="DROP TABLE users;"
-                  rows={3}
-                  className="font-mono"
-                />
-              </div>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Version</label>
+              <Input
+                value={newMigration.version}
+                onChange={(e) => setNewMigration({ ...newMigration, version: e.target.value })}
+                placeholder="e.g., 001"
+              />
             </div>
+            <div>
+              <label className="text-sm font-medium">Name</label>
+              <Input
+                value={newMigration.name}
+                onChange={(e) => setNewMigration({ ...newMigration, name: e.target.value })}
+                placeholder="e.g., Add users table"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Description (Optional)</label>
+              <Input
+                value={newMigration.description}
+                onChange={(e) => setNewMigration({ ...newMigration, description: e.target.value })}
+                placeholder="Migration description"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Migration Type</label>
+              <select
+                className="w-full p-2 border rounded"
+                value={newMigration.migrationType}
+                onChange={(e) => setNewMigration({ ...newMigration, migrationType: e.target.value })}
+              >
+                <option value="CREATE_TABLE">Create Table</option>
+                <option value="ALTER_TABLE">Alter Table</option>
+                <option value="DROP_TABLE">Drop Table</option>
+                <option value="CREATE_INDEX">Create Index</option>
+                <option value="DROP_INDEX">Drop Index</option>
+                <option value="DATA_MIGRATION">Data Migration</option>
+                <option value="CUSTOM">Custom</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Up SQL</label>
+              <Textarea
+                value={newMigration.upSql}
+                onChange={(e) => setNewMigration({ ...newMigration, upSql: e.target.value })}
+                placeholder="CREATE TABLE users (...);"
+                rows={5}
+                className="font-mono"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Down SQL (Rollback)</label>
+              <Textarea
+                value={newMigration.downSql}
+                onChange={(e) => setNewMigration({ ...newMigration, downSql: e.target.value })}
+                placeholder="DROP TABLE users;"
+                rows={3}
+                className="font-mono"
+              />
+            </div>
+          </div>
         </CrudDialog>
       </div>
 
@@ -215,9 +215,7 @@ export function SchemaMigrations() {
           <CardContent className="py-12 text-center">
             <FileCode className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground">No migrations found</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Migrations will appear here once created
-            </p>
+            <p className="text-sm text-muted-foreground mt-2">Migrations will appear here once created</p>
           </CardContent>
         </Card>
       ) : (
@@ -232,7 +230,8 @@ export function SchemaMigrations() {
                       {getStatusBadge(migration.status)}
                     </CardTitle>
                     <CardDescription className="mt-2">
-                      Version {migration.version} • {migration.migrationType} • Created {new Date(migration.createdAt).toLocaleString()}
+                      Version {migration.version} • {migration.migrationType} • Created{' '}
+                      {new Date(migration.createdAt).toLocaleString()}
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
@@ -248,23 +247,18 @@ export function SchemaMigrations() {
                       View
                     </Button>
                     {migration.status === 'applied' && (
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={async () => {
-                          try {
-                            const response = await fetch(`/api/schema/migrations/${migration.id}/rollback`, {
-                              method: 'POST'
-                            })
-                            if (response.ok) {
-                              toast.success('Migration rolled back')
-                              loadMigrations()
-                            } else {
-                              toast.error('Failed to rollback migration')
-                            }
-                          } catch (error) {
-                            toast.error('Failed to rollback migration')
-                          }
+                          await runApiAction({
+                            request: () => fetch(`/api/schema/migrations/${migration.id}/rollback`, {
+                              method: 'POST',
+                            }),
+                            successMessage: 'Migration rolled back',
+                            errorMessage: 'Failed to rollback migration',
+                            onSuccess: () => loadMigrations()
+                          })
                         }}
                       >
                         <ArrowDown className="w-4 h-4 mr-1" />
@@ -272,22 +266,17 @@ export function SchemaMigrations() {
                       </Button>
                     )}
                     {migration.status === 'pending' && (
-                      <Button 
+                      <Button
                         size="sm"
                         onClick={async () => {
-                          try {
-                            const response = await fetch(`/api/schema/migrations/${migration.id}/apply`, {
-                              method: 'POST'
-                            })
-                            if (response.ok) {
-                              toast.success('Migration applied')
-                              loadMigrations()
-                            } else {
-                              toast.error('Failed to apply migration')
-                            }
-                          } catch (error) {
-                            toast.error('Failed to apply migration')
-                          }
+                          await runApiAction({
+                            request: () => fetch(`/api/schema/migrations/${migration.id}/apply`, {
+                              method: 'POST',
+                            }),
+                            successMessage: 'Migration applied',
+                            errorMessage: 'Failed to apply migration',
+                            onSuccess: () => loadMigrations()
+                          })
                         }}
                       >
                         <ArrowUp className="w-4 h-4 mr-1" />
@@ -310,7 +299,6 @@ export function SchemaMigrations() {
         </div>
       )}
 
-      {/* View Migration Dialog */}
       <CrudDialog
         open={showViewDialog}
         onOpenChange={setShowViewDialog}
@@ -324,41 +312,33 @@ export function SchemaMigrations() {
           </Button>
         )}
       >
-          <DialogHeader>
-            <DialogTitle>{selectedMigration?.name}</DialogTitle>
-            <DialogDescription>
-              Version {selectedMigration?.version} • {selectedMigration?.migrationType}
-            </DialogDescription>
-          </DialogHeader>
-          {selectedMigration && (
-            <div className="space-y-4">
-              {selectedMigration.description && (
-                <div>
-                  <label className="text-sm font-medium">Description</label>
-                  <p className="text-sm text-muted-foreground mt-1">{selectedMigration.description}</p>
-                </div>
-              )}
-              <Tabs defaultValue="up">
-                <TabsList>
-                  <TabsTrigger value="up">Up SQL</TabsTrigger>
-                  <TabsTrigger value="down">Down SQL</TabsTrigger>
-                </TabsList>
-                <TabsContent value="up">
-                  <pre className="p-3 bg-muted rounded text-sm overflow-x-auto">
-                    {selectedMigration.upSql || 'No up SQL defined'}
-                  </pre>
-                </TabsContent>
-                <TabsContent value="down">
-                  <pre className="p-3 bg-muted rounded text-sm overflow-x-auto">
-                    {selectedMigration.downSql || 'No down SQL defined'}
-                  </pre>
-                </TabsContent>
-              </Tabs>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+        {selectedMigration && (
+          <div className="space-y-4">
+            {selectedMigration.description && (
+              <div>
+                <label className="text-sm font-medium">Description</label>
+                <p className="text-sm text-muted-foreground mt-1">{selectedMigration.description}</p>
+              </div>
+            )}
+            <Tabs defaultValue="up">
+              <TabsList>
+                <TabsTrigger value="up">Up SQL</TabsTrigger>
+                <TabsTrigger value="down">Down SQL</TabsTrigger>
+              </TabsList>
+              <TabsContent value="up">
+                <pre className="p-3 bg-muted rounded text-sm overflow-x-auto">
+                  {selectedMigration.upSql || 'No up SQL defined'}
+                </pre>
+              </TabsContent>
+              <TabsContent value="down">
+                <pre className="p-3 bg-muted rounded text-sm overflow-x-auto">
+                  {selectedMigration.downSql || 'No down SQL defined'}
+                </pre>
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
+      </CrudDialog>
     </div>
   )
 }
-

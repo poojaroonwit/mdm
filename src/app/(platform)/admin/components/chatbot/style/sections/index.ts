@@ -12,6 +12,7 @@ export { ModelPickerSection } from './ModelPickerSection'
 export { PersonaPickerSection } from './PersonaPickerSection'
 export { GetStartedSection } from './GetStartedSection'
 export { RegularAvatarSection } from './RegularAvatarSection'
+export { AnimationSection } from './AnimationSection'
 
 // ChatKit Specific Sections
 export { ChatKitHeaderSection } from './ChatKitHeaderSection'

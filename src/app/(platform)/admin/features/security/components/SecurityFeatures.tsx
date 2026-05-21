@@ -38,6 +38,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { SecurityPolicy, SecurityEvent, IPWhitelist } from '../types'
+import { runApiAction } from '@/lib/api-action'
 
 interface SecuritySettings {
   passwordPolicy: {
@@ -161,15 +162,15 @@ export function SecurityFeatures() {
   }
 
   const createPolicy = async () => {
-    try {
-      const response = await fetch('/api/admin/security-policies', {
+    await runApiAction({
+      request: () => fetch('/api/admin/security-policies', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newPolicy)
-      })
-
-      if (response.ok) {
-        toast.success('Security policy created successfully')
+      }),
+      successMessage: 'Security policy created successfully',
+      errorMessage: 'Failed to create policy',
+      onSuccess: async () => {
         setShowCreatePolicy(false)
         setNewPolicy({
           name: '',
@@ -177,102 +178,81 @@ export function SecurityFeatures() {
           settings: {},
           description: ''
         })
-        loadPolicies()
-      } else {
-        const error = await response.json()
-        toast.error(error.error || 'Failed to create policy')
+        await loadPolicies()
+      },
+      onError: (error) => {
+        console.error('Error creating policy:', error)
       }
-    } catch (error) {
-      console.error('Error creating policy:', error)
-      toast.error('Failed to create policy')
-    }
+    })
   }
 
   const createIP = async () => {
-    try {
-      const response = await fetch('/api/admin/ip-whitelist', {
+    await runApiAction({
+      request: () => fetch('/api/admin/ip-whitelist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newIP)
-      })
-
-      if (response.ok) {
-        toast.success('IP address added to whitelist')
+      }),
+      successMessage: 'IP address added to whitelist',
+      errorMessage: 'Failed to add IP address',
+      onSuccess: async () => {
         setShowCreateIP(false)
         setNewIP({
           ipAddress: '',
           description: ''
         })
-        loadWhitelist()
-      } else {
-        const error = await response.json()
-        toast.error(error.error || 'Failed to add IP address')
+        await loadWhitelist()
+      },
+      onError: (error) => {
+        console.error('Error adding IP:', error)
       }
-    } catch (error) {
-      console.error('Error adding IP:', error)
-      toast.error('Failed to add IP address')
-    }
+    })
   }
 
   const deletePolicy = async (policyId: string) => {
     if (!confirm('Are you sure you want to delete this security policy?')) return
 
-    try {
-      const response = await fetch(`/api/admin/security-policies/${policyId}`, {
+    await runApiAction({
+      request: () => fetch(`/api/admin/security-policies/${policyId}`, {
         method: 'DELETE'
-      })
-
-      if (response.ok) {
-        toast.success('Policy deleted successfully')
-        loadPolicies()
-      } else {
-        const error = await response.json()
-        toast.error(error.error || 'Failed to delete policy')
+      }),
+      successMessage: 'Policy deleted successfully',
+      errorMessage: 'Failed to delete policy',
+      onSuccess: () => loadPolicies(),
+      onError: (error) => {
+        console.error('Error deleting policy:', error)
       }
-    } catch (error) {
-      console.error('Error deleting policy:', error)
-      toast.error('Failed to delete policy')
-    }
+    })
   }
 
   const deleteIP = async (ipId: string) => {
     if (!confirm('Are you sure you want to remove this IP address?')) return
 
-    try {
-      const response = await fetch(`/api/admin/ip-whitelist/${ipId}`, {
+    await runApiAction({
+      request: () => fetch(`/api/admin/ip-whitelist/${ipId}`, {
         method: 'DELETE'
-      })
-
-      if (response.ok) {
-        toast.success('IP address removed successfully')
-        loadWhitelist()
-      } else {
-        const error = await response.json()
-        toast.error(error.error || 'Failed to remove IP address')
+      }),
+      successMessage: 'IP address removed successfully',
+      errorMessage: 'Failed to remove IP address',
+      onSuccess: () => loadWhitelist(),
+      onError: (error) => {
+        console.error('Error removing IP:', error)
       }
-    } catch (error) {
-      console.error('Error removing IP:', error)
-      toast.error('Failed to remove IP address')
-    }
+    })
   }
 
   const resolveEvent = async (eventId: string) => {
-    try {
-      const response = await fetch(`/api/admin/security-events/${eventId}/resolve`, {
+    await runApiAction({
+      request: () => fetch(`/api/admin/security-events/${eventId}/resolve`, {
         method: 'POST'
-      })
-
-      if (response.ok) {
-        toast.success('Security event resolved')
-        loadEvents()
-      } else {
-        const error = await response.json()
-        toast.error(error.error || 'Failed to resolve event')
+      }),
+      successMessage: 'Security event resolved',
+      errorMessage: 'Failed to resolve event',
+      onSuccess: () => loadEvents(),
+      onError: (error) => {
+        console.error('Error resolving event:', error)
       }
-    } catch (error) {
-      console.error('Error resolving event:', error)
-      toast.error('Failed to resolve event')
-    }
+    })
   }
 
   const getSeverityColor = (severity: string) => {

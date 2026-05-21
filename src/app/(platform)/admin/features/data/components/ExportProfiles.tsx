@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
+import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -27,6 +27,7 @@ import {
 import toast from 'react-hot-toast'
 import { ExportProfile, DataSchema } from '../types'
 import { Checkbox } from '@/components/ui/checkbox'
+import { runApiAction } from '@/lib/api-action'
 
 interface ExportProfilesProps {
   schemas: DataSchema[]
@@ -135,49 +136,39 @@ export function ExportProfiles({ schemas, spaceId, onRunProfile }: ExportProfile
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this profile?')) return
 
-    try {
-      const response = await fetch(`/api/admin/export-profiles/${id}`, {
+    await runApiAction({
+      request: () => fetch(`/api/admin/export-profiles/${id}`, {
         method: 'DELETE'
-      })
-      if (response.ok) {
-        toast.success('Profile deleted')
-        loadProfiles()
-      } else {
-        toast.error('Failed to delete profile')
-      }
-    } catch (error) {
-       toast.error('Failed to delete profile')
-    }
+      }),
+      successMessage: 'Profile deleted',
+      errorMessage: 'Failed to delete profile',
+      onSuccess: () => loadProfiles()
+    })
   }
 
   const handleSave = async () => {
-    try {
-      const url = editingProfile 
-        ? `/api/admin/export-profiles/${editingProfile.id}`
-        : '/api/admin/export-profiles'
-      
-      const method = editingProfile ? 'PUT' : 'POST'
+    const url = editingProfile 
+      ? `/api/admin/export-profiles/${editingProfile.id}`
+      : '/api/admin/export-profiles'
+    
+    const method = editingProfile ? 'PUT' : 'POST'
 
-      const response = await fetch(url, {
+    await runApiAction({
+      request: () => fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
           spaceId
         })
-      })
-
-      if (response.ok) {
-        toast.success(editingProfile ? 'Profile updated' : 'Profile created')
+      }),
+      successMessage: editingProfile ? 'Profile updated' : 'Profile created',
+      errorMessage: 'Failed to save profile',
+      onSuccess: async () => {
         setShowDialog(false)
-        loadProfiles()
-      } else {
-        const err = await response.json()
-        toast.error(err.error || 'Failed to save profile')
+        await loadProfiles()
       }
-    } catch (error) {
-      toast.error('Failed to save profile')
-    }
+    })
   }
 
   const getSelectedSchema = () => {
@@ -277,16 +268,20 @@ export function ExportProfiles({ schemas, spaceId, onRunProfile }: ExportProfile
         ))}
       </div>
 
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle>{editingProfile ? 'Edit Profile' : 'Create Export Profile'}</DialogTitle>
-            <DialogDescription>
-              Configure your export settings using Studio or SQL Query
-            </DialogDescription>
-          </DialogHeader>
-
-          <DialogBody className="grid gap-6 p-6 pt-2 pb-4">
+      <CrudDialog
+        open={showDialog}
+        onOpenChange={setShowDialog}
+        title={editingProfile ? 'Edit Profile' : 'Create Export Profile'}
+        description="Configure your export settings using Studio or SQL Query"
+        contentClassName="max-w-4xl max-h-[90vh] flex flex-col"
+        bodyClassName="grid gap-6 flex-1 overflow-y-auto min-h-0"
+        footer={(
+          <>
+            <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={!formData.name}>Save Profile</Button>
+          </>
+        )}
+      >
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Name</Label>
@@ -489,14 +484,7 @@ export function ExportProfiles({ schemas, spaceId, onRunProfile }: ExportProfile
                  </div>
               </TabsContent>
             </Tabs>
-          </DialogBody>
-
-          <DialogFooter>
-             <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-             <Button onClick={handleSave} disabled={!formData.name}>Save Profile</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </CrudDialog>
     </div>
   )
 }

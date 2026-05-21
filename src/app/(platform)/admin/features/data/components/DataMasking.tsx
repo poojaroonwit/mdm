@@ -9,6 +9,7 @@ import { ShieldCheck, Plus, Eye, EyeOff, Edit, Trash2, ToggleLeft, ToggleRight }
 import { CrudDialog } from '@/components/ui/crud-dialog'
 import toast from 'react-hot-toast'
 import { MaskingRule } from '../types'
+import { runApiAction } from '@/lib/api-action'
 
 export function DataMasking() {
   const [rules, setRules] = useState<MaskingRule[]>([])
@@ -60,47 +61,42 @@ export function DataMasking() {
 
     setSubmitting(true)
     try {
-      const response = await fetch('/api/data-masking/rules', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newRule)
+      await runApiAction({
+        request: () => fetch('/api/data-masking/rules', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newRule)
+        }),
+        successMessage: 'Masking rule created',
+        errorMessage: 'Failed to create masking rule',
+        onSuccess: async () => {
+          setShowCreateDialog(false)
+          setNewRule({ name: '', tableName: '', columnName: '', strategy: 'email', enabled: true })
+          await loadRules()
+        },
+        onError: (error) => {
+          console.error('Failed to create masking rule:', error)
+        }
       })
-
-      if (response.ok) {
-        toast.success('Masking rule created')
-        setShowCreateDialog(false)
-        setNewRule({ name: '', tableName: '', columnName: '', strategy: 'email', enabled: true })
-        loadRules()
-      } else {
-        const error = await response.json()
-        toast.error(error.error || 'Failed to create masking rule')
-      }
-    } catch (error) {
-      console.error('Failed to create masking rule:', error)
-      toast.error('Failed to create masking rule')
     } finally {
       setSubmitting(false)
     }
   }
 
   const toggleRule = async (ruleId: string, enabled: boolean) => {
-    try {
-      const response = await fetch(`/api/data-masking/rules/${ruleId}`, {
+    await runApiAction({
+      request: () => fetch(`/api/data-masking/rules/${ruleId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ enabled })
-      })
-
-      if (response.ok) {
-        toast.success(`Rule ${enabled ? 'enabled' : 'disabled'}`)
-        loadRules()
-      } else {
-        toast.error('Failed to toggle rule')
+      }),
+      successMessage: `Rule ${enabled ? 'enabled' : 'disabled'}`,
+      errorMessage: 'Failed to toggle rule',
+      onSuccess: () => loadRules(),
+      onError: (error) => {
+        console.error('Failed to toggle rule:', error)
       }
-    } catch (error) {
-      console.error('Failed to toggle rule:', error)
-      toast.error('Failed to toggle rule')
-    }
+    })
   }
 
   const deleteRule = async (ruleId: string) => {
@@ -108,21 +104,17 @@ export function DataMasking() {
       return
     }
 
-    try {
-      const response = await fetch(`/api/data-masking/rules/${ruleId}`, {
+    await runApiAction({
+      request: () => fetch(`/api/data-masking/rules/${ruleId}`, {
         method: 'DELETE'
-      })
-
-      if (response.ok) {
-        toast.success('Rule deleted')
-        loadRules()
-      } else {
-        toast.error('Failed to delete rule')
+      }),
+      successMessage: 'Rule deleted',
+      errorMessage: 'Failed to delete rule',
+      onSuccess: () => loadRules(),
+      onError: (error) => {
+        console.error('Failed to delete rule:', error)
       }
-    } catch (error) {
-      console.error('Failed to delete rule:', error)
-      toast.error('Failed to delete rule')
-    }
+    })
   }
 
   const editRule = (rule: MaskingRule) => {
@@ -330,28 +322,24 @@ export function DataMasking() {
               }
 
               setSubmitting(true)
-              try {
-                const response = await fetch(`/api/data-masking/rules/${editingRule.id}`, {
+              await runApiAction({
+                request: () => fetch(`/api/data-masking/rules/${editingRule.id}`, {
                   method: 'PUT',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify(newRule)
-                })
-
-                if (response.ok) {
-                  toast.success('Rule updated')
+                }),
+                successMessage: 'Rule updated',
+                errorMessage: 'Failed to update rule',
+                onSuccess: async () => {
                   setShowEditDialog(false)
                   setEditingRule(null)
-                  loadRules()
-                } else {
-                  const error = await response.json()
-                  toast.error(error.error || 'Failed to update rule')
+                  await loadRules()
+                },
+                onError: (error) => {
+                  console.error('Failed to update rule:', error)
                 }
-              } catch (error) {
-                console.error('Failed to update rule:', error)
-                toast.error('Failed to update rule')
-              } finally {
-                setSubmitting(false)
-              }
+              })
+              setSubmitting(false)
             }} disabled={submitting}>
               {submitting ? 'Updating...' : 'Update Rule'}
             </Button>
