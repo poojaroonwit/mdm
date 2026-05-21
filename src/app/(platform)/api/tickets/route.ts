@@ -209,7 +209,15 @@ async function postHandler(request: NextRequest) {
     estimate,
     attributes,
     parentId,
-    parent_id
+    parent_id,
+    projectId,
+    project_id,
+    moduleId,
+    module_id,
+    milestoneId,
+    milestone_id,
+    releaseId,
+    release_id,
   } = body
 
   const finalDueDate = dueDate || due_date
@@ -218,6 +226,10 @@ async function postHandler(request: NextRequest) {
   const finalSpaceIdsInput = spaceIds || space_ids
   const finalSpaceIdInput = spaceId || space_id
   const finalParentId = parentId || parent_id
+  const finalProjectId = projectId || project_id
+  const finalModuleId = moduleId || module_id
+  const finalMilestoneId = milestoneId || milestone_id
+  const finalReleaseId = releaseId || release_id
 
   if (!title) {
     return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -246,6 +258,10 @@ async function postHandler(request: NextRequest) {
       createdBy: session.user.id,
       estimate: estimate || null,
       parentId: finalParentId || null,
+      projectId: finalProjectId || null,
+      moduleId: finalModuleId || null,
+      milestoneId: finalMilestoneId || null,
+      releaseId: finalReleaseId || null,
       spaces: {
         create: finalSpaceIds.map((sid: string) => ({
           spaceId: sid

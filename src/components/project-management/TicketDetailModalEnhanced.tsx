@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -38,6 +38,7 @@ import {
 } from 'lucide-react'
 import { TicketRelationshipGraph } from './TicketRelationshipGraph'
 import { TicketRelationshipsPanel } from './TicketRelationshipsPanel'
+import { RichMarkdownEditor } from '@/components/knowledge-base/RichMarkdownEditor'
 import { format } from 'date-fns'
 import { showError, showSuccess, showInfo } from '@/lib/toast-utils'
 
@@ -86,6 +87,21 @@ interface TicketDetailModalProps {
   displayMode?: 'modal' | 'drawer'
 }
 
+interface ProjectCustomFieldDefinition {
+  name: string
+  displayName: string
+  type: string
+  isRequired?: boolean
+}
+
+interface ProjectOption {
+  id: string
+  name: string
+  metadata?: {
+    customFields?: ProjectCustomFieldDefinition[]
+  } | null
+}
+
 export function TicketDetailModalEnhanced({
   ticket,
   open,
@@ -109,7 +125,6 @@ export function TicketDetailModalEnhanced({
     value?: string | null
     isRequired?: boolean
   }>>([])
-  const [newCustomFieldName, setNewCustomFieldName] = useState('')
 
   const [activeTab, setActiveTab] = useState('details')
   const [comments, setComments] = useState<any[]>([])
@@ -140,14 +155,50 @@ export function TicketDetailModalEnhanced({
   const [gitLabRepositories, setGitLabRepositories] = useState<Array<{id: number, projectId: string, name: string, path: string}>>([])
   const [selectedRepository, setSelectedRepository] = useState<string>('')
   const [loadingRepositories, setLoadingRepositories] = useState(false)
-  const [projects, setProjects] = useState<Array<{id: string, name: string}>>([])
+  const [projects, setProjects] = useState<ProjectOption[]>([])
   const [selectedProject, setSelectedProject] = useState<string>('')
+  const [, setProjectCustomFields] = useState<ProjectCustomFieldDefinition[]>([])
   const [modules, setModules] = useState<Array<{id: string, name: string, projectId: string}>>([])
   const [selectedModule, setSelectedModule] = useState<string>('')
   const [milestones, setMilestones] = useState<Array<{id: string, name: string, projectId: string}>>([])
   const [selectedMilestone, setSelectedMilestone] = useState<string>('')
   const [releases, setReleases] = useState<Array<{id: string, name: string, projectId: string}>>([])
   const [selectedRelease, setSelectedRelease] = useState<string>('')
+
+  const normalizedDescription = useMemo(() => {
+    const value = editDescription || ''
+    return value.trim() === '<p></p>' ? '' : value
+  }, [editDescription])
+
+  const applyProjectFieldDefinitions = (
+    projectId: string,
+    availableProjects: ProjectOption[],
+    sourceAttributes?: Array<{ name: string; value?: string | null; displayName?: string; type?: string; isRequired?: boolean }>
+  ) => {
+    const project = availableProjects.find((item) => item.id === projectId)
+    const definitions = project?.metadata?.customFields || []
+    setProjectCustomFields(definitions)
+
+    if (!projectId || definitions.length === 0) {
+      setCustomFields([])
+      return
+    }
+
+    const values = sourceAttributes || customFields
+    setCustomFields(
+      definitions.map((field) => {
+        const existing = values.find((item) => item.name === field.name)
+        return {
+          id: existing && 'id' in existing ? existing.id : undefined,
+          name: field.name,
+          displayName: field.displayName || field.name,
+          type: field.type || 'TEXT',
+          value: existing?.value || '',
+          isRequired: field.isRequired || false,
+        }
+      })
+    )
+  }
 
   useEffect(() => {
     if (ticket && open) {
@@ -176,7 +227,7 @@ export function TicketDetailModalEnhanced({
       loadAllData()
       checkServiceDeskConfig()
       checkGitLabConfig()
-      loadProjectsAndModules()
+      loadProjectsAndModules((ticket as any).projectId || '')
       // Load ticket type from attributes
       const typeAttr = ticket.attributes?.find(attr => 
         attr.name.toLowerCase() === 'ticket type' || 
@@ -279,44 +330,48 @@ export function TicketDetailModalEnhanced({
     }
   }
 
-  const loadProjectsAndModules = async () => {
+  const loadProjectsAndModules = async (projectIdOverride?: string) => {
     if (!ticket?.spaces || ticket.spaces.length === 0) return
     const spaceId = ticket.spaces[0].spaceId || ticket.spaces[0].space?.id
     if (!spaceId) return
+    const targetProjectId = projectIdOverride ?? selectedProject ?? (ticket as any).projectId ?? ''
 
     try {
-      // Load projects
       const projectsRes = await fetch(`/api/projects?space_id=${spaceId}`)
       if (projectsRes.ok) {
         const projectsData = await projectsRes.json()
-        setProjects(projectsData.projects || [])
+        const availableProjects = projectsData.projects || []
+        setProjects(availableProjects)
+        if (targetProjectId) {
+          applyProjectFieldDefinitions(targetProjectId, availableProjects, ticket.attributes as any)
+        } else {
+          setProjectCustomFields([])
+          setCustomFields([])
+        }
       }
 
-      // Load modules if project is selected
-      if (selectedProject) {
-        const modulesRes = await fetch(`/api/modules?project_id=${selectedProject}`)
+      if (targetProjectId) {
+        const modulesRes = await fetch(`/api/modules?project_id=${targetProjectId}`)
         if (modulesRes.ok) {
           const modulesData = await modulesRes.json()
           setModules(modulesData.modules || [])
         }
-      }
 
-      // Load milestones if project is selected
-      if (selectedProject) {
-        const milestonesRes = await fetch(`/api/milestones?projectId=${selectedProject}`)
+        const milestonesRes = await fetch(`/api/milestones?projectId=${targetProjectId}`)
         if (milestonesRes.ok) {
           const milestonesData = await milestonesRes.json()
           setMilestones(milestonesData.milestones || [])
         }
-      }
 
-      // Load releases if project is selected
-      if (selectedProject) {
-        const releasesRes = await fetch(`/api/releases?projectId=${selectedProject}`)
+        const releasesRes = await fetch(`/api/releases?projectId=${targetProjectId}`)
         if (releasesRes.ok) {
           const releasesData = await releasesRes.json()
           setReleases(releasesData.releases || [])
         }
+      } else {
+        setModules([])
+        setMilestones([])
+        setReleases([])
       }
     } catch (error) {
       console.error('Failed to load projects/modules:', error)
@@ -324,8 +379,8 @@ export function TicketDetailModalEnhanced({
   }
 
   useEffect(() => {
-    if (selectedProject) {
-      loadProjectsAndModules()
+    if (open && ticket) {
+      loadProjectsAndModules(selectedProject || (ticket as any).projectId || '')
     }
   }, [selectedProject])
 
@@ -938,8 +993,8 @@ export function TicketDetailModalEnhanced({
 
     const updatedTicket = {
       ...ticket,
-      title: editTitle,
-      description: editDescription,
+      title: editTitle.trim(),
+      description: normalizedDescription,
       status: editStatus,
       priority: editPriority,
       dueDate: editDueDate || null,
@@ -958,10 +1013,11 @@ export function TicketDetailModalEnhanced({
   // Common header content
   const headerContent = (
     <>
+      <Label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Ticket Title</Label>
       <Input
         value={editTitle}
         onChange={(e) => setEditTitle(e.target.value)}
-        placeholder="Ticket title..."
+        placeholder="Enter ticket title"
         className="text-lg font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary bg-transparent h-auto py-1"
       />
       <p className="text-sm text-muted-foreground mt-1">
@@ -1023,14 +1079,17 @@ export function TicketDetailModalEnhanced({
         // Simple create form — same fields, no inapplicable tabs
         <div className="space-y-4">
           <div>
-            <Label>Description</Label>
-            <Textarea
-              value={editDescription}
-              onChange={(e) => setEditDescription(e.target.value)}
-              placeholder="Describe the ticket..."
-              rows={4}
-              className="mt-1"
-            />
+            <Label>Ticket Description</Label>
+            <div className="mt-2 overflow-hidden rounded-xl border border-border">
+              <RichMarkdownEditor
+                content={editDescription}
+                onChange={setEditDescription}
+                placeholder="Describe the ticket inline..."
+                editable
+                showToolbar
+                className="min-h-[220px] bg-background"
+              />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -1091,65 +1150,109 @@ export function TicketDetailModalEnhanced({
               />
             </div>
           </div>
-          <div className="space-y-3 rounded-xl border border-border p-4">
-            <div className="flex items-center justify-between gap-3">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="project-create">Project</Label>
+              <Select
+                value={selectedProject || '__none__'}
+                onValueChange={(value) => {
+                  const nextProjectId = value === '__none__' ? '' : value
+                  setSelectedProject(nextProjectId)
+                  setSelectedModule('')
+                  setSelectedMilestone('')
+                  setSelectedRelease('')
+                  applyProjectFieldDefinitions(nextProjectId, projects)
+                }}
+              >
+                <SelectTrigger className="mt-1" id="project-create">
+                  <SelectValue placeholder="Select project" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">None</SelectItem>
+                  {projects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {selectedProject && (
               <div>
-                <Label>Custom Fields</Label>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Add management fields now or inherit them from the reusable templates.
-                </p>
+                <Label htmlFor="module-create">Module</Label>
+                <Select value={selectedModule || '__none__'} onValueChange={(value) => setSelectedModule(value === '__none__' ? '' : value)}>
+                  <SelectTrigger className="mt-1" id="module-create">
+                    <SelectValue placeholder="Select module" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">None</SelectItem>
+                    {modules.map((module) => (
+                      <SelectItem key={module.id} value={module.id}>
+                        {module.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="flex gap-2">
-                <Input
-                  value={newCustomFieldName}
-                  onChange={(e) => setNewCustomFieldName(e.target.value)}
-                  placeholder="Field name"
-                  className="h-9 w-40"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    const trimmed = newCustomFieldName.trim()
-                    if (!trimmed) return
-                    const machineName = trimmed.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
-                    setCustomFields((prev) => [
-                      ...prev,
-                      {
-                        name: machineName || `field_${prev.length + 1}`,
-                        displayName: trimmed,
-                        type: 'TEXT',
-                        value: '',
-                      },
-                    ])
-                    setNewCustomFieldName('')
-                  }}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add
-                </Button>
+            )}
+          </div>
+          {selectedProject && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="milestone-create">Milestone</Label>
+                <Select value={selectedMilestone || '__none__'} onValueChange={(value) => setSelectedMilestone(value === '__none__' ? '' : value)}>
+                  <SelectTrigger className="mt-1" id="milestone-create">
+                    <SelectValue placeholder="Select milestone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">None</SelectItem>
+                    {milestones.map((milestone) => (
+                      <SelectItem key={milestone.id} value={milestone.id}>
+                        {milestone.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="release-create">Release</Label>
+                <Select value={selectedRelease || '__none__'} onValueChange={(value) => setSelectedRelease(value === '__none__' ? '' : value)}>
+                  <SelectTrigger className="mt-1" id="release-create">
+                    <SelectValue placeholder="Select release" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">None</SelectItem>
+                    {releases.map((release) => (
+                      <SelectItem key={release.id} value={release.id}>
+                        {release.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            {customFields.length === 0 ? (
+          )}
+          <div className="space-y-3 rounded-xl border border-border p-4">
+            <div>
+              <Label>Custom Fields</Label>
+              <p className="mt-1 text-xs text-muted-foreground">
+                These fields are inherited from the selected project and apply to every ticket in that project.
+              </p>
+            </div>
+            {!selectedProject ? (
               <div className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
-                No custom fields yet.
+                Select a project to load its shared ticket fields.
+              </div>
+            ) : customFields.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
+                This project has no shared custom fields yet.
               </div>
             ) : (
               <div className="space-y-3">
                 {customFields.map((field, index) => (
-                  <div key={`${field.name}-${index}`} className="grid grid-cols-[minmax(0,1fr)_140px_44px] gap-3">
+                  <div key={`${field.name}-${index}`} className="grid grid-cols-[minmax(0,1fr)_140px] gap-3">
                     <div className="space-y-2">
-                      <Input
-                        value={field.displayName}
-                        onChange={(e) =>
-                          setCustomFields((prev) =>
-                            prev.map((item, itemIndex) =>
-                              itemIndex === index ? { ...item, displayName: e.target.value } : item
-                            )
-                          )
-                        }
-                        placeholder="Display name"
-                      />
+                      <Label>{field.displayName}</Label>
                       <Input
                         value={field.value || ''}
                         onChange={(e) =>
@@ -1162,16 +1265,7 @@ export function TicketDetailModalEnhanced({
                         placeholder="Value"
                       />
                     </div>
-                    <Select
-                      value={field.type}
-                      onValueChange={(value) =>
-                        setCustomFields((prev) =>
-                          prev.map((item, itemIndex) =>
-                            itemIndex === index ? { ...item, type: value } : item
-                          )
-                        )
-                      }
-                    >
+                    <Select value={field.type} disabled>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -1182,16 +1276,6 @@ export function TicketDetailModalEnhanced({
                         <SelectItem value="SELECT">Select</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() =>
-                        setCustomFields((prev) => prev.filter((_, itemIndex) => itemIndex !== index))
-                      }
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
                   </div>
                 ))}
               </div>
@@ -1311,14 +1395,17 @@ export function TicketDetailModalEnhanced({
               </p>
             </div>
             <div>
-              <Label>Description</Label>
-              <Textarea
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                placeholder="Describe the ticket..."
-                rows={3}
-                className="mt-1"
-              />
+              <Label>Ticket Description</Label>
+              <div className="mt-2 overflow-hidden rounded-xl border border-border">
+                <RichMarkdownEditor
+                  content={editDescription}
+                  onChange={setEditDescription}
+                  placeholder="Describe the ticket inline..."
+                  editable
+                  showToolbar
+                  className="min-h-[220px] bg-background"
+                />
+              </div>
             </div>
             {ticket.assignees && ticket.assignees.length > 0 && (
               <div>
@@ -1339,19 +1426,21 @@ export function TicketDetailModalEnhanced({
               <div>
                 <Label htmlFor="project">Project</Label>
                 <Select
-                  value={selectedProject}
+                  value={selectedProject || '__none__'}
                   onValueChange={(value) => {
-                    setSelectedProject(value)
+                    const nextProjectId = value === '__none__' ? '' : value
+                    setSelectedProject(nextProjectId)
                     setSelectedModule('')
                     setSelectedMilestone('')
                     setSelectedRelease('')
+                    applyProjectFieldDefinitions(nextProjectId, projects)
                   }}
                 >
                   <SelectTrigger className="mt-1" id="project">
                     <SelectValue placeholder="Select project" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="__none__">None</SelectItem>
                     {projects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.name}
@@ -1362,16 +1451,16 @@ export function TicketDetailModalEnhanced({
               </div>
               {selectedProject && (
                 <div>
-                  <Label htmlFor="module">Module</Label>
-                  <Select
-                    value={selectedModule}
-                    onValueChange={setSelectedModule}
-                  >
-                    <SelectTrigger className="mt-1" id="module">
-                      <SelectValue placeholder="Select module" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                <Label htmlFor="module">Module</Label>
+                <Select
+                  value={selectedModule || '__none__'}
+                  onValueChange={(value) => setSelectedModule(value === '__none__' ? '' : value)}
+                >
+                  <SelectTrigger className="mt-1" id="module">
+                    <SelectValue placeholder="Select module" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">None</SelectItem>
                       {modules.map((module) => (
                         <SelectItem key={module.id} value={module.id}>
                           {module.name}
@@ -1385,16 +1474,16 @@ export function TicketDetailModalEnhanced({
             {selectedProject && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="milestone">Milestone</Label>
-                  <Select
-                    value={selectedMilestone}
-                    onValueChange={setSelectedMilestone}
-                  >
+                <Label htmlFor="milestone">Milestone</Label>
+                <Select
+                  value={selectedMilestone || '__none__'}
+                  onValueChange={(value) => setSelectedMilestone(value === '__none__' ? '' : value)}
+                >
                     <SelectTrigger className="mt-1" id="milestone">
                       <SelectValue placeholder="Select milestone" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="__none__">None</SelectItem>
                       {milestones.map((milestone) => (
                         <SelectItem key={milestone.id} value={milestone.id}>
                           {milestone.name}
@@ -1404,16 +1493,16 @@ export function TicketDetailModalEnhanced({
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="release">Release</Label>
-                  <Select
-                    value={selectedRelease}
-                    onValueChange={setSelectedRelease}
-                  >
+                <Label htmlFor="release">Release</Label>
+                <Select
+                  value={selectedRelease || '__none__'}
+                  onValueChange={(value) => setSelectedRelease(value === '__none__' ? '' : value)}
+                >
                     <SelectTrigger className="mt-1" id="release">
                       <SelectValue placeholder="Select release" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="__none__">None</SelectItem>
                       {releases.map((release) => (
                         <SelectItem key={release.id} value={release.id}>
                           {release.name}
@@ -1425,64 +1514,26 @@ export function TicketDetailModalEnhanced({
               </div>
             )}
             <div className="space-y-3 rounded-xl border border-border p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <Label>Custom Fields</Label>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Add planning and management metadata directly on the ticket.
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    value={newCustomFieldName}
-                    onChange={(e) => setNewCustomFieldName(e.target.value)}
-                    placeholder="Field name"
-                    className="h-9 w-40"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      const trimmed = newCustomFieldName.trim()
-                      if (!trimmed) return
-                      const machineName = trimmed.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
-                      setCustomFields((prev) => [
-                        ...prev,
-                        {
-                          name: machineName || `field_${prev.length + 1}`,
-                          displayName: trimmed,
-                          type: 'TEXT',
-                          value: '',
-                        },
-                      ])
-                      setNewCustomFieldName('')
-                    }}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add
-                  </Button>
-                </div>
+              <div>
+                <Label>Custom Fields</Label>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  These fields are inherited from the selected project and apply to every ticket in that project.
+                </p>
               </div>
-              {customFields.length === 0 ? (
+              {!selectedProject ? (
                 <div className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
-                  No custom fields yet.
+                  Select a project to load its shared ticket fields.
+                </div>
+              ) : customFields.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
+                  This project has no shared custom fields yet.
                 </div>
               ) : (
                 <div className="space-y-3">
                   {customFields.map((field, index) => (
-                    <div key={`${field.name}-${index}`} className="grid grid-cols-[minmax(0,1fr)_140px_44px] gap-3">
+                    <div key={`${field.name}-${index}`} className="grid grid-cols-[minmax(0,1fr)_140px] gap-3">
                       <div className="space-y-2">
-                        <Input
-                          value={field.displayName}
-                          onChange={(e) =>
-                            setCustomFields((prev) =>
-                              prev.map((item, itemIndex) =>
-                                itemIndex === index ? { ...item, displayName: e.target.value } : item
-                              )
-                            )
-                          }
-                          placeholder="Display name"
-                        />
+                        <Label>{field.displayName}</Label>
                         <Input
                           value={field.value || ''}
                           onChange={(e) =>
@@ -1495,16 +1546,7 @@ export function TicketDetailModalEnhanced({
                           placeholder="Value"
                         />
                       </div>
-                      <Select
-                        value={field.type}
-                        onValueChange={(value) =>
-                          setCustomFields((prev) =>
-                            prev.map((item, itemIndex) =>
-                              itemIndex === index ? { ...item, type: value } : item
-                            )
-                          )
-                        }
-                      >
+                      <Select value={field.type} disabled>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -1515,16 +1557,6 @@ export function TicketDetailModalEnhanced({
                           <SelectItem value="SELECT">Select</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() =>
-                          setCustomFields((prev) => prev.filter((_, itemIndex) => itemIndex !== index))
-                        }
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
                     </div>
                   ))}
                 </div>

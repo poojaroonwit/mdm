@@ -91,7 +91,12 @@ async function getHandler(request: NextRequest) {
     }
   })
 
-  return NextResponse.json({ projects })
+  return NextResponse.json({
+    projects: projects.map((project) => ({
+      ...project,
+      metadata: project.metadata || {},
+    })),
+  })
 }
 
 export const GET = withErrorHandling(getHandler, 'GET /api/projects')

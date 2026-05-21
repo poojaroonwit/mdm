@@ -53,6 +53,59 @@ interface SpaceContextType {
 
 const SpaceContext = createContext<SpaceContextType | undefined>(undefined)
 
+const defaultSidebarStyle = {
+  backgroundType: 'color' as const,
+  backgroundColor: '#ffffff',
+  backgroundImage: null,
+  gradient: { from: '#ffffff', to: '#f3f4f6', angle: 180 },
+  fontColor: '#374151',
+  size: 'medium' as const,
+}
+
+function normalizeSidebarConfig(sidebarConfig: Space['sidebar_config'] | undefined) {
+  const style = sidebarConfig?.style
+
+  if (!style) {
+    return {
+      style: defaultSidebarStyle,
+      menu: sidebarConfig?.menu || []
+    }
+  }
+
+  const isLegacyDefault =
+    style.backgroundType === 'color' &&
+    style.backgroundColor === '#0f172a' &&
+    style.fontColor === '#ffffff'
+
+  const isLegacyGradientDefault =
+    style.backgroundType === 'gradient' &&
+    style.gradient?.from === '#0f172a' &&
+    style.gradient?.to === '#1e293b' &&
+    style.fontColor === '#ffffff'
+
+  if (isLegacyDefault || isLegacyGradientDefault) {
+    return {
+      style: {
+        ...defaultSidebarStyle,
+        backgroundType: style.backgroundType,
+      },
+      menu: sidebarConfig?.menu || []
+    }
+  }
+
+  return {
+    style: {
+      ...defaultSidebarStyle,
+      ...style,
+      gradient: {
+        ...defaultSidebarStyle.gradient,
+        ...(style.gradient || {})
+      }
+    },
+    menu: sidebarConfig?.menu || []
+  }
+}
+
 export function SpaceProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession()
   const [currentSpace, setCurrentSpace] = useState<Space | null>(null)
@@ -136,17 +189,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
       const spacesWithDefaults = (data.spaces || []).map((space: any) => ({
         ...space,
         features: space.features || { assignments: true, bulk_activity: true, workflows: true, dashboard: true },
-        sidebar_config: space.sidebar_config || {
-          style: {
-            backgroundType: 'color',
-            backgroundColor: '#0f172a',
-            backgroundImage: null,
-            gradient: { from: '#0f172a', to: '#1e293b', angle: 180 },
-            fontColor: '#ffffff',
-            size: 'medium'
-          },
-          menu: []
-        },
+        sidebar_config: normalizeSidebarConfig(space.sidebar_config),
         enable_assignments: space.features?.assignments ?? true,
         enable_bulk_activity: space.features?.bulk_activity ?? true,
         enable_workflows: space.features?.workflows ?? true,

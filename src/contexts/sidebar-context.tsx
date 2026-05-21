@@ -18,8 +18,8 @@ interface SidebarContextType {
 }
 
 const defaultSettings: SidebarSettings = {
-  backgroundColor: '#1e40af',
-  fontColor: '#ffffff',
+  backgroundColor: '#ffffff',
+  fontColor: '#374151',
   size: 'medium',
   backgroundType: 'color',
   backgroundImage: ''
@@ -38,7 +38,14 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     if (savedSettings) {
       try {
         const parsed = JSON.parse(savedSettings)
-        setSettings({ ...defaultSettings, ...parsed })
+        const merged = { ...defaultSettings, ...parsed }
+        const isLegacyDefault =
+          merged.backgroundType === 'color' &&
+          merged.backgroundColor === '#1e40af' &&
+          merged.fontColor === '#ffffff' &&
+          !merged.backgroundImage
+
+        setSettings(isLegacyDefault ? defaultSettings : merged)
       } catch (error) {
         console.error('Failed to parse sidebar settings:', error)
       }

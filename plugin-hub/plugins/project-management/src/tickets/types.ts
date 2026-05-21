@@ -74,7 +74,7 @@ export interface TicketFilters {
 
 export interface TicketsListProps {
   spaceId?: string | null
-  viewMode?: 'list' | 'kanban' | 'table' | 'timesheet'
+  viewMode?: 'list' | 'kanban' | 'table' | 'timesheet' | 'gantt'
   showFilters?: boolean
   showSpaceSelector?: boolean
   projectId?: string

@@ -1,8 +1,5 @@
 ---
 tags:
-  - srs
-  - requirements
-  - technical
 ---
 
 # 16 SRS Summary

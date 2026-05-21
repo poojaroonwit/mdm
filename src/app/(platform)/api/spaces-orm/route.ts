@@ -72,8 +72,8 @@ async function postHandler(request: NextRequest) {
       sidebarConfig: {
         style: {
           backgroundType: 'color',
-          backgroundColor: '#1e40af',
-          fontColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          fontColor: '#374151'
         },
         menu: [
           { title: 'Dashboard', href: '/dashboard', icon: 'layout-dashboard' },

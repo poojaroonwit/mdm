@@ -28,7 +28,9 @@
 @layer base {
   :root {
     --bg-default: #ffffff;
+    --bg-default-60: rgba(255, 255, 255, 0.6);
     --bg-surface: #f9fafb; /* gray-50 */
+    --bg-surface-80: rgba(249, 250, 251, 0.8);
     --bg-surface-hover: #f3f4f6; /* gray-100 */
     --bg-surface-active: #e5e7eb; /* gray-200 */
 
@@ -141,7 +143,9 @@
 
   .dark {
     --bg-default: #000000;
+    --bg-default-60: rgba(0, 0, 0, 0.6);
     --bg-surface: #111111;
+    --bg-surface-80: rgba(17, 17, 17, 0.8);
     --bg-surface-hover: #1a1a1a;
     --bg-surface-active: #262626;
 

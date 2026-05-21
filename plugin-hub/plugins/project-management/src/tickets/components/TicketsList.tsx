@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTickets } from '../hooks/useTickets'
 import { useTicketsWithTimeLogs } from '../hooks/useTicketsWithTimeLogs'
 import { useTicketActions } from '../hooks/useTicketActions'
@@ -65,14 +65,27 @@ function ProjectGanttView({
   tickets,
   statusStyles,
   onTicketClick,
+  onScheduleChange,
 }: {
   tickets: any[]
   statusStyles: Record<string, KanbanStatusStyle>
   onTicketClick: (ticket: any) => void
+  onScheduleChange: (ticketId: string, updates: { startDate: string; dueDate: string }) => Promise<void>
 }) {
+  const timelineRef = useRef<HTMLDivElement | null>(null)
+  const [interaction, setInteraction] = useState<{
+    ticketId: string
+    mode: 'move' | 'resize-start' | 'resize-end'
+    originX: number
+    start: Date
+    end: Date
+  } | null>(null)
+  const [draftRanges, setDraftRanges] = useState<Record<string, { start: Date; end: Date }>>({})
+
   const preparedTickets = tickets.map((ticket) => {
-    const start = ticket.startDate ? new Date(ticket.startDate) : ticket.createdAt ? new Date(ticket.createdAt) : new Date()
-    const rawEnd = ticket.dueDate ? new Date(ticket.dueDate) : addDays(start, 2)
+    const draft = draftRanges[ticket.id]
+    const start = draft?.start || (ticket.startDate ? new Date(ticket.startDate) : ticket.createdAt ? new Date(ticket.createdAt) : new Date())
+    const rawEnd = draft?.end || (ticket.dueDate ? new Date(ticket.dueDate) : addDays(start, 2))
     const end = rawEnd < start ? start : rawEnd
     return { ...ticket, _start: start, _end: end }
   })
@@ -86,9 +99,66 @@ function ProjectGanttView({
   const totalDays = Math.max(7, dayDiff(startRange, endRange) + 1)
   const days = Array.from({ length: totalDays }, (_, index) => addDays(startRange, index))
 
+  useEffect(() => {
+    if (!interaction) {
+      return
+    }
+
+    const handleMove = (event: MouseEvent) => {
+      if (!timelineRef.current) return
+      const dayWidth = timelineRef.current.getBoundingClientRect().width / totalDays
+      const deltaDays = Math.round((event.clientX - interaction.originX) / Math.max(dayWidth, 1))
+      if (!deltaDays) {
+        return
+      }
+
+      let nextStart = interaction.start
+      let nextEnd = interaction.end
+
+      if (interaction.mode === 'move') {
+        nextStart = addDays(interaction.start, deltaDays)
+        nextEnd = addDays(interaction.end, deltaDays)
+      } else if (interaction.mode === 'resize-start') {
+        nextStart = addDays(interaction.start, deltaDays)
+        if (nextStart > nextEnd) {
+          nextStart = nextEnd
+        }
+      } else {
+        nextEnd = addDays(interaction.end, deltaDays)
+        if (nextEnd < nextStart) {
+          nextEnd = nextStart
+        }
+      }
+
+      setDraftRanges((prev) => ({
+        ...prev,
+        [interaction.ticketId]: { start: nextStart, end: nextEnd },
+      }))
+    }
+
+    const handleUp = async () => {
+      const draft = draftRanges[interaction.ticketId]
+      setInteraction(null)
+      if (!draft) return
+
+      await onScheduleChange(interaction.ticketId, {
+        startDate: draft.start.toISOString(),
+        dueDate: draft.end.toISOString(),
+      })
+    }
+
+    window.addEventListener('mousemove', handleMove)
+    window.addEventListener('mouseup', handleUp, { once: true })
+
+    return () => {
+      window.removeEventListener('mousemove', handleMove)
+      window.removeEventListener('mouseup', handleUp)
+    }
+  }, [draftRanges, interaction, onScheduleChange, totalDays])
+
   return (
     <div className="overflow-auto border border-border bg-background">
-      <div className="grid min-w-[1120px]" style={{ gridTemplateColumns: `320px repeat(${days.length}, minmax(44px, 1fr))` }}>
+      <div ref={timelineRef} className="grid min-w-[1120px]" style={{ gridTemplateColumns: `320px repeat(${days.length}, minmax(44px, 1fr))` }}>
         <div className="sticky left-0 z-20 border-b border-r border-border bg-background px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           Ticket Timeline
         </div>
@@ -118,16 +188,63 @@ function ProjectGanttView({
               {days.map((day, index) => (
                 <div key={`${ticket.id}-${day.toISOString()}`} className="relative min-h-[74px] border-b border-border">
                   {index === startOffset && (
-                    <button
-                      onClick={() => onTicketClick(ticket)}
-                      className="absolute inset-y-3 left-1 rounded-md px-3 text-left text-xs font-medium text-white"
+                    <div
+                      className="absolute inset-y-3 left-1 rounded-md text-left text-xs font-medium text-white"
                       style={{
                         backgroundColor: meta.accent,
                         width: `calc(${span * 100}% - 8px)`,
                       }}
                     >
-                      <span className="line-clamp-2 block">{ticket.title}</span>
-                    </button>
+                      <button
+                        onClick={() => onTicketClick(ticket)}
+                        onMouseDown={(event) => {
+                          event.stopPropagation()
+                          setInteraction({
+                            ticketId: ticket.id,
+                            mode: 'move',
+                            originX: event.clientX,
+                            start: ticket._start,
+                            end: ticket._end,
+                          })
+                        }}
+                        className="flex h-full w-full cursor-grab items-center px-5 text-left active:cursor-grabbing"
+                        title="Drag to move schedule"
+                      >
+                        <span className="line-clamp-2 block">{ticket.title}</span>
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Resize start date"
+                        className="absolute inset-y-0 left-0 w-3 cursor-ew-resize rounded-l-md bg-black/20"
+                        onMouseDown={(event) => {
+                          event.preventDefault()
+                          event.stopPropagation()
+                          setInteraction({
+                            ticketId: ticket.id,
+                            mode: 'resize-start',
+                            originX: event.clientX,
+                            start: ticket._start,
+                            end: ticket._end,
+                          })
+                        }}
+                      />
+                      <button
+                        type="button"
+                        aria-label="Resize end date"
+                        className="absolute inset-y-0 right-0 w-3 cursor-ew-resize rounded-r-md bg-black/20"
+                        onMouseDown={(event) => {
+                          event.preventDefault()
+                          event.stopPropagation()
+                          setInteraction({
+                            ticketId: ticket.id,
+                            mode: 'resize-end',
+                            originX: event.clientX,
+                            start: ticket._start,
+                            end: ticket._end,
+                          })
+                        }}
+                      />
+                    </div>
                   )}
                 </div>
               ))}
@@ -153,7 +270,13 @@ export function TicketsList({
   const [selectedTicket, setSelectedTicket] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [view, setView] = useState<'kanban' | 'list' | 'timesheet' | 'gantt'>(
-    viewMode === 'timesheet' ? 'timesheet' : viewMode === 'list' ? 'list' : 'kanban'
+    viewMode === 'timesheet'
+      ? 'timesheet'
+      : viewMode === 'list'
+        ? 'list'
+        : viewMode === 'gantt'
+          ? 'gantt'
+          : 'kanban'
   )
   const [kanbanConfig, setKanbanConfig] = useState<KanbanConfig>({
     rows: undefined,
@@ -293,6 +416,11 @@ export function TicketsList({
 
   const handleTicketMove = async (ticketId: string, newStatus: string) => {
     await moveTicket(ticketId, newStatus)
+    refetch()
+  }
+
+  const handleGanttScheduleChange = async (ticketId: string, updates: { startDate: string; dueDate: string }) => {
+    await updateTicket(ticketId, updates)
     refetch()
   }
 
@@ -744,7 +872,12 @@ export function TicketsList({
           statusStyles={statusStyles}
         />
       ) : view === 'gantt' ? (
-        <ProjectGanttView tickets={filteredTickets as any} statusStyles={statusStyles} onTicketClick={handleTicketClick} />
+        <ProjectGanttView
+          tickets={filteredTickets as any}
+          statusStyles={statusStyles}
+          onTicketClick={handleTicketClick}
+          onScheduleChange={handleGanttScheduleChange}
+        />
       ) : view === 'timesheet' ? (
         <TimesheetView
           tickets={(ticketsWithTimeLogsResult.ticketsWithTimeLogs || filteredTickets).map((ticket) => ({

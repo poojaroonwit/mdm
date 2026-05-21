@@ -150,7 +150,7 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
   const headerBg = (branding?.topMenuBackgroundColor &&
     !branding.topMenuBackgroundColor.includes('var(--brand-top-menu-bg)'))
     ? branding.topMenuBackgroundColor
-    : 'var(--brand-top-menu-bg, hsl(var(--background)))'
+    : 'var(--brand-top-menu-bg, var(--bg-default-60))'
 
   const headerColor = (branding?.topMenuTextColor &&
     !branding.topMenuTextColor.includes('var(--brand-top-menu-text)'))
@@ -163,8 +163,8 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
       data-component="top-menu-bar"
       style={{
         zIndex: Z_INDEX.navigation,
-        backgroundColor: 'var(--bg-default-60)', // 60% opacity for blur effect
-        color: 'var(--text-primary)',
+        backgroundColor: headerBg,
+        color: headerColor,
       }}
     >
       {/* Left Section: Logo + Divider + Feature */}

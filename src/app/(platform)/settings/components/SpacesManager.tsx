@@ -627,7 +627,7 @@ export default function SpacesManager() {
                           </div>
                           <div>
                             <Label>Background color</Label>
-                            <Input type="text" placeholder="#0f172a" defaultValue={(selectedSpace as any).sidebar_config?.style?.backgroundColor || ''} onBlur={async (e) => {
+                            <Input type="text" placeholder="#ffffff" defaultValue={(selectedSpace as any).sidebar_config?.style?.backgroundColor || ''} onBlur={async (e) => {
                               const v = e.currentTarget.value
                               const res = await fetch(`/api/spaces/${selectedSpace!.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sidebar_config: { ...(selectedSpace as any).sidebar_config, style: { ...((selectedSpace as any).sidebar_config?.style || {}), backgroundColor: v } } }) })
                               if (res.ok) { toast.success('Updated'); await refreshSpaces() } else { toast.error('Failed') }
@@ -644,7 +644,7 @@ export default function SpacesManager() {
                           <div className="grid grid-cols-3 gap-3">
                             <div>
                               <Label>Gradient from</Label>
-                              <Input type="text" placeholder="#0f172a" defaultValue={(selectedSpace as any).sidebar_config?.style?.gradient?.from || ''} onBlur={async (e) => {
+                              <Input type="text" placeholder="#ffffff" defaultValue={(selectedSpace as any).sidebar_config?.style?.gradient?.from || ''} onBlur={async (e) => {
                                 const v = e.currentTarget.value
                                 const g = { ...(((selectedSpace as any).sidebar_config?.style?.gradient) || {}), from: v }
                                 const res = await fetch(`/api/spaces/${selectedSpace!.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sidebar_config: { ...(selectedSpace as any).sidebar_config, style: { ...((selectedSpace as any).sidebar_config?.style || {}), gradient: g } } }) })
@@ -653,7 +653,7 @@ export default function SpacesManager() {
                             </div>
                             <div>
                               <Label>Gradient to</Label>
-                              <Input type="text" placeholder="#1e293b" defaultValue={(selectedSpace as any).sidebar_config?.style?.gradient?.to || ''} onBlur={async (e) => {
+                              <Input type="text" placeholder="#f3f4f6" defaultValue={(selectedSpace as any).sidebar_config?.style?.gradient?.to || ''} onBlur={async (e) => {
                                 const v = e.currentTarget.value
                                 const g = { ...(((selectedSpace as any).sidebar_config?.style?.gradient) || {}), to: v }
                                 const res = await fetch(`/api/spaces/${selectedSpace!.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sidebar_config: { ...(selectedSpace as any).sidebar_config, style: { ...((selectedSpace as any).sidebar_config?.style || {}), gradient: g } } }) })
@@ -673,7 +673,7 @@ export default function SpacesManager() {
                           <div className="grid grid-cols-2 gap-3">
                             <div>
                               <Label>Font color</Label>
-                              <Input type="text" placeholder="#ffffff" defaultValue={(selectedSpace as any).sidebar_config?.style?.fontColor || ''} onBlur={async (e) => {
+                              <Input type="text" placeholder="#374151" defaultValue={(selectedSpace as any).sidebar_config?.style?.fontColor || ''} onBlur={async (e) => {
                                 const v = e.currentTarget.value
                                 const res = await fetch(`/api/spaces/${selectedSpace!.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sidebar_config: { ...(selectedSpace as any).sidebar_config, style: { ...((selectedSpace as any).sidebar_config?.style || {}), fontColor: v } } }) })
                                 if (res.ok) { toast.success('Updated'); await refreshSpaces() } else { toast.error('Failed') }
