@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { TicketsList } from '@plugins/project-management/src/tickets'
-import { useSpace } from '@/contexts/space-context'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -53,7 +52,6 @@ const EMPTY_PROJECT_FORM = {
 
 export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
   const router = useRouter()
-  const { currentSpace } = useSpace()
   const [projects, setProjects] = useState<ProjectRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSpaceId, setSelectedSpaceId] = useState('')
@@ -98,7 +96,6 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
 
   const openCreateDialog = () => {
     resetProjectForm()
-    setSelectedSpaceId(currentSpace?.id || '')
     setIsDialogOpen(true)
   }
 
@@ -459,7 +456,7 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
               <div className="space-y-2">
                 <Label>Space</Label>
                 <SpaceSelector
-                  value={selectedSpaceId || currentSpace?.id || ''}
+                  value={selectedSpaceId}
                   onValueChange={setSelectedSpaceId}
                   className="w-full"
                   showAllOption={false}
