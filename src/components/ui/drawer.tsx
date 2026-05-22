@@ -184,7 +184,7 @@ const DrawerOverlay = React.forwardRef<
       ref={ref}
       className={cn(
         "fixed inset-0",
-        !backgroundColor && "bg-zinc-950/20 dark:bg-black/40",
+        !backgroundColor && "bg-white/40 dark:bg-black/40",
         !blurValue && "backdrop-blur-md",
         className
       )}
@@ -355,7 +355,7 @@ const DrawerContent = React.forwardRef<
             opacity: isAnimating ? 1 : 0,
             transition: 'opacity 300ms ease-out',
           }}
-          className="bg-zinc-950/20 dark:bg-black/40 backdrop-blur-md"
+          className="bg-white/40 dark:bg-black/40 backdrop-blur-md"
         />
       )}
       <div
@@ -385,7 +385,7 @@ const DrawerHeader = ({ className, style, ...props }: React.HTMLAttributes<HTMLD
   
   return (
     <div 
-      className={cn("border-b border-zinc-100/60 bg-white/50 px-6 py-5 backdrop-blur-md dark:border-zinc-800/60 dark:bg-zinc-950/20", className)} 
+      className={cn("border-b border-zinc-100/60 bg-white/50 px-6 py-5 backdrop-blur-md dark:border-zinc-800/60 dark:bg-zinc-900/20", className)} 
       style={{
         borderTopLeftRadius: borderRadius,
         borderTopRightRadius: borderRadius,

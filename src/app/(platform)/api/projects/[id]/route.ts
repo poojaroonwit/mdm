@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { requireProjectSpaceAccess } from '@/lib/space-access'
 import { db } from '@/lib/db'
+import { normalizeProjectMetadata } from '@/components/project-management/project-config'
 
 const PROJECT_ROLE_VALUES = new Set([
   'owner',
@@ -241,6 +242,7 @@ async function hydrateProjectMetadata(
   const safeMetadata = metadata && typeof metadata === 'object' ? metadata as Record<string, any> : {}
 
   return {
+    ...normalizeProjectMetadata(safeMetadata),
     members: await normalizeProjectMembers(safeMetadata.members, projectId, { strict: false }),
     links: asArray(safeMetadata.links),
     assets: asArray(safeMetadata.assets),
@@ -340,7 +342,14 @@ async function getHandler(
   return NextResponse.json({ 
     project: {
       ...project,
-      ...hydratedMetadata,
+      metadata: hydratedMetadata,
+      members: hydratedMetadata.members,
+      links: hydratedMetadata.links,
+      assets: hydratedMetadata.assets,
+      dataModels: hydratedMetadata.dataModels,
+      notebooks: hydratedMetadata.notebooks,
+      chatbots: hydratedMetadata.chatbots,
+      queries: hydratedMetadata.queries,
     }
   })
 }
@@ -389,7 +398,7 @@ async function putHandler(
     )
   }
 
-  const existingMetadata = (existingProject.metadata as any) || {}
+  const existingMetadata = normalizeProjectMetadata(existingProject.metadata)
   let normalizedMembers = existingMetadata.members
   let normalizedDataModels = existingMetadata.dataModels
 
@@ -408,7 +417,7 @@ async function putHandler(
     )
   }
 
-  const updatedMetadata = {
+  const updatedMetadata = normalizeProjectMetadata({
     ...existingMetadata,
     ...metadata,
     ...(members !== undefined && { members: normalizedMembers }),
@@ -418,7 +427,7 @@ async function putHandler(
     ...(notebooks !== undefined && { notebooks }),
     ...(chatbots !== undefined && { chatbots }),
     ...(queries !== undefined && { queries }),
-  }
+  })
 
   const project = await db.project.update({
     where: { id },
@@ -458,6 +467,7 @@ async function putHandler(
   return NextResponse.json({ 
     project: {
       ...project,
+      metadata: updatedMetadata,
       members: updatedMetadata.members || [],
       links: updatedMetadata.links || [],
       assets: updatedMetadata.assets || [],

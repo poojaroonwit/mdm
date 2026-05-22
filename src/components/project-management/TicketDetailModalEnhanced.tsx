@@ -4,11 +4,9 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogBody,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
 } from '@/components/ui/dialog'
 import {
   Sheet,
@@ -41,6 +39,7 @@ import { TicketRelationshipsPanel } from './TicketRelationshipsPanel'
 import { RichMarkdownEditor } from '@/components/knowledge-base/RichMarkdownEditor'
 import { format } from 'date-fns'
 import { showError, showSuccess, showInfo } from '@/lib/toast-utils'
+import { DEFAULT_PROJECT_STATUSES, ProjectFieldOption, ProjectStatusDefinition, normalizeProjectMetadata } from './project-config'
 
 interface TicketDetailModalProps {
   ticket: {
@@ -92,14 +91,13 @@ interface ProjectCustomFieldDefinition {
   displayName: string
   type: string
   isRequired?: boolean
+  options?: ProjectFieldOption[]
 }
 
 interface ProjectOption {
   id: string
   name: string
-  metadata?: {
-    customFields?: ProjectCustomFieldDefinition[]
-  } | null
+  metadata?: Record<string, any> | null
 }
 
 export function TicketDetailModalEnhanced({
@@ -124,6 +122,7 @@ export function TicketDetailModalEnhanced({
     type: string
     value?: string | null
     isRequired?: boolean
+    options?: ProjectFieldOption[]
   }>>([])
 
   const [activeTab, setActiveTab] = useState('details')
@@ -157,6 +156,7 @@ export function TicketDetailModalEnhanced({
   const [loadingRepositories, setLoadingRepositories] = useState(false)
   const [projects, setProjects] = useState<ProjectOption[]>([])
   const [selectedProject, setSelectedProject] = useState<string>('')
+  const [projectStatuses, setProjectStatuses] = useState<ProjectStatusDefinition[]>(DEFAULT_PROJECT_STATUSES)
   const [, setProjectCustomFields] = useState<ProjectCustomFieldDefinition[]>([])
   const [modules, setModules] = useState<Array<{id: string, name: string, projectId: string}>>([])
   const [selectedModule, setSelectedModule] = useState<string>('')
@@ -176,8 +176,16 @@ export function TicketDetailModalEnhanced({
     sourceAttributes?: Array<{ name: string; value?: string | null; displayName?: string; type?: string; isRequired?: boolean }>
   ) => {
     const project = availableProjects.find((item) => item.id === projectId)
-    const definitions = project?.metadata?.customFields || []
+    const metadata = normalizeProjectMetadata(project?.metadata)
+    const definitions = metadata.customFields || []
     setProjectCustomFields(definitions)
+    const nextStatuses = metadata.ticketConfig?.statuses || DEFAULT_PROJECT_STATUSES
+    setProjectStatuses(nextStatuses)
+    setEditStatus((current) =>
+      nextStatuses.some((status) => status.value === current)
+        ? current
+        : nextStatuses[0]?.value || 'BACKLOG'
+    )
 
     if (!projectId || definitions.length === 0) {
       setCustomFields([])
@@ -195,6 +203,7 @@ export function TicketDetailModalEnhanced({
           type: field.type || 'TEXT',
           value: existing?.value || '',
           isRequired: field.isRequired || false,
+          options: field.options || [],
         }
       })
     )
@@ -347,6 +356,7 @@ export function TicketDetailModalEnhanced({
         } else {
           setProjectCustomFields([])
           setCustomFields([])
+          setProjectStatuses(DEFAULT_PROJECT_STATUSES)
         }
       }
 
@@ -1010,65 +1020,387 @@ export function TicketDetailModalEnhanced({
     onSave?.(updatedTicket)
   }
 
+  const renderFieldInput = (
+    field: {
+      name: string
+      displayName: string
+      type: string
+      value?: string | null
+      isRequired?: boolean
+      options?: ProjectFieldOption[]
+    },
+    index: number
+  ) => {
+    const updateField = (value: string) => {
+      setCustomFields((prev) =>
+        prev.map((item, itemIndex) =>
+          itemIndex === index ? { ...item, value } : item
+        )
+      )
+    }
+
+    if (field.type === 'SELECT') {
+      return (
+        <Select value={field.value || '__none__'} onValueChange={(value) => updateField(value === '__none__' ? '' : value)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select value" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__none__">None</SelectItem>
+            {(field.options || []).map((option) => (
+              <SelectItem key={`${field.name}-${option.value}`} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )
+    }
+
+    if (field.type === 'DATE') {
+      return <Input type="date" value={field.value || ''} onChange={(e) => updateField(e.target.value)} />
+    }
+
+    if (field.type === 'NUMBER') {
+      return <Input type="number" value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" />
+    }
+
+    return <Input value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" />
+  }
+
   // Common header content
   const headerContent = (
-    <>
-      <Label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Ticket Title</Label>
-      <Input
-        value={editTitle}
-        onChange={(e) => setEditTitle(e.target.value)}
-        placeholder="Enter ticket title"
-        className="text-lg font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary bg-transparent h-auto py-1"
-      />
-      <p className="text-sm text-muted-foreground mt-1">
-        {isNew ? 'Fill in the details to create a new ticket.' : 'Manage ticket details and activities.'}
+    <div className="space-y-1">
+      <h2 className="text-xl font-semibold tracking-tight">
+        {isNew ? 'Create Ticket' : 'Ticket Details'}
+      </h2>
+      <p className="text-sm text-muted-foreground">
+        {isNew ? 'Set up the task details and project attributes in one place.' : 'Update the task details and manage its project attributes.'}
       </p>
-    </>
+    </div>
+  )
+
+  const customFieldsPanel = (
+    <div className="space-y-4 rounded-2xl border border-border bg-card p-5">
+      <div className="space-y-1">
+        <Label className="text-sm font-medium">Attributes</Label>
+        <p className="text-xs text-muted-foreground">
+          These fields are inherited from the selected project and apply to every ticket in that project.
+        </p>
+      </div>
+      {!selectedProject ? (
+        <div className="rounded-xl border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
+          Select a project to load its shared ticket attributes.
+        </div>
+      ) : customFields.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
+          This project has no shared attributes yet.
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {customFields.map((field, index) => (
+            <div key={`${field.name}-${index}`} className="space-y-2 rounded-xl border border-border/70 bg-background p-4">
+              <div className="flex items-start justify-between gap-3">
+                <Label>{field.displayName}</Label>
+                <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  {field.type}
+                </span>
+              </div>
+              {renderFieldInput(field, index)}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
+  const ticketDetailsFields = (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Ticket Title</Label>
+        <Input
+          value={editTitle}
+          onChange={(e) => setEditTitle(e.target.value)}
+          placeholder="Enter ticket title"
+          className="h-12 text-base font-semibold"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Ticket Description</Label>
+        <div className="overflow-hidden rounded-2xl border border-border">
+          <RichMarkdownEditor
+            content={editDescription}
+            onChange={setEditDescription}
+            placeholder="Describe the ticket inline..."
+            editable
+            showToolbar
+            className="min-h-[260px] bg-background"
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <Label>Status</Label>
+          <Select value={editStatus} onValueChange={setEditStatus}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {projectStatuses.map((status) => (
+                <SelectItem key={status.value} value={status.value}>
+                  {status.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Priority</Label>
+          <Select value={editPriority} onValueChange={setEditPriority}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="LOW">Low</SelectItem>
+              <SelectItem value="MEDIUM">Medium</SelectItem>
+              <SelectItem value="HIGH">High</SelectItem>
+              <SelectItem value="URGENT">Urgent</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <div>
+          <Label>Start Date</Label>
+          <Input
+            type="date"
+            value={editStartDate}
+            onChange={(e) => setEditStartDate(e.target.value)}
+            className="mt-1"
+          />
+        </div>
+        <div>
+          <Label>Due Date</Label>
+          <Input
+            type="date"
+            value={editDueDate}
+            onChange={(e) => setEditDueDate(e.target.value)}
+            className="mt-1"
+          />
+        </div>
+        <div>
+          <Label>Estimate (hours)</Label>
+          <Input
+            type="number"
+            min="0"
+            step="0.5"
+            placeholder="0"
+            value={editEstimate}
+            onChange={(e) => setEditEstimate(e.target.value)}
+            className="mt-1"
+          />
+        </div>
+      </div>
+
+      {!isNew && (
+        <div>
+          <Label htmlFor="ticketType">Ticket Type</Label>
+          <Select value={ticketType} onValueChange={setTicketType}>
+            <SelectTrigger className="mt-1" id="ticketType">
+              <SelectValue placeholder="Select ticket type (for ServiceDesk)" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">None</SelectItem>
+              <SelectItem value="Request">Request</SelectItem>
+              <SelectItem value="Change Request">Change Request</SelectItem>
+              <SelectItem value="Issue">Issue</SelectItem>
+              <SelectItem value="Problem">Problem</SelectItem>
+              <SelectItem value="Incident">Incident</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="mt-1 text-xs text-muted-foreground">
+            This will be mapped to ServiceDesk category when pushing.
+          </p>
+        </div>
+      )}
+
+      {!isNew && ticket.assignees && ticket.assignees.length > 0 && (
+        <div>
+          <Label>Assignees</Label>
+          <div className="mt-2 flex gap-2">
+            {ticket.assignees.map((assignee) => (
+              <Avatar key={assignee.user.id} className="h-8 w-8">
+                <AvatarImage src={assignee.user.avatar || undefined} />
+                <AvatarFallback>
+                  {assignee.user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                </AvatarFallback>
+              </Avatar>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <Label htmlFor={isNew ? 'project-create' : 'project'}>Project</Label>
+          <Select
+            value={selectedProject || '__none__'}
+            onValueChange={(value) => {
+              const nextProjectId = value === '__none__' ? '' : value
+              setSelectedProject(nextProjectId)
+              setSelectedModule('')
+              setSelectedMilestone('')
+              setSelectedRelease('')
+              applyProjectFieldDefinitions(nextProjectId, projects)
+            }}
+          >
+            <SelectTrigger className="mt-1" id={isNew ? 'project-create' : 'project'}>
+              <SelectValue placeholder="Select project" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">None</SelectItem>
+              {projects.map((project) => (
+                <SelectItem key={project.id} value={project.id}>
+                  {project.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {selectedProject && (
+          <div>
+            <Label htmlFor={isNew ? 'module-create' : 'module'}>Module</Label>
+            <Select
+              value={selectedModule || '__none__'}
+              onValueChange={(value) => setSelectedModule(value === '__none__' ? '' : value)}
+            >
+              <SelectTrigger className="mt-1" id={isNew ? 'module-create' : 'module'}>
+                <SelectValue placeholder="Select module" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">None</SelectItem>
+                {modules.map((module) => (
+                  <SelectItem key={module.id} value={module.id}>
+                    {module.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
+
+      {selectedProject && (
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <Label htmlFor={isNew ? 'milestone-create' : 'milestone'}>Milestone</Label>
+            <Select
+              value={selectedMilestone || '__none__'}
+              onValueChange={(value) => setSelectedMilestone(value === '__none__' ? '' : value)}
+            >
+              <SelectTrigger className="mt-1" id={isNew ? 'milestone-create' : 'milestone'}>
+                <SelectValue placeholder="Select milestone" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">None</SelectItem>
+                {milestones.map((milestone) => (
+                  <SelectItem key={milestone.id} value={milestone.id}>
+                    {milestone.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor={isNew ? 'release-create' : 'release'}>Release</Label>
+            <Select
+              value={selectedRelease || '__none__'}
+              onValueChange={(value) => setSelectedRelease(value === '__none__' ? '' : value)}
+            >
+              <SelectTrigger className="mt-1" id={isNew ? 'release-create' : 'release'}>
+                <SelectValue placeholder="Select release" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">None</SelectItem>
+                {releases.map((release) => (
+                  <SelectItem key={release.id} value={release.id}>
+                    {release.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
+  const detailsLayout = (
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.9fr)]">
+      <div className="min-w-0">
+        {ticketDetailsFields}
+      </div>
+      <div className="min-w-0 xl:sticky xl:top-0 xl:self-start">
+        {customFieldsPanel}
+      </div>
+    </div>
+  )
+
+  const createTicketBodyContent = (
+    <div className="mt-4 flex-1 overflow-y-auto">
+      <div className="pb-2">
+        {detailsLayout}
+      </div>
+    </div>
   )
 
   // Common footer
   const footerContent = (
-    <div className="flex gap-2 pt-4 border-t">
-      {!isNew && serviceDeskConfig?.isConfigured && (
-        <Button variant="outline" onClick={handlePushToServiceDesk} disabled={pushingToServiceDesk}>
-          {pushingToServiceDesk ? <Loader className="h-4 w-4 mr-2 animate-spin" /> : <ExternalLink className="h-4 w-4 mr-2" />}
-          Push to ServiceDesk
-        </Button>
-      )}
-      {!isNew && gitLabConfig?.isConfigured && (
-        <>
-          {gitLabRepositories.length > 0 && (
-            <Select value={selectedRepository} onValueChange={setSelectedRepository}>
-              <SelectTrigger className="w-48"><SelectValue placeholder="Repository" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Default Repository</SelectItem>
-                {gitLabRepositories.map((repo) => (
-                  <SelectItem key={repo.id} value={repo.projectId}>{repo.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          <Button variant="outline" onClick={handlePushToGitLab} disabled={pushingToGitLab || loadingRepositories}>
-            {pushingToGitLab ? <Loader className="h-4 w-4 mr-2 animate-spin" /> : <GitBranch className="h-4 w-4 mr-2" />}
-            {gitLabIssueUrl ? 'Update GitLab Issue' : 'Push to GitLab'}
+    <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-wrap items-center gap-2">
+        {!isNew && serviceDeskConfig?.isConfigured && (
+          <Button variant="outline" onClick={handlePushToServiceDesk} disabled={pushingToServiceDesk}>
+            {pushingToServiceDesk ? <Loader className="h-4 w-4 mr-2 animate-spin" /> : <ExternalLink className="h-4 w-4 mr-2" />}
+            Push to ServiceDesk
           </Button>
-        </>
-      )}
-      {!isNew && gitLabIssueUrl && (
-        <Button variant="outline" onClick={() => window.open(gitLabIssueUrl, '_blank')}>
-          <ExternalLink className="h-4 w-4 mr-2" />
-          View in GitLab
+        )}
+        {!isNew && gitLabConfig?.isConfigured && (
+          <>
+            {gitLabRepositories.length > 0 && (
+              <Select value={selectedRepository} onValueChange={setSelectedRepository}>
+                <SelectTrigger className="w-48"><SelectValue placeholder="Repository" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Default Repository</SelectItem>
+                  {gitLabRepositories.map((repo) => (
+                    <SelectItem key={repo.id} value={repo.projectId}>{repo.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <Button variant="outline" onClick={handlePushToGitLab} disabled={pushingToGitLab || loadingRepositories}>
+              {pushingToGitLab ? <Loader className="h-4 w-4 mr-2 animate-spin" /> : <GitBranch className="h-4 w-4 mr-2" />}
+              {gitLabIssueUrl ? 'Update GitLab Issue' : 'Push to GitLab'}
+            </Button>
+          </>
+        )}
+        {!isNew && gitLabIssueUrl && (
+          <Button variant="outline" onClick={() => window.open(gitLabIssueUrl, '_blank')}>
+            <ExternalLink className="h-4 w-4 mr-2" />
+            View in GitLab
+          </Button>
+        )}
+        {onDelete && !isNew && (
+          <Button variant="destructive" onClick={() => onDelete((ticket as any).id)}>
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </Button>
+        )}
+      </div>
+      <div className="flex justify-end">
+        <Button onClick={handleSave} className="min-w-[160px]">
+          {isNew ? 'Create Ticket' : 'Save Changes'}
         </Button>
-      )}
-      <Button onClick={handleSave} className="flex-1">
-        {isNew ? 'Create Ticket' : 'Save Changes'}
-      </Button>
-      {onDelete && !isNew && (
-        <Button variant="destructive" onClick={() => onDelete((ticket as any).id)}>
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete
-        </Button>
-      )}
+      </div>
     </div>
   )
 
@@ -1097,11 +1429,11 @@ export function TicketDetailModalEnhanced({
               <Select value={editStatus} onValueChange={setEditStatus}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="BACKLOG">Backlog</SelectItem>
-                  <SelectItem value="TODO">To Do</SelectItem>
-                  <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                  <SelectItem value="IN_REVIEW">In Review</SelectItem>
-                  <SelectItem value="DONE">Done</SelectItem>
+                  {projectStatuses.map((status) => (
+                    <SelectItem key={status.value} value={status.value}>
+                      {status.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -1253,17 +1585,7 @@ export function TicketDetailModalEnhanced({
                   <div key={`${field.name}-${index}`} className="grid grid-cols-[minmax(0,1fr)_140px] gap-3">
                     <div className="space-y-2">
                       <Label>{field.displayName}</Label>
-                      <Input
-                        value={field.value || ''}
-                        onChange={(e) =>
-                          setCustomFields((prev) =>
-                            prev.map((item, itemIndex) =>
-                              itemIndex === index ? { ...item, value: e.target.value } : item
-                            )
-                          )
-                        }
-                        placeholder="Value"
-                      />
+                      {renderFieldInput(field, index)}
                     </div>
                     <Select value={field.type} disabled>
                       <SelectTrigger>
@@ -1311,7 +1633,10 @@ export function TicketDetailModalEnhanced({
             )}
           </TabsList>
 
-          <TabsContent value="details" className="space-y-4 mt-4">
+          <TabsContent value="details" className="mt-4">
+            {detailsLayout}
+            {false && (
+              <>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Status</Label>
@@ -1562,6 +1887,8 @@ export function TicketDetailModalEnhanced({
                 </div>
               )}
             </div>
+              </>
+            )}
           </TabsContent>
 
           <TabsContent value="comments" className="space-y-4 mt-4">
@@ -2109,13 +2436,13 @@ export function TicketDetailModalEnhanced({
   if (isDrawer) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-[700px] sm:max-w-[700px] overflow-y-auto flex flex-col gap-0 p-0">
+        <SheetContent side="right" className="w-[96vw] sm:max-w-[1100px] overflow-y-auto flex flex-col gap-0 p-0">
           <SheetHeader className="px-6 py-4 border-b">
             <SheetTitle className="sr-only">Ticket</SheetTitle>
             {headerContent}
           </SheetHeader>
           <div className="flex-1 overflow-y-auto px-6 py-4">
-            {bodyContent}
+            {isNew ? createTicketBodyContent : bodyContent}
           </div>
           <div className="px-6 py-4 border-t">
             {footerContent}
@@ -2127,12 +2454,12 @@ export function TicketDetailModalEnhanced({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
           {headerContent}
         </DialogHeader>
         <DialogBody className="flex-1 overflow-y-auto min-h-0 pt-4">
-          {bodyContent}
+          {isNew ? createTicketBodyContent : bodyContent}
         </DialogBody>
         <DialogFooter className="flex-shrink-0 mt-0 pt-0 border-t-0">
           {footerContent}

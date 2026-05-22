@@ -81,12 +81,12 @@ export function KanbanBoard({ tickets, onTicketClick, onAddTicket, onTicketMove 
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, column.id)}
           >
-            <Card className="h-full flex flex-col bg-gray-50/50 dark:bg-gray-900/50">
+            <Card className="h-full flex flex-col bg-card/80 text-card-foreground">
               <CardHeader className="pb-3 border-b">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${column.color}`} />
-                    <CardTitle className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <CardTitle className="text-sm font-semibold text-foreground">
                       {column.title}
                     </CardTitle>
                   </div>
@@ -112,7 +112,7 @@ export function KanbanBoard({ tickets, onTicketClick, onAddTicket, onTicketMove 
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full justify-start text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 border-dashed border-2 hover:border-primary"
+                  className="w-full justify-start text-muted-foreground hover:text-foreground border-dashed border-2 hover:border-primary"
                   onClick={() => onAddTicket?.(column.id)}
                 >
                   <Plus className="h-4 w-4 mr-2" />

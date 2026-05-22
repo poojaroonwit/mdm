@@ -19,6 +19,7 @@ import { useSpace } from '@/contexts/space-context'
 import { cn } from '@/lib/utils'
 import { SpaceSettingsSidebar } from '@/components/space-management/SpaceSettingsSidebar'
 import { SpaceSidebar } from '@/components/space-management/SpaceSidebar'
+import { ProjectManagementSidebar } from '@/components/project-management/ProjectManagementSidebar'
 
 type BreadcrumbItem = string | { label: string; href?: string; onClick?: () => void }
 
@@ -42,6 +43,8 @@ interface PlatformLayoutProps {
   spaceSidebarActivePageId?: string
   spaceSidebarEditMode?: boolean
   onSpaceSidebarPageChange?: (pageId: string) => void
+  showProjectManagementSidebar?: boolean
+  projectManagementProjectId?: string
 }
 
 const getGroupForTab = (tab: string): string | null => {
@@ -83,6 +86,8 @@ export function PlatformLayout({
   spaceSidebarActivePageId,
   spaceSidebarEditMode = false,
   onSpaceSidebarPageChange,
+  showProjectManagementSidebar = false,
+  projectManagementProjectId,
 }: PlatformLayoutProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -100,35 +105,37 @@ export function PlatformLayout({
   const isDataManagementRoute = useMemo(() => pathname?.startsWith('/data-management') ?? false, [pathname])
 
   const currentGroup = useMemo(() => {
-    if (showSpaceSettingsSidebar) return 'data-management'
+    if (showSpaceSettingsSidebar || showProjectManagementSidebar) return null
     if (isDataManagementRoute) return null
     return getGroupForTab(activeTab)
-  }, [activeTab, isDataManagementRoute, showSpaceSettingsSidebar])
+  }, [activeTab, isDataManagementRoute, showProjectManagementSidebar, showSpaceSettingsSidebar])
 
   const [selectedGroup, setSelectedGroup] = useState<string | null>(currentGroup)
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null)
   const isGroupManuallySelected = useRef(false)
 
   const displayGroup = useMemo(() => {
-    if (showSpaceSettingsSidebar) return null
+    if (showSpaceSettingsSidebar || showProjectManagementSidebar) return null
     if (hoveredGroup && hoveredGroup !== 'data-management') return hoveredGroup
     if (activeTab === currentGroup) return null
     if (selectedGroup && selectedGroup !== 'data-management') return selectedGroup
     if (currentGroup && currentGroup !== 'data-management') return currentGroup
     return null
-  }, [hoveredGroup, selectedGroup, currentGroup, showSpaceSettingsSidebar, activeTab])
+  }, [hoveredGroup, selectedGroup, currentGroup, showProjectManagementSidebar, showSpaceSettingsSidebar, activeTab])
 
   useEffect(() => {
     if (!isGroupManuallySelected.current) {
       if (showSpaceSettingsSidebar && selectedGroup !== 'data-management') {
         setSelectedGroup('data-management')
+      } else if (showProjectManagementSidebar) {
+        setSelectedGroup(null)
       } else if (!showSpaceSettingsSidebar && selectedGroup !== currentGroup) {
         setSelectedGroup(currentGroup)
       }
     } else {
       isGroupManuallySelected.current = false
     }
-  }, [activeTab, currentGroup, selectedGroup, showSpaceSettingsSidebar])
+  }, [activeTab, currentGroup, selectedGroup, showProjectManagementSidebar, showSpaceSettingsSidebar])
 
   const handleGroupSelect = useCallback((group: string | null) => {
     isGroupManuallySelected.current = true
@@ -215,16 +222,16 @@ export function PlatformLayout({
         e.preventDefault()
         setSidebarCollapsed(prev => !prev)
       }
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'B') {
-        e.preventDefault()
-        if (showSpaceSettingsSidebar || (currentGroup && currentGroup !== '')) {
-          setSecondarySidebarCollapsed(prev => !prev)
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'B') {
+          e.preventDefault()
+          if (showSpaceSettingsSidebar || showProjectManagementSidebar || (currentGroup && currentGroup !== '')) {
+            setSecondarySidebarCollapsed(prev => !prev)
+          }
         }
-      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentGroup, showSpaceSettingsSidebar])
+  }, [currentGroup, showProjectManagementSidebar, showSpaceSettingsSidebar])
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -293,6 +300,20 @@ export function PlatformLayout({
                 </div>
               )}
             </div>
+          ) : showProjectManagementSidebar ? (
+            <div
+              className={cn(
+                "flex-shrink-0 transition-all duration-300 ease-in-out overflow-hidden border-r border-sidebar-border",
+                secondarySidebarCollapsed ? 'w-0' : 'w-53'
+              )}
+              style={{ position: 'relative', zIndex: Z_INDEX.sidebar, pointerEvents: 'auto', backgroundColor: 'var(--bg-surface)' }}
+            >
+              {!secondarySidebarCollapsed && (
+                <div className="w-full h-full flex flex-col">
+                  <ProjectManagementSidebar activeProjectId={projectManagementProjectId} />
+                </div>
+              )}
+            </div>
           ) : showSpaceSettingsSidebar ? (
             <div
               className={cn(
@@ -354,7 +375,7 @@ export function PlatformLayout({
         </div>
 
         <div className="flex-1 flex min-w-0 flex-col overflow-hidden">
-          <main className="flex-1 overflow-y-auto relative bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100 pb-24 md:pb-0">
+          <main className="flex-1 overflow-y-auto relative bg-background text-foreground pb-24 md:pb-0">
             {selectedVm && activeTab === 'infrastructure' ? (
               vmCredentials ? (
                 <VMTerminal

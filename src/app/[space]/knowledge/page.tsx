@@ -8,7 +8,7 @@ export default function SpaceKnowledgePage() {
   const spaceId = params?.space as string
 
   return (
-    <div className="h-screen">
+    <div className="h-screen bg-background text-foreground">
       <OutlineKnowledgeBase spaceId={spaceId} />
     </div>
   )

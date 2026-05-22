@@ -18,6 +18,18 @@ const pathToTabMap: Record<string, string> = {
   '/tools/vector-store': 'vector-store', // Vector Store Management
 }
 
+function resolveToolTab(pathname: string | null) {
+  if (!pathname) return 'bigquery'
+  if (pathname.startsWith('/tools/projects')) return 'projects'
+  return pathToTabMap[pathname] || 'bigquery'
+}
+
+function extractProjectId(pathname: string | null) {
+  if (!pathname?.startsWith('/tools/projects/')) return undefined
+  const segments = pathname.split('/').filter(Boolean)
+  return segments[2]
+}
+
 export default function ToolsLayout({
   children,
 }: {
@@ -33,7 +45,7 @@ export default function ToolsLayout({
       setBreadcrumbActions(null)
       return
     }
-    const tab = pathToTabMap[pathname || ''] || 'bigquery'
+    const tab = resolveToolTab(pathname)
     setActiveTab(tab)
     // Clear breadcrumb actions when tab changes
     if (tab !== 'bigquery') {
@@ -58,6 +70,8 @@ export default function ToolsLayout({
         activeTab={activeTab}
         onTabChange={handleTabChange}
         breadcrumbActions={breadcrumbActions}
+        showProjectManagementSidebar={pathname?.startsWith('/tools/projects') ?? false}
+        projectManagementProjectId={extractProjectId(pathname)}
       >
         {children}
       </PlatformLayout>

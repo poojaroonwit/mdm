@@ -105,7 +105,7 @@ const DialogOverlay = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "fixed inset-0 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in-0 duration-300",
+        "fixed inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-sm animate-in fade-in-0 duration-300",
         className
       )}
       style={{ zIndex: Z_INDEX.overlay }}
@@ -158,7 +158,7 @@ const DialogContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border border-zinc-200/70 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl shadow-2xl duration-300 animate-in fade-in-0 zoom-in-95 sm:rounded-2xl overflow-hidden",
+          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border border-zinc-200/70 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shadow-2xl duration-300 animate-in fade-in-0 zoom-in-95 sm:rounded-2xl overflow-hidden",
           className
         )}
         style={{ zIndex: Z_INDEX.dialog }}

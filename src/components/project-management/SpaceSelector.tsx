@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { CreateSpaceDialog } from './CreateSpaceDialog'
+import { normalizeSpaceId } from '@/lib/validation-utils'
 
 interface Space {
   id: string
@@ -36,14 +37,20 @@ export function SpaceSelector({
 }: SpaceSelectorProps) {
   const { spaces, currentSpace } = useSpace()
   const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const selectedValue = value || (showAllOption ? 'all' : currentSpace?.id || 'all')
+  const normalizedValue = normalizeSpaceId(value) || undefined
+  const normalizedCurrentSpaceId = normalizeSpaceId(currentSpace?.id) || undefined
+  const resolvedSelectedValue = normalizedValue || (showAllOption ? 'all' : normalizedCurrentSpaceId || 'all')
+  const matchedSpace = resolvedSelectedValue === 'all'
+    ? null
+    : spaces.find((space) => normalizeSpaceId(space.id) === resolvedSelectedValue)
+  const selectedValue = matchedSpace?.id || resolvedSelectedValue
 
   const displayLabel = selectedValue === 'all'
     ? 'All Spaces'
-    : spaces.find((s) => s.id === selectedValue)?.name ?? 'Select a space'
+    : matchedSpace?.name ?? 'Select a space'
 
   const handleChange = (newSpaceId: string) => {
-    onValueChange?.(newSpaceId)
+    onValueChange?.(normalizeSpaceId(newSpaceId) || newSpaceId)
   }
 
   return (

@@ -3,10 +3,12 @@
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Calendar, Clock, MoreHorizontal } from 'lucide-react'
+import { Calendar, Clock, MoreHorizontal, Trash2, FolderOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { stripHtmlTags } from './project-config'
 
 export interface CardFields {
   description?: boolean
@@ -61,22 +63,19 @@ interface TicketCardProps {
     }>
   }
   onClick?: () => void
+  onOpenAction?: () => void
+  onDeleteAction?: () => void
   showSpaces?: boolean
   visibleFields?: CardFields
   flat?: boolean
   accentColor?: string
 }
 
-const priorityDots = {
-  LOW: 'bg-gray-400',
-  MEDIUM: 'bg-blue-500',
-  HIGH: 'bg-orange-500',
-  URGENT: 'bg-red-500',
-}
-
 export function TicketCard({
   ticket,
   onClick,
+  onOpenAction,
+  onDeleteAction,
   showSpaces = false,
   visibleFields,
   flat = false,
@@ -84,36 +83,63 @@ export function TicketCard({
 }: TicketCardProps) {
   const fields = { ...DEFAULT_FIELDS, ...visibleFields }
   const Container = flat ? 'div' : Card
+  const plainDescription = stripHtmlTags(ticket.description)
 
   return (
     <Container
       className={cn(
-        'group cursor-pointer bg-white dark:bg-gray-900',
+        'group cursor-pointer bg-card text-card-foreground shadow-sm',
         flat
-          ? 'border-l-2 border-transparent hover:bg-muted/30'
-          : 'border-l-4 border-l-transparent transition-all duration-200 hover:border-l-primary hover:shadow-md'
+          ? 'rounded-2xl border border-border/80 transition-all duration-200 hover:bg-muted/30 hover:shadow-md'
+          : 'rounded-2xl border border-border/80 transition-all duration-200 hover:border-primary/40 hover:shadow-md'
       )}
-      style={flat && accentColor ? { borderLeftColor: accentColor } : undefined}
+      style={flat && accentColor ? { boxShadow: `inset 3px 0 0 ${accentColor}` } : undefined}
       onClick={onClick}
     >
-      <div className="space-y-2 p-3">
+      <div className="space-y-2 p-3.5">
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <div className={cn('h-2 w-2 flex-shrink-0 rounded-full', priorityDots[ticket.priority as keyof typeof priorityDots] || priorityDots.MEDIUM)} />
-            <h4 className="line-clamp-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+            <h4 className="line-clamp-2 text-sm font-medium text-foreground">
               {ticket.title}
             </h4>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
-            onClick={(event) => {
-              event.stopPropagation()
-            }}
-          >
-            <MoreHorizontal className="h-3 w-3" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
+                onClick={(event) => {
+                  event.stopPropagation()
+                }}
+              >
+                <MoreHorizontal className="h-3.5 w-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem
+                onClick={(event) => {
+                  event.stopPropagation()
+                  ;(onOpenAction || onClick)?.()
+                }}
+              >
+                <FolderOpen className="mr-2 h-4 w-4" />
+                Open Ticket
+              </DropdownMenuItem>
+              {onDeleteAction && (
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    onDeleteAction()
+                  }}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Ticket
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {fields.spaces && showSpaces && ticket.spaces && ticket.spaces.length > 0 && (
@@ -135,9 +161,9 @@ export function TicketCard({
           </div>
         )}
 
-        {fields.description && ticket.description && (
-          <p className="line-clamp-2 text-xs text-gray-600 dark:text-gray-400">
-            {ticket.description}
+        {fields.description && plainDescription && (
+          <p className="line-clamp-2 text-xs text-muted-foreground">
+            {plainDescription}
           </p>
         )}
 
@@ -175,8 +201,8 @@ export function TicketCard({
         )}
 
         {(fields.dueDate || fields.estimate || fields.assignee) && (
-          <div className="flex items-center justify-between border-t border-gray-100 pt-1 dark:border-gray-800">
-            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-between border-t border-border/70 pt-1.5">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               {fields.dueDate && ticket.dueDate && (
                 <div className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
@@ -192,7 +218,7 @@ export function TicketCard({
             </div>
 
             {fields.assignee && ticket.assignee && (
-              <Avatar className="h-6 w-6 border-2 border-white dark:border-gray-900">
+              <Avatar className="h-6 w-6 border-2 border-background">
                 <AvatarImage src={ticket.assignee.avatar || undefined} />
                 <AvatarFallback className="bg-primary/10 text-xs text-primary">
                   {ticket.assignee.name

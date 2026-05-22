@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { TicketCard, CardFields } from './TicketCard'
 import { cn } from '@/lib/utils'
+import { Plus } from 'lucide-react'
 
 interface Ticket {
   id: string
@@ -56,13 +57,13 @@ interface ConfigurableKanbanBoardProps {
   config: KanbanConfig
   onConfigChange?: (config: KanbanConfig) => void
   onTicketClick?: (ticket: Ticket) => void
+  onTicketDelete?: (ticketId: string) => void
   onAddTicket?: (status: string, groupKey?: string) => void
   onTicketMove?: (ticketId: string, newStatus: string, newGroupKey?: string) => void
   showSpaces?: boolean
   statusStyles?: Record<string, KanbanStatusStyle>
+  statusColumns?: string[]
 }
-
-const STATUS_COLUMNS = ['BACKLOG', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE']
 
 const FALLBACK_STATUS_STYLES: Record<string, KanbanStatusStyle> = {
   BACKLOG: {
@@ -101,12 +102,18 @@ export function ConfigurableKanbanBoard({
   tickets,
   config,
   onTicketClick,
+  onTicketDelete,
   onAddTicket,
   onTicketMove,
   showSpaces = false,
   statusStyles,
+  statusColumns,
 }: ConfigurableKanbanBoardProps) {
   const [draggedTicket, setDraggedTicket] = useState<string | null>(null)
+  const palette = { ...FALLBACK_STATUS_STYLES, ...statusStyles }
+  const resolvedStatusColumns = statusColumns && statusColumns.length > 0
+    ? statusColumns
+    : Object.keys(palette)
 
   const groupedTickets = useMemo(() => {
     const { rows, columns } = config
@@ -135,13 +142,6 @@ export function ConfigurableKanbanBoard({
     return result
   }, [tickets, config])
 
-  const palette = { ...FALLBACK_STATUS_STYLES, ...statusStyles }
-
-  const copyLink = async (ticketId: string) => {
-    if (typeof window === 'undefined') return
-    await navigator.clipboard.writeText(`${window.location.origin}/tools/projects?ticketId=${ticketId}`)
-  }
-
   const handleDrop = (status: string) => {
     if (!draggedTicket) return
     onTicketMove?.(draggedTicket, status)
@@ -156,30 +156,17 @@ export function ConfigurableKanbanBoard({
       onDragEnd={() => setDraggedTicket(null)}
       className="group"
     >
-      <div className="grid min-h-[88px] grid-cols-[minmax(0,1fr)_auto] border-b border-border bg-background hover:bg-muted/40">
-        <div className="min-w-0 cursor-pointer px-3 py-3" onClick={() => onTicketClick?.(ticket)}>
-          <TicketCard
-            ticket={ticket}
-            onClick={() => onTicketClick?.(ticket)}
-            showSpaces={showSpaces}
-            visibleFields={config.cardFields}
-            flat
-            accentColor={palette[ticket.status]?.accent}
-          />
-        </div>
-        <div className="flex items-start justify-end px-2 py-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-none opacity-60 hover:opacity-100"
-            onClick={(event) => {
-              event.stopPropagation()
-              copyLink(ticket.id)
-            }}
-          >
-            Copy
-          </Button>
-        </div>
+      <div className="border-b border-border bg-background/70 px-3 py-3 hover:bg-muted/30">
+        <TicketCard
+          ticket={ticket}
+          onClick={() => onTicketClick?.(ticket)}
+          onOpenAction={() => onTicketClick?.(ticket)}
+          onDeleteAction={onTicketDelete ? () => onTicketDelete(ticket.id) : undefined}
+          showSpaces={showSpaces}
+          visibleFields={config.cardFields}
+          flat
+          accentColor={palette[ticket.status]?.accent}
+        />
       </div>
     </div>
   )
@@ -198,13 +185,23 @@ export function ConfigurableKanbanBoard({
         onDragOver={(event) => event.preventDefault()}
         onDrop={() => handleDrop(status)}
       >
-        <div className={cn('sticky top-0 z-10 border-b border-border px-3 py-3', meta.track)}>
+        <div
+          className="sticky top-0 z-10 border-b border-border px-3 py-3"
+          style={{ backgroundColor: `${meta.accent}14` }}
+        >
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: meta.accent }} />
               <span className="text-sm font-semibold">{meta.label}</span>
             </div>
-            <Badge variant="secondary" className={cn('rounded-full border-0 px-2 py-0.5 text-[11px]', meta.tone)}>
+            <Badge
+              variant="secondary"
+              className="rounded-full border-0 px-2 py-0.5 text-[11px]"
+              style={{
+                backgroundColor: `${meta.accent}22`,
+                color: meta.accent,
+              }}
+            >
               {columnTickets.length}
             </Badge>
           </div>
@@ -215,9 +212,10 @@ export function ConfigurableKanbanBoard({
           <Button
             variant="ghost"
             size="sm"
-            className="h-12 w-full justify-start rounded-none border-t border-dashed border-border px-3"
+            className="h-12 w-full justify-start rounded-none px-3 text-muted-foreground hover:text-foreground"
             onClick={onAdd}
           >
+            <Plus className="mr-2 h-4 w-4" />
             Add ticket
           </Button>
         </div>
@@ -234,8 +232,11 @@ export function ConfigurableKanbanBoard({
               <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 {rowKey || 'Unassigned'}
               </h3>
-              <div className="grid min-w-[1120px] grid-cols-5 overflow-x-auto border border-border bg-background">
-                {STATUS_COLUMNS.map((status) =>
+              <div
+                className="grid min-w-[1120px] overflow-x-auto border border-border bg-background"
+                style={{ gridTemplateColumns: `repeat(${resolvedStatusColumns.length}, minmax(224px, 1fr))` }}
+              >
+                {resolvedStatusColumns.map((status) =>
                   renderColumn(status, columns[status] || [], () => onAddTicket?.(status, rowKey))
                 )}
               </div>
@@ -243,8 +244,11 @@ export function ConfigurableKanbanBoard({
           ))}
         </div>
       ) : (
-        <div className="grid min-w-[1120px] grid-cols-5 overflow-x-auto border border-border bg-background">
-          {STATUS_COLUMNS.map((status) =>
+        <div
+          className="grid min-w-[1120px] overflow-x-auto border border-border bg-background"
+          style={{ gridTemplateColumns: `repeat(${resolvedStatusColumns.length}, minmax(224px, 1fr))` }}
+        >
+          {resolvedStatusColumns.map((status) =>
             renderColumn(status, groupedTickets['']?.[status] || [], () => onAddTicket?.(status))
           )}
         </div>

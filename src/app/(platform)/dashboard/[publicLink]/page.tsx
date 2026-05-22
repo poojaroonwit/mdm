@@ -39,16 +39,16 @@ export default async function PublicDashboardPage({ params }: PublicDashboardPag
   dashboard.datasources = datasources
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="container mx-auto p-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">{dashboard.name}</h1>
+          <h1 className="text-3xl font-bold text-foreground">{dashboard.name}</h1>
           {dashboard.description && (
-            <p className="text-gray-600 mt-2">{dashboard.description}</p>
+            <p className="text-muted-foreground mt-2">{dashboard.description}</p>
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-card text-card-foreground rounded-lg shadow-lg p-6">
           <div className="grid grid-cols-12 gap-4">
             {dashboard.elements.map((element: any) => (
               <div
@@ -67,7 +67,7 @@ export default async function PublicDashboardPage({ params }: PublicDashboardPag
                   
                   {/* Render chart content based on type */}
                   <div className="h-48 flex items-center justify-center bg-muted rounded">
-                    <div className="text-center text-gray-500">
+                    <div className="text-center text-muted-foreground">
                       <div className="text-sm font-medium">{element.chart_type || element.type}</div>
                       <div className="text-xs mt-1">Interactive Chart</div>
                     </div>
@@ -78,7 +78,7 @@ export default async function PublicDashboardPage({ params }: PublicDashboardPag
           </div>
         </div>
 
-        <div className="mt-6 text-center text-sm text-gray-500">
+        <div className="mt-6 text-center text-sm text-muted-foreground">
           <p>Powered by Dashboard Builder</p>
         </div>
       </div>

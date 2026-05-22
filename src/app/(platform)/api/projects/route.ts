@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { requireSpaceAccess } from '@/lib/space-access'
 import { db } from '@/lib/db'
+import { normalizeProjectMetadata } from '@/components/project-management/project-config'
 
 async function getHandler(request: NextRequest) {
   const authResult = await requireAuthWithId()
@@ -94,7 +95,7 @@ async function getHandler(request: NextRequest) {
   return NextResponse.json({
     projects: projects.map((project) => ({
       ...project,
-      metadata: project.metadata || {},
+      metadata: normalizeProjectMetadata(project.metadata),
     })),
   })
 }
@@ -124,7 +125,9 @@ async function postHandler(request: NextRequest) {
   const accessResult = await requireSpaceAccess(finalSpaceId, session.user.id!)
   if (!accessResult.success) return accessResult.response
 
-    const project = await db.project.create({
+  const normalizedMetadata = normalizeProjectMetadata(metadata)
+
+  const project = await db.project.create({
       data: {
         name,
         description,
@@ -133,7 +136,7 @@ async function postHandler(request: NextRequest) {
         endDate: finalEndDate ? new Date(finalEndDate) : null,
         spaceId: finalSpaceId,
         createdBy: session.user.id,
-        metadata: metadata || {}
+        metadata: normalizedMetadata
       },
       include: {
         creator: {
@@ -154,7 +157,12 @@ async function postHandler(request: NextRequest) {
       }
     })
 
-  return NextResponse.json({ project }, { status: 201 })
+  return NextResponse.json({
+    project: {
+      ...project,
+      metadata: normalizedMetadata,
+    },
+  }, { status: 201 })
 }
 
 export const POST = withErrorHandling(postHandler, 'POST /api/projects')

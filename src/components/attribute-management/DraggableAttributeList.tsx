@@ -464,7 +464,7 @@ export function DraggableAttributeList({ modelId, onAttributesChange }: Draggabl
             items={filteredAttributes.map(attr => attr.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="h-[500px] overflow-y-auto space-y-2 p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900">
+            <div className="h-[500px] overflow-y-auto space-y-2 p-2 border border-border rounded-lg bg-card text-card-foreground">
               {/* Select All */}
               <div className="flex items-center gap-2 p-2 border border-border rounded-lg">
                 <Checkbox

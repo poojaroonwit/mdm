@@ -112,7 +112,7 @@ export function SettingsDrawer({ open, onOpenChange, renderTrigger, ctx, attribu
                     key={attr.id}
                     className={
                       "flex flex-col gap-2 border border-border rounded px-2 py-1 transition-colors select-none " +
-                      (dragOverId === attr.id ? "bg-gray-100 dark:bg-gray-800 " : "bg-white dark:bg-gray-900 ")
+                      (dragOverId === attr.id ? "bg-muted " : "bg-card text-card-foreground ")
                     }
                   >
                     <div
@@ -161,7 +161,7 @@ export function SettingsDrawer({ open, onOpenChange, renderTrigger, ctx, attribu
                     </div>
 
                     {attr.type === 'COMBO' && editingComboId === attr.id && (
-                      <div className="rounded border border-border bg-white dark:bg-gray-900 p-2">
+                      <div className="rounded border border-border bg-card text-card-foreground p-2">
                         {(() => {
                           const cc = comboColumns.find((c: any) => c.id === attr.id)
                           if (!cc) return null

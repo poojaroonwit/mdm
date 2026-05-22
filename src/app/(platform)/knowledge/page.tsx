@@ -4,7 +4,7 @@ import { OutlineKnowledgeBase } from '@plugins/knowledge-base/src/components/Out
 
 export default function KnowledgePage() {
   return (
-    <div className="h-screen">
+    <div className="h-screen bg-background text-foreground">
       <OutlineKnowledgeBase />
     </div>
   )

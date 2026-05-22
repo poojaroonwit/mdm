@@ -137,7 +137,7 @@ export function FileViewer({ fileId, fileName, mimeType, publicUrl }: FileViewer
   // Image files
   if (mimeType?.startsWith('image/')) {
     return (
-      <div className="flex items-center justify-center min-h-[400px] bg-gray-50 dark:bg-gray-900">
+      <div className="flex items-center justify-center min-h-[400px] bg-background text-foreground">
         {publicUrl ? (
           <img
             src={publicUrl}
@@ -173,9 +173,9 @@ export function FileViewer({ fileId, fileName, mimeType, publicUrl }: FileViewer
   // CSV files - show as table
   if (mimeType === 'text/csv' || fileName.endsWith('.csv')) {
     return (
-      <ScrollArea className="h-[600px] w-full border rounded-lg">
+      <ScrollArea className="h-[600px] w-full border rounded-lg bg-background text-foreground">
         <table className="w-full border-collapse">
-          <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
+          <thead className="bg-muted sticky top-0">
             {csvData.length > 0 && (
               <tr>
                 {csvData[0].map((header, idx) => (
@@ -191,7 +191,7 @@ export function FileViewer({ fileId, fileName, mimeType, publicUrl }: FileViewer
           </thead>
           <tbody>
             {csvData.slice(1).map((row, rowIdx) => (
-              <tr key={rowIdx} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+              <tr key={rowIdx} className="hover:bg-muted/60">
                 {row.map((cell, cellIdx) => (
                   <td
                     key={cellIdx}

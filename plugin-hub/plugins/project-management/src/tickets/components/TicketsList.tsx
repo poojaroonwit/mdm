@@ -36,12 +36,28 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import {
   Plus,
   X,
+  KanbanSquare,
+  List,
+  Clock3,
+  GanttChartSquare,
+  MoreVertical,
+  Settings2,
 } from 'lucide-react'
 import { useSpace } from '@/contexts/space-context'
-import { cn } from '@/lib/utils'
+import {
+  DEFAULT_CARD_FIELDS,
+  DEFAULT_PROJECT_STATUSES,
+  ProjectFieldDefinition,
+  ProjectStatusDefinition,
+  createFieldMachineName,
+  createStatusValue,
+  normalizeProjectMetadata,
+  stripHtmlTags,
+} from '@/components/project-management/project-config'
 
 const DEFAULT_STATUS_STYLES: Record<string, KanbanStatusStyle> = {
   BACKLOG: { label: 'Backlog', accent: '#64748b', tone: 'bg-slate-100 text-slate-700', track: 'bg-slate-50' },
@@ -49,6 +65,24 @@ const DEFAULT_STATUS_STYLES: Record<string, KanbanStatusStyle> = {
   IN_PROGRESS: { label: 'In Progress', accent: '#f97316', tone: 'bg-orange-100 text-orange-700', track: 'bg-orange-50' },
   IN_REVIEW: { label: 'In Review', accent: '#7c3aed', tone: 'bg-violet-100 text-violet-700', track: 'bg-violet-50' },
   DONE: { label: 'Done', accent: '#16a34a', tone: 'bg-emerald-100 text-emerald-700', track: 'bg-emerald-50' },
+}
+
+function buildStatusTone(accent: string) {
+  return {
+    tone: 'border-transparent',
+    track: 'border-transparent',
+    accent,
+  }
+}
+
+function mapStatusesToStyles(statuses: ProjectStatusDefinition[]) {
+  return statuses.reduce<Record<string, KanbanStatusStyle>>((acc, status) => {
+    acc[status.value] = {
+      label: status.label,
+      ...buildStatusTone(status.accent),
+    }
+    return acc
+  }, {})
 }
 
 function addDays(date: Date, days: number) {
@@ -180,7 +214,12 @@ function ProjectGanttView({
                 <button className="min-w-0 text-left" onClick={() => onTicketClick(ticket)}>
                   <div className="truncate text-sm font-semibold">{ticket.title}</div>
                   <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className={cn('rounded-full px-2 py-0.5', meta.tone)}>{meta.label}</span>
+                    <span
+                      className="rounded-full px-2 py-0.5"
+                      style={{ backgroundColor: `${meta.accent}22`, color: meta.accent }}
+                    >
+                      {meta.label}
+                    </span>
                     <span>{ticket._start.toLocaleDateString()} - {ticket._end.toLocaleDateString()}</span>
                   </div>
                 </button>
@@ -282,26 +321,89 @@ export function TicketsList({
     rows: undefined,
     columns: 'status',
     ticketDisplayMode: 'modal',
-    cardFields: {
-      description: true,
-      dueDate: true,
-      estimate: true,
-      assignee: true,
-      labels: true,
-      spaces: true,
-      attributes: true,
-    },
+    cardFields: DEFAULT_CARD_FIELDS,
   })
   const [searchQuery, setSearchQuery] = useState('')
   const [isConfigOpen, setIsConfigOpen] = useState(false)
   const [localConfig, setLocalConfig] = useState<KanbanConfig>(kanbanConfig)
   const [isManagementOpen, setIsManagementOpen] = useState(false)
-  const [statusStyles, setStatusStyles] = useState<Record<string, KanbanStatusStyle>>(DEFAULT_STATUS_STYLES)
-  const [customFieldTemplates, setCustomFieldTemplates] = useState<Array<{ name: string; displayName: string; type: string }>>([])
+  const [statusDefinitions, setStatusDefinitions] = useState<ProjectStatusDefinition[]>(DEFAULT_PROJECT_STATUSES)
+  const [customFieldTemplates, setCustomFieldTemplates] = useState<ProjectFieldDefinition[]>([])
   const [newTemplateName, setNewTemplateName] = useState('')
+  const [newStatusName, setNewStatusName] = useState('')
+  const [newOptionDrafts, setNewOptionDrafts] = useState<Record<string, string>>({})
+  const [projectMetadataSaving, setProjectMetadataSaving] = useState(false)
   const [isSpacePromptOpen, setIsSpacePromptOpen] = useState(false)
-  const [pendingTicketStatus, setPendingTicketStatus] = useState('BACKLOG')
+  const [pendingTicketStatus, setPendingTicketStatus] = useState(DEFAULT_PROJECT_STATUSES[0].value)
   const [spacePromptSelection, setSpacePromptSelection] = useState('')
+
+  const statusStyles = mapStatusesToStyles(statusDefinitions)
+  const defaultStatusValue = statusDefinitions[0]?.value || DEFAULT_PROJECT_STATUSES[0].value
+
+  useEffect(() => {
+    if (spaceId) {
+      setSelectedSpaceId(spaceId)
+      return
+    }
+
+    if (currentSpace?.id && selectedSpaceId === 'all') {
+      setSelectedSpaceId(currentSpace.id)
+    }
+  }, [currentSpace?.id, selectedSpaceId, spaceId])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadProjectMetadata = async () => {
+      if (!projectId) {
+        setStatusDefinitions(DEFAULT_PROJECT_STATUSES)
+        setCustomFieldTemplates([])
+        setKanbanConfig((prev) => ({
+          ...prev,
+          cardFields: DEFAULT_CARD_FIELDS,
+        }))
+        return
+      }
+
+      try {
+        const response = await fetch(`/api/projects/${projectId}`)
+        if (!response.ok) {
+          throw new Error('Failed to load project')
+        }
+
+        const data = await response.json()
+        const project = data.project
+        const metadata = normalizeProjectMetadata(project?.metadata)
+
+        if (cancelled) return
+
+        setStatusDefinitions(metadata.ticketConfig?.statuses || DEFAULT_PROJECT_STATUSES)
+        setCustomFieldTemplates(metadata.customFields || [])
+        setKanbanConfig((prev) => ({
+          ...prev,
+          cardFields: {
+            ...DEFAULT_CARD_FIELDS,
+            ...(metadata.ticketConfig?.cardFields || {}),
+          },
+        }))
+
+        if (project?.spaceId) {
+          setSelectedSpaceId(project.spaceId)
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setStatusDefinitions(DEFAULT_PROJECT_STATUSES)
+          setCustomFieldTemplates([])
+        }
+      }
+    }
+
+    loadProjectMetadata()
+
+    return () => {
+      cancelled = true
+    }
+  }, [projectId])
 
   const effectiveSpaceId = showSpaceSelector
     ? selectedSpaceId === 'all'
@@ -314,8 +416,58 @@ export function TicketsList({
     setIsConfigOpen(true)
   }
 
-  const handleConfigSave = () => {
+  const persistProjectMetadata = async (
+    updates: Partial<{
+      statuses: ProjectStatusDefinition[]
+      customFields: ProjectFieldDefinition[]
+      cardFields: KanbanConfig['cardFields']
+    }>
+  ) => {
+    if (!projectId) return
+
+    try {
+      setProjectMetadataSaving(true)
+      const response = await fetch(`/api/projects/${projectId}`)
+      if (!response.ok) {
+        throw new Error('Failed to load project metadata')
+      }
+      const data = await response.json()
+      const project = data.project
+      const metadata = normalizeProjectMetadata(project?.metadata)
+      const body = {
+        metadata: {
+          ...metadata,
+          customFields: updates.customFields || customFieldTemplates,
+          ticketConfig: {
+            ...metadata.ticketConfig,
+            statuses: updates.statuses || statusDefinitions,
+            cardFields: {
+              ...DEFAULT_CARD_FIELDS,
+              ...(updates.cardFields || kanbanConfig.cardFields || {}),
+            },
+          },
+        },
+      }
+
+      const updateResponse = await fetch(`/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      if (!updateResponse.ok) {
+        throw new Error('Failed to save project metadata')
+      }
+    } finally {
+      setProjectMetadataSaving(false)
+    }
+  }
+
+  const handleConfigSave = async () => {
     setKanbanConfig(localConfig)
+    if (projectId) {
+      await persistProjectMetadata({ cardFields: localConfig.cardFields })
+    }
     setIsConfigOpen(false)
   }
 
@@ -347,7 +499,7 @@ export function TicketsList({
     setSelectedTicket({
       title: '',
       description: '',
-      status,
+      status: status || defaultStatusValue,
       priority: 'MEDIUM',
       attributes: customFieldTemplates.map((field, index) => ({
         name: field.name,
@@ -355,6 +507,7 @@ export function TicketsList({
         type: field.type,
         value: '',
         sortOrder: index,
+        options: field.options || [],
       })),
     })
     setIsModalOpen(true)
@@ -379,7 +532,7 @@ export function TicketsList({
     const payload = {
       title: ticketData.title,
       description: ticketData.description,
-      status: ticketData.status,
+      status: ticketData.status || defaultStatusValue,
       priority: ticketData.priority,
       dueDate: ticketData.dueDate,
       startDate: ticketData.startDate,
@@ -388,7 +541,7 @@ export function TicketsList({
       spaceId: effectiveSpace,
       assignedTo: ticketData.assignee?.id ? [ticketData.assignee.id] : [],
       attributes: ticketData.attributes || [],
-      projectId: ticketData.projectId || null,
+      projectId: ticketData.projectId || projectId || null,
       moduleId: ticketData.moduleId || null,
       milestoneId: ticketData.milestoneId || null,
       releaseId: ticketData.releaseId || null,
@@ -460,24 +613,58 @@ export function TicketsList({
     { key: 'attributes', label: 'Custom Attributes' },
   ]
 
+  const addNewStatus = () => {
+    const trimmed = newStatusName.trim()
+    if (!trimmed) return
+    setStatusDefinitions((prev) => [
+      ...prev,
+      {
+        value: createStatusValue(trimmed),
+        label: trimmed,
+        accent: '#64748b',
+      },
+    ])
+    setNewStatusName('')
+  }
+
+  const addFieldOption = (fieldName: string) => {
+    const draft = (newOptionDrafts[fieldName] || '').trim()
+    if (!draft) return
+
+    setCustomFieldTemplates((prev) =>
+      prev.map((field) =>
+        field.name === fieldName
+          ? {
+              ...field,
+              options: [...(field.options || []), { label: draft, value: draft }],
+            }
+          : field
+      )
+    )
+    setNewOptionDrafts((prev) => ({ ...prev, [fieldName]: '' }))
+  }
+
   const activeFilterCount = Number(Boolean(filters.status)) + Number(Boolean(filters.priority))
 
   return (
-    <div className="flex h-full min-h-0 flex-col space-y-4">
-      <div className="flex items-center justify-between px-6 pt-6">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Tickets</h2>
-          <p className="text-muted-foreground">Grid-first project tracking with drag, gantt, and custom management controls.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setIsManagementOpen(true)}>Management</Button>
-          {view === 'kanban' && (
-            <Button variant="outline" onClick={openConfig}>Configure Board</Button>
-          )}
-          <Button onClick={() => handleAddTicket('BACKLOG')}>
-            New Ticket
+    <div className="flex h-full min-h-0 flex-col gap-4 px-6 py-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" onClick={() => setIsManagementOpen(true)}>
+            <Settings2 className="mr-2 h-4 w-4" />
+            Manage Project
           </Button>
+          {view === 'kanban' && (
+            <Button variant="outline" onClick={openConfig}>
+              <Settings2 className="mr-2 h-4 w-4" />
+              Configure Cards
+            </Button>
+          )}
         </div>
+        <Button onClick={() => handleAddTicket(defaultStatusValue)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Ticket
+        </Button>
       </div>
 
       <Dialog open={isSpacePromptOpen} onOpenChange={setIsSpacePromptOpen}>
@@ -516,9 +703,9 @@ export function TicketsList({
       <Dialog open={isConfigOpen} onOpenChange={setIsConfigOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Configure Kanban Board</DialogTitle>
+            <DialogTitle>Configure Card Display</DialogTitle>
             <DialogDescription>
-              Customize grouping, display behavior, and which details appear in the grid.
+              Choose how the board groups tickets and which fields appear on each card.
             </DialogDescription>
           </DialogHeader>
           <DialogBody>
@@ -586,7 +773,7 @@ export function TicketsList({
               <Separator />
 
               <div className="space-y-3">
-                <p className="text-sm font-semibold text-foreground">Visible Ticket Fields</p>
+                <p className="text-sm font-semibold text-foreground">Card Display</p>
                 <div className="grid grid-cols-2 gap-2">
                   {cardFieldOptions.map(({ key, label }) => (
                     <div key={key} className="flex items-center gap-2">
@@ -609,12 +796,41 @@ export function TicketsList({
                     </div>
                   ))}
                 </div>
+                {customFieldTemplates.length > 0 && (
+                  <div className="space-y-2 rounded-xl border border-border/70 p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Attributes On Card</p>
+                    <div className="space-y-2">
+                      {customFieldTemplates.map((field) => (
+                        <div key={field.name} className="flex items-center gap-2">
+                          <Checkbox
+                            id={`attribute-${field.name}`}
+                            checked={localConfig.cardFields?.attributeNames?.includes(field.name) || false}
+                            onCheckedChange={(checked) =>
+                              setLocalConfig({
+                                ...localConfig,
+                                cardFields: {
+                                  ...localConfig.cardFields,
+                                  attributeNames: checked
+                                    ? [...(localConfig.cardFields?.attributeNames || []), field.name]
+                                    : (localConfig.cardFields?.attributeNames || []).filter((name) => name !== field.name),
+                                },
+                              })
+                            }
+                          />
+                          <label htmlFor={`attribute-${field.name}`} className="cursor-pointer text-sm">
+                            {field.displayName}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsConfigOpen(false)}>Cancel</Button>
-            <Button onClick={handleConfigSave}>Apply Settings</Button>
+            <Button onClick={handleConfigSave} disabled={projectMetadataSaving}>Apply Settings</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -622,34 +838,107 @@ export function TicketsList({
       <Dialog open={isManagementOpen} onOpenChange={setIsManagementOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Project Management Options</DialogTitle>
+            <DialogTitle>Project Configuration</DialogTitle>
             <DialogDescription>
-              Adjust status colors, create reusable custom fields, and tune the board for your workflow.
+              Manage statuses, shared custom attributes, and which attributes appear on ticket cards.
             </DialogDescription>
           </DialogHeader>
           <DialogBody>
             <div className="space-y-6">
               <div className="space-y-3">
-                <p className="text-sm font-semibold">Status Colors</p>
-                <div className="grid grid-cols-2 gap-4">
-                  {Object.entries(statusStyles).map(([status, meta]) => (
-                    <div key={status} className="rounded-xl border border-border p-4">
-                      <div className="mb-3 flex items-center justify-between">
-                        <span className="text-sm font-medium">{meta.label}</span>
-                        <span className={cn('rounded-full px-2 py-0.5 text-xs', meta.tone)}>{meta.label}</span>
-                      </div>
-                      <Label className="text-xs text-muted-foreground">Accent</Label>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold">Statuses</p>
+                    <p className="text-xs text-muted-foreground">Create, rename, recolor, and reorder ticket statuses for this project.</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newStatusName}
+                      onChange={(event) => setNewStatusName(event.target.value)}
+                      placeholder="New status"
+                      className="w-44"
+                    />
+                    <Button type="button" onClick={addNewStatus}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Status
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {statusDefinitions.map((status, index) => (
+                    <div key={status.value} className="grid grid-cols-[32px_minmax(0,1fr)_180px_54px_54px_54px] items-center gap-3 rounded-2xl border border-border px-3 py-3">
+                      <div className="text-center text-xs font-semibold text-muted-foreground">{index + 1}</div>
                       <Input
-                        type="color"
-                        value={meta.accent}
+                        value={status.label}
                         onChange={(event) =>
-                          setStatusStyles((prev) => ({
-                            ...prev,
-                            [status]: { ...prev[status], accent: event.target.value },
-                          }))
+                          setStatusDefinitions((prev) =>
+                            prev.map((item) =>
+                              item.value === status.value
+                                ? {
+                                    ...item,
+                                    label: event.target.value,
+                                    value: createStatusValue(event.target.value),
+                                  }
+                                : item
+                            )
+                          )
                         }
-                        className="mt-2 h-10 p-1"
                       />
+                      <div className="flex items-center gap-3">
+                        <Input
+                          type="color"
+                          value={status.accent}
+                          onChange={(event) =>
+                            setStatusDefinitions((prev) =>
+                              prev.map((item) =>
+                                item.value === status.value ? { ...item, accent: event.target.value } : item
+                              )
+                            )
+                          }
+                          className="h-10 p-1"
+                        />
+                        <span className="rounded-full px-2.5 py-1 text-xs font-medium" style={{ backgroundColor: `${status.accent}22`, color: status.accent }}>
+                          {status.label}
+                        </span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={index === 0}
+                        onClick={() =>
+                          setStatusDefinitions((prev) => {
+                            const next = [...prev]
+                            ;[next[index - 1], next[index]] = [next[index], next[index - 1]]
+                            return next
+                          })
+                        }
+                      >
+                        ↑
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={index === statusDefinitions.length - 1}
+                        onClick={() =>
+                          setStatusDefinitions((prev) => {
+                            const next = [...prev]
+                            ;[next[index + 1], next[index]] = [next[index], next[index + 1]]
+                            return next
+                          })
+                        }
+                      >
+                        ↓
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={statusDefinitions.length <= 1}
+                        onClick={() =>
+                          setStatusDefinitions((prev) => prev.filter((item) => item.value !== status.value))
+                        }
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -660,8 +949,8 @@ export function TicketsList({
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm font-semibold">Reusable Custom Fields</p>
-                    <p className="text-xs text-muted-foreground">These fields are preloaded into new tickets.</p>
+                    <p className="text-sm font-semibold">Shared Custom Attributes</p>
+                    <p className="text-xs text-muted-foreground">These attributes are preloaded into new tickets for this project.</p>
                   </div>
                   <div className="flex gap-2">
                     <Input
@@ -685,7 +974,10 @@ export function TicketsList({
                         ])
                         setNewTemplateName('')
                       }}
-                    >Add Field</Button>
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Attribute
+                    </Button>
                   </div>
                 </div>
 
@@ -696,13 +988,20 @@ export function TicketsList({
                     </div>
                   ) : (
                     customFieldTemplates.map((field, index) => (
-                      <div key={`${field.name}-${index}`} className="grid grid-cols-[minmax(0,1fr)_160px_44px] gap-3 rounded-xl border border-border px-3 py-3">
+                      <div key={`${field.name}-${index}`} className="space-y-3 rounded-xl border border-border px-3 py-3">
+                        <div className="grid grid-cols-[minmax(0,1fr)_160px_44px] gap-3">
                         <Input
                           value={field.displayName}
                           onChange={(event) =>
                             setCustomFieldTemplates((prev) =>
                               prev.map((item, itemIndex) =>
-                                itemIndex === index ? { ...item, displayName: event.target.value } : item
+                                itemIndex === index
+                                  ? {
+                                      ...item,
+                                      displayName: event.target.value,
+                                      name: createFieldMachineName(event.target.value) || item.name,
+                                    }
+                                  : item
                               )
                             )
                           }
@@ -735,23 +1034,122 @@ export function TicketsList({
                             setCustomFieldTemplates((prev) => prev.filter((_, itemIndex) => itemIndex !== index))
                           }
                         >
-                          Remove
+                          <X className="h-4 w-4" />
                         </Button>
+                      </div>
+                        {field.type === 'SELECT' && (
+                          <div className="space-y-2 rounded-xl bg-muted/30 p-3">
+                            <div className="flex items-center justify-between gap-3">
+                              <Label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Options</Label>
+                              <div className="flex gap-2">
+                                <Input
+                                  value={newOptionDrafts[field.name] || ''}
+                                  onChange={(event) =>
+                                    setNewOptionDrafts((prev) => ({ ...prev, [field.name]: event.target.value }))
+                                  }
+                                  placeholder="New option"
+                                  className="h-8 w-36"
+                                />
+                                <Button type="button" size="sm" variant="outline" onClick={() => addFieldOption(field.name)}>
+                                  Add
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {(field.options || []).length === 0 ? (
+                                <span className="text-xs text-muted-foreground">No options yet.</span>
+                              ) : (
+                                field.options?.map((option) => (
+                                  <span key={`${field.name}-${option.value}`} className="inline-flex items-center gap-2 rounded-full bg-background px-3 py-1 text-xs">
+                                    {option.label}
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setCustomFieldTemplates((prev) =>
+                                          prev.map((item) =>
+                                            item.name === field.name
+                                              ? {
+                                                  ...item,
+                                                  options: (item.options || []).filter((candidate) => candidate.value !== option.value),
+                                                }
+                                              : item
+                                          )
+                                        )
+                                      }
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  </span>
+                                ))
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))
                   )}
                 </div>
               </div>
+
+              <Separator />
+
+              <div className="space-y-3">
+                <p className="text-sm font-semibold">Card Attribute Selection</p>
+                <p className="text-xs text-muted-foreground">Choose which project attributes appear directly on ticket cards.</p>
+                {customFieldTemplates.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
+                    No project attributes are available yet.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    {customFieldTemplates.map((field) => (
+                      <div key={`card-${field.name}`} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`card-field-${field.name}`}
+                          checked={kanbanConfig.cardFields?.attributeNames?.includes(field.name) || false}
+                          onCheckedChange={(checked) =>
+                            setKanbanConfig((prev) => ({
+                              ...prev,
+                              cardFields: {
+                                ...prev.cardFields,
+                                attributeNames: checked
+                                  ? [...(prev.cardFields?.attributeNames || []), field.name]
+                                  : (prev.cardFields?.attributeNames || []).filter((name) => name !== field.name),
+                              },
+                            }))
+                          }
+                        />
+                        <label htmlFor={`card-field-${field.name}`} className="cursor-pointer text-sm">
+                          {field.displayName}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </DialogBody>
           <DialogFooter>
-            <Button onClick={() => setIsManagementOpen(false)}>Done</Button>
+            <Button variant="outline" onClick={() => setIsManagementOpen(false)}>Cancel</Button>
+            <Button
+              onClick={async () => {
+                await persistProjectMetadata({
+                  statuses: statusDefinitions,
+                  customFields: customFieldTemplates,
+                  cardFields: kanbanConfig.cardFields,
+                })
+                setIsManagementOpen(false)
+              }}
+              disabled={projectMetadataSaving}
+            >
+              {projectMetadataSaving ? 'Saving...' : 'Save Project Config'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {showFilters && (
-        <div className="flex flex-wrap items-center gap-4 px-6">
+        <div className="flex flex-wrap items-center gap-4">
           {showSpaceSelector && (
             <SpaceSelector
               value={selectedSpaceId}
@@ -811,11 +1209,11 @@ export function TicketsList({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="BACKLOG">Backlog</SelectItem>
-                        <SelectItem value="TODO">To Do</SelectItem>
-                        <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                        <SelectItem value="IN_REVIEW">In Review</SelectItem>
-                        <SelectItem value="DONE">Done</SelectItem>
+                        {statusDefinitions.map((status) => (
+                          <SelectItem key={status.value} value={status.value}>
+                            {status.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -844,13 +1242,23 @@ export function TicketsList({
               </PopoverContent>
             </Popover>
 
-            <div className="flex items-center border border-border bg-background">
-              <Button variant={view === 'kanban' ? 'default' : 'ghost'} size="sm" className="rounded-none" onClick={() => setView('kanban')}>Grid</Button>
-              <Button variant={view === 'list' ? 'default' : 'ghost'} size="sm" className="rounded-none" onClick={() => setView('list')}>List</Button>
-              <Button variant={view === 'gantt' ? 'default' : 'ghost'} size="sm" className="rounded-none" onClick={() => setView('gantt')}>
+            <div className="flex items-center rounded-xl border border-border bg-background p-1">
+              <Button variant={view === 'kanban' ? 'default' : 'ghost'} size="sm" className="rounded-lg" onClick={() => setView('kanban')}>
+                <KanbanSquare className="mr-2 h-4 w-4" />
+                Board
+              </Button>
+              <Button variant={view === 'list' ? 'default' : 'ghost'} size="sm" className="rounded-lg" onClick={() => setView('list')}>
+                <List className="mr-2 h-4 w-4" />
+                List
+              </Button>
+              <Button variant={view === 'gantt' ? 'default' : 'ghost'} size="sm" className="rounded-lg" onClick={() => setView('gantt')}>
+                <GanttChartSquare className="mr-2 h-4 w-4" />
                 Gantt
               </Button>
-              <Button variant={view === 'timesheet' ? 'default' : 'ghost'} size="sm" className="rounded-none" onClick={() => setView('timesheet')}>Timesheet</Button>
+              <Button variant={view === 'timesheet' ? 'default' : 'ghost'} size="sm" className="rounded-lg" onClick={() => setView('timesheet')}>
+                <Clock3 className="mr-2 h-4 w-4" />
+                Timesheet
+              </Button>
             </div>
           </div>
         </div>
@@ -861,16 +1269,20 @@ export function TicketsList({
           <div className="text-sm text-muted-foreground">Loading tickets...</div>
         </div>
       ) : view === 'kanban' ? (
-        <ConfigurableKanbanBoard
-          tickets={filteredTickets as any}
-          config={kanbanConfig}
-          onConfigChange={setKanbanConfig}
-          onTicketClick={handleTicketClick}
-          onAddTicket={handleAddTicket}
-          onTicketMove={handleTicketMove}
-          showSpaces={showSpaceSelector && selectedSpaceId === 'all'}
-          statusStyles={statusStyles}
-        />
+        <div className="min-h-0 flex-1 overflow-auto">
+          <ConfigurableKanbanBoard
+            tickets={filteredTickets as any}
+            config={kanbanConfig}
+            onConfigChange={setKanbanConfig}
+            onTicketClick={handleTicketClick}
+            onTicketDelete={handleDeleteTicket}
+            onAddTicket={handleAddTicket}
+            onTicketMove={handleTicketMove}
+            showSpaces={showSpaceSelector && selectedSpaceId === 'all'}
+            statusStyles={statusStyles}
+            statusColumns={statusDefinitions.map((status) => status.value)}
+          />
+        </div>
       ) : view === 'gantt' ? (
         <ProjectGanttView
           tickets={filteredTickets as any}
@@ -895,7 +1307,7 @@ export function TicketsList({
           loading={loading}
         />
       ) : (
-        <div className="border border-border bg-background">
+        <div className="overflow-hidden rounded-3xl border border-border bg-background shadow-sm">
           {filteredTickets.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
               No tickets found. Create your first ticket to get started.
@@ -904,22 +1316,40 @@ export function TicketsList({
             filteredTickets.map((ticket) => (
               <div
                 key={ticket.id}
-                className="grid cursor-pointer grid-cols-[minmax(0,1fr)_160px_180px] items-center border-b border-border px-4 py-4 last:border-b-0 hover:bg-muted/40"
-                onClick={() => handleTicketClick(ticket)}
+                className="grid cursor-pointer grid-cols-[minmax(0,1fr)_160px_180px_64px] items-center border-b border-border px-4 py-4 last:border-b-0 hover:bg-muted/40"
               >
-                <div className="min-w-0">
+                <div className="min-w-0" onClick={() => handleTicketClick(ticket)}>
                   <h3 className="font-medium">{ticket.title}</h3>
                   {ticket.description && (
-                    <p className="mt-1 text-sm text-muted-foreground">{ticket.description}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{stripHtmlTags(ticket.description)}</p>
                   )}
                 </div>
-                <div className="flex justify-center">
-                  <span className={cn('rounded-full px-2.5 py-1 text-xs font-medium', statusStyles[ticket.status]?.tone || statusStyles.BACKLOG.tone)}>
+                <div className="flex justify-center" onClick={() => handleTicketClick(ticket)}>
+                  <span
+                    className="rounded-full px-2.5 py-1 text-xs font-medium"
+                    style={{
+                      backgroundColor: `${(statusStyles[ticket.status]?.accent || DEFAULT_STATUS_STYLES.BACKLOG.accent)}22`,
+                      color: statusStyles[ticket.status]?.accent || DEFAULT_STATUS_STYLES.BACKLOG.accent,
+                    }}
+                  >
                     {statusStyles[ticket.status]?.label || ticket.status}
                   </span>
                 </div>
-                <div className="text-right text-xs text-muted-foreground">
+                <div className="text-right text-xs text-muted-foreground" onClick={() => handleTicketClick(ticket)}>
                   {ticket.startDate ? new Date(ticket.startDate).toLocaleDateString() : 'No start'} - {ticket.dueDate ? new Date(ticket.dueDate).toLocaleDateString() : 'No due'}
+                </div>
+                <div className="flex justify-end">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="rounded-xl">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleTicketClick(ticket)}>Open Ticket</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDeleteTicket(ticket.id)}>Delete Ticket</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             ))
