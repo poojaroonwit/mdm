@@ -173,7 +173,7 @@ export function TicketCard({
               <Badge
                 key={index}
                 variant="outline"
-                className="h-5 bg-gray-50 px-1.5 py-0 text-xs dark:bg-gray-800"
+                className="h-5 bg-muted px-1.5 py-0 text-xs text-muted-foreground"
               >
                 {label}
               </Badge>
@@ -191,7 +191,7 @@ export function TicketCard({
             {ticket.attributes.slice(0, 2).map((attr) => (
               <div
                 key={attr.id}
-                className="rounded bg-gray-50 px-1.5 py-0.5 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
               >
                 <span className="font-medium">{attr.displayName}:</span>{' '}
                 <span>{attr.value || '--'}</span>

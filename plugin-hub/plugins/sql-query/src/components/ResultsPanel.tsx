@@ -173,7 +173,7 @@ export function ResultsPanel({
 
   return (
     <div 
-      className={`bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex flex-col ${
+      className={`bg-background border-t border-border text-foreground flex flex-col ${
         isResizing ? '' : 'transition-all duration-200 ease-in-out'
       }`}
       style={{ 
@@ -187,10 +187,10 @@ export function ResultsPanel({
     >
       {/* Resize Handle */}
       <div 
-        className={`h-3 cursor-ns-resize relative group border-t border-gray-300 dark:border-gray-700 z-10 ${
+        className={`h-3 cursor-ns-resize relative group border-t border-border z-10 ${
           isResizing 
             ? 'bg-blue-500' 
-            : 'bg-gray-200 hover:bg-blue-400 transition-colors'
+            : 'bg-muted hover:bg-blue-400 transition-colors'
         }`}
         onMouseDown={onMouseDown}
         title="Drag to resize footer height"
@@ -202,25 +202,25 @@ export function ResultsPanel({
           <div className="flex items-center gap-1">
             <div className={`w-1.5 h-1.5 rounded-full ${
               isResizing 
-                ? 'bg-white' 
-                : 'bg-gray-500 group-hover:bg-blue-600'
+                ? 'bg-background' 
+                : 'bg-muted-foreground/60 group-hover:bg-blue-600'
             }`}></div>
             <div className={`w-1.5 h-1.5 rounded-full ${
               isResizing 
-                ? 'bg-white' 
-                : 'bg-gray-500 group-hover:bg-blue-600'
+                ? 'bg-background' 
+                : 'bg-muted-foreground/60 group-hover:bg-blue-600'
             }`}></div>
             <div className={`w-1.5 h-1.5 rounded-full ${
               isResizing 
-                ? 'bg-white' 
-                : 'bg-gray-500 group-hover:bg-blue-600'
+                ? 'bg-background' 
+                : 'bg-muted-foreground/60 group-hover:bg-blue-600'
             }`}></div>
           </div>
         </div>
       </div>
 
       {/* Results Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40">
         <div className="flex items-center gap-4">
           <Tabs value={footerTab} onValueChange={(value) => onFooterTabChange(value as any)}>
             <TabsList className="flex gap-1">
@@ -255,14 +255,14 @@ export function ResultsPanel({
         
         <div className="flex items-center gap-2">
           {currentResult && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>{currentResult.results.length} rows</span>
               {currentResult.executionTime && (
                 <span>• {formatDuration(currentResult.executionTime)}</span>
               )}
             </div>
           )}
-          <div className="flex items-center gap-2 text-xs text-gray-500">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span>Height: {Math.round(footerHeight)}px</span>
             <div className="flex items-center gap-1">
               <Button 
@@ -310,11 +310,11 @@ export function ResultsPanel({
               formatBytes={formatBytes}
             />
           ) : (
-            <div className="h-full flex items-center justify-center bg-gray-50">
+            <div className="h-full flex items-center justify-center bg-muted/30">
               <div className="text-center">
                 <Table className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-medium mb-2 text-gray-700">No Results</h3>
-                <p className="text-sm text-gray-500">Run a query to see results here</p>
+                <p className="text-sm text-muted-foreground">Run a query to see results here</p>
               </div>
             </div>
           )

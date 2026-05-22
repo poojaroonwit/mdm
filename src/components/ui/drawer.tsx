@@ -385,7 +385,7 @@ const DrawerHeader = ({ className, style, ...props }: React.HTMLAttributes<HTMLD
   
   return (
     <div 
-      className={cn("border-b border-zinc-100/60 bg-white/50 px-6 py-5 backdrop-blur-md dark:border-zinc-800/60 dark:bg-zinc-900/20", className)} 
+      className={cn("flex flex-col space-y-2 border-b border-zinc-100/60 bg-white/50 px-6 py-5 text-left backdrop-blur-md dark:border-zinc-800/60 dark:bg-zinc-900/20", className)} 
       style={{
         borderTopLeftRadius: borderRadius,
         borderTopRightRadius: borderRadius,

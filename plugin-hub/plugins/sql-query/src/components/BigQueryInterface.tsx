@@ -654,7 +654,7 @@ export function BigQueryInterface({ selectedSpace: externalSelectedSpace, onSpac
       case 'running':
         return <Clock className="h-4 w-4 text-blue-500 animate-spin" />
       default:
-        return <AlertCircle className="h-4 w-4 text-gray-500" />
+        return <AlertCircle className="h-4 w-4 text-muted-foreground" />
     }
   }
 
@@ -719,15 +719,15 @@ export function BigQueryInterface({ selectedSpace: externalSelectedSpace, onSpac
         {/* Main Editor Area */}
         <div className="flex-1 flex flex-col min-h-0">
           {/* Tab Bar - Horizontal above SQL Editor */}
-          <div className="bg-white border-b border-gray-200 flex-shrink-0">
+          <div className="bg-background border-b border-border flex-shrink-0">
             <div className="flex items-center gap-2 px-4">
               {tabs.map((tab) => (
                 <div
                   key={tab.id}
                   className={`flex items-center gap-2 px-3 py-3 text-sm border-b-[3px] cursor-pointer group ${
                     tab.id === activeTabId
-                      ? 'border-black text-black'
-                      : 'border-transparent text-gray-600 hover:text-gray-900'
+                      ? 'border-foreground text-foreground'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
                   }`}
                   onClick={() => {
                     setActiveTabId(tab.id)
@@ -742,7 +742,7 @@ export function BigQueryInterface({ selectedSpace: externalSelectedSpace, onSpac
                         e.stopPropagation()
                         handleRenameTab(tab.id)
                       }}
-                      className="hover:bg-gray-200 rounded p-1"
+                      className="hover:bg-muted rounded p-1"
                       title="Rename tab"
                     >
                       <Edit className="h-3 w-3" />
@@ -753,7 +753,7 @@ export function BigQueryInterface({ selectedSpace: externalSelectedSpace, onSpac
                           e.stopPropagation()
                           closeTab(tab.id)
                         }}
-                        className="hover:bg-gray-200 rounded p-1"
+                        className="hover:bg-muted rounded p-1"
                         title="Close tab"
                       >
                         <X className="h-3 w-3" />
@@ -774,7 +774,7 @@ export function BigQueryInterface({ selectedSpace: externalSelectedSpace, onSpac
           </div>
 
           {/* Toolbar */}
-          <div className="bg-white border-b border-gray-200">
+          <div className="bg-background border-b border-border">
             <div className="flex items-center justify-between px-4 py-2">
               <div className="flex items-center gap-2">
                 <Button 
@@ -967,13 +967,13 @@ LIMIT 100;"
             ) : (
               <div className="h-full flex flex-col">
                 {/* Schema Header */}
-                <div className="bg-white border-b border-gray-200 px-4 py-3">
+                <div className="bg-background border-b border-border px-4 py-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Table className="h-5 w-5 text-blue-500" />
                       <div>
-                        <h2 className="text-lg font-semibold text-gray-900">{selectedTable?.name}</h2>
-                        <p className="text-sm text-gray-500">{selectedTable?.spaceName}</p>
+                        <h2 className="text-lg font-semibold text-foreground">{selectedTable?.name}</h2>
+                        <p className="text-sm text-muted-foreground">{selectedTable?.spaceName}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1005,31 +1005,31 @@ LIMIT 100;"
                 <div className="flex-1 overflow-y-auto p-4">
                   {selectedTable?.description && (
                     <div className="mb-6">
-                      <h3 className="text-sm font-medium text-gray-900 mb-2">Description</h3>
-                      <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">{selectedTable.description}</p>
+                      <h3 className="text-sm font-medium text-foreground mb-2">Description</h3>
+                      <p className="text-sm text-muted-foreground bg-muted/40 p-3 rounded-lg">{selectedTable.description}</p>
                     </div>
                   )}
                   
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-3">Schema</h3>
-                    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                    <h3 className="text-sm font-medium text-foreground mb-3">Schema</h3>
+                    <div className="bg-card border border-border rounded-lg overflow-hidden">
+                      <table className="min-w-full divide-y divide-border">
+                        <thead className="bg-muted/40">
                           <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Column</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Required</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unique</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Primary Key</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Default</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Column</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Required</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Unique</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Primary Key</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Default</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Description</th>
                           </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-card divide-y divide-border">
                           {selectedTable?.attributes && selectedTable.attributes.length > 0 ? (
                             selectedTable.attributes.map((attr, index) => (
                             <tr key={index}>
-                              <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                              <td className="px-4 py-3 text-sm font-medium text-foreground">
                                 <div className="flex items-center gap-2">
                                   {attr.name}
                                   {attr.isPrimaryKey && (
@@ -1049,47 +1049,47 @@ LIMIT 100;"
                                   )}
                                 </div>
                               </td>
-                              <td className="px-4 py-3 text-sm text-gray-500">{attr.type || 'Unknown'}</td>
-                              <td className="px-4 py-3 text-sm text-gray-500">
+                              <td className="px-4 py-3 text-sm text-muted-foreground">{attr.type || 'Unknown'}</td>
+                              <td className="px-4 py-3 text-sm text-muted-foreground">
                                 {attr.isRequired ? (
                                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
                                     Required
                                   </span>
                                 ) : (
-                                  <span className="text-gray-400">Optional</span>
+                                  <span className="text-muted-foreground">Optional</span>
                                 )}
                               </td>
-                              <td className="px-4 py-3 text-sm text-gray-500">
+                              <td className="px-4 py-3 text-sm text-muted-foreground">
                                 {attr.isUnique ? (
                                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
                                     Unique
                                   </span>
                                 ) : (
-                                  <span className="text-gray-400">-</span>
+                                  <span className="text-muted-foreground">-</span>
                                 )}
                               </td>
-                              <td className="px-4 py-3 text-sm text-gray-500">
+                              <td className="px-4 py-3 text-sm text-muted-foreground">
                                 {attr.isPrimaryKey ? (
                                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
                                     Yes
                                   </span>
                                 ) : (
-                                  <span className="text-gray-400">No</span>
+                                  <span className="text-muted-foreground">No</span>
                                 )}
                               </td>
-                              <td className="px-4 py-3 text-sm text-gray-500">
+                              <td className="px-4 py-3 text-sm text-muted-foreground">
                                 {attr.defaultValue ? (
-                                  <code className="text-xs bg-gray-100 px-2 py-1 rounded">{attr.defaultValue}</code>
+                                  <code className="text-xs bg-muted px-2 py-1 rounded">{attr.defaultValue}</code>
                                 ) : (
-                                  <span className="text-gray-400">-</span>
+                                  <span className="text-muted-foreground">-</span>
                                 )}
                               </td>
-                              <td className="px-4 py-3 text-sm text-gray-500">{attr.description || '-'}</td>
+                              <td className="px-4 py-3 text-sm text-muted-foreground">{attr.description || '-'}</td>
                             </tr>
                           ))
                           ) : (
                             <tr>
-                              <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                              <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                                 No attributes found for this data model.
                               </td>
                             </tr>

@@ -364,9 +364,17 @@ html.chat-embed-mode body {
 
 /* Legacy utility remaps for older screens that still rely on semantic gray/white classes. */
 .bg-white { background-color: var(--bg-surface); }
+.bg-white\/90 { background-color: color-mix(in srgb, var(--bg-surface) 90%, transparent); }
+.bg-white\/95 { background-color: color-mix(in srgb, var(--bg-surface) 95%, transparent); }
 .bg-gray-50 { background-color: var(--bg-default); }
 .bg-gray-100 { background-color: var(--bg-surface-hover); }
 .bg-gray-200 { background-color: var(--bg-surface-active); }
+.bg-zinc-50,
+.bg-zinc-100 { background-color: var(--bg-default); }
+.bg-zinc-200 { background-color: var(--bg-surface-hover); }
+.bg-zinc-800,
+.bg-zinc-900,
+.bg-zinc-950 { background-color: var(--bg-surface); }
 
 .text-gray-900 { color: var(--text-primary); }
 .text-gray-800 { color: var(--text-primary); }
@@ -374,6 +382,17 @@ html.chat-embed-mode body {
 .text-gray-600 { color: var(--text-secondary); }
 .text-gray-500 { color: var(--text-muted); }
 .text-gray-400 { color: var(--text-muted); }
+.text-zinc-900,
+.text-zinc-800,
+.text-zinc-700 { color: var(--text-primary); }
+.text-zinc-600,
+.text-zinc-500,
+.text-zinc-400 { color: var(--text-secondary); }
+.text-zinc-300,
+.text-zinc-200,
+.text-zinc-100,
+.text-white { color: var(--text-primary); }
+.text-black { color: var(--text-inverse); }
 
 .bg-gray-800 { background-color: var(--bg-surface); }
 .bg-gray-900 { background-color: var(--bg-surface); }
@@ -382,25 +401,77 @@ html.chat-embed-mode body {
 .border-gray-200,
 .border-gray-300,
 .border-gray-700,
-.border-gray-800 { border-color: var(--border-default); }
+.border-gray-800,
+.border-zinc-100,
+.border-zinc-200,
+.border-zinc-300,
+.border-zinc-700,
+.border-zinc-800 { border-color: var(--border-default); }
 
 .focus\:bg-white:focus,
 .focus\:bg-gray-50:focus,
-.focus\:bg-gray-100:focus {
+.focus\:bg-gray-100:focus,
+.focus\:bg-zinc-50:focus,
+.focus\:bg-zinc-100:focus {
   background-color: var(--bg-default);
 }
 
 .hover\:bg-gray-50:hover,
 .hover\:bg-gray-100:hover,
-.hover\:bg-gray-200:hover {
+.hover\:bg-gray-200:hover,
+.hover\:bg-zinc-50:hover,
+.hover\:bg-zinc-100:hover,
+.hover\:bg-zinc-800:hover {
   background-color: var(--bg-surface-hover);
 }
 
 .hover\:text-gray-600:hover,
 .hover\:text-gray-700:hover,
 .hover\:text-gray-800:hover,
-.hover\:text-gray-900:hover {
+.hover\:text-gray-900:hover,
+.hover\:text-zinc-600:hover,
+.hover\:text-zinc-700:hover,
+.hover\:text-zinc-800:hover,
+.hover\:text-zinc-900:hover {
   color: var(--text-primary);
+}
+
+.dark .dark\:bg-black,
+.dark .dark\:bg-gray-800,
+.dark .dark\:bg-gray-900,
+.dark .dark\:bg-zinc-800,
+.dark .dark\:bg-zinc-900,
+.dark .dark\:bg-zinc-950,
+.dark .dark\:bg-card {
+  background-color: var(--bg-surface);
+}
+
+.dark .dark\:bg-white\/5,
+.dark .dark\:bg-white\/10,
+.dark .dark\:bg-white\/20 {
+  background-color: color-mix(in srgb, var(--bg-surface) 82%, transparent);
+}
+
+.dark .dark\:text-white,
+.dark .dark\:text-zinc-100,
+.dark .dark\:text-zinc-200,
+.dark .dark\:text-zinc-300,
+.dark .dark\:text-zinc-400 {
+  color: var(--text-primary);
+}
+
+.dark .dark\:border-zinc-800,
+.dark .dark\:border-zinc-700,
+.dark .dark\:border-gray-800,
+.dark .dark\:border-gray-700 {
+  border-color: var(--border-default);
+}
+
+.dark .dark\:hover\:bg-zinc-800:hover,
+.dark .dark\:hover\:bg-zinc-900:hover,
+.dark .dark\:hover\:bg-gray-800:hover,
+.dark .dark\:hover\:bg-gray-900:hover {
+  background-color: var(--bg-surface-hover);
 }
 
 /* Scrollbar */

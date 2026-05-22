@@ -171,15 +171,15 @@ export function DataModelTreeView({
   }
 
   const renderModelItem = (model: DataModel) => (
-    <div key={`model:${model.id}`} className="p-2 ml-6 rounded-md hover:bg-gray-50 transition-colors">
+    <div key={`model:${model.id}`} className="p-2 ml-6 rounded-md hover:bg-accent transition-colors">
       <div className="flex items-center gap-2">
-        <Database className="h-4 w-4 text-gray-500" />
+        <Database className="h-4 w-4 text-muted-foreground" />
         <div className="flex-1 min-w-0">
-          <div className="font-medium text-gray-900 truncate">
+          <div className="font-medium text-foreground truncate">
             {model.display_name || model.name}
           </div>
           {model.description && (
-            <div className="text-xs text-gray-500 truncate mt-1">
+            <div className="text-xs text-muted-foreground truncate mt-1">
               {model.description}
             </div>
           )}
@@ -205,17 +205,17 @@ export function DataModelTreeView({
     return (
       <div key={`folder:${folder.id}`} className="select-none">
         <div
-          className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+          className="flex items-center gap-2 p-2 rounded-md hover:bg-accent transition-colors cursor-pointer"
           style={{ paddingLeft: `${level * 16 + 8}px` }}
         >
           <button
             onClick={() => toggleFolder(folder.id)}
-            className="p-1 hover:bg-gray-200 rounded"
+            className="p-1 hover:bg-muted rounded"
           >
             {isExpanded ? (
-              <ChevronDown className="h-4 w-4 text-gray-500" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
             ) : (
-              <ChevronRight className="h-4 w-4 text-gray-500" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
             )}
           </button>
           
@@ -293,14 +293,14 @@ export function DataModelTreeView({
         <div className="border rounded-lg p-4 min-h-[400px]">
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="text-gray-500">Loading...</div>
+              <div className="text-muted-foreground">Loading...</div>
             </div>
           ) : (
             <div className="space-y-2">
               {/* Root Models Section */}
               {rootModels.length > 0 && (
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2 p-3 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg border">
+                  <div className="flex items-center gap-2 p-3 text-sm font-medium text-foreground bg-muted/40 rounded-lg border border-border">
                     <Database className="h-4 w-4" />
                     <span>Root Models ({rootModels.length})</span>
                   </div>
@@ -315,7 +315,7 @@ export function DataModelTreeView({
 
               {/* Empty State */}
               {models.length === 0 && folders.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-muted-foreground">
                   <Database className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p className="text-lg font-medium">No data models yet</p>
                   <p className="text-sm">Create your first data model to get started</p>

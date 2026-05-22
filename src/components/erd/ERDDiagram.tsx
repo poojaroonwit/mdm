@@ -172,7 +172,7 @@ export default function ERDDiagram({
   const getAttributeIcon = (attribute: Attribute) => {
     if (attribute.is_primary_key) return <Key className="h-3 w-3 text-yellow-500" />
     if (attribute.is_foreign_key) return <Link className="h-3 w-3 text-blue-500" />
-    return <Type className="h-3 w-3 text-gray-500" />
+    return <Type className="h-3 w-3 text-muted-foreground" />
   }
 
   const getAttributeTypeColor = (type: string) => {
@@ -231,7 +231,7 @@ export default function ERDDiagram({
   }
 
   return (
-    <div className="w-full h-full relative overflow-hidden bg-gray-50">
+    <div className="w-full h-full relative overflow-hidden bg-muted/30">
       {/* Toolbar */}
       <div className="absolute top-4 left-4 z-10 flex gap-2">
         <Button
@@ -241,7 +241,7 @@ export default function ERDDiagram({
         >
           -
         </Button>
-        <span className="px-2 py-1 text-sm bg-white rounded border">
+        <span className="px-2 py-1 text-sm bg-background rounded border border-border text-foreground">
           {Math.round(zoom * 100)}%
         </span>
         <Button
@@ -298,7 +298,7 @@ export default function ERDDiagram({
             }}
           >
             <CardHeader
-              className="pb-2 cursor-move bg-blue-50"
+              className="pb-2 cursor-move bg-muted/40"
               onMouseDown={(e) => handleModelDrag(model.id, e)}
             >
               <CardTitle className="text-sm flex items-center gap-2">
@@ -314,7 +314,7 @@ export default function ERDDiagram({
                 {model.attributes.map((attribute) => (
                   <div
                     key={attribute.id}
-                    className="flex items-center gap-2 p-1 rounded hover:bg-gray-100 cursor-pointer group"
+                    className="flex items-center gap-2 p-1 rounded hover:bg-accent cursor-pointer group"
                     onClick={() => handleAttributeClick(model.id, attribute)}
                     onMouseDown={(e) => {
                       if (isCreatingRelationship) {

@@ -181,16 +181,16 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
               }}
             />
           ) : (
-            <div className="bg-gradient-to-br from-[var(--primary-light)] to-[var(--primary-blue)]  text-primary-foreground  w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-white text-sm shadow-lg mr-4 group-hover:bg-zinc-800 transition-all duration-300 overflow-hidden ">
+            <div className="bg-gradient-to-br from-[var(--primary-light)] to-[var(--primary-blue)] text-primary-foreground w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-white text-sm shadow-lg mr-4 transition-all duration-300 overflow-hidden">
               <span>{displayName.substring(0, 1).toUpperCase()}</span>
             </div>
           )}
           
           <div className="hidden md:block overflow-hidden whitespace-nowrap">
-            <h1 className="font-bold text-zinc-900 dark:text-white tracking-tight text-xl leading-none mb-0.5">
+            <h1 className="font-bold text-foreground tracking-tight text-xl leading-none mb-0.5">
               {displayName}
             </h1>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-widest leading-none">
+            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest leading-none">
               {showSpaceName && spaceName ? spaceName : 'Platform'}
             </p>
           </div>
@@ -202,7 +202,7 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
             <div className="hidden lg:block h-8 w-px bg-gradient-to-b from-transparent via-sidebar-border to-transparent mx-6" />
 
             {/* Page Title */}
-            <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">{featureName}</h2>
+            <h2 className="text-sm font-semibold text-foreground">{featureName}</h2>
           </div>
         )}
       </div>
@@ -213,13 +213,13 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
         <Popover open={notificationPopoverOpen} onOpenChange={setNotificationPopoverOpen}>
           <PopoverTrigger asChild>
             <button
-              className="relative p-2.5 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-all duration-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl group"
+              className="relative p-2.5 text-muted-foreground hover:text-foreground transition-all duration-200 hover:bg-muted rounded-xl group"
               aria-label="Notifications"
               title="Notifications"
             >
               <Bell className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
               {notifications.length > 0 && unreadCount > 0 && (
-                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-zinc-900 animate-pulse" />
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-background animate-pulse" />
               )}
             </button>
           </PopoverTrigger>
@@ -347,39 +347,39 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
         {/* User Avatar with Popover */}
         <Popover open={profilePopoverOpen} onOpenChange={setProfilePopoverOpen}>
           <PopoverTrigger asChild>
-            <button className="flex items-center space-x-3 p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-200 group outline-none">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--primary-light)] to-[var(--primary-blue)]  text-primary-foreground  flex items-center justify-center text-white dark:text-zinc-900 font-bold text-sm shadow-lg group-hover:bg-zinc-800 transition-all duration-300 overflow-hidden">
+            <button className="flex items-center space-x-3 p-1.5 rounded-full hover:bg-muted transition-all duration-200 group outline-none">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--primary-light)] to-[var(--primary-blue)] text-primary-foreground flex items-center justify-center text-white font-bold text-sm shadow-lg transition-all duration-300 overflow-hidden">
                 {userImage ? (
                   <img src={userImage} alt={userName} className="h-full w-full object-cover" />
                 ) : userInitial}
               </div>
               <div className="hidden sm:block text-left pr-3">
-                <p className="text-sm font-semibold text-zinc-900 dark:text-white leading-none capitalize">
+                <p className="text-sm font-semibold text-foreground leading-none capitalize">
                   {userName}
                 </p>
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium uppercase mt-0.5 tracking-wider">
+                <p className="text-[10px] text-muted-foreground font-medium uppercase mt-0.5 tracking-wider">
                   {userRole}
                 </p>
               </div>
-              <ChevronDown className="w-4 h-4 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors duration-200" />
+              <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors duration-200" />
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-72 mt-2 origin-top-right divide-y divide-zinc-100 dark:divide-zinc-800 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shadow-2xl ring-1 ring-black/5 dark:ring-white/5 focus:outline-none z-50 border border-zinc-200 dark:border-zinc-800 p-0 overflow-hidden" align="end">
+          <PopoverContent className="w-72 mt-2 origin-top-right divide-y divide-border rounded-2xl bg-popover/95 text-popover-foreground backdrop-blur-xl shadow-2xl ring-1 ring-black/5 dark:ring-white/5 focus:outline-none z-50 border border-border p-0 overflow-hidden" align="end">
             <div className="px-5 py-4">
-              <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-widest mb-1">Signed in as</p>
-              <p className="text-sm font-semibold text-zinc-900 dark:text-white truncate mt-1">{userEmail}</p>
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1">Signed in as</p>
+              <p className="text-sm font-semibold text-foreground truncate mt-1">{userEmail}</p>
             </div>
 
             <div className="p-3 space-y-1">
               <Button
                 variant="ghost"
-                className="flex w-full justify-start items-center px-4 py-3 text-sm font-medium text-zinc-700 dark:text-zinc-300 rounded-xl transition-all duration-200 hover:bg-zinc-50/80 dark:hover:bg-zinc-800/80 h-11"
+                className="flex w-full justify-start items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 hover:bg-muted h-11"
                 onClick={() => {
                   setProfilePopoverOpen(false)
                   setProfileModalOpen(true)
                 }}
               >
-                <Settings className="w-4 h-4 mr-3 text-zinc-400" />
+                <Settings className="w-4 h-4 mr-3 text-muted-foreground" />
                 <span>Account Settings</span>
               </Button>
             </div>
@@ -387,7 +387,7 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
             <div className="p-3">
               <Button
                 variant="ghost"
-                className="flex w-full justify-start items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 bg-transparent text-zinc-700 dark:text-zinc-300 hover:bg-red-50/80 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 h-11"
+                className="flex w-full justify-start items-center px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 bg-transparent hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 h-11"
                 onClick={handleSignOut}
               >
                 <LogOut className="w-4 h-4 mr-3 text-red-500" />

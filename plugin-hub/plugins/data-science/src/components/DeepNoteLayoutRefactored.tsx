@@ -257,8 +257,8 @@ export function DeepNoteLayoutRefactored({
 
   return (
     <div className={cn(
-      "h-screen bg-white flex flex-col transition-all duration-300",
-      state.currentTheme === 'dark' ? "dark bg-gray-900" : "",
+      "h-screen bg-background text-foreground flex flex-col transition-all duration-300",
+      state.currentTheme === 'dark' ? "dark" : "",
       state.isFullscreen ? "fixed inset-0 z-50" : ""
     )}>
       {/* Header removed as requested */}
@@ -270,7 +270,7 @@ export function DeepNoteLayoutRefactored({
       <div className="flex-1 flex min-h-0">
         {/* Left Sidebar */}
         {state.showSidebar && (
-          <div className="w-64 h-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg m-0 flex flex-col min-h-0">
+          <div className="w-64 h-full bg-card border border-border shadow-lg m-0 flex flex-col min-h-0">
             <NotebookSidebar
               notebook={state.notebook}
               variables={state.variables}
@@ -292,11 +292,11 @@ export function DeepNoteLayoutRefactored({
         )}
 
               {/* Main Area Card - switches between Notebook and File viewers */}
-              <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-gray-900 relative border border-gray-200 dark:border-gray-700 shadow-lg m-0">
+              <div className="flex-1 flex flex-col min-h-0 bg-card relative border border-border shadow-lg m-0">
                 {/* Folder toolbar removed from notebook; shown on projects page instead */}
                 {/* Notebook toolbar row (only when a notebook is selected) */}
             {(!openedFile || openedFile.type === 'ipynb') && (
-              <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex items-center justify-between">
+              <div className="px-4 py-2 border-b border-border bg-muted/40 flex items-center justify-between">
                     <div className="flex-1">
                       <NotebookToolbar
                       toolbarPosition="top"
@@ -399,13 +399,13 @@ export function DeepNoteLayoutRefactored({
                 >
             {!openedFile && !initialNotebook ? (
               // Blank placeholder when no file selected
-              <div className="flex items-center justify-center h-full bg-gray-50 dark:bg-gray-800">
+              <div className="flex items-center justify-center h-full bg-muted/30">
                 <div className="text-center max-w-md">
                   <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <FileCode className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+                    <FileCode className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No file selected</h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6">Select a notebook file from the sidebar to get started</p>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">No file selected</h3>
+                  <p className="text-muted-foreground mb-6">Select a notebook file from the sidebar to get started</p>
                 </div>
               </div>
             ) : openedFile && openedFile.type !== 'ipynb' ? (
@@ -418,17 +418,17 @@ export function DeepNoteLayoutRefactored({
                   <MarkdownFileEditor key={openedFile.name} fileName={openedFile.name} />
                 )}
                 {openedFile.type === 'other' && (
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Unsupported file type.</div>
+                  <div className="text-sm text-muted-foreground">Unsupported file type.</div>
                 )}
               </div>
             ) : state.notebook.cells.length === 0 ? (
-              <div className="flex items-center justify-center h-full bg-gray-50 dark:bg-gray-800">
+              <div className="flex items-center justify-center h-full bg-muted/30">
                 <div className="text-center max-w-md">
                   <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-6">
                     <FileCode className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Welcome to your notebook</h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6">Start by adding a code cell or markdown cell to begin your analysis</p>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">Welcome to your notebook</h3>
+                  <p className="text-muted-foreground mb-6">Start by adding a code cell or markdown cell to begin your analysis</p>
                   <div className="space-x-3">
                     <Button onClick={() => handlers.createNewCell('code')} className="bg-blue-600 hover:bg-blue-700">
                       <Code className="h-4 w-4 mr-2" />
@@ -507,13 +507,13 @@ export function DeepNoteLayoutRefactored({
                           {/* Insert Cell Buttons - Always visible below each cell */}
                           {effectiveCanEdit && (
                           <div className="flex items-center justify-center py-2">
-                            <div className="flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-[5px] px-2 py-1.5 shadow-lg">
-                              <span className="text-xs text-gray-500 dark:text-gray-400 mr-1">Insert:</span>
+                            <div className="flex items-center gap-2 bg-background border border-border rounded-[5px] px-2 py-1.5 shadow-lg">
+                              <span className="text-xs text-muted-foreground mr-1">Insert:</span>
                               <Button
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => handlers.createNewCell('code', 'below', cell.id)}
-                                className="h-8 px-3 text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
+                                className="h-8 px-3 text-xs text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
                                 title="Insert code cell"
                               >
                                 <Code className="h-4 w-4 mr-1" />
@@ -523,7 +523,7 @@ export function DeepNoteLayoutRefactored({
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => handlers.createNewCell('markdown', 'below', cell.id)}
-                                className="h-8 px-3 text-xs text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded"
+                                className="h-8 px-3 text-xs text-muted-foreground hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded"
                                 title="Insert markdown cell"
                               >
                                 <FileText className="h-4 w-4 mr-1" />
@@ -533,7 +533,7 @@ export function DeepNoteLayoutRefactored({
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => handlers.createNewCell('sql', 'below', cell.id)}
-                                className="h-8 px-3 text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
+                                className="h-8 px-3 text-xs text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
                                 title="Insert SQL cell"
                               >
                                 <Database className="h-4 w-4 mr-1" />
@@ -543,7 +543,7 @@ export function DeepNoteLayoutRefactored({
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => handlers.createNewCell('raw', 'below', cell.id)}
-                                className="h-8 px-3 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded"
+                                className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded"
                                 title="Insert raw cell"
                               >
                                 <FileText className="h-4 w-4 mr-1" />
@@ -569,8 +569,8 @@ export function DeepNoteLayoutRefactored({
         </div>
 
       {/* Footer Status Bar - DeepNote style */}
-      <div className="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-2">
-        <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
+      <div className="bg-muted/40 border-t border-border px-4 py-2">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center space-x-6">
             {/* Kernel Dropdown - DeepNote style: no border, no background, just arrow */}
             <div className="flex items-center space-x-2">
@@ -586,7 +586,7 @@ export function DeepNoteLayoutRefactored({
                   if (kernel) setCurrentKernel(kernel)
                 }}
               >
-                <SelectTrigger className="h-auto p-0 border-0 bg-transparent shadow-none focus:ring-0 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
+                <SelectTrigger className="h-auto p-0 border-0 bg-transparent shadow-none focus:ring-0 text-xs text-muted-foreground hover:text-foreground">
                   <SelectValue placeholder={state.currentKernel?.name || 'No kernel'} />
                   <ChevronDown className="h-3 w-3 ml-1" />
                 </SelectTrigger>

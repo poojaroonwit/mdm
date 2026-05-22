@@ -223,9 +223,9 @@ export function DataExplorer({
 
 
   return (
-    <div className="w-64 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
+    <div className="w-64 bg-background border-r border-border text-foreground flex flex-col">
       {/* Header with Tabs */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+      <div className="p-4 border-b border-border">
         <div className="w-full">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
@@ -246,7 +246,7 @@ export function DataExplorer({
               {/* Search Bar */}
               <div className="mb-4">
                 <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search databases and tables..."
                     value={dataExplorerSearch}
@@ -259,13 +259,13 @@ export function DataExplorer({
               {/* Data Models List */}
               <div className="space-y-2">
                 {dataModelsLoading ? (
-                  <div className="p-4 text-center text-sm text-gray-500">
+                  <div className="p-4 text-center text-sm text-muted-foreground">
                     Loading data models...
                   </div>
                 ) : dataModelsError ? (
                   <div className="p-4 text-center">
                     <div className="text-sm text-red-600 mb-2">Error loading data models</div>
-                    <div className="text-xs text-gray-500 mb-3">{dataModelsError}</div>
+                    <div className="text-xs text-muted-foreground mb-3">{dataModelsError}</div>
                     <Button
                       size="sm"
                       variant="outline"
@@ -276,11 +276,11 @@ export function DataExplorer({
                     </Button>
                   </div>
                 ) : dataModels.length === 0 ? (
-                  <div className="p-4 text-center text-sm text-gray-500">
+                  <div className="p-4 text-center text-sm text-muted-foreground">
                     No data models found for this space
                   </div>
                 ) : (selectedSpace === 'all' ? getFilteredDataModelsBySpace().length === 0 : getFilteredDataModels().length === 0) ? (
-                  <div className="p-4 text-center text-sm text-gray-500">
+                  <div className="p-4 text-center text-sm text-muted-foreground">
                     No databases or tables match your search
                   </div>
                 ) : selectedSpace === 'all' ? (
@@ -288,7 +288,7 @@ export function DataExplorer({
                   getFilteredDataModelsBySpace().map(({ space, dataModels: spaceDataModels }) => (
                     <div key={space.id}>
                       <div
-                        className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer hover:text-gray-900"
+                        className="flex items-center gap-2 text-sm font-medium text-foreground cursor-pointer hover:text-foreground"
                         onClick={() => toggleSchema(space.id)}
                       >
                         {expandedSchemas.has(space.id) ? (
@@ -308,7 +308,7 @@ export function DataExplorer({
                           {spaceDataModels.map((dataModel) => (
                             <div
                               key={dataModel.id}
-                              className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-gray-900 hover:bg-gray-100 rounded px-2 py-1"
+                              className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground hover:bg-accent rounded px-2 py-1"
                               onClick={() => onTableLeftClick(dataModel.name, space.name)}
                               onContextMenu={(e) => onTableRightClick(e, dataModel.name, space.name)}
                             >
@@ -327,7 +327,7 @@ export function DataExplorer({
                   getFilteredDataModels().map((dataModel) => (
                     <div
                       key={dataModel.id}
-                      className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-gray-900 hover:bg-gray-100 rounded px-2 py-1"
+                      className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground hover:bg-accent rounded px-2 py-1"
                       onClick={() => onTableLeftClick(dataModel.name, spaces.find(s => s.id === selectedSpace)?.name || 'Unknown')}
                       onContextMenu={(e) => onTableRightClick(e, dataModel.name, spaces.find(s => s.id === selectedSpace)?.name || 'Unknown')}
                     >
@@ -364,13 +364,13 @@ export function DataExplorer({
                 {getQueriesInFolder(undefined).map((query) => (
                   <div
                     key={query.id}
-                    className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-gray-900 hover:bg-gray-100 rounded px-2 py-1 group"
+                    className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground hover:bg-accent rounded px-2 py-1 group"
                     onClick={() => onLoadQuery?.(query.query)}
                   >
                     <FileText className="h-4 w-4" />
                     <div className="flex-1 min-w-0">
                       <div className="truncate font-medium">{query.name}</div>
-                      <div className="text-xs text-gray-500 flex items-center gap-2">
+                      <div className="text-xs text-muted-foreground flex items-center gap-2">
                         <Clock className="h-3 w-3" />
                         {formatDateTime(query.updatedAt)}
                       </div>
@@ -393,7 +393,7 @@ export function DataExplorer({
                 {getRootFolders().map((folder) => (
                   <div key={folder.id}>
                     <div
-                      className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer hover:text-gray-900"
+                      className="flex items-center gap-2 text-sm font-medium text-foreground cursor-pointer hover:text-foreground"
                       onClick={() => toggleFolder(folder.id)}
                     >
                       {expandedFolders.has(folder.id) ? (
@@ -415,7 +415,7 @@ export function DataExplorer({
                         {getSubfolders(folder.id).map((subfolder) => (
                           <div key={subfolder.id}>
                             <div
-                              className="flex items-center gap-2 text-sm font-medium text-gray-600 cursor-pointer hover:text-gray-900"
+                              className="flex items-center gap-2 text-sm font-medium text-muted-foreground cursor-pointer hover:text-foreground"
                               onClick={() => toggleFolder(subfolder.id)}
                             >
                               {expandedFolders.has(subfolder.id) ? (
@@ -436,13 +436,13 @@ export function DataExplorer({
                                 {getQueriesInFolder(subfolder.id).map((query) => (
                                   <div
                                     key={query.id}
-                                    className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-gray-900 hover:bg-gray-100 rounded px-2 py-1 group"
+                                    className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground hover:bg-accent rounded px-2 py-1 group"
                                     onClick={() => onLoadQuery?.(query.query)}
                                   >
                                     <FileText className="h-3 w-3" />
                                     <div className="flex-1 min-w-0">
                                       <div className="truncate font-medium">{query.name}</div>
-                                      <div className="text-xs text-gray-500 flex items-center gap-2">
+                                      <div className="text-xs text-muted-foreground flex items-center gap-2">
                                         <Clock className="h-3 w-3" />
                                         {formatDateTime(query.updatedAt)}
                                       </div>
@@ -469,13 +469,13 @@ export function DataExplorer({
                         {getQueriesInFolder(folder.id).map((query) => (
                           <div
                             key={query.id}
-                            className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-gray-900 hover:bg-gray-100 rounded px-2 py-1 group"
+                            className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground hover:bg-accent rounded px-2 py-1 group"
                             onClick={() => onLoadQuery?.(query.query)}
                           >
                             <FileText className="h-3 w-3" />
                             <div className="flex-1 min-w-0">
                               <div className="truncate font-medium">{query.name}</div>
-                              <div className="text-xs text-gray-500 flex items-center gap-2">
+                              <div className="text-xs text-muted-foreground flex items-center gap-2">
                                 <Clock className="h-3 w-3" />
                                 {formatDateTime(query.updatedAt)}
                               </div>

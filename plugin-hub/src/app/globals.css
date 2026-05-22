@@ -42,8 +42,9 @@
   --transition-medium: 0.25s ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
+.dark,
+html.dark,
+body.dark {
     --background: 0 0% 0%;
     --foreground: 0 0% 98%;
 
@@ -92,6 +93,38 @@
 
     --border: 240 4% 24%;
     --input: 240 4% 24%;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 4% 11%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 4% 11%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 0%;
+
+    --primary-gradient: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 211 100% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 4% 24%;
+    --input: 240 4% 24%;
   }
 }
 
@@ -116,6 +149,66 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
+}
+
+.bg-white {
+  background-color: hsl(var(--card));
+}
+
+.bg-gray-50,
+.bg-zinc-50,
+.bg-zinc-100 {
+  background-color: hsl(var(--background));
+}
+
+.bg-gray-900,
+.bg-zinc-900,
+.bg-zinc-950 {
+  background-color: hsl(var(--card));
+}
+
+.text-gray-900,
+.text-gray-800,
+.text-zinc-900,
+.text-zinc-800,
+.text-white {
+  color: hsl(var(--foreground));
+}
+
+.text-gray-700,
+.text-gray-600,
+.text-gray-500,
+.text-zinc-700,
+.text-zinc-600,
+.text-zinc-500,
+.text-zinc-400 {
+  color: hsl(var(--muted-foreground));
+}
+
+.border-gray-200,
+.border-gray-300,
+.border-zinc-200,
+.border-zinc-800 {
+  border-color: hsl(var(--border));
+}
+
+.hover\:bg-gray-50:hover,
+.hover\:bg-zinc-800:hover {
+  background-color: hsl(var(--muted));
+}
+
+.dark .dark\:bg-gray-900,
+.dark .dark\:bg-zinc-900,
+.dark .dark\:bg-zinc-950 {
+  background-color: hsl(var(--card));
+}
+
+.dark .dark\:text-white,
+.dark .dark\:text-gray-200,
+.dark .dark\:text-zinc-200,
+.dark .dark\:text-zinc-300,
+.dark .dark\:text-zinc-400 {
+  color: hsl(var(--foreground));
 }
 
 /* Scrollbar */
