@@ -4,20 +4,22 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { TicketsList } from '@plugins/project-management/src/tickets'
+import { useSpace } from '@/contexts/space-context'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { SpaceSelector } from '@/components/project-management/SpaceSelector'
-import { normalizeProjectMetadata, normalizeProjectFields, normalizeProjectStatuses, DEFAULT_CARD_FIELDS, DEFAULT_PROJECT_STATUSES } from '@/components/project-management/project-config'
-import { MoreVertical, Pencil, Plus, Settings2, Ticket, Trash2, Upload, FolderKanban } from 'lucide-react'
+import { DEFAULT_CARD_FIELDS, DEFAULT_PROJECT_STATUSES, normalizeProjectFields, normalizeProjectMetadata, normalizeProjectStatuses } from '@/components/project-management/project-config'
+import { FolderKanban, ImagePlus, MoreVertical, Pencil, Plus, Settings2, Ticket, Trash2 } from 'lucide-react'
 import { showError, showSuccess } from '@/lib/toast-utils'
 
-const PROJECT_ICONS = ['🚀', '📦', '🧭', '📊', '🛠', '🎯', '🧩', '💡']
+const PROJECT_ICONS = ['*', '#', '+', '@', '%', '&', '!', '?']
 
 interface ProjectRecord {
   id: string
@@ -51,6 +53,7 @@ const EMPTY_PROJECT_FORM = {
 
 export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
   const router = useRouter()
+  const { currentSpace } = useSpace()
   const [projects, setProjects] = useState<ProjectRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSpaceId, setSelectedSpaceId] = useState('')
@@ -95,6 +98,7 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
 
   const openCreateDialog = () => {
     resetProjectForm()
+    setSelectedSpaceId(currentSpace?.id || '')
     setIsDialogOpen(true)
   }
 
@@ -264,14 +268,14 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
                 Loading projects...
               </div>
             ) : projects.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
+              <div className="flex h-full flex-col items-center justify-center gap-4 p-10 text-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary">
                   <FolderKanban className="h-8 w-8" />
                 </div>
                 <div>
                   <div className="text-lg font-semibold">No projects yet</div>
                   <div className="mt-1 text-sm text-muted-foreground">
-                    Start with a project, then open its ticket workspace from the sidebar or actions menu.
+                    Start with a project, then open its ticket workspace from the project list.
                   </div>
                 </div>
                 <Button onClick={openCreateDialog}>
@@ -293,7 +297,7 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
                         <img src={metadata.thumbnailUrl} alt={project.name} className="h-12 w-12 rounded-2xl object-cover" />
                       ) : (
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-xl">
-                          {metadata.icon || '📁'}
+                          {metadata.icon || '*'}
                         </div>
                       )}
                       <div className="min-w-0">
@@ -351,11 +355,85 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>{editingProjectId ? 'Edit Project' : 'Create Project'}</DialogTitle>
-            <DialogDescription>
-              Add the project basics here. Statuses, card fields, and custom attributes can be managed from the ticket workspace.
-            </DialogDescription>
+          <DialogHeader className="flex-row items-start justify-between space-y-0">
+            <div className="space-y-1.5">
+              <DialogTitle>{editingProjectId ? 'Edit Project' : 'Create Project'}</DialogTitle>
+              <DialogDescription>
+                Add the project basics here. Statuses, card fields, and custom attributes can be managed from the ticket workspace.
+              </DialogDescription>
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button type="button" variant="outline" className="ml-4 h-auto rounded-2xl px-3 py-2">
+                  {projectForm.thumbnailUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={projectForm.thumbnailUrl} alt="Project visual" className="mr-3 h-10 w-10 rounded-xl object-cover" />
+                  ) : (
+                    <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-lg">
+                      {projectForm.icon}
+                    </div>
+                  )}
+                  <div className="text-left">
+                    <div className="text-sm font-medium">Project Visual</div>
+                    <div className="text-xs text-muted-foreground">Icon, custom icon, or thumbnail</div>
+                  </div>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-[320px] space-y-4">
+                <div className="space-y-3">
+                  <Label>Project Icon</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {PROJECT_ICONS.map((icon) => (
+                      <Button
+                        key={icon}
+                        type="button"
+                        variant={projectForm.icon === icon ? 'default' : 'outline'}
+                        className="h-12 rounded-2xl text-xl"
+                        onClick={() => setProjectForm((prev) => ({ ...prev, icon }))}
+                      >
+                        {icon}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Custom Icon</Label>
+                  <Input
+                    value={projectForm.icon}
+                    onChange={(event) =>
+                      setProjectForm((prev) => ({ ...prev, icon: event.target.value.slice(0, 2) || PROJECT_ICONS[0] }))
+                    }
+                    placeholder="*"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label>Thumbnail</Label>
+                  {projectForm.thumbnailUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={projectForm.thumbnailUrl} alt="Project thumbnail" className="h-32 w-full rounded-2xl object-cover" />
+                  ) : (
+                    <div className="flex h-32 items-center justify-center rounded-2xl bg-muted/50 text-sm text-muted-foreground">
+                      No thumbnail uploaded
+                    </div>
+                  )}
+                  <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-border px-3 py-2 text-sm">
+                    <ImagePlus className="h-4 w-4" />
+                    {uploadingThumbnail ? 'Uploading...' : 'Upload Thumbnail'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0]
+                        if (file) {
+                          handleThumbnailUpload(file)
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+              </PopoverContent>
+            </Popover>
           </DialogHeader>
           <DialogBody className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
@@ -381,7 +459,7 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
               <div className="space-y-2">
                 <Label>Space</Label>
                 <SpaceSelector
-                  value={selectedSpaceId}
+                  value={selectedSpaceId || currentSpace?.id || ''}
                   onValueChange={setSelectedSpaceId}
                   className="w-full"
                   showAllOption={false}
@@ -423,64 +501,6 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
                   value={projectForm.endDate}
                   onChange={(event) => setProjectForm((prev) => ({ ...prev, endDate: event.target.value }))}
                 />
-              </div>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_280px]">
-              <div className="space-y-3">
-                <Label>Project Icon</Label>
-                <div className="grid grid-cols-4 gap-2">
-                  {PROJECT_ICONS.map((icon) => (
-                    <Button
-                      key={icon}
-                      type="button"
-                      variant={projectForm.icon === icon ? 'default' : 'outline'}
-                      className="h-12 rounded-2xl text-xl"
-                      onClick={() => setProjectForm((prev) => ({ ...prev, icon }))}
-                    >
-                      {icon}
-                    </Button>
-                  ))}
-                </div>
-                <div className="space-y-2">
-                  <Label>Custom Icon</Label>
-                  <Input
-                    value={projectForm.icon}
-                    onChange={(event) =>
-                      setProjectForm((prev) => ({ ...prev, icon: event.target.value.slice(0, 2) || PROJECT_ICONS[0] }))
-                    }
-                    placeholder="🚀"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <Label>Thumbnail</Label>
-                <div className="rounded-3xl border border-dashed border-border p-4">
-                  {projectForm.thumbnailUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={projectForm.thumbnailUrl} alt="Project thumbnail" className="h-36 w-full rounded-2xl object-cover" />
-                  ) : (
-                    <div className="flex h-36 items-center justify-center rounded-2xl bg-muted/50 text-sm text-muted-foreground">
-                      No thumbnail uploaded
-                    </div>
-                  )}
-                  <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-border px-3 py-2 text-sm">
-                    <Upload className="h-4 w-4" />
-                    {uploadingThumbnail ? 'Uploading...' : 'Upload Thumbnail'}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(event) => {
-                        const file = event.target.files?.[0]
-                        if (file) {
-                          handleThumbnailUpload(file)
-                        }
-                      }}
-                    />
-                  </label>
-                </div>
               </div>
             </div>
           </DialogBody>

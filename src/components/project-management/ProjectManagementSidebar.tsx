@@ -108,11 +108,7 @@ export function ProjectManagementSidebar({
               <div className="text-xs text-muted-foreground">Current project</div>
             </div>
           </div>
-        ) : (
-          <div className="mt-3 rounded-2xl border border-dashed border-border/70 bg-background/60 px-3 py-3 text-sm text-muted-foreground">
-            Choose a project to open its ticket workspace.
-          </div>
-        )}
+        ) : null}
       </div>
 
       <div className="border-b border-border px-2.5 py-2">
