@@ -39,6 +39,7 @@ import {
   Users,
   BookOpen,
   Pin,
+  Network,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
@@ -49,6 +50,7 @@ import { EmptyState } from '@/shared/components/EmptyState'
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner'
 import { OutlineDocumentEditor } from './OutlineDocumentEditor'
 import { OutlineSearchDialog } from './OutlineSearchDialog'
+import { KnowledgeGraphView } from './KnowledgeGraphView'
 
 export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
   const { data: session } = useSession()
@@ -61,6 +63,7 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
   const [expandedDocuments, setExpandedDocuments] = useState<Set<string>>(new Set())
   const [showSearchDialog, setShowSearchDialog] = useState(false)
   const [showCollectionSettingsDialog, setShowCollectionSettingsDialog] = useState(false)
+  const [viewMode, setViewMode] = useState<'documents' | 'graph'>('documents')
   const [collectionSettingsName, setCollectionSettingsName] = useState('')
   const [collectionSettingsDescription, setCollectionSettingsDescription] = useState('')
   const [collectionSettingsIcon, setCollectionSettingsIcon] = useState('')
@@ -110,6 +113,7 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
       setNewCollectionName('')
       setNewCollectionDescription('')
       setSelectedCollection(collection)
+      setViewMode('documents')
     }
   }
 
@@ -428,6 +432,26 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 rounded-xl border border-border bg-muted/40 p-1">
+            <Button
+              variant={viewMode === 'documents' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('documents')}
+              className="rounded-lg"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Documents
+            </Button>
+            <Button
+              variant={viewMode === 'graph' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('graph')}
+              className="rounded-lg"
+            >
+              <Network className="h-4 w-4 mr-2" />
+              Graph
+            </Button>
+          </div>
           <Button
             variant="outline"
             size="sm"
@@ -492,7 +516,16 @@ export function OutlineKnowledgeBase({ spaceId }: { spaceId?: string }) {
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {selectedDocument ? (
+          {viewMode === 'graph' ? (
+            <KnowledgeGraphView
+              documents={documents}
+              selectedDocument={selectedDocument}
+              onSelectDocument={(document) => {
+                setSelectedDocument(document)
+                setViewMode('documents')
+              }}
+            />
+          ) : selectedDocument ? (
             <OutlineDocumentEditor
               document={selectedDocument}
               collection={selectedCollection}

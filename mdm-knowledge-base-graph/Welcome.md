@@ -20,3 +20,5 @@ Recommended graph entry points:
 - [[09 Chatbot & AI]]
 
 This vault is designed for Obsidian local graph and global graph views. Most notes cross-link by subsystem, ownership boundary, and runtime flow.
+
+For full navigation guidance, see [[55 Obsidian Vault Guide]].

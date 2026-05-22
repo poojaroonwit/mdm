@@ -14,6 +14,7 @@ tags:
 - customers / companies / positions / titles / industries
 - dashboards / reports / folders / sources
 - data-models / data-records / eav / schema / sql
+- projects / tickets / modules / milestones / releases
 - chat / chatbots / dify / openai-agent-sdk / openai-realtime / vector-stores
 - knowledge / notifications
 - infrastructure / minio / kong / grafana / prometheus / storage
@@ -29,3 +30,4 @@ Use this note to translate business questions into route families before diving 
 - [[03 API & Route Layout]]
 - [[27 API Domain Map - Auth, Spaces & Users]]
 - [[28 API Domain Map - Data, AI & Integrations]]
+- [[50 Feature Map - Project Management Tickets]]

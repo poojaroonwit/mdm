@@ -22,9 +22,11 @@ tags:
 
 - main app references plugin loading utilities in marketplace code
 - plugin-hub acts as an ecosystem surface rather than a normal feature subfolder
+- project-management ticket UI is loaded from `plugin-hub/plugins/project-management` while persisting through platform APIs
 
 ## Connected Notes
 
 - [[09 Chatbot & AI]]
 - [[12 Operations & Integrations]]
 - [[13 Code Map]]
+- [[50 Feature Map - Project Management Tickets]]

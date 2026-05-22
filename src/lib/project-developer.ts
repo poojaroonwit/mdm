@@ -14,7 +14,7 @@ const PLATFORM_APP_ROOT = join(SRC_ROOT, 'app', '(platform)')
 const PLUGIN_HUB_ROOT = join(PROJECT_ROOT, 'plugin-hub', 'plugins')
 const DOC_ROOTS = [
   join(PROJECT_ROOT, 'docs'),
-  join(PROJECT_ROOT, 'mdm-knowleaad-graph'),
+  join(PROJECT_ROOT, 'mdm-knowledge-base-graph'),
 ]
 
 const DEFAULT_TEMPLATE_CATEGORY: PluginCategory = 'development-tools'
@@ -268,7 +268,7 @@ export async function getProjectDeveloperSnapshot(): Promise<ProjectDeveloperSna
       'Main platform code lives under src/app/(platform) and shared business modules under src/features.',
       'Marketplace runtime and installation state are stored in service_registry and service_installations.',
       'plugin-hub is a separate Next.js service that hosts plugin source folders and public hub pages.',
-      'Project docs are split between docs/ and mdm-knowleaad-graph/.',
+      'Project docs are split between docs/ and mdm-knowledge-base-graph/.',
     ],
   }
 }

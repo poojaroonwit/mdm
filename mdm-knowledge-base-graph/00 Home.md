@@ -53,6 +53,15 @@ Core anchors:
 - [[47 Tech Debt Register]]
 - [[48 Architecture Diagram - System Context]]
 - [[49 Architecture Diagram - Domain Relationships]]
+- [[50 Feature Layer Map]]
+- [[51 Hooks & Shared Runtime Map]]
+- [[52 Documentation Source Map]]
+- [[53 Prisma & Data Maintenance Map]]
+- [[54 Repository Topology]]
+- [[55 Obsidian Vault Guide]]
+- [[56 Coverage Status]]
+- [[57 Next Expansion Backlog]]
+- [[50 Feature Map - Project Management Tickets]]
 
 ## Primary Source Paths
 
@@ -88,3 +97,5 @@ The system has three especially important axes:
 - maintenance path: [[19 Best Practices & Review]] -> [[39 Change Hotspots]]
 - feature-domain path: [[40 Feature Map - Customers, Data & EAV]] -> [[08 Data Modeling]] -> [[28 API Domain Map - Data, AI & Integrations]]
 - governance path: [[43 Feature Map - Settings, Admin & System Control]] -> [[04 Authentication & Sessions]] -> [[05 Theme & Branding]]
+- repository orientation path: [[54 Repository Topology]] -> [[13 Code Map]] -> [[50 Feature Layer Map]] -> [[51 Hooks & Shared Runtime Map]]
+- project-management path: [[50 Feature Map - Project Management Tickets]] -> [[11 Plugin Hub]] -> [[07 Database & Prisma]]

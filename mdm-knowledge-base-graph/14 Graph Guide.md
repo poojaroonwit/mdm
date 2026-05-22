@@ -9,7 +9,7 @@ tags:
 
 ## How To Use This Vault In Obsidian
 
-1. Open `mdm-knowleaad-graph` as a vault.
+1. Open `mdm-knowledge-base-graph` as a vault.
 2. Start from [[00 Home]].
 3. Open the **local graph** for one note to inspect subsystem adjacency.
 4. Open the **global graph** and filter by tags such as:
@@ -34,6 +34,9 @@ tags:
 - [[45 Requirements Traceability]]
 - [[46 Risk Register]]
 - [[48 Architecture Diagram - System Context]]
+- [[55 Obsidian Vault Guide]]
+- [[56 Coverage Status]]
+- [[50 Feature Map - Project Management Tickets]]
 
 ## Suggested Reading Paths
 
@@ -57,3 +60,9 @@ tags:
 
 - architecture visualization path:
   [[17 Architecture Summary]] -> [[48 Architecture Diagram - System Context]] -> [[49 Architecture Diagram - Domain Relationships]]
+
+- repository orientation path:
+  [[54 Repository Topology]] -> [[13 Code Map]] -> [[50 Feature Layer Map]] -> [[51 Hooks & Shared Runtime Map]]
+
+- project-management path:
+  [[50 Feature Map - Project Management Tickets]] -> [[11 Plugin Hub]] -> [[07 Database & Prisma]]

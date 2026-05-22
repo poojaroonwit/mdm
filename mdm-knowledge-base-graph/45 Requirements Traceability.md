@@ -29,8 +29,20 @@ This is a lightweight traceability bridge between business intent and implementa
   - BRD assignment and task management
   - SRS assignment system
 - implementation notes:
+  - [[50 Feature Map - Project Management Tickets]]
   - [[44 Feature Map - Space App Modules]]
   - [[22 Feature Map - Studio, Workflows & Infrastructure]]
+
+### Project / ticket management
+
+- docs:
+  - BRD assignment and task management
+  - SRS project and workflow coordination areas
+- implementation notes:
+  - [[50 Feature Map - Project Management Tickets]]
+  - [[11 Plugin Hub]]
+  - [[07 Database & Prisma]]
+  - [[26 API Domain Map]]
 
 ### Dashboard and analytics
 

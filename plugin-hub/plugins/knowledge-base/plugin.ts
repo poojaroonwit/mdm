@@ -5,7 +5,7 @@ export const knowledgeBasePlugin: PluginDefinition = {
   id: 'knowledge-base',
   name: 'Knowledge Base',
   slug: 'knowledge-base',
-  description: 'Manage and organize your team knowledge with documents and collections.',
+  description: 'Manage team knowledge with documents, collections, search, and an Obsidian-style knowledge graph.',
   version: '1.0.0',
   provider: 'Platform',
   category: 'business-intelligence',
@@ -16,6 +16,8 @@ export const knowledgeBasePlugin: PluginDefinition = {
     documents: true,
     collections: true,
     search: true,
+    graph: true,
+    wikiLinks: true,
   },
   uiType: 'react_component',
   uiConfig: {

@@ -23,6 +23,8 @@ tags:
 - `src/app/[space]/studio`
 - `src/app/[space]/workflows`
 
+Project management also has platform/admin and plugin-backed surfaces covered in [[50 Feature Map - Project Management Tickets]].
+
 ## Why This Note Matters
 
 The platform has both:
@@ -37,3 +39,4 @@ Many onboarding mistakes come from confusing these two worlds.
 - [[06 Spaces & Multi-Tenancy]]
 - [[22 Feature Map - Studio, Workflows & Infrastructure]]
 - [[43 Feature Map - Settings, Admin & System Control]]
+- [[50 Feature Map - Project Management Tickets]]

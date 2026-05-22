@@ -41,6 +41,7 @@ For raw SQL UUID comparisons:
 - EAV entities and values
 - chatbots and versions
 - dashboards and reports
+- projects, tickets, ticket attributes, and project-management scheduling
 - plugin and service installation metadata
 
 ## Related Notes
@@ -49,3 +50,4 @@ For raw SQL UUID comparisons:
 - [[08 Data Modeling]]
 - [[09 Chatbot & AI]]
 - [[11 Plugin Hub]]
+- [[50 Feature Map - Project Management Tickets]]

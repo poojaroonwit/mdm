@@ -64,3 +64,22 @@ Related notes:
 - [[09 Chatbot & AI]]
 - [[23 Database Model Map - Identity, Spaces & Chatbots]]
 - [[30 Flow - Chatbot Request Lifecycle]]
+
+## If You Change Project Management / Tickets
+
+Also inspect:
+
+- `plugin-hub/plugins/project-management/src/tickets/components/TicketsList.tsx`
+- `src/components/project-management/TicketDetailModalEnhanced.tsx`
+- `src/components/project-management/ConfigurableKanbanBoard.tsx`
+- `src/app/(platform)/admin/features/content/components/ProjectsManagement.tsx`
+- `src/app/(platform)/api/projects`
+- `src/app/(platform)/api/tickets`
+- `prisma/schema.prisma` models around `Project`, `Ticket`, and `TicketAttribute`
+
+Related notes:
+
+- [[50 Feature Map - Project Management Tickets]]
+- [[11 Plugin Hub]]
+- [[07 Database & Prisma]]
+- [[06 Spaces & Multi-Tenancy]]
