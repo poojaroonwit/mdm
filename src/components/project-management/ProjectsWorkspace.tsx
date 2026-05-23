@@ -15,10 +15,57 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { SpaceSelector } from '@/components/project-management/SpaceSelector'
 import { DEFAULT_CARD_FIELDS, DEFAULT_PROJECT_STATUSES, normalizeProjectFields, normalizeProjectMetadata, normalizeProjectStatuses } from '@/components/project-management/project-config'
-import { FolderKanban, ImagePlus, MoreVertical, Pencil, Plus, Settings2, Ticket, Trash2 } from 'lucide-react'
+import {
+  Blocks,
+  BriefcaseBusiness,
+  Building2,
+  FolderKanban,
+  ImagePlus,
+  Layers3,
+  MoreVertical,
+  Pencil,
+  Plus,
+  Settings2,
+  Sparkles,
+  Ticket,
+  Trash2,
+} from 'lucide-react'
 import { showError, showSuccess } from '@/lib/toast-utils'
 
-const PROJECT_ICONS = ['*', '#', '+', '@', '%', '&', '!', '?']
+const PROJECT_ICONS = [
+  { value: 'folder-kanban', label: 'Project', Icon: FolderKanban },
+  { value: 'briefcase', label: 'Work', Icon: BriefcaseBusiness },
+  { value: 'building', label: 'Business', Icon: Building2 },
+  { value: 'layers', label: 'Platform', Icon: Layers3 },
+  { value: 'blocks', label: 'Modules', Icon: Blocks },
+  { value: 'sparkles', label: 'Initiative', Icon: Sparkles },
+]
+
+function ProjectIconPreview({
+  icon,
+  thumbnailUrl,
+  className = 'h-10 w-10',
+}: {
+  icon?: string
+  thumbnailUrl?: string
+  className?: string
+}) {
+  const iconDefinition = PROJECT_ICONS.find((item) => item.value === icon) || PROJECT_ICONS[0]
+  const Icon = iconDefinition.Icon
+
+  if (thumbnailUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={thumbnailUrl} alt="" className={`${className} rounded-md object-cover`} />
+    )
+  }
+
+  return (
+    <div className={`${className} flex items-center justify-center rounded-md bg-primary/10 text-primary`}>
+      <Icon className="h-5 w-5" />
+    </div>
+  )
+}
 
 interface ProjectRecord {
   id: string
@@ -46,7 +93,7 @@ const EMPTY_PROJECT_FORM = {
   status: 'PLANNING',
   startDate: '',
   endDate: '',
-  icon: PROJECT_ICONS[0],
+  icon: PROJECT_ICONS[0].value,
   thumbnailUrl: '',
 }
 
@@ -108,7 +155,7 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
       status: project.status,
       startDate: project.startDate ? new Date(project.startDate).toISOString().slice(0, 10) : '',
       endDate: project.endDate ? new Date(project.endDate).toISOString().slice(0, 10) : '',
-      icon: metadata.icon || PROJECT_ICONS[0],
+      icon: metadata.icon || PROJECT_ICONS[0].value,
       thumbnailUrl: metadata.thumbnailUrl || '',
     })
     setSelectedSpaceId(project.spaceId)
@@ -223,6 +270,13 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
   if (projectId) {
     return (
       <div className="flex h-full min-h-0 flex-col">
+        <div className="border-b border-border px-6 py-3">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Link href="/tools/projects" className="hover:text-foreground">Projects</Link>
+            <span>/</span>
+            <span className="font-medium text-foreground">{selectedProject?.name || 'Tickets'}</span>
+          </div>
+        </div>
         <TicketsList
           spaceId={selectedProject?.spaceId || null}
           viewMode="kanban"
@@ -249,7 +303,7 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
         </Button>
       </div>
 
-      <Card className="flex min-h-0 flex-1 flex-col rounded-3xl border-border shadow-sm">
+      <Card className="flex min-h-0 flex-1 flex-col rounded-md border-border shadow-sm">
         <CardContent className="flex min-h-0 flex-1 flex-col p-0">
           <div className="grid grid-cols-[minmax(0,2fr)_140px_140px_180px_72px] border-b border-border px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             <div>Project</div>
@@ -266,7 +320,7 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
               </div>
             ) : projects.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center gap-4 p-10 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary">
+                <div className="flex h-16 w-16 items-center justify-center rounded-md bg-primary/10 text-primary">
                   <FolderKanban className="h-8 w-8" />
                 </div>
                 <div>
@@ -291,11 +345,9 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
                     <Link href={`/tools/projects/${project.id}`} className="flex min-w-0 items-center gap-4">
                       {metadata.thumbnailUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={metadata.thumbnailUrl} alt={project.name} className="h-12 w-12 rounded-2xl object-cover" />
+                        <ProjectIconPreview icon={metadata.icon} thumbnailUrl={metadata.thumbnailUrl} className="h-12 w-12" />
                       ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-xl">
-                          {metadata.icon || '*'}
-                        </div>
+                        <ProjectIconPreview icon={metadata.icon} className="h-12 w-12" />
                       )}
                       <div className="min-w-0">
                         <div className="truncate text-base font-semibold">{project.name}</div>
@@ -310,7 +362,7 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
                     <div className="flex justify-end">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="rounded-xl">
+                          <Button variant="ghost" size="icon" className="rounded-md">
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -352,95 +404,76 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-3xl">
-          <DialogHeader className="flex-row items-start justify-between space-y-0">
+          <DialogHeader>
             <div className="space-y-1.5">
               <DialogTitle>{editingProjectId ? 'Edit Project' : 'Create Project'}</DialogTitle>
               <DialogDescription>
                 Add the project basics here. Statuses, card fields, and custom attributes can be managed from the ticket workspace.
               </DialogDescription>
             </div>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button type="button" variant="outline" className="ml-4 h-auto rounded-2xl px-3 py-2">
-                  {projectForm.thumbnailUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={projectForm.thumbnailUrl} alt="Project visual" className="mr-3 h-10 w-10 rounded-xl object-cover" />
-                  ) : (
-                    <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-lg">
-                      {projectForm.icon}
-                    </div>
-                  )}
-                  <div className="text-left">
-                    <div className="text-sm font-medium">Project Visual</div>
-                    <div className="text-xs text-muted-foreground">Icon, custom icon, or thumbnail</div>
-                  </div>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="end" className="w-[320px] space-y-4">
-                <div className="space-y-3">
-                  <Label>Project Icon</Label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {PROJECT_ICONS.map((icon) => (
-                      <Button
-                        key={icon}
-                        type="button"
-                        variant={projectForm.icon === icon ? 'default' : 'outline'}
-                        className="h-12 rounded-2xl text-xl"
-                        onClick={() => setProjectForm((prev) => ({ ...prev, icon }))}
-                      >
-                        {icon}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Custom Icon</Label>
-                  <Input
-                    value={projectForm.icon}
-                    onChange={(event) =>
-                      setProjectForm((prev) => ({ ...prev, icon: event.target.value.slice(0, 2) || PROJECT_ICONS[0] }))
-                    }
-                    placeholder="*"
-                  />
-                </div>
-                <div className="space-y-3">
-                  <Label>Thumbnail</Label>
-                  {projectForm.thumbnailUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={projectForm.thumbnailUrl} alt="Project thumbnail" className="h-32 w-full rounded-2xl object-cover" />
-                  ) : (
-                    <div className="flex h-32 items-center justify-center rounded-2xl bg-muted/50 text-sm text-muted-foreground">
-                      No thumbnail uploaded
-                    </div>
-                  )}
-                  <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-border px-3 py-2 text-sm">
-                    <ImagePlus className="h-4 w-4" />
-                    {uploadingThumbnail ? 'Uploading...' : 'Upload Thumbnail'}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(event) => {
-                        const file = event.target.files?.[0]
-                        if (file) {
-                          handleThumbnailUpload(file)
-                        }
-                      }}
-                    />
-                  </label>
-                </div>
-              </PopoverContent>
-            </Popover>
           </DialogHeader>
           <DialogBody className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2 md:col-span-2">
                 <Label>Project Name</Label>
-                <Input
-                  value={projectForm.name}
-                  onChange={(event) => setProjectForm((prev) => ({ ...prev, name: event.target.value }))}
-                  placeholder="Billing platform migration"
-                />
+                <div className="flex items-center gap-3">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button type="button" variant="outline" size="icon" className="h-10 w-10 rounded-md">
+                        <ProjectIconPreview icon={projectForm.icon} thumbnailUrl={projectForm.thumbnailUrl} className="h-8 w-8" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-[320px] space-y-4">
+                      <div className="space-y-3">
+                        <Label>Project Icon</Label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {PROJECT_ICONS.map(({ value, label, Icon }) => (
+                            <Button
+                              key={value}
+                              type="button"
+                              variant={projectForm.icon === value ? 'default' : 'outline'}
+                              className="h-12 rounded-md"
+                              title={label}
+                              onClick={() => setProjectForm((prev) => ({ ...prev, icon: value }))}
+                            >
+                              <Icon className="h-5 w-5" />
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <Label>Thumbnail</Label>
+                        {projectForm.thumbnailUrl ? (
+                          <ProjectIconPreview icon={projectForm.icon} thumbnailUrl={projectForm.thumbnailUrl} className="h-28 w-full" />
+                        ) : (
+                          <div className="flex h-28 items-center justify-center rounded-md bg-muted/50 text-sm text-muted-foreground">
+                            No thumbnail uploaded
+                          </div>
+                        )}
+                        <label className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
+                          <ImagePlus className="h-4 w-4" />
+                          {uploadingThumbnail ? 'Uploading...' : 'Upload Thumbnail'}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(event) => {
+                              const file = event.target.files?.[0]
+                              if (file) {
+                                handleThumbnailUpload(file)
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  <Input
+                    value={projectForm.name}
+                    onChange={(event) => setProjectForm((prev) => ({ ...prev, name: event.target.value }))}
+                    placeholder="Billing platform migration"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2 md:col-span-2">
@@ -501,7 +534,7 @@ export function ProjectsWorkspace({ projectId }: { projectId?: string }) {
               </div>
             </div>
           </DialogBody>
-          <DialogFooter>
+          <DialogFooter className="justify-end">
             <Button
               variant="outline"
               onClick={() => {

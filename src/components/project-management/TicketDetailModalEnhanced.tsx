@@ -32,7 +32,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
 import { 
   Calendar, Clock, User, X, Plus, MessageSquare, Paperclip, 
-  ListChecks, GitBranch, Trash2, Edit, Download, ExternalLink, Loader, Network
+  ListChecks, GitBranch, Trash2, Edit, Download, ExternalLink, Loader, Network,
+  AlignLeft, SlidersHorizontal
 } from 'lucide-react'
 import { TicketRelationshipGraph } from './TicketRelationshipGraph'
 import { TicketRelationshipsPanel } from './TicketRelationshipsPanel'
@@ -92,6 +93,11 @@ interface ProjectCustomFieldDefinition {
   type: string
   isRequired?: boolean
   options?: ProjectFieldOption[]
+  attributeType?: 'system' | 'project'
+  sharing?: {
+    mode: 'individual' | 'shared'
+    projectIds?: string[]
+  }
 }
 
 interface ProjectOption {
@@ -123,6 +129,11 @@ export function TicketDetailModalEnhanced({
     value?: string | null
     isRequired?: boolean
     options?: ProjectFieldOption[]
+    attributeType?: 'system' | 'project'
+    sharing?: {
+      mode: 'individual' | 'shared'
+      projectIds?: string[]
+    }
   }>>([])
 
   const [activeTab, setActiveTab] = useState('details')
@@ -204,6 +215,8 @@ export function TicketDetailModalEnhanced({
           value: existing?.value || '',
           isRequired: field.isRequired || false,
           options: field.options || [],
+          attributeType: field.attributeType || 'project',
+          sharing: field.sharing || { mode: 'individual', projectIds: [] },
         }
       })
     )
@@ -226,6 +239,8 @@ export function TicketDetailModalEnhanced({
           type: attribute.type || 'TEXT',
           value: attribute.value || '',
           isRequired: attribute.isRequired || false,
+          attributeType: attribute.attributeType || 'project',
+          sharing: attribute.sharing || { mode: 'individual', projectIds: [] },
         }))
       )
     }
@@ -997,6 +1012,8 @@ export function TicketDetailModalEnhanced({
             displayName: 'Ticket Type',
             type: 'SELECT',
             value: normalizedTicketType,
+            attributeType: 'system',
+            sharing: { mode: 'individual', projectIds: [] },
           },
         ]
       : nextAttributes
@@ -1042,7 +1059,7 @@ export function TicketDetailModalEnhanced({
     if (field.type === 'SELECT') {
       return (
         <Select value={field.value || '__none__'} onValueChange={(value) => updateField(value === '__none__' ? '' : value)}>
-          <SelectTrigger>
+          <SelectTrigger className="h-9 rounded-md">
             <SelectValue placeholder="Select value" />
           </SelectTrigger>
           <SelectContent>
@@ -1058,93 +1075,133 @@ export function TicketDetailModalEnhanced({
     }
 
     if (field.type === 'DATE') {
-      return <Input type="date" value={field.value || ''} onChange={(e) => updateField(e.target.value)} />
+      return <Input type="date" value={field.value || ''} onChange={(e) => updateField(e.target.value)} className="h-9 rounded-md" />
     }
 
     if (field.type === 'NUMBER') {
-      return <Input type="number" value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" />
+      return <Input type="number" value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" className="h-9 rounded-md" />
     }
 
-    return <Input value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" />
+    return <Input value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" className="h-9 rounded-md" />
   }
+
+  const systemAttributes = [
+    { label: 'Status', value: projectStatuses.find((status) => status.value === editStatus)?.label || editStatus, type: 'SYSTEM' },
+    { label: 'Priority', value: editPriority, type: 'SYSTEM' },
+    { label: 'Start Date', value: editStartDate || 'Not set', type: 'SYSTEM' },
+    { label: 'Due Date', value: editDueDate || 'Not set', type: 'SYSTEM' },
+    { label: 'Estimate', value: editEstimate ? `${editEstimate}h` : 'Not estimated', type: 'SYSTEM' },
+    { label: 'Project', value: projects.find((project) => project.id === selectedProject)?.name || 'No project', type: 'SYSTEM' },
+    { label: 'Module', value: modules.find((module) => module.id === selectedModule)?.name || 'No module', type: 'SYSTEM' },
+    { label: 'Milestone', value: milestones.find((milestone) => milestone.id === selectedMilestone)?.name || 'No milestone', type: 'SYSTEM' },
+    { label: 'Release', value: releases.find((release) => release.id === selectedRelease)?.name || 'No release', type: 'SYSTEM' },
+  ]
+
+  const projectFields = customFields.filter((field) => field.attributeType !== 'system')
 
   // Common header content
   const headerContent = (
-    <div className="space-y-1">
-      <h2 className="text-xl font-semibold tracking-tight">
-        {isNew ? 'Create Ticket' : 'Ticket Details'}
-      </h2>
-      <p className="text-sm text-muted-foreground">
-        {isNew ? 'Set up the task details and project attributes in one place.' : 'Update the task details and manage its project attributes.'}
-      </p>
+    <div className="space-y-2">
+      <Input
+        value={editTitle}
+        onChange={(e) => setEditTitle(e.target.value)}
+        placeholder="Ticket title"
+        className="h-11 rounded-md border-transparent bg-transparent px-0 text-xl font-semibold tracking-tight shadow-none focus-visible:ring-0"
+      />
+      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <Badge variant="outline" className="rounded-md">{isNew ? 'New ticket' : ticket.id.slice(0, 8)}</Badge>
+        <span>{projectStatuses.find((status) => status.value === editStatus)?.label || editStatus}</span>
+        <span>{editPriority}</span>
+        {selectedProject && <span>{projects.find((project) => project.id === selectedProject)?.name}</span>}
+      </div>
     </div>
   )
 
   const customFieldsPanel = (
-    <div className="space-y-4 rounded-2xl border border-border bg-card p-5">
-      <div className="space-y-1">
-        <Label className="text-sm font-medium">Attributes</Label>
-        <p className="text-xs text-muted-foreground">
-          These fields are inherited from the selected project and apply to every ticket in that project.
-        </p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <Label className="text-sm font-semibold">Attributes</Label>
+          <p className="text-xs text-muted-foreground">System fields and project-specific fields for this ticket.</p>
+        </div>
+        <Badge variant="secondary" className="rounded-md">{systemAttributes.length + projectFields.length}</Badge>
       </div>
-      {!selectedProject ? (
-        <div className="rounded-xl border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
-          Select a project to load its shared ticket attributes.
+
+      <div className="space-y-2 rounded-md border border-border bg-card p-3">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          System Attributes
         </div>
-      ) : customFields.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
-          This project has no shared attributes yet.
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {customFields.map((field, index) => (
-            <div key={`${field.name}-${index}`} className="space-y-2 rounded-xl border border-border/70 bg-background p-4">
-              <div className="flex items-start justify-between gap-3">
-                <Label>{field.displayName}</Label>
-                <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                  {field.type}
-                </span>
-              </div>
-              {renderFieldInput(field, index)}
+        <div className="space-y-2">
+          {systemAttributes.map((attribute) => (
+            <div key={attribute.label} className="grid grid-cols-[112px_minmax(0,1fr)] gap-3 rounded-md border border-border/70 bg-background px-3 py-2 text-sm">
+              <span className="text-muted-foreground">{attribute.label}</span>
+              <span className="truncate font-medium">{attribute.value}</span>
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="space-y-3 rounded-md border border-border bg-card p-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <ListChecks className="h-3.5 w-3.5" />
+            Project Attributes
+          </div>
+          <Badge variant="outline" className="rounded-md">
+            {projectFields.filter((field) => field.sharing?.mode === 'shared').length} shared
+          </Badge>
+        </div>
+      {!selectedProject ? (
+        <div className="rounded-md border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
+          Select a project to load project attributes.
+        </div>
+      ) : projectFields.length === 0 ? (
+        <div className="rounded-md border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
+          This project has no configured attributes yet.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {projectFields.map((field) => {
+            const index = customFields.findIndex((item) => item.name === field.name)
+            return (
+            <div key={field.name} className="space-y-2 rounded-md border border-border/70 bg-background p-3">
+              <div className="flex items-start justify-between gap-3">
+                <Label>{field.displayName}</Label>
+                <div className="flex items-center gap-1">
+                  <Badge variant="outline" className="rounded-md text-[10px]">{field.type}</Badge>
+                  <Badge variant={field.sharing?.mode === 'shared' ? 'secondary' : 'outline'} className="rounded-md text-[10px]">
+                    {field.sharing?.mode === 'shared' ? 'Shared' : 'Individual'}
+                  </Badge>
+                </div>
+              </div>
+              {renderFieldInput(field, index)}
+            </div>
+          )})}
+        </div>
       )}
+      </div>
     </div>
   )
 
   const ticketDetailsFields = (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <Label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Ticket Title</Label>
-        <Input
-          value={editTitle}
-          onChange={(e) => setEditTitle(e.target.value)}
-          placeholder="Enter ticket title"
-          className="h-12 text-base font-semibold"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label>Ticket Description</Label>
-        <div className="overflow-hidden rounded-2xl border border-border">
+    <div className="space-y-5">
+      <div className="overflow-hidden rounded-md border border-border bg-background">
           <RichMarkdownEditor
             content={editDescription}
             onChange={setEditDescription}
-            placeholder="Describe the ticket inline..."
+            placeholder="Add description..."
             editable
-            showToolbar
-            className="min-h-[260px] bg-background"
+            showToolbar={false}
+            className="min-h-[360px] bg-background"
           />
-        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <Label>Status</Label>
           <Select value={editStatus} onValueChange={setEditStatus}>
-            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="mt-1 rounded-md"><SelectValue /></SelectTrigger>
             <SelectContent>
               {projectStatuses.map((status) => (
                 <SelectItem key={status.value} value={status.value}>
@@ -1157,7 +1214,7 @@ export function TicketDetailModalEnhanced({
         <div>
           <Label>Priority</Label>
           <Select value={editPriority} onValueChange={setEditPriority}>
-            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="mt-1 rounded-md"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="LOW">Low</SelectItem>
               <SelectItem value="MEDIUM">Medium</SelectItem>
@@ -1175,7 +1232,7 @@ export function TicketDetailModalEnhanced({
             type="date"
             value={editStartDate}
             onChange={(e) => setEditStartDate(e.target.value)}
-            className="mt-1"
+            className="mt-1 rounded-md"
           />
         </div>
         <div>
@@ -1184,7 +1241,7 @@ export function TicketDetailModalEnhanced({
             type="date"
             value={editDueDate}
             onChange={(e) => setEditDueDate(e.target.value)}
-            className="mt-1"
+            className="mt-1 rounded-md"
           />
         </div>
         <div>
@@ -1196,7 +1253,7 @@ export function TicketDetailModalEnhanced({
             placeholder="0"
             value={editEstimate}
             onChange={(e) => setEditEstimate(e.target.value)}
-            className="mt-1"
+            className="mt-1 rounded-md"
           />
         </div>
       </div>
@@ -1205,7 +1262,7 @@ export function TicketDetailModalEnhanced({
         <div>
           <Label htmlFor="ticketType">Ticket Type</Label>
           <Select value={ticketType} onValueChange={setTicketType}>
-            <SelectTrigger className="mt-1" id="ticketType">
+            <SelectTrigger className="mt-1 rounded-md" id="ticketType">
               <SelectValue placeholder="Select ticket type (for ServiceDesk)" />
             </SelectTrigger>
             <SelectContent>
@@ -1274,7 +1331,7 @@ export function TicketDetailModalEnhanced({
               value={selectedModule || '__none__'}
               onValueChange={(value) => setSelectedModule(value === '__none__' ? '' : value)}
             >
-              <SelectTrigger className="mt-1" id={isNew ? 'module-create' : 'module'}>
+              <SelectTrigger className="mt-1 rounded-md" id={isNew ? 'module-create' : 'module'}>
                 <SelectValue placeholder="Select module" />
               </SelectTrigger>
               <SelectContent>
@@ -1298,7 +1355,7 @@ export function TicketDetailModalEnhanced({
               value={selectedMilestone || '__none__'}
               onValueChange={(value) => setSelectedMilestone(value === '__none__' ? '' : value)}
             >
-              <SelectTrigger className="mt-1" id={isNew ? 'milestone-create' : 'milestone'}>
+              <SelectTrigger className="mt-1 rounded-md" id={isNew ? 'milestone-create' : 'milestone'}>
                 <SelectValue placeholder="Select milestone" />
               </SelectTrigger>
               <SelectContent>
@@ -1317,7 +1374,7 @@ export function TicketDetailModalEnhanced({
               value={selectedRelease || '__none__'}
               onValueChange={(value) => setSelectedRelease(value === '__none__' ? '' : value)}
             >
-              <SelectTrigger className="mt-1" id={isNew ? 'release-create' : 'release'}>
+              <SelectTrigger className="mt-1 rounded-md" id={isNew ? 'release-create' : 'release'}>
                 <SelectValue placeholder="Select release" />
               </SelectTrigger>
               <SelectContent>
@@ -1336,7 +1393,7 @@ export function TicketDetailModalEnhanced({
   )
 
   const detailsLayout = (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.9fr)]">
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(340px,0.8fr)]">
       <div className="min-w-0">
         {ticketDetailsFields}
       </div>
@@ -1356,8 +1413,8 @@ export function TicketDetailModalEnhanced({
 
   // Common footer
   const footerContent = (
-    <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-col items-end gap-3 border-t pt-4">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         {!isNew && serviceDeskConfig?.isConfigured && (
           <Button variant="outline" onClick={handlePushToServiceDesk} disabled={pushingToServiceDesk}>
             {pushingToServiceDesk ? <Loader className="h-4 w-4 mr-2 animate-spin" /> : <ExternalLink className="h-4 w-4 mr-2" />}
@@ -1605,9 +1662,37 @@ export function TicketDetailModalEnhanced({
           </div>
         </div>
       ) : (
-        // Full tabbed view for existing tickets
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-8">
+        <div className="grid min-h-0 grid-cols-[48px_minmax(0,1fr)] gap-4">
+          <div className="flex flex-col items-center gap-2 border-r border-border pr-2">
+            {[
+              { value: 'details', label: 'Details', icon: AlignLeft },
+              { value: 'comments', label: `Comments ${comments.length > 0 ? comments.length : ''}`.trim(), icon: MessageSquare },
+              { value: 'attachments', label: `Files ${attachments.length > 0 ? attachments.length : ''}`.trim(), icon: Paperclip },
+              { value: 'subtasks', label: `Subtasks ${subtasks.length > 0 ? subtasks.length : ''}`.trim(), icon: ListChecks },
+              { value: 'dependencies', label: 'Dependencies', icon: GitBranch },
+              { value: 'relationships', label: 'Relationships', icon: Network },
+              { value: 'time', label: `Time ${totalHours > 0 ? `${totalHours.toFixed(1)}h` : ''}`.trim(), icon: Clock },
+              ...(serviceDeskConfig?.isConfigured ? [{ value: 'servicedesk', label: 'ServiceDesk', icon: ExternalLink }] : []),
+            ].map((item) => {
+              const Icon = item.icon
+              return (
+                <Button
+                  key={item.value}
+                  type="button"
+                  variant={activeTab === item.value ? 'secondary' : 'ghost'}
+                  size="icon"
+                  title={item.label}
+                  aria-label={item.label}
+                  onClick={() => setActiveTab(item.value)}
+                  className="h-9 w-9 rounded-md"
+                >
+                  <Icon className="h-4 w-4" />
+                </Button>
+              )
+            })}
+          </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
+          <TabsList className="sr-only">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="comments">
               Comments {comments.length > 0 && `(${comments.length})`}
@@ -1633,7 +1718,7 @@ export function TicketDetailModalEnhanced({
             )}
           </TabsList>
 
-          <TabsContent value="details" className="mt-4">
+          <TabsContent value="details" className="mt-0">
             {detailsLayout}
             {false && (
               <>
@@ -2429,6 +2514,7 @@ export function TicketDetailModalEnhanced({
             </TabsContent>
           )}
         </Tabs>
+        </div>
         )}
       </div>
     )

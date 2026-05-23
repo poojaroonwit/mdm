@@ -46,6 +46,8 @@ import {
   GanttChartSquare,
   MoreVertical,
   Settings2,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react'
 import { useSpace } from '@/contexts/space-context'
 import {
@@ -689,7 +691,7 @@ export function TicketsList({
               The create action inside the dropdown will open a space creation form and auto-select the new space for this ticket.
             </p>
           </DialogBody>
-          <DialogFooter>
+          <DialogFooter className="justify-end">
             <Button variant="outline" onClick={() => setIsSpacePromptOpen(false)}>
               Cancel
             </Button>
@@ -797,7 +799,7 @@ export function TicketsList({
                   ))}
                 </div>
                 {customFieldTemplates.length > 0 && (
-                  <div className="space-y-2 rounded-xl border border-border/70 p-3">
+                  <div className="space-y-2 rounded-md border border-border/70 p-3">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Attributes On Card</p>
                     <div className="space-y-2">
                       {customFieldTemplates.map((field) => (
@@ -828,7 +830,7 @@ export function TicketsList({
               </div>
             </div>
           </DialogBody>
-          <DialogFooter>
+          <DialogFooter className="justify-end">
             <Button variant="outline" onClick={() => setIsConfigOpen(false)}>Cancel</Button>
             <Button onClick={handleConfigSave} disabled={projectMetadataSaving}>Apply Settings</Button>
           </DialogFooter>
@@ -866,7 +868,7 @@ export function TicketsList({
                 </div>
                 <div className="space-y-3">
                   {statusDefinitions.map((status, index) => (
-                    <div key={status.value} className="grid grid-cols-[32px_minmax(0,1fr)_180px_54px_54px_54px] items-center gap-3 rounded-2xl border border-border px-3 py-3">
+                    <div key={status.value} className="grid grid-cols-[32px_minmax(0,1fr)_180px_54px_54px_54px] items-center gap-3 rounded-md border border-border px-3 py-3">
                       <div className="text-center text-xs font-semibold text-muted-foreground">{index + 1}</div>
                       <Input
                         value={status.label}
@@ -913,7 +915,7 @@ export function TicketsList({
                           })
                         }
                       >
-                        ↑
+                        <ChevronUp className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -927,7 +929,7 @@ export function TicketsList({
                           })
                         }
                       >
-                        ↓
+                        <ChevronDown className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -983,12 +985,12 @@ export function TicketsList({
 
                 <div className="space-y-2">
                   {customFieldTemplates.length === 0 ? (
-                    <div className="rounded-xl border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
+                    <div className="rounded-md border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
                       No reusable custom fields yet.
                     </div>
                   ) : (
                     customFieldTemplates.map((field, index) => (
-                      <div key={`${field.name}-${index}`} className="space-y-3 rounded-xl border border-border px-3 py-3">
+                      <div key={`${field.name}-${index}`} className="space-y-3 rounded-md border border-border px-3 py-3">
                         <div className="grid grid-cols-[minmax(0,1fr)_160px_44px] gap-3">
                         <Input
                           value={field.displayName}
@@ -1038,7 +1040,7 @@ export function TicketsList({
                         </Button>
                       </div>
                         {field.type === 'SELECT' && (
-                          <div className="space-y-2 rounded-xl bg-muted/30 p-3">
+                          <div className="space-y-2 rounded-md bg-muted/30 p-3">
                             <div className="flex items-center justify-between gap-3">
                               <Label className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Options</Label>
                               <div className="flex gap-2">
@@ -1097,7 +1099,7 @@ export function TicketsList({
                 <p className="text-sm font-semibold">Card Attribute Selection</p>
                 <p className="text-xs text-muted-foreground">Choose which project attributes appear directly on ticket cards.</p>
                 {customFieldTemplates.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
+                  <div className="rounded-md border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
                     No project attributes are available yet.
                   </div>
                 ) : (
@@ -1129,7 +1131,7 @@ export function TicketsList({
               </div>
             </div>
           </DialogBody>
-          <DialogFooter>
+          <DialogFooter className="justify-end">
             <Button variant="outline" onClick={() => setIsManagementOpen(false)}>Cancel</Button>
             <Button
               onClick={async () => {
@@ -1242,20 +1244,20 @@ export function TicketsList({
               </PopoverContent>
             </Popover>
 
-            <div className="flex items-center rounded-xl border border-border bg-background p-1">
-              <Button variant={view === 'kanban' ? 'default' : 'ghost'} size="sm" className="rounded-lg" onClick={() => setView('kanban')}>
+            <div className="flex items-center rounded-md border border-border bg-background p-1">
+              <Button variant={view === 'kanban' ? 'default' : 'ghost'} size="sm" className="rounded-md" onClick={() => setView('kanban')}>
                 <KanbanSquare className="mr-2 h-4 w-4" />
                 Board
               </Button>
-              <Button variant={view === 'list' ? 'default' : 'ghost'} size="sm" className="rounded-lg" onClick={() => setView('list')}>
+              <Button variant={view === 'list' ? 'default' : 'ghost'} size="sm" className="rounded-md" onClick={() => setView('list')}>
                 <List className="mr-2 h-4 w-4" />
                 List
               </Button>
-              <Button variant={view === 'gantt' ? 'default' : 'ghost'} size="sm" className="rounded-lg" onClick={() => setView('gantt')}>
+              <Button variant={view === 'gantt' ? 'default' : 'ghost'} size="sm" className="rounded-md" onClick={() => setView('gantt')}>
                 <GanttChartSquare className="mr-2 h-4 w-4" />
                 Gantt
               </Button>
-              <Button variant={view === 'timesheet' ? 'default' : 'ghost'} size="sm" className="rounded-lg" onClick={() => setView('timesheet')}>
+              <Button variant={view === 'timesheet' ? 'default' : 'ghost'} size="sm" className="rounded-md" onClick={() => setView('timesheet')}>
                 <Clock3 className="mr-2 h-4 w-4" />
                 Timesheet
               </Button>
@@ -1307,7 +1309,7 @@ export function TicketsList({
           loading={loading}
         />
       ) : (
-        <div className="overflow-hidden rounded-3xl border border-border bg-background shadow-sm">
+        <div className="overflow-hidden rounded-md border border-border bg-background shadow-sm">
           {filteredTickets.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
               No tickets found. Create your first ticket to get started.
@@ -1341,7 +1343,7 @@ export function TicketsList({
                 <div className="flex justify-end">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-xl">
+                      <Button variant="ghost" size="icon" className="rounded-md">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>

@@ -450,7 +450,7 @@ export function IntakeFormBuilder({ formId, spaceId, onSave, onCancel }: IntakeF
               </div>
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="justify-end">
             <Button variant="outline" onClick={() => setIsFieldDialogOpen(false)}>
               Cancel
             </Button>

@@ -146,7 +146,7 @@ export function CreateSpaceDialog({
 
             {error ? <p className="text-sm text-destructive">{error}</p> : null}
           </DialogBody>
-          <DialogFooter>
+          <DialogFooter className="justify-end">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               Cancel
             </Button>

@@ -68,7 +68,6 @@ interface TicketCardProps {
   showSpaces?: boolean
   visibleFields?: CardFields
   flat?: boolean
-  accentColor?: string
 }
 
 export function TicketCard({
@@ -79,7 +78,6 @@ export function TicketCard({
   showSpaces = false,
   visibleFields,
   flat = false,
-  accentColor,
 }: TicketCardProps) {
   const fields = { ...DEFAULT_FIELDS, ...visibleFields }
   const Container = flat ? 'div' : Card
@@ -90,10 +88,9 @@ export function TicketCard({
       className={cn(
         'group cursor-pointer bg-card text-card-foreground shadow-sm',
         flat
-          ? 'rounded-2xl border border-border/80 transition-all duration-200 hover:bg-muted/30 hover:shadow-md'
-          : 'rounded-2xl border border-border/80 transition-all duration-200 hover:border-primary/40 hover:shadow-md'
+          ? 'rounded-md border border-border/80 transition-all duration-200 hover:bg-muted/30 hover:shadow-md'
+          : 'rounded-md border border-border/80 transition-all duration-200 hover:border-primary/40 hover:shadow-md'
       )}
-      style={flat && accentColor ? { boxShadow: `inset 3px 0 0 ${accentColor}` } : undefined}
       onClick={onClick}
     >
       <div className="space-y-2 p-3.5">
@@ -108,7 +105,7 @@ export function TicketCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
+                className="h-7 w-7 rounded-md opacity-0 transition-opacity group-hover:opacity-100"
                 onClick={(event) => {
                   event.stopPropagation()
                 }}
@@ -191,7 +188,7 @@ export function TicketCard({
             {ticket.attributes.slice(0, 2).map((attr) => (
               <div
                 key={attr.id}
-                className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
+                className="rounded-sm bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
               >
                 <span className="font-medium">{attr.displayName}:</span>{' '}
                 <span>{attr.value || '--'}</span>

@@ -9,6 +9,11 @@ export interface ProjectFieldDefinition {
   type: string
   isRequired?: boolean
   options?: ProjectFieldOption[]
+  attributeType?: 'system' | 'project'
+  sharing?: {
+    mode: 'individual' | 'shared'
+    projectIds?: string[]
+  }
 }
 
 export interface ProjectStatusDefinition {
@@ -135,6 +140,13 @@ export function normalizeProjectFields(fields: unknown): ProjectFieldDefinition[
         type: typeof (field as any).type === 'string' ? (field as any).type : 'TEXT',
         isRequired: Boolean((field as any).isRequired),
         options: normalizeFieldOptions((field as any).options),
+        attributeType: (field as any).attributeType === 'system' ? 'system' : 'project',
+        sharing: {
+          mode: (field as any).sharing?.mode === 'shared' ? 'shared' : 'individual',
+          projectIds: Array.isArray((field as any).sharing?.projectIds)
+            ? (field as any).sharing.projectIds.filter((id: unknown) => typeof id === 'string')
+            : [],
+        },
       }
     })
     .filter((field): field is ProjectFieldDefinition => Boolean(field))

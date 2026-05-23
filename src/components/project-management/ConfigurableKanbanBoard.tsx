@@ -165,7 +165,6 @@ export function ConfigurableKanbanBoard({
           showSpaces={showSpaces}
           visibleFields={config.cardFields}
           flat
-          accentColor={palette[ticket.status]?.accent}
         />
       </div>
     </div>

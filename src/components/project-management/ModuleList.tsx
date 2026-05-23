@@ -540,7 +540,7 @@ export function ModuleList({ projectId, spaceId, onModuleClick }: ModuleListProp
               </div>
             </div>
           </DialogBody>
-          <DialogFooter>
+          <DialogFooter className="justify-end">
             <Button
               variant="outline"
               onClick={() => {

@@ -375,7 +375,7 @@ export function IntakeSubmissionList({ formId, onClose }: IntakeSubmissionListPr
                 Submitted: {format(new Date(selectedSubmission.createdAt), 'MMM d, yyyy HH:mm')}
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="justify-end">
               {selectedSubmission.status === 'PENDING' && (
                 <>
                   <Button
@@ -510,7 +510,7 @@ function ConvertToTicketDialog({ submission, onConvert, onCancel, loading }: Con
             </Select>
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="justify-end">
           <Button variant="outline" onClick={onCancel} disabled={loading}>
             Cancel
           </Button>
