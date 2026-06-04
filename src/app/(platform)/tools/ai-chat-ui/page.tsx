@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { ChatbotList, ChatbotListSkeleton } from '@/app/admin/components/chatbot/ChatbotList'
 import { ChatbotEditor } from '@/app/admin/components/chatbot/ChatbotEditor'
 import { Chatbot, ChatbotFolder } from '@/app/admin/components/chatbot/types'
@@ -27,6 +28,7 @@ import { useSpace } from '@/contexts/space-context'
 
 export default function ChatEmbedUIPage() {
     const router = useRouter()
+    const { status } = useSession()
     const { currentSpace } = useSpace()
     const [chatbots, setChatbots] = useState<Chatbot[]>([])
     const [folders, setFolders] = useState<ChatbotFolder[]>([])
@@ -45,6 +47,11 @@ export default function ChatEmbedUIPage() {
     const [folderTarget, setFolderTarget] = useState<ChatbotFolder | null>(null)
 
     const fetchFolders = async (spaceId?: string | null) => {
+        if (status !== 'authenticated') {
+            setFolders([])
+            return
+        }
+
         try {
             const params = new URLSearchParams({ type: 'chatbot' })
             if (spaceId) {
@@ -63,6 +70,13 @@ export default function ChatEmbedUIPage() {
     }
 
     const fetchChatbots = async () => {
+        if (status !== 'authenticated') {
+            setChatbots([])
+            setFolders([])
+            setIsLoading(status === 'loading')
+            return
+        }
+
         setIsLoading(true)
         try {
             // Assuming GET /api/chatbots returns { chatbots: Chatbot[] }
@@ -81,7 +95,7 @@ export default function ChatEmbedUIPage() {
 
     useEffect(() => {
         fetchChatbots()
-    }, [])
+    }, [status])
 
     const handleCreate = () => {
         setSelectedChatbot(null)

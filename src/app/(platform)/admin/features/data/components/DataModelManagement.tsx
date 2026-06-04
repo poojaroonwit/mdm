@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -21,6 +22,7 @@ interface Space {
 }
 
 export function DataModelManagement() {
+  const { status } = useSession()
   const [models, setModels] = useState<DataModel[]>([])
   const [folders, setFolders] = useState<Folder[]>([])
   const [loading, setLoading] = useState(false)
@@ -41,6 +43,12 @@ export function DataModelManagement() {
 
   // Load spaces for filter
   useEffect(() => {
+    if (status !== 'authenticated') {
+      setSpaces([])
+      setSpacesLoading(status === 'loading')
+      return
+    }
+
     const loadSpaces = async () => {
       setSpacesLoading(true)
       try {
@@ -54,15 +62,28 @@ export function DataModelManagement() {
       }
     }
     loadSpaces()
-  }, [])
+  }, [status])
 
   // Load models based on space filter
   useEffect(() => {
+    if (status !== 'authenticated') {
+      setModels([])
+      setFolders([])
+      setLoading(status === 'loading')
+      return
+    }
+
     loadModels()
     loadFolders()
-  }, [selectedSpaceId])
+  }, [selectedSpaceId, status])
 
   const loadModels = async () => {
+    if (status !== 'authenticated') {
+      setModels([])
+      setLoading(status === 'loading')
+      return
+    }
+
     setLoading(true)
     try {
       let url: string
@@ -84,6 +105,11 @@ export function DataModelManagement() {
   }
 
   const loadFolders = async () => {
+    if (status !== 'authenticated') {
+      setFolders([])
+      return
+    }
+
     try {
       let url = '/api/folders?type=data_model'
       if (selectedSpaceId && selectedSpaceId !== 'all') {
@@ -131,6 +157,11 @@ export function DataModelManagement() {
   }
 
   const loadAvailableSpaces = async () => {
+    if (status !== 'authenticated') {
+      setAvailableSpaces([])
+      return
+    }
+
     try {
       const res = await fetch('/api/spaces?page=1&limit=200')
       const json = await res.json().catch(() => ({}))

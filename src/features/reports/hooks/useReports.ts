@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { useSpaceFilter, SpaceFilterResult } from '@/shared/hooks/useSpaceFilter'
 import { Report, ReportFilters } from '../types'
 
@@ -22,6 +23,7 @@ export interface UseReportsResult {
  * Hook for fetching reports with space-aware filtering
  */
 export function useReports(options: UseReportsOptions = {}): UseReportsResult {
+  const { status } = useSession()
   const { spaceId, filters = {}, autoFetch = true } = options
   const spaceFilter = useSpaceFilter({ spaceId, allowAll: true })
   
@@ -30,6 +32,13 @@ export function useReports(options: UseReportsOptions = {}): UseReportsResult {
   const [error, setError] = useState<string | null>(null)
 
   const fetchReports = async () => {
+    if (status !== 'authenticated') {
+      setReports([])
+      setError(status === 'unauthenticated' ? 'Authentication required. Please sign in.' : null)
+      setLoading(status === 'loading')
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
@@ -67,7 +76,7 @@ export function useReports(options: UseReportsOptions = {}): UseReportsResult {
     if (autoFetch) {
       fetchReports()
     }
-  }, [spaceFilter.spaceId, filters.sourceType, autoFetch])
+  }, [spaceFilter.spaceId, filters.sourceType, autoFetch, status])
 
   return {
     reports,

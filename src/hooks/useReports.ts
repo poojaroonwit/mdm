@@ -1,4 +1,7 @@
+'use client'
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
 import { useSpace } from '@/contexts/space-context'
 import type { Report, ReportCategory, ReportFolder } from '@/app/reports/page'
 
@@ -11,6 +14,7 @@ interface ReportsFilters {
 }
 
 export function useReports(filters: ReportsFilters = {}) {
+  const { status } = useSession()
   const { currentSpace } = useSpace()
 
   return useQuery({
@@ -46,10 +50,13 @@ export function useReports(filters: ReportsFilters = {}) {
       }
     },
     staleTime: 30 * 1000, // 30 seconds
+    enabled: status === 'authenticated',
   })
 }
 
 export function useReport(reportId: string) {
+  const { status } = useSession()
+
   return useQuery({
     queryKey: ['report', reportId],
     queryFn: async () => {
@@ -60,7 +67,7 @@ export function useReport(reportId: string) {
       const data = await response.json()
       return data.report as Report
     },
-    enabled: !!reportId,
+    enabled: !!reportId && status === 'authenticated',
   })
 }
 

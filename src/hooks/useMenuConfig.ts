@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSession } from 'next-auth/react'
 import { FALLBACK_MENU_CONFIG } from '@/lib/menu-fallback'
 
 export interface MenuItemConfig {
@@ -83,11 +84,19 @@ function ensureRequiredMenuItems(config: MenuConfig): MenuConfig {
  * Hook to fetch menu configuration from the database
  */
 export function useMenuConfig(): UseMenuConfigResult {
+    const { status } = useSession()
     const [menuConfig, setMenuConfig] = useState<MenuConfig | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
     const fetchMenuConfig = useCallback(async () => {
+        if (status !== 'authenticated') {
+            setMenuConfig(ensureRequiredMenuItems(FALLBACK_MENU_CONFIG))
+            setError(status === 'unauthenticated' ? 'Authentication required. Please sign in.' : null)
+            setLoading(status === 'loading')
+            return
+        }
+
         try {
             setLoading(true)
             setError(null)
@@ -109,7 +118,7 @@ export function useMenuConfig(): UseMenuConfigResult {
         } finally {
             setLoading(false)
         }
-    }, [])
+    }, [status])
 
     useEffect(() => {
         fetchMenuConfig()

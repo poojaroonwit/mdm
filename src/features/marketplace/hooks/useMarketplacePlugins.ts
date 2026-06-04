@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { useSpaceFilter, SpaceFilterResult } from '@/shared/hooks/useSpaceFilter'
 import { PluginDefinition, UseMarketplacePluginsOptions } from '../types'
 
@@ -18,6 +19,7 @@ export interface UseMarketplacePluginsResult {
 export function useMarketplacePlugins(
   options: UseMarketplacePluginsOptions = {}
 ): UseMarketplacePluginsResult {
+  const { status } = useSession()
   const { category, spaceId, filters = {} } = options
   const spaceFilter = useSpaceFilter({ spaceId, allowAll: true })
   
@@ -26,6 +28,13 @@ export function useMarketplacePlugins(
   const [error, setError] = useState<string | null>(null)
 
   const fetchPlugins = async () => {
+    if (status !== 'authenticated') {
+      setPlugins([])
+      setError(status === 'unauthenticated' ? 'Authentication required. Please sign in.' : null)
+      setLoading(status === 'loading')
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
@@ -82,7 +91,7 @@ export function useMarketplacePlugins(
 
   useEffect(() => {
     fetchPlugins()
-  }, [category, filters.status, filters.verified, filters.serviceType, filters.installedOnly, spaceId])
+  }, [category, filters.status, filters.verified, filters.serviceType, filters.installedOnly, spaceId, status])
 
   return {
     plugins,

@@ -43,7 +43,7 @@ export function MarketplaceHome({
   showSpaceSelector = false,
 }: MarketplaceHomeProps) {
   const searchParams = useSearchParams()
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const { currentSpace } = useSpace()
   const [selectedSpaceId, setSelectedSpaceId] = useState<string>(
     spaceId || currentSpace?.id || 'all'
@@ -95,6 +95,12 @@ export function MarketplaceHome({
   // Fetch installations when space changes
   // Fetch installations when space changes
   const fetchInstallations = async () => {
+    if (status !== 'authenticated') {
+      setInstallations(new Map())
+      setLoadingInstallations(status === 'loading')
+      return
+    }
+
     const effectiveSpace = effectiveSpaceId || currentSpace?.id
 
     // If no space is selected and user is admin, we might want to show all installations or global ones.
@@ -128,7 +134,7 @@ export function MarketplaceHome({
 
   useEffect(() => {
     fetchInstallations()
-  }, [effectiveSpaceId, currentSpace?.id])
+  }, [effectiveSpaceId, currentSpace?.id, status])
 
 
 

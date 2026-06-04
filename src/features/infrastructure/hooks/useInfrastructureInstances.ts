@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { useSpaceFilter, SpaceFilterResult } from '@/shared/hooks/useSpaceFilter'
 import { InfrastructureInstance, InfrastructureFilters } from '../types'
 
@@ -24,6 +25,7 @@ export interface UseInfrastructureInstancesResult {
 export function useInfrastructureInstances(
   options: UseInfrastructureInstancesOptions = {}
 ): UseInfrastructureInstancesResult {
+  const { status } = useSession()
   const { spaceId, filters = {}, autoFetch = true } = options
   const spaceFilter = useSpaceFilter({ spaceId, allowAll: true })
   
@@ -32,6 +34,13 @@ export function useInfrastructureInstances(
   const [error, setError] = useState<string | null>(null)
 
   const fetchInstances = async () => {
+    if (status !== 'authenticated') {
+      setInstances([])
+      setError(status === 'unauthenticated' ? 'Authentication required. Please sign in.' : null)
+      setLoading(status === 'loading')
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
@@ -82,7 +91,7 @@ export function useInfrastructureInstances(
     if (autoFetch) {
       fetchInstances()
     }
-  }, [spaceFilter.spaceId, filters.type, filters.status, autoFetch])
+  }, [spaceFilter.spaceId, filters.type, filters.status, autoFetch, status])
 
   return {
     instances,
