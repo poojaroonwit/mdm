@@ -10,6 +10,24 @@ function normalizePluginHubUrl(value: string | undefined) {
   return /^[a-z][a-z\d+.-]*:\/\//i.test(rawValue) ? rawValue : `http://${rawValue}`
 }
 
+let didLogPluginHubFallback = false
+
+function logPluginHubFallback(error: unknown) {
+  if (didLogPluginHubFallback) {
+    return
+  }
+
+  didLogPluginHubFallback = true
+
+  const causeCode = typeof error === 'object' && error && 'cause' in error
+    ? (error as { cause?: { code?: string } }).cause?.code
+    : undefined
+  const message = error instanceof Error ? error.message : 'unavailable'
+  const detail = causeCode || message
+
+  console.warn(`Plugin hub unavailable (${detail}); using database marketplace fallback.`)
+}
+
 async function getHandler(request: NextRequest) {
   // Apply rate limiting
   const rateLimitResponse = await rateLimitMiddleware(request, {
@@ -65,7 +83,7 @@ async function getHandler(request: NextRequest) {
           return NextResponse.json(hubData)
         }
       } catch (error) {
-        console.warn('Failed to fetch from plugin hub, falling back to database:', error)
+        logPluginHubFallback(error)
       }
     }
 
