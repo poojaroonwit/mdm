@@ -358,6 +358,15 @@ const nextConfig = {
   async rewrites() {
     return []
   },
+  async redirects() {
+    return [
+      {
+        source: '/favicon.ico',
+        destination: '/favicon.svg',
+        permanent: true,
+      },
+    ]
+  },
 
   // Experimental: Continue build even with errors
   // Note: turbo config removed - use --webpack flag to avoid Turbopack

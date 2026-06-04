@@ -1,14 +1,38 @@
 'use client'
 
-import { useSpace } from '@/contexts/space-context'
+import { Suspense, useEffect, useState, useRef } from 'react'
+import { SidebarProvider } from '@/contexts/sidebar-context'
+import { SpaceProvider, useSpace } from '@/contexts/space-context'
+import { SystemSettingsProvider } from '@/contexts/system-settings-context'
+import { SecurityProvider } from '@/components/providers/SecurityProvider'
+import { LoadingPage } from '@/components/ui/loading-spinner'
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState, useRef } from 'react'
 import { MainLayout } from '@/components/layout/main-layout'
 import { PlatformLayout } from '@/components/platform/PlatformLayout'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 
 export default function SpaceLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <SecurityProvider>
+      <SidebarProvider>
+        <Suspense fallback={<LoadingPage />}>
+          <SystemSettingsProvider>
+            <SpaceProvider>
+              <SpaceLayoutContent>{children}</SpaceLayoutContent>
+            </SpaceProvider>
+          </SystemSettingsProvider>
+        </Suspense>
+      </SidebarProvider>
+    </SecurityProvider>
+  )
+}
+
+function SpaceLayoutContent({
   children,
 }: {
   children: React.ReactNode
