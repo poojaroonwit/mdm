@@ -40,9 +40,9 @@ async function getHandler(
       where: { spaceId }
     })
 
-    // Return default MinIO config if no config exists
+    // Return default S3-compatible config if no config exists
     const defaultConfig = {
-      provider: 'minio',
+      provider: 's3',
       config: DEFAULT_STORAGE_CONFIG
     }
 

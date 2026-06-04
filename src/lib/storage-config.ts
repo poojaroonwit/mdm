@@ -8,10 +8,12 @@ export interface StorageConfig {
     use_ssl: boolean
   }
   s3: {
+    endpoint?: string
     access_key_id: string
     secret_access_key: string
     bucket: string
     region: string
+    force_path_style?: boolean
   }
   sftp: {
     host: string
@@ -59,10 +61,12 @@ export const DEFAULT_STORAGE_CONFIG: StorageConfig = {
     use_ssl: false
   },
   s3: {
+    endpoint: '',
     access_key_id: '',
     secret_access_key: '',
     bucket: '',
-    region: 'us-east-1'
+    region: 'us-east-1',
+    force_path_style: true
   },
   sftp: {
     host: '',

@@ -41,10 +41,12 @@ export async function getStorageService(): Promise<AttachmentStorageService | nu
           use_ssl: false,
         },
         s3: config.s3 || {
+          endpoint: '',
           access_key_id: '',
           secret_access_key: '',
           bucket: '',
           region: '',
+          force_path_style: true,
         },
         sftp: {
           host: '',

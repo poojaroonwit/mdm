@@ -43,10 +43,10 @@ export function StorageConnectionForm({
 }: StorageConnectionFormProps) {
     const [formData, setFormData] = useState<StorageConnectionFormData>({
         name: '',
-        type: 'minio',
+        type: 's3',
         description: '',
         isActive: true,
-        config: getDefaultConfig('minio'),
+        config: getDefaultConfig('s3'),
         ...initialData,
     })
 
@@ -74,10 +74,12 @@ export function StorageConnectionForm({
                 }
             case 's3':
                 return {
+                    endpoint: '',
                     access_key_id: '',
                     secret_access_key: '',
                     bucket: '',
                     region: 'us-east-1',
+                    force_path_style: true,
                 }
             case 'sftp':
                 return {
@@ -206,6 +208,19 @@ export function StorageConnectionForm({
             case 's3':
                 return (
                     <div className="space-y-4">
+                        <div>
+                            <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">S3 Endpoint</Label>
+                            <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800 shadow-sm"
+                                value={config.endpoint || ''}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        config: { ...config, endpoint: e.target.value },
+                                    })
+                                }
+                                placeholder="https://your-railway-bucket-endpoint"
+                            />
+                        </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Access Key ID</Label>
@@ -259,6 +274,18 @@ export function StorageConnectionForm({
                                     }
                                 />
                             </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <Switch
+                                checked={config.force_path_style !== false}
+                                onCheckedChange={(checked) =>
+                                    setFormData({
+                                        ...formData,
+                                        config: { ...config, force_path_style: checked },
+                                    })
+                                }
+                            />
+                            <Label className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Use path-style requests</Label>
                         </div>
                     </div>
                 )

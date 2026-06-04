@@ -21,22 +21,22 @@ export async function register() {
 
     const isS3Configured = await validateS3Config()
     if (!isS3Configured) {
-      console.warn('[Startup Check] MinIO/S3 is not configured; skipping connectivity check.')
+      console.warn('[Startup Check] S3-compatible storage is not configured; skipping connectivity check.')
       console.log('[Startup Check] Connectivity checks completed.')
       return
     }
 
-    console.log('[Startup Check] Testing MinIO/S3 connection...')
+    console.log('[Startup Check] Testing S3-compatible storage connection...')
     const s3Client = await getS3Client()
     const result = await s3Client.send(new ListBucketsCommand({}))
 
-    console.log(`[Startup Check] MinIO/S3 connection successful. Found ${result.Buckets?.length || 0} buckets.`)
+    console.log(`[Startup Check] S3-compatible storage connection successful. Found ${result.Buckets?.length || 0} buckets.`)
   } catch (error: any) {
     const message = error instanceof Error ? error.message : String(error)
     if (message.includes('not configured')) {
-      console.warn('[Startup Check] MinIO/S3 is not configured; skipping connectivity check.')
+      console.warn('[Startup Check] S3-compatible storage is not configured; skipping connectivity check.')
     } else {
-      console.error('[Startup Check] MinIO/S3 connection failed:', message)
+      console.error('[Startup Check] S3-compatible storage connection failed:', message)
       console.error('[Startup Check] Full Error Details:', JSON.stringify(error, null, 2))
       if (error?.stack) console.error(error.stack)
     }

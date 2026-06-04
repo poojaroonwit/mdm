@@ -4,6 +4,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { Client as SftpClient } from 'ssh2-sftp-client'
 import { Client as FtpClient } from 'ftp'
 import { Readable } from 'stream'
+import { normalizeS3Endpoint } from './s3'
 
 export interface AttachmentStorageConfig {
   provider: 'minio' | 's3' | 'sftp' | 'ftp'
@@ -17,10 +18,13 @@ export interface AttachmentStorageConfig {
       use_ssl: boolean
     }
     s3: {
+      endpoint?: string
       access_key_id: string
       secret_access_key: string
       bucket: string
       region: string
+      force_path_style?: boolean
+      forcePathStyle?: boolean
     }
     sftp: {
       host: string
@@ -243,15 +247,23 @@ export class AttachmentStorageService {
     return { success: true, url, path: objectName }
   }
 
-  private async uploadToS3(fileName: string, fileBuffer: Buffer, contentType?: string): Promise<UploadResult> {
-    const config = this.config.config.s3
-    const s3Client = new S3Client({
-      region: config.region,
+  private createS3Client(config: AttachmentStorageConfig['config']['s3']) {
+    const endpoint = normalizeS3Endpoint(config.endpoint)
+
+    return new S3Client({
+      region: config.region || 'us-east-1',
+      endpoint,
+      forcePathStyle: config.force_path_style ?? config.forcePathStyle ?? Boolean(endpoint),
       credentials: {
         accessKeyId: config.access_key_id,
         secretAccessKey: config.secret_access_key
       }
     })
+  }
+
+  private async uploadToS3(fileName: string, fileBuffer: Buffer, contentType?: string): Promise<UploadResult> {
+    const config = this.config.config.s3
+    const s3Client = this.createS3Client(config)
 
     const objectName = `attachments/${fileName}`
     const command = new PutObjectCommand({
@@ -263,7 +275,10 @@ export class AttachmentStorageService {
 
     await s3Client.send(command)
 
-    const url = `https://${config.bucket}.s3.${config.region}.amazonaws.com/${objectName}`
+    const endpoint = normalizeS3Endpoint(config.endpoint)
+    const url = endpoint
+      ? `${endpoint.replace(/\/$/, '')}/${config.bucket}/${objectName}`
+      : `https://${config.bucket}.s3.${config.region}.amazonaws.com/${objectName}`
     return { success: true, url, path: objectName }
   }
 
@@ -342,13 +357,7 @@ export class AttachmentStorageService {
 
   private async downloadFromS3(fileName: string): Promise<DownloadResult> {
     const config = this.config.config.s3
-    const s3Client = new S3Client({
-      region: config.region,
-      credentials: {
-        accessKeyId: config.access_key_id,
-        secretAccessKey: config.secret_access_key
-      }
-    })
+    const s3Client = this.createS3Client(config)
 
     const objectName = `attachments/${fileName}`
     const command = new GetObjectCommand({
@@ -434,13 +443,7 @@ export class AttachmentStorageService {
 
   private async deleteFromS3(fileName: string): Promise<{ success: boolean; error?: string }> {
     const config = this.config.config.s3
-    const s3Client = new S3Client({
-      region: config.region,
-      credentials: {
-        accessKeyId: config.access_key_id,
-        secretAccessKey: config.secret_access_key
-      }
-    })
+    const s3Client = this.createS3Client(config)
 
     const objectName = `attachments/${fileName}`
     const command = new DeleteObjectCommand({
@@ -530,13 +533,7 @@ export class AttachmentStorageService {
 
   private async renameInS3(oldFileName: string, newFileName: string): Promise<{ success: boolean; error?: string }> {
     const config = this.config.config.s3
-    const s3Client = new S3Client({
-      region: config.region,
-      credentials: {
-        accessKeyId: config.access_key_id,
-        secretAccessKey: config.secret_access_key
-      }
-    })
+    const s3Client = this.createS3Client(config)
 
     const oldObjectName = `attachments/${oldFileName}`
     const newObjectName = `attachments/${newFileName}`
@@ -635,13 +632,7 @@ export class AttachmentStorageService {
 
   private async generateS3PublicUrl(fileName: string, expiresIn: number = 3600): Promise<{ success: boolean; url?: string; error?: string }> {
     const config = this.config.config.s3
-    const s3Client = new S3Client({
-      region: config.region,
-      credentials: {
-        accessKeyId: config.access_key_id,
-        secretAccessKey: config.secret_access_key
-      }
-    })
+    const s3Client = this.createS3Client(config)
 
     const objectName = `attachments/${fileName}`
     const command = new GetObjectCommand({

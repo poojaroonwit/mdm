@@ -20,11 +20,46 @@ const envSchema = z.object({
   // PostgREST
   NEXT_PUBLIC_API_URL: z.string().url().optional(),
 
-  // MinIO
+  // S3-compatible storage
+  S3_ENDPOINT: z.string().optional(),
+  S3_ENDPOINT_URL: z.string().optional(),
+  S3_ACCESS_KEY_ID: z.string().optional(),
+  S3_ACCESS_KEY: z.string().optional(),
+  S3_SECRET_ACCESS_KEY: z.string().optional(),
+  S3_SECRET_KEY: z.string().optional(),
+  S3_BUCKET: z.string().optional(),
+  S3_BUCKET_NAME: z.string().optional(),
+  S3_REGION: z.string().optional(),
+  S3_FORCE_PATH_STYLE: z.string().optional(),
+  AWS_ENDPOINT_URL_S3: z.string().optional(),
+  AWS_S3_ENDPOINT: z.string().optional(),
+  AWS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().optional(),
+  AWS_S3_BUCKET: z.string().optional(),
+  AWS_BUCKET_NAME: z.string().optional(),
+  AWS_REGION: z.string().optional(),
+  AWS_DEFAULT_REGION: z.string().optional(),
+  AWS_S3_FORCE_PATH_STYLE: z.string().optional(),
+  RAILWAY_S3_ENDPOINT: z.string().optional(),
+  RAILWAY_BUCKET_ENDPOINT: z.string().optional(),
+  RAILWAY_S3_ACCESS_KEY_ID: z.string().optional(),
+  RAILWAY_S3_ACCESS_KEY: z.string().optional(),
+  RAILWAY_S3_SECRET_ACCESS_KEY: z.string().optional(),
+  RAILWAY_S3_SECRET_KEY: z.string().optional(),
+  RAILWAY_S3_BUCKET: z.string().optional(),
+  RAILWAY_BUCKET_NAME: z.string().optional(),
+  RAILWAY_S3_REGION: z.string().optional(),
+  RAILWAY_S3_FORCE_PATH_STYLE: z.string().optional(),
+
+  // Legacy MinIO aliases
   MINIO_ENDPOINT: z.string().optional(),
   MINIO_PORT: z.string().optional(),
   MINIO_ACCESS_KEY: z.string().optional(),
   MINIO_SECRET_KEY: z.string().optional(),
+  MINIO_REGION: z.string().optional(),
+  MINIO_UPLOADS_BUCKET: z.string().optional(),
+  MINIO_BUCKET: z.string().optional(),
+  MINIO_FORCE_PATH_STYLE: z.string().optional(),
 
   // Redis
   REDIS_URL: z.string().url().optional(),

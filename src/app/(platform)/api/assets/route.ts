@@ -1,16 +1,12 @@
 /**
  * /api/assets?filePath=widget-avatars/filename.jpg
  *
- * MinIO proxy route — mirrors studio-2's /api/secure-file/preview pattern.
- *
- * Uses the configured MinIO public URL so the hostname/port/SSL
- * are always correct for the externally-reachable MinIO server.
- * Falls back to minioClient (MINIO_ENDPOINT) if no public URL is configured.
- *
- * No authentication required — chatbot assets are served to public widgets.
+ * Public asset proxy for S3-compatible object storage.
  */
+
+import { GetObjectCommand } from '@aws-sdk/client-s3'
 import { NextRequest, NextResponse } from 'next/server'
-import { minioClient, getMinioPublicClient, MINIO_BUCKET } from '@/lib/minio'
+import { getS3Client, getS3Config } from '@/lib/s3'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +22,6 @@ function inferContentType(filePath: string): string {
   return 'application/octet-stream'
 }
 
-// Transparent 1×1 PNG — returned when the object is not found (prevents broken-image icons)
 const TRANSPARENT_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
   'base64'
@@ -40,7 +35,6 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Missing filePath parameter', { status: 400 })
   }
 
-  // Prevent path traversal
   const safePath = filePath.replace(/\.\.\//g, '').replace(/^\/+/, '')
   if (!safePath) {
     return new NextResponse('Invalid filePath', { status: 400 })
@@ -49,28 +43,37 @@ export async function GET(request: NextRequest) {
   const contentType = inferContentType(safePath)
   const isImage = /\.(jpg|jpeg|png|gif|webp|svg|ico)$/i.test(safePath)
 
-  // Prefer the configured public client so hostname/SSL are correct.
-  // Fall back to internal client if public URL is not configured.
-  const client = (await getMinioPublicClient()) ?? minioClient
-
   try {
-    // Stream directly to the response — same approach as studio-2
-    const stream = await client.getObject(MINIO_BUCKET, safePath)
+    const config = await getS3Config()
+    if (!config?.bucket) {
+      throw new Error('S3 bucket is not configured')
+    }
 
-    return new NextResponse(stream as unknown as ReadableStream, {
+    const client = await getS3Client()
+    const response = await client.send(
+      new GetObjectCommand({
+        Bucket: config.bucket,
+        Key: safePath,
+      })
+    )
+
+    if (!response.Body) {
+      throw new Error('S3 object response did not include a body')
+    }
+
+    return new NextResponse(response.Body as unknown as ReadableStream, {
       status: 200,
       headers: {
-        'Content-Type': contentType,
+        'Content-Type': response.ContentType || contentType,
         'Cache-Control': 'public, max-age=86400',
         'Cross-Origin-Resource-Policy': 'cross-origin',
         'Access-Control-Allow-Origin': '*',
       },
     })
   } catch (err: any) {
-    const code = err?.code || ''
+    const code = err?.code || err?.name || ''
     console.error(`[api/assets] ${code || 'Error'} fetching ${safePath}:`, err?.message || err)
 
-    // Return transparent PNG for missing images instead of broken-image icon
     if (isImage) {
       return new NextResponse(TRANSPARENT_PNG, {
         status: 200,

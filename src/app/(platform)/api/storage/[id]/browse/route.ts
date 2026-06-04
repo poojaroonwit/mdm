@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { Client as MinioClient } from 'minio'
 import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3'
 import { Client as SftpClient } from 'ssh2-sftp-client'
+import { normalizeS3Endpoint } from '@/lib/s3'
 
 interface FileItem {
     name: string
@@ -134,6 +135,8 @@ async function listMinioObjects(config: any, path: string): Promise<FileItem[]> 
 async function listS3Objects(config: any, path: string): Promise<FileItem[]> {
     const s3Client = new S3Client({
         region: config.region || 'us-east-1',
+        endpoint: normalizeS3Endpoint(config.endpoint),
+        forcePathStyle: config.force_path_style ?? config.forcePathStyle ?? Boolean(config.endpoint),
         credentials: {
             accessKeyId: config.access_key_id,
             secretAccessKey: config.secret_access_key

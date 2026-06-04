@@ -412,7 +412,7 @@ export default function SpaceSettingsPage() {
 
   // Attachment storage configuration
   const [attachmentStorage, setAttachmentStorage] = useState({
-    provider: 'minio',
+    provider: 's3',
     config: {
       // MinIO configuration
       minio: {
@@ -423,12 +423,14 @@ export default function SpaceSettingsPage() {
         region: 'us-east-1',
         use_ssl: true
       },
-      // AWS S3 configuration
+      // S3-compatible storage configuration
       s3: {
+        endpoint: '',
         access_key_id: '',
         secret_access_key: '',
         bucket: '',
-        region: 'us-east-1'
+        region: 'us-east-1',
+        force_path_style: true
       },
       // SFTP configuration
       sftp: {

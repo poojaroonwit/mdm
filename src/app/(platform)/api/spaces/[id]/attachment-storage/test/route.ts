@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { Client as MinioClient } from 'minio'
 import { S3Client, ListBucketsCommand } from '@aws-sdk/client-s3'
+import { normalizeS3Endpoint } from '@/lib/s3'
 // Dynamic imports for optional dependencies
 let SftpClient: any
 let FtpClient: any
@@ -146,6 +147,8 @@ async function testS3Connection(config: any) {
     // Create S3 client
     const s3Client = new S3Client({
       region: config.region || 'us-east-1',
+      endpoint: normalizeS3Endpoint(config.endpoint),
+      forcePathStyle: config.force_path_style ?? config.forcePathStyle ?? Boolean(config.endpoint),
       credentials: {
         accessKeyId: config.access_key_id,
         secretAccessKey: config.secret_access_key
@@ -168,7 +171,7 @@ async function testS3Connection(config: any) {
 
     return {
       success: true,
-      message: `AWS S3 connection successful. Bucket '${config.bucket}' is accessible.`
+      message: `S3-compatible connection successful. Bucket '${config.bucket}' is accessible.`
     }
   } catch (error) {
     return {
