@@ -869,7 +869,7 @@ function normalizeAnalysis(output: AnalysisOutput): AnalysisOutput {
         analysis: {
           type: 'chart',
           data: {
-            chartType: ['line', 'pie'].includes(chartType)
+            chartType: chartType && ['line', 'pie'].includes(chartType)
               ? chartType
               : 'bar',
             labels,

@@ -118,7 +118,7 @@ export function normalizeFieldOptions(options: unknown): ProjectFieldOption[] {
 export function normalizeProjectFields(fields: unknown): ProjectFieldDefinition[] {
   if (!Array.isArray(fields)) return []
 
-  return fields
+  const normalized: Array<ProjectFieldDefinition | null> = fields
     .map((field) => {
       if (!field || typeof field !== 'object') return null
 
@@ -149,7 +149,7 @@ export function normalizeProjectFields(fields: unknown): ProjectFieldDefinition[
         },
       }
     })
-    .filter((field): field is ProjectFieldDefinition => Boolean(field))
+  return normalized.filter((field): field is ProjectFieldDefinition => Boolean(field))
 }
 
 export function normalizeProjectStatuses(statuses: unknown): ProjectStatusDefinition[] {

@@ -55,7 +55,7 @@ export async function processImportJob(job: Job): Promise<void> {
         const stream = Readable.from([csvText])
         await workbook.csv.read(stream)
       } else {
-        await workbook.xlsx.load(fileBuffer)
+        await workbook.xlsx.load(fileBuffer as any)
       }
 
       const worksheet = workbook.worksheets[0]

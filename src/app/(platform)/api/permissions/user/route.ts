@@ -1,11 +1,9 @@
 
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import { auth } from '@/lib/auth' // Assuming auth helper exists, or use getSession
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth' // Adjust path if needed
+import { authOptions } from '@/lib/auth'
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions)
 

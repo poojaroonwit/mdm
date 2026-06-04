@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter } from '@dnd-kit/core'
 import { ReportsTreeView } from './ReportsTreeView'
 import { FileText } from 'lucide-react'
-import type { Report, ReportCategory, ReportFolder } from '@/app/reports/page'
+import type { Report, ReportCategory, ReportFolder } from '@/types/reports'
 
 interface ReportsTreeViewWithDnDProps {
   reports: Report[]

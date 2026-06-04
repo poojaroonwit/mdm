@@ -51,7 +51,7 @@ import { useModal } from '@/hooks/common'
 import { ReportPermissionsDialog } from './ReportPermissionsDialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Checkbox as UICheckbox } from '@/components/ui/checkbox'
-import type { Report, ReportCategory, ReportFolder } from '@/app/reports/page'
+import type { Report, ReportCategory, ReportFolder } from '@/types/reports'
 
 interface ReportsTreeViewProps {
   reports: Report[]

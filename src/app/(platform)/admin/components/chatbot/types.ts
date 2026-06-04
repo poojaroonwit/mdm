@@ -548,6 +548,9 @@ export interface Chatbot {
   pwaInstallScope?: 'chat' | 'website' // Scope of installation: 'chat' (inline banner) or 'website' (top overlay)
   pwaBannerText?: string // Custom banner text (default: "Install app for quick access")
   pwaBannerPosition?: 'under-header' | 'floating-bottom' | 'floating-top' | 'top-of-header'
+  widgetAnimationExit?: string
+  widgetAnimationType?: string
+  widgetAnimationDuration?: number
   pwaBannerTitleText?: string
   pwaBannerDescriptionText?: string
   pwaBannerButtonText?: string

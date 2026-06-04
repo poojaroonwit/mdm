@@ -176,7 +176,8 @@ export function useWorkflowRealtimeVoice({
   }
 
   const connectWebSocket = async (): Promise<boolean> => {
-    return new Promise(async (resolve) => {
+    return new Promise((resolve) => {
+      void (async () => {
       try {
         // Get API key from chatbot config
         const apiKey = chatbot?.openaiAgentSdkApiKey
@@ -504,6 +505,7 @@ export function useWorkflowRealtimeVoice({
         toast.error('Failed to initialize voice service')
         resolve(false)
       }
+      })()
     })
   }
 

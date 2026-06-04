@@ -960,7 +960,7 @@ export function AIAnalyst({ installationId, config = {} }: AIAnalystProps) {
             label,
             ...datasets.map((dataset: any) => dataset?.data?.[rowIndex] ?? ''),
           ]))
-          const csv = [toCsvRow(header), ...rows.map((row) => toCsvRow(row))].join('\n')
+          const csv = [toCsvRow(header), ...rows.map((row: unknown[]) => toCsvRow(row))].join('\n')
           downloadFile(`${baseName}.csv`, csv, 'text/csv;charset=utf-8')
           toast.success('Chart data exported as CSV')
           return

@@ -14,7 +14,7 @@ interface ChatbotEditorProps {
   formData: Partial<Chatbot>
   setFormData: React.Dispatch<React.SetStateAction<Partial<Chatbot>>>
   selectedChatbot: Chatbot | null
-  activeTab: 'engine' | 'style' | 'config' | 'performance' | 'pwa'
+  activeTab: 'engine' | 'style' | 'config' | 'performance' | 'pwa' | 'deployment'
   onTabChange: (tab: 'engine' | 'style' | 'config' | 'performance' | 'pwa') => void
   onGenerateEmbedCode: (chatbot: Chatbot) => string
   hideTabsList?: boolean

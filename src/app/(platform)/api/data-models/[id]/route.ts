@@ -203,7 +203,7 @@ async function putHandler(
 
   const duration = Date.now() - startTime
   logger.apiResponse('PUT', `/api/data-models/${id}`, 200, duration)
-  if (folder_space_id !== undefined) {
+  if (typeof folder_space_id === 'string') {
     await assignResourceFolder(folder_space_id, 'data_model', id, folder_id ?? null)
   }
   return NextResponse.json({ dataModel: rows[0] })

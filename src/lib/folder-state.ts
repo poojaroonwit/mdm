@@ -54,9 +54,10 @@ function normalizeFolderItem(input: any): FolderItem | null {
 }
 
 function normalizeFolderState(input: any): FolderState {
-  const folders = Array.isArray(input?.folders)
-    ? input.folders.map(normalizeFolderItem).filter((item): item is FolderItem => Boolean(item))
-    : []
+  const rawFolders: unknown[] = Array.isArray(input?.folders) ? input.folders : []
+  const folders = rawFolders
+    .map(normalizeFolderItem)
+    .filter((item): item is FolderItem => Boolean(item))
 
   const assignments =
     input?.assignments && typeof input.assignments === 'object' && !Array.isArray(input.assignments)

@@ -12,7 +12,7 @@ import {
   ChevronRight,
   Settings
 } from 'lucide-react'
-import type { Report, ReportSource } from '@/app/reports/page'
+import type { Report, ReportSource } from '@/types/reports'
 
 interface SourceTypeViewProps {
   reports: Report[]

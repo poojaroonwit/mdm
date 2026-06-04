@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs'
-import type { Report } from '@/app/reports/page'
+import type { Report } from '@/types/reports'
 
 export function exportReportsToCSV(reports: Report[], filename: string = 'reports') {
   const headers = ['Name', 'Description', 'Source', 'Owner', 'Workspace', 'Status', 'Created At', 'Updated At']

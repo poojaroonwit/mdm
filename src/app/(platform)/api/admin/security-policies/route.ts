@@ -50,7 +50,7 @@ async function postHandler(request: NextRequest) {
   const bodySchema = z.object({
     name: z.string().min(1),
     type: z.enum(['password', 'session', 'ip', 'rate_limit', '2fa']),
-    settings: z.record(z.any()).optional().default({}),
+    settings: z.record(z.string(), z.any()).optional().default({}),
     description: z.string().optional(),
   })
 

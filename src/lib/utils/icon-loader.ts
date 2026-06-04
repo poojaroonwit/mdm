@@ -47,7 +47,7 @@ export function loadIcon(iconName: string): LazyIconComponent | null {
                     const Icon = module[realName] as IconComponent
                     
                     if (!Icon) {
-                        console.warn(`Icon "${realName}" not found in ${path}`)
+                        console.warn(`Icon "${realName}" not found in heroicons ${prefix}`)
                         const lucideModule = await import(`lucide-react`)
                         return { default: lucideModule.HelpCircle as IconComponent }
                     }
@@ -95,14 +95,17 @@ export async function getIconNames(): Promise<string[]> {
         const names: string[] = [];
 
         // 1. Load Lucide icon names
-        let lucideModule;
+        let lucideModule: typeof import('lucide-react') | null = null;
         try {
             lucideModule = await import('lucide-react');
+            if (!lucideModule) {
+                return []
+            }
             const lucideNames = Object.keys(lucideModule).filter((key) => {
                 return key[0] === key[0]?.toUpperCase() &&
                     key !== 'createLucideIcon' &&
                     key !== 'Icon' &&
-                    typeof lucideModule[key as keyof typeof lucideModule] !== 'string'
+                    typeof lucideModule![key as keyof typeof lucideModule] !== 'string'
             })
             names.push(...lucideNames);
         } catch (e) {

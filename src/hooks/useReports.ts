@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { useSpace } from '@/contexts/space-context'
-import type { Report, ReportCategory, ReportFolder } from '@/app/reports/page'
+import type { Report, ReportCategory, ReportFolder } from '@/types/reports'
 
 interface ReportsFilters {
   source?: string

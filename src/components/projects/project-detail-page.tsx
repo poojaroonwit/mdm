@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AddAssetDialog, AddDataModelDialog, AddLinkDialog, AddMemberDialog } from '@/components/projects/project-detail-dialogs'
+import { ASSET_TYPES, LINK_TYPES, PROJECT_ROLES } from '@/lib/project-types'
 import { toast } from 'react-hot-toast'
 import {
   FolderKanban,

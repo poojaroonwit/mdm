@@ -25,7 +25,7 @@ export async function getOpenAIClient(apiKeyOverride?: string) {
  */
 export async function listVectorStores(apiKey?: string) {
   const openai = await getOpenAIClient(apiKey);
-  const vectorStores = await openai.beta.vectorStores.list();
+  const vectorStores = await openai.vectorStores.list();
   return vectorStores.data;
 }
 
@@ -34,7 +34,7 @@ export async function listVectorStores(apiKey?: string) {
  */
 export async function createVectorStore(name: string, apiKey?: string) {
   const openai = await getOpenAIClient(apiKey);
-  return await openai.beta.vectorStores.create({
+  return await openai.vectorStores.create({
     name,
   });
 }
@@ -44,7 +44,7 @@ export async function createVectorStore(name: string, apiKey?: string) {
  */
 export async function getVectorStore(id: string, apiKey?: string) {
   const openai = await getOpenAIClient(apiKey);
-  return await openai.beta.vectorStores.retrieve(id);
+  return await openai.vectorStores.retrieve(id);
 }
 
 /**
@@ -52,7 +52,7 @@ export async function getVectorStore(id: string, apiKey?: string) {
  */
 export async function deleteVectorStore(id: string, apiKey?: string) {
   const openai = await getOpenAIClient(apiKey);
-  return await openai.beta.vectorStores.del(id);
+  return await openai.vectorStores.delete(id);
 }
 
 /**
@@ -60,7 +60,7 @@ export async function deleteVectorStore(id: string, apiKey?: string) {
  */
 export async function listVectorStoreFiles(id: string, apiKey?: string) {
   const openai = await getOpenAIClient(apiKey);
-  const files = await openai.beta.vectorStores.files.list(id);
+  const files = await openai.vectorStores.files.list(id);
   
   // To get filenames, we need to retrieve each file separately from the main Files API
   // or return the IDs and let the frontend/caller handle it if needed.
@@ -104,7 +104,7 @@ export async function uploadFileToVectorStore(vectorStoreId: string, file: File 
   });
 
   // 2. Attach to vector store
-  return await openai.beta.vectorStores.files.create(vectorStoreId, {
+  return await openai.vectorStores.files.create(vectorStoreId, {
     file_id: uploadedFile.id,
   });
 }
@@ -116,11 +116,11 @@ export async function removeFileFromVectorStore(vectorStoreId: string, fileId: s
   const openai = await getOpenAIClient(apiKey);
   
   // 1. Remove from vector store
-  await openai.beta.vectorStores.files.del(vectorStoreId, fileId);
+  await openai.vectorStores.files.delete(fileId, { vector_store_id: vectorStoreId });
   
   // 2. Delete the actual file from OpenAI (optional, but cleaner)
   try {
-    await openai.files.del(fileId);
+    await openai.files.delete(fileId);
   } catch (err) {
     console.warn(`Failed to delete file ${fileId} from OpenAI storage, but it was removed from vector store.`);
   }

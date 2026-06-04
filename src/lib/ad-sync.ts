@@ -117,10 +117,6 @@ export async function syncAdUsers() {
                 where: { id: existingUser.id },
                 data: {
                     name: adUser.displayName,
-                    adUserId: adUser.id,
-                    jobTitle: adUser.jobTitle,
-                    department: adUser.department,
-                    organization: adUser.companyName,
                     allowedLoginMethods: methods,
                     isActive: true,
                 }
@@ -132,10 +128,6 @@ export async function syncAdUsers() {
                 data: {
                     name: adUser.displayName,
                     email,
-                    adUserId: adUser.id,
-                    jobTitle: adUser.jobTitle,
-                    department: adUser.department,
-                    organization: adUser.companyName,
                     allowedLoginMethods: ['azure-ad'],
                     isActive: true,
                     password: crypto.randomBytes(32).toString('hex'),

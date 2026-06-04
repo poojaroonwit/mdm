@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 import crypto from 'crypto'
-import type { Report } from '@/app/reports/page'
+import type { Report } from '@/types/reports'
 
 export async function GET(
   request: NextRequest,

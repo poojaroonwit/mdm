@@ -6,15 +6,7 @@ async function main() {
   console.log('Checking for pink chatbots...')
   const chatbots = await prisma.chatbot.findMany({
     where: {
-      OR: [
-        { primaryColor: '#db2777' },
-        { 
-          config: {
-            path: ['theme', 'color', 'accent', 'primary'],
-            equals: '#db2777'
-          }
-        }
-      ]
+      primaryColor: '#db2777'
     }
   })
   

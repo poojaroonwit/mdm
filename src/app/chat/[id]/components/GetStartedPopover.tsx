@@ -3,6 +3,7 @@
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import * as Icons from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ChatbotConfig, ChatKitGetStarted, ChatKitTheme } from '../types'
 import { cn } from '@/lib/utils'
@@ -26,7 +27,7 @@ export function GetStartedPopover({
   if (!getStarted?.enabled) return null
 
   const IconName = (getStarted.icon || 'MessageCircle') as keyof typeof Icons
-  const Icon = Icons[IconName] || Icons.MessageCircle
+  const Icon = (Icons[IconName] || Icons.MessageCircle) as LucideIcon
 
   // Use primary color from theme or fallback
   const primaryColor = theme?.color?.accent?.primary || chatbot.primaryColor || '#000000'

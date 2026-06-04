@@ -124,11 +124,11 @@ export async function processExportJob(job: Job): Promise<void> {
       }
 
       if (format === 'xlsx') {
-        fileBuffer = (await workbook.xlsx.writeBuffer()) as Buffer
+        fileBuffer = Buffer.from(await workbook.xlsx.writeBuffer())
         fileName = `export-${job.id}.xlsx`
         mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       } else {
-        fileBuffer = (await workbook.csv.writeBuffer()) as Buffer
+        fileBuffer = Buffer.from(await workbook.csv.writeBuffer())
         fileName = `export-${job.id}.csv`
         mimeType = 'text/csv'
       }

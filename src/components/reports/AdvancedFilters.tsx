@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { X, Calendar } from 'lucide-react'
-import type { ReportSource } from '@/app/reports/page'
+import type { ReportSource } from '@/types/reports'
 
 interface AdvancedFiltersProps {
   filters: {

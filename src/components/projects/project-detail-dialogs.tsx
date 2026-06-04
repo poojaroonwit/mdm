@@ -27,7 +27,7 @@ interface AddMemberDialogProps {
 
 export function AddMemberDialog({ open, onOpenChange, onAdd }: AddMemberDialogProps) {
   const [identifier, setIdentifier] = useState('')
-  const [role, setRole] = useState<ProjectRole>('member')
+  const [role, setRole] = useState<ProjectRole>('viewer')
 
   return (
     <CrudDialog
