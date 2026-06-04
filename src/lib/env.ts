@@ -34,16 +34,42 @@ const envSchema = z.object({
 
   // Vault
   USE_VAULT: z.string().transform((val) => val === 'true').optional(),
-  VAULT_ADDR: z.string().url().optional(),
+  VAULT_ADDR: z.string().optional(),
   VAULT_TOKEN: z.string().optional(),
 
   // Application
 })
 
+function normalizeOptionalUrl(value: string | undefined, shouldValidate: boolean) {
+  const trimmed = value?.trim()
+  if (!trimmed) return undefined
+  return shouldValidate ? trimmed : undefined
+}
+
 // Validate environment variables
 function validateEnv() {
   try {
-    return envSchema.parse(process.env)
+    const parsedEnv = envSchema.parse({
+      ...process.env,
+      VAULT_ADDR: normalizeOptionalUrl(
+        process.env.VAULT_ADDR,
+        process.env.USE_VAULT === 'true'
+      ),
+    })
+
+    if (parsedEnv.USE_VAULT) {
+      if (!parsedEnv.VAULT_ADDR) {
+        throw new Error('VAULT_ADDR is required when USE_VAULT=true')
+      }
+
+      try {
+        new URL(parsedEnv.VAULT_ADDR)
+      } catch {
+        throw new Error('VAULT_ADDR must be a valid URL when USE_VAULT=true')
+      }
+    }
+
+    return parsedEnv
   } catch (error) {
     if (error instanceof z.ZodError) {
       const missingVars = error.issues.map((err) => `${err.path.join('.')}: ${err.message}`)

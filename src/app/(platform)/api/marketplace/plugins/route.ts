@@ -5,6 +5,11 @@ import { logAPIRequest } from '@/shared/lib/security/audit-logger'
 import { checkPermission } from '@/shared/lib/security/permission-checker'
 import { rateLimitMiddleware } from '@/shared/middleware/api-rate-limit'
 
+function normalizePluginHubUrl(value: string | undefined) {
+  const rawValue = value?.trim() || 'http://localhost:3001'
+  return /^[a-z][a-z\d+.-]*:\/\//i.test(rawValue) ? rawValue : `http://${rawValue}`
+}
+
 async function getHandler(request: NextRequest) {
   // Apply rate limiting
   const rateLimitResponse = await rateLimitMiddleware(request, {
@@ -37,7 +42,7 @@ async function getHandler(request: NextRequest) {
     if (source === 'hub' || process.env.USE_PLUGIN_HUB === 'true') {
       try {
         // Fetch from hub API via HTTP (hub runs as separate service)
-        const hubUrl = process.env.PLUGIN_HUB_URL || 'http://localhost:3001'
+        const hubUrl = normalizePluginHubUrl(process.env.PLUGIN_HUB_URL)
         const hubApiUrl = new URL('/api/plugins', hubUrl)
 
         // Copy search params except 'source'
@@ -120,8 +125,7 @@ async function getHandler(request: NextRequest) {
 
 
     // Join Global installations (always check this)
-    // Cast service_id to UUID to avoid 'operator does not exist: uuid = text' error
-    const globalJoin = `LEFT JOIN service_installations si_global ON si_global.service_id::uuid = sr.id AND si_global.space_id IS NULL AND si_global.deleted_at IS NULL`
+    const globalJoin = `LEFT JOIN service_installations si_global ON si_global.service_id::text = sr.id::text AND si_global.space_id IS NULL AND si_global.deleted_at IS NULL`
 
     // If spaceId is present, also join Space installations
     let spaceJoin = ''
@@ -129,8 +133,7 @@ async function getHandler(request: NextRequest) {
     let installationStatusSelect = 'si_global.status'
 
     if (spaceId) {
-      // Cast service_id and space_id to UUID
-      spaceJoin = `LEFT JOIN service_installations si_space ON si_space.service_id::uuid = sr.id AND si_space.space_id::uuid = CAST($${paramIndex} AS uuid) AND si_space.deleted_at IS NULL`
+      spaceJoin = `LEFT JOIN service_installations si_space ON si_space.service_id::text = sr.id::text AND si_space.space_id::text = $${paramIndex} AND si_space.deleted_at IS NULL`
       queryParams.push(spaceId)
       paramIndex++
 
