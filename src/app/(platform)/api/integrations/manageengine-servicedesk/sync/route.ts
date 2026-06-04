@@ -31,7 +31,7 @@ async function postHandler(request: NextRequest) {
 
   // Check access
   const { rows: access } = await query(
-    'SELECT 1 FROM space_members WHERE space_id = $1::uuid AND user_id = $2::uuid',
+    'SELECT 1 FROM space_members WHERE space_id::text = $1 AND user_id::text = $2',
     [space_id, session.user.id]
   )
   if (access.length === 0) {
@@ -169,7 +169,7 @@ async function postHandler(request: NextRequest) {
   await query(
     `INSERT INTO servicedesk_sync_logs 
      (ticket_id, space_id, sync_type, event_type, success, details, created_at)
-     VALUES ($1::uuid, $2::uuid, $3, $4, $5, $6, NOW())`,
+     VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
     [
       ticket_id,
       space_id,

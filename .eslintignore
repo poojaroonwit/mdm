@@ -1,1 +1,7 @@
-*
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+plugin-hub/

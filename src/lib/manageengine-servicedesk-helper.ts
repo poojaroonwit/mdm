@@ -12,7 +12,7 @@ export async function getServiceDeskService(spaceId: string): Promise<ManageEngi
     const { rows: configRows } = await query(
       `SELECT id, api_url, api_auth_apikey_value
        FROM public.external_connections 
-       WHERE space_id = $1::uuid 
+       WHERE space_id::text = $1
          AND connection_type = 'api'
          AND name LIKE '%ServiceDesk%'
          AND deleted_at IS NULL

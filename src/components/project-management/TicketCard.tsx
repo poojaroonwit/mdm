@@ -18,6 +18,7 @@ export interface CardFields {
   labels?: boolean
   spaces?: boolean
   attributes?: boolean
+  attributeNames?: string[]
 }
 
 const DEFAULT_FIELDS: CardFields = {
@@ -185,7 +186,10 @@ export function TicketCard({
 
         {fields.attributes && ticket.attributes && ticket.attributes.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {ticket.attributes.slice(0, 2).map((attr) => (
+            {ticket.attributes
+              .filter((attr) => !fields.attributeNames?.length || fields.attributeNames.includes(attr.name))
+              .slice(0, 2)
+              .map((attr) => (
               <div
                 key={attr.id}
                 className="rounded-sm bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
@@ -193,7 +197,7 @@ export function TicketCard({
                 <span className="font-medium">{attr.displayName}:</span>{' '}
                 <span>{attr.value || '--'}</span>
               </div>
-            ))}
+              ))}
           </div>
         )}
 

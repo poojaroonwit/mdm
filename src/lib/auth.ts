@@ -15,6 +15,7 @@ import {
 } from "@/lib/identity-utils"
 import { createNextAuthSSOProviders, getResolvedSSOProvider } from "@/lib/sso"
 import { getAuthSecret } from "@/lib/auth-secret"
+import { decrypt } from "@/lib/encryption"
 
 export interface AuthenticatedRequest extends NextRequest {
   admin?: {
@@ -37,6 +38,8 @@ const JWT_SECRET = new TextEncoder().encode(
 
 const CACHE_TTL_MS = 10 * 60 * 1000
 const DEFAULT_SESSION_TIMEOUT_SECONDS = 24 * 3600
+const MAX_FAILED_LOGIN_ATTEMPTS = 5
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000
 let sessionTimeoutCache: { data: number; timestamp: number } | null = null
 const nextAuthUrl = process.env.NEXTAUTH_URL?.trim()
 const isSecureAuthUrl = nextAuthUrl?.startsWith("https://") ?? false
@@ -183,6 +186,36 @@ function createBaseAuthOptions(
           })
 
           if (!user || !user.password || !user.isActive) return null
+          if (user.lockoutUntil && new Date(user.lockoutUntil).getTime() > Date.now()) {
+            throw new Error("ACCOUNT_LOCKED")
+          }
+
+          const recordFailedLogin = async () => {
+            const failedLoginAttempts = Number(user.failedLoginAttempts || 0) + 1
+            await (prisma as any).user.update({
+              where: { id: user.id },
+              data: {
+                failedLoginAttempts,
+                lockoutUntil:
+                  failedLoginAttempts >= MAX_FAILED_LOGIN_ATTEMPTS
+                    ? new Date(Date.now() + LOCKOUT_DURATION_MS)
+                    : null,
+              },
+            })
+          }
+
+          const resetFailedLoginState = async () => {
+            if (user.failedLoginAttempts || user.lockoutUntil) {
+              await (prisma as any).user.update({
+                where: { id: user.id },
+                data: {
+                  failedLoginAttempts: 0,
+                  lockoutUntil: null,
+                },
+              })
+            }
+          }
+
           if (
             !isLoginMethodAllowed(user.allowedLoginMethods, "email") &&
             !isLoginMethodAllowed(user.allowedLoginMethods, "credentials")
@@ -191,13 +224,22 @@ function createBaseAuthOptions(
           }
 
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
-          if (!isPasswordValid) return null
+          if (!isPasswordValid) {
+            await recordFailedLogin()
+            return null
+          }
 
           if (user.isTwoFactorEnabled) {
             if (!credentials.totpCode) throw new Error("2FA_REQUIRED")
-            const isValid = authenticator.check(credentials.totpCode, user.twoFactorSecret!)
-            if (!isValid) throw new Error("Invalid 2FA code")
+            const twoFactorSecret = decrypt(user.twoFactorSecret!)
+            const isValid = authenticator.check(credentials.totpCode, twoFactorSecret)
+            if (!isValid) {
+              await recordFailedLogin()
+              throw new Error("Invalid 2FA code")
+            }
           }
+
+          await resetFailedLoginState()
 
           return {
             id: user.id,

@@ -128,6 +128,8 @@ export default function SpaceSignInPage() {
         } else if (result.error === '2FA_REQUIRED') {
             setShowTwoFactorInput(true)
             setError('')
+        } else if (result.error === 'ACCOUNT_LOCKED') {
+          setError('Too many failed attempts. Please try again in 15 minutes.')
         } else {
           setError(result.error)
         }

@@ -22,11 +22,11 @@ async function getHandler(
     const accessCheck = await query(
       `SELECT sm.role 
        FROM space_members sm 
-       WHERE sm.space_id = $1::uuid AND sm.user_id = $2::uuid
+       WHERE sm.space_id::text = $1 AND sm.user_id::text = $2
        UNION
        SELECT 'OWNER' as role
        FROM spaces s
-       WHERE s.id = $1::uuid AND s.created_by = $2::uuid`,
+       WHERE s.id::text = $1 AND s.created_by::text = $2`,
       [spaceId, session.user.id]
     )
 
@@ -42,7 +42,7 @@ async function getHandler(
       `SELECT ugm.group_id 
        FROM user_group_members ugm
        JOIN user_groups ug ON ug.id = ugm.group_id
-       WHERE ugm.user_id = $1::uuid AND ug.is_active = true`,
+       WHERE ugm.user_id::text = $1 AND ug.is_active = true`,
       [session.user.id]
     )
     const userGroupIds = userGroups.rows.map(r => r.group_id)
@@ -133,11 +133,11 @@ async function postHandler(
     const accessCheck = await query(
       `SELECT sm.role 
        FROM space_members sm 
-       WHERE sm.space_id = $1::uuid AND sm.user_id = $2::uuid
+       WHERE sm.space_id::text = $1 AND sm.user_id::text = $2
        UNION
        SELECT 'OWNER' as role
        FROM spaces s
-       WHERE s.id = $1::uuid AND s.created_by = $2::uuid`,
+       WHERE s.id::text = $1 AND s.created_by::text = $2`,
       [spaceId, session.user.id]
     )
 

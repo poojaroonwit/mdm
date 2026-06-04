@@ -49,7 +49,7 @@ async function getHandler(request: NextRequest) {
              , ec.id as conn_id, ec.db_type, ec.host, ec.port, ec.database, ec.username, ec.password, ec.options
        FROM public.data_models dm
        LEFT JOIN public.external_connections ec ON ec.id = dm.external_connection_id AND ec.deleted_at IS NULL AND ec.is_active = TRUE
-       WHERE dm.id = $1::uuid AND dm.deleted_at IS NULL`,
+       WHERE dm.id::text = $1 AND dm.deleted_at IS NULL`,
       [dataModelId]
     )
     const model = modelRows[0]
@@ -77,7 +77,7 @@ async function getHandler(request: NextRequest) {
     if (model.source_type === 'EXTERNAL' && model.conn_id && model.external_table) {
       // Load attribute mappings
       const { rows: attrs } = await query(
-        `SELECT name, external_column FROM public.data_model_attributes WHERE data_model_id = $1::uuid AND deleted_at IS NULL ORDER BY "order" ASC` as any,
+        `SELECT name, external_column FROM public.data_model_attributes WHERE data_model_id::text = $1 AND deleted_at IS NULL ORDER BY "order" ASC` as any,
         [dataModelId]
       )
 
@@ -200,7 +200,7 @@ async function getHandler(request: NextRequest) {
     }
 
     // INTERNAL: Build dynamic query with filters
-    let whereConditions = ['dr.data_model_id = $1::uuid', 'dr.is_active = TRUE']
+    let whereConditions = ['dr.data_model_id::text = $1', 'dr.is_active = TRUE']
     let params: any[] = [dataModelId]
     let paramIndex = 2
     
@@ -399,7 +399,7 @@ async function postHandler(request: NextRequest) {
     }
 
     const { rows: fullRows } = await query(
-      'SELECT * FROM public.data_records WHERE id = $1::uuid',
+      'SELECT * FROM public.data_records WHERE id::text = $1',
       [record.id]
     )
     const duration = Date.now() - startTime

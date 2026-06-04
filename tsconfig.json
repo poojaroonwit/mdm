@@ -63,6 +63,15 @@
       "@/shared/*": [
         "./src/shared/*"
       ],
+      "react": [
+        "./node_modules/@types/react"
+      ],
+      "react/jsx-runtime": [
+        "./node_modules/@types/react/jsx-runtime"
+      ],
+      "react/jsx-dev-runtime": [
+        "./node_modules/@types/react/jsx-dev-runtime"
+      ],
       "@plugins/*": [
         "./plugin-hub/plugins/*"
       ]
@@ -70,18 +79,17 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "plugin-hub/plugins/**/*.ts",
-    "plugin-hub/plugins/**/*.tsx"
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "middleware.ts",
+    "proxy.ts",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
+    "plugin-hub",
+    "plugin-hub/**",
     "playwright.config.ts",
-    "e2e",
-    // "plugin-hub"
+    "e2e"
   ]
 }

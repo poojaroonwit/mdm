@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import { authenticator } from "otplib";
+import { decrypt } from "@/lib/encryption";
 
 const prisma = new PrismaClient();
 
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
          return NextResponse.json({ error: "2FA setup not initiated" }, { status: 400 });
     }
 
-    const isValid = authenticator.check(code, user.twoFactorSecret);
+    const isValid = authenticator.check(code, decrypt(user.twoFactorSecret));
 
     if (!isValid) {
         return NextResponse.json({ error: "Invalid code" }, { status: 400 });

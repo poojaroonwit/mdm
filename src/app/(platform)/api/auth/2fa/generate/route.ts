@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import { authenticator } from "otplib";
 import qrcode from "qrcode";
+import { encrypt } from "@/lib/encryption";
 
 const prisma = new PrismaClient();
 
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
     
     await prisma.user.update({
         where: { id: user.id },
-        data: { twoFactorSecret: secret }
+        data: { twoFactorSecret: encrypt(secret) }
     });
 
     return NextResponse.json({ secret, qrCodeUrl });

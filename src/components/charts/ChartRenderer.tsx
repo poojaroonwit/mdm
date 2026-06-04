@@ -902,9 +902,13 @@ export function ChartRenderer({
               // (optional - keep as-is; most cases covered by replacements)
             } catch { }
           }
+          const sanitizedMarkup = DOMPurify.sanitize(markup, {
+            USE_PROFILES: { svg: true, svgFilters: true },
+          })
+
           return (
             <div className="w-full h-full flex items-center justify-center">
-              <div style={{ width: px, height: px, color }} dangerouslySetInnerHTML={{ __html: markup }} />
+              <div style={{ width: px, height: px, color }} dangerouslySetInnerHTML={{ __html: sanitizedMarkup }} />
             </div>
           )
         }

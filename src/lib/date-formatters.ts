@@ -124,3 +124,20 @@ export function isValidDate(date: Date | string | null | undefined): boolean {
   return isValid(dateObj)
 }
 
+/**
+ * Normalize a date-like value for native <input type="date"> controls.
+ */
+export function toDateInputValue(value?: string | Date | null): string {
+  if (!value) return ''
+  if (value instanceof Date) {
+    return isValid(value) ? format(value, 'yyyy-MM-dd') : ''
+  }
+
+  const trimmed = String(value).trim()
+  if (!trimmed) return ''
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed
+
+  const parsed = new Date(trimmed)
+  return isValid(parsed) ? format(parsed, 'yyyy-MM-dd') : ''
+}
+
