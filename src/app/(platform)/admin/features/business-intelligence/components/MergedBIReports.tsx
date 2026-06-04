@@ -2,8 +2,9 @@
 
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { useDebouncedCallback } from 'use-debounce'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -49,6 +50,7 @@ import { IntegrationSelectionModal } from '@/components/reports/IntegrationSelec
 import { EmbedReportDialog } from '@/components/reports/EmbedReportDialog'
 import { exportReportsToExcel } from '@/lib/utils/export-utils'
 import { SpaceSelector } from '@/components/project-management/SpaceSelector'
+import type { SpacesEditorConfig, SpacesEditorPage } from '@/lib/space-studio-manager'
 
 export type ReportSource = 'BUILT_IN' | 'BUILT_IN_VISUALIZE' | 'CUSTOM_EMBED_LINK' | 'POWER_BI' | 'GRAFANA' | 'LOOKER_STUDIO'
 
@@ -85,8 +87,53 @@ export interface ReportFolder {
   created_at: string
 }
 
+type SpacesEditorResponse = {
+  config: SpacesEditorConfig | null
+}
+
+function readSpacesEditorConfig(data: SpacesEditorResponse | SpacesEditorConfig | null): SpacesEditorConfig | null {
+  if (!data) return null
+  if ('config' in data) return data.config
+  return data
+}
+
+function createEmptySpacesEditorConfig(spaceId: string): SpacesEditorConfig {
+  const now = new Date().toISOString()
+
+  return {
+    id: `config_${spaceId}_${Date.now()}`,
+    spaceId,
+    pages: [],
+    layoutConfig: {},
+    sidebarConfig: {
+      items: [],
+      background: '#ffffff',
+      textColor: '#374151',
+      fontSize: '14px',
+    },
+    version: '1.0.0',
+    createdAt: now,
+    updatedAt: now,
+  }
+}
+
+function getSpacesEditorPageTitle(page: Partial<SpacesEditorPage> & { title?: string }): string {
+  return page.displayName || page.title || page.name || 'Untitled Page'
+}
+
+function toPageName(value: string): string {
+  const slug = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+  return slug || `dashboard-${Date.now()}`
+}
+
 export function MergedBIReports() {
   const router = useRouter()
+  const { status } = useSession()
   const { currentSpace, spaces } = useSpace()
   const [selectedSpaceId, setSelectedSpaceId] = useState<string>(currentSpace?.id || 'all')
 
@@ -126,27 +173,15 @@ export function MergedBIReports() {
     setDebouncedSearchTerm(value)
   }, 300)
 
-  useEffect(() => {
-    loadReports()
-  }, [])
-
-  useEffect(() => {
-    debouncedSearch(searchTerm)
-  }, [searchTerm, debouncedSearch])
-
-  // Sync local selection when global space changes
-  useEffect(() => {
-    if (currentSpace?.id) {
-      setSelectedSpaceId(currentSpace.id)
+  const loadReports = useCallback(async () => {
+    if (status !== 'authenticated') {
+      setReports([])
+      setCategories([])
+      setFolders([])
+      setReportsLoading(status === 'loading')
+      return
     }
-  }, [currentSpace?.id])
 
-  useEffect(() => {
-    loadReports()
-  }, [selectedSpaceId, debouncedSearchTerm, filters.source, filters.category, filters.status, filters.showFavorites])
-
-
-  const loadReports = async () => {
     try {
       setReportsLoading(true)
       const params = new URLSearchParams({
@@ -160,6 +195,13 @@ export function MergedBIReports() {
       })
 
       const response = await fetch(`/api/reports?${params}`)
+      if (response.status === 401) {
+        setReports([])
+        setCategories([])
+        setFolders([])
+        return
+      }
+
       if (!response.ok) {
         throw new Error('Failed to load reports')
       }
@@ -183,7 +225,32 @@ export function MergedBIReports() {
     } finally {
       setReportsLoading(false)
     }
-  }
+  }, [
+    status,
+    selectedSpaceId,
+    debouncedSearchTerm,
+    filters.source,
+    filters.category,
+    filters.status,
+    filters.showFavorites,
+    filters.dateFrom,
+    filters.dateTo,
+  ])
+
+  useEffect(() => {
+    debouncedSearch(searchTerm)
+  }, [searchTerm, debouncedSearch])
+
+  // Sync local selection when global space changes
+  useEffect(() => {
+    if (currentSpace?.id) {
+      setSelectedSpaceId(currentSpace.id)
+    }
+  }, [currentSpace?.id])
+
+  useEffect(() => {
+    loadReports()
+  }, [loadReports])
 
 
   const handleBulkDelete = async () => {
@@ -221,9 +288,10 @@ export function MergedBIReports() {
       const res = await fetch(`/api/spaces-editor/${createReportSpaceId}`)
       if (!res.ok) throw new Error('Failed to load pages')
       const data = await res.json()
-      const pages: Array<{ id: string; title: string }> = (data.pages || []).map((p: any) => ({
+      const config = readSpacesEditorConfig(data)
+      const pages: Array<{ id: string; title: string }> = (config?.pages || []).map((p: any) => ({
         id: p.id,
-        title: p.title || 'Untitled Page',
+        title: getSpacesEditorPageTitle(p),
       }))
       setSpacePages(pages)
       setSelectedPageId(pages[0]?.id || '')
@@ -248,13 +316,29 @@ export function MergedBIReports() {
       if (pageMode === 'create') {
         const configRes = await fetch(`/api/spaces-editor/${createReportSpaceId}`)
         if (!configRes.ok) throw new Error('Failed to load space config')
-        const config = await configRes.json()
-        const newPage = {
+        const data = await configRes.json()
+        const config = readSpacesEditorConfig(data) || createEmptySpacesEditorConfig(createReportSpaceId)
+        const now = new Date().toISOString()
+        const pageTitle = newPageName.trim() || 'New Dashboard'
+        const pageName = toPageName(pageTitle)
+        const newPage: SpacesEditorPage = {
           id: crypto.randomUUID(),
-          title: newPageName.trim() || 'New Dashboard',
-          widgets: [],
+          name: pageName,
+          displayName: pageTitle,
+          description: 'Dashboard page',
+          isCustom: true,
+          path: `/${pageName}`,
+          order: (config.pages || []).length + 1,
+          isActive: true,
+          components: [],
+          createdAt: now,
+          updatedAt: now,
         }
-        const updatedConfig = { ...config, pages: [...(config.pages || []), newPage] }
+        const updatedConfig: SpacesEditorConfig = {
+          ...config,
+          pages: [...(config.pages || []), newPage],
+          updatedAt: now,
+        }
         const saveRes = await fetch(`/api/spaces-editor/${createReportSpaceId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -269,7 +353,7 @@ export function MergedBIReports() {
         ? (newPageName.trim() || 'New Dashboard')
         : (spacePages.find(p => p.id === pageId)?.title || 'Dashboard')
 
-      await fetch('/api/reports', {
+      const reportRes = await fetch('/api/reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -281,6 +365,7 @@ export function MergedBIReports() {
           metadata: { page_id: pageId, space_id: createReportSpaceId },
         }),
       })
+      if (!reportRes.ok) throw new Error('Failed to create report')
 
       setShowCreateReportDialog(false)
       resetCreateDialog()

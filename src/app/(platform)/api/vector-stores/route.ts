@@ -12,13 +12,15 @@ export async function GET(request: NextRequest) {
 
   try {
     const vectorStores = await listVectorStores();
-    return NextResponse.json({ vectorStores });
+    return NextResponse.json({ vectorStores, isConfigured: true });
   } catch (error) {
-    console.error('Error listing vector stores:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to list vector stores' },
-      { status: 500 }
-    );
+    const message = error instanceof Error ? error.message : 'Failed to list vector stores';
+    console.warn('Vector stores unavailable:', message);
+    return NextResponse.json({
+      vectorStores: [],
+      isConfigured: false,
+      error: message,
+    });
   }
 }
 

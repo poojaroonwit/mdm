@@ -299,6 +299,7 @@ export function RichMarkdownEditor({
         heading: {
           levels: [1, 2, 3],
         },
+        link: false,
       }),
       Placeholder.configure({
         placeholder,

@@ -30,8 +30,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
-import { 
-  Calendar, Clock, User, X, Plus, MessageSquare, Paperclip, 
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  Calendar, Check, ChevronsUpDown, Clock, User, X, Plus, MessageSquare, Paperclip,
   ListChecks, GitBranch, Trash2, Edit, Download, ExternalLink, Loader, Network,
   AlignLeft, SlidersHorizontal
 } from 'lucide-react'
@@ -41,6 +50,7 @@ import { RichMarkdownEditor } from '@/components/knowledge-base/RichMarkdownEdit
 import { format } from 'date-fns'
 import { showError, showSuccess, showInfo } from '@/lib/toast-utils'
 import { DEFAULT_PROJECT_STATUSES, ProjectFieldOption, ProjectStatusDefinition, normalizeProjectMetadata } from './project-config'
+import { cn } from '@/lib/utils'
 
 interface TicketDetailModalProps {
   ticket: {
@@ -104,6 +114,101 @@ interface ProjectOption {
   id: string
   name: string
   metadata?: Record<string, any> | null
+}
+
+type SearchableSelectOption = {
+  value: string
+  label: string
+}
+
+function toDateInputValue(value?: string | Date | null) {
+  if (!value) return ''
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? '' : format(value, 'yyyy-MM-dd')
+  }
+  const trimmed = String(value).trim()
+  if (!trimmed) return ''
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed
+
+  const parsed = new Date(trimmed)
+  return Number.isNaN(parsed.getTime()) ? '' : format(parsed, 'yyyy-MM-dd')
+}
+
+function SearchableSelect({
+  value,
+  options,
+  onValueChange,
+  placeholder = 'Select value',
+  searchPlaceholder = 'Search...',
+  emptyText = 'No options found.',
+  className,
+  id,
+}: {
+  value: string
+  options: SearchableSelectOption[]
+  onValueChange: (value: string) => void
+  placeholder?: string
+  searchPlaceholder?: string
+  emptyText?: string
+  className?: string
+  id?: string
+}) {
+  const [open, setOpen] = useState(false)
+  const selected = options.find((option) => option.value === value)
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          id={id}
+          type="button"
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn(
+            'h-9 w-full justify-between rounded-md text-left font-normal',
+            !selected && 'text-muted-foreground',
+            className
+          )}
+        >
+          <span className="truncate">{selected?.label || placeholder}</span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] p-0"
+        align="start"
+        style={{ width: 'var(--radix-popover-trigger-width)' }}
+      >
+        <Command>
+          <CommandInput placeholder={searchPlaceholder} />
+          <CommandList>
+            <CommandEmpty>{emptyText}</CommandEmpty>
+            <CommandGroup>
+              {options.map((option) => (
+                <CommandItem
+                  key={option.value}
+                  value={`${option.label} ${option.value}`}
+                  onSelect={() => {
+                    onValueChange(option.value)
+                    setOpen(false)
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      'mr-2 h-4 w-4',
+                      option.value === value ? 'opacity-100' : 'opacity-0'
+                    )}
+                  />
+                  <span className="truncate">{option.label}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  )
 }
 
 export function TicketDetailModalEnhanced({
@@ -208,11 +313,11 @@ export function TicketDetailModalEnhanced({
       definitions.map((field) => {
         const existing = values.find((item) => item.name === field.name)
         return {
-          id: existing && 'id' in existing ? existing.id : undefined,
+          id: existing && 'id' in existing ? String(existing.id) : undefined,
           name: field.name,
           displayName: field.displayName || field.name,
           type: field.type || 'TEXT',
-          value: existing?.value || '',
+          value: field.type === 'DATE' ? toDateInputValue(existing?.value) : existing?.value || '',
           isRequired: field.isRequired || false,
           options: field.options || [],
           attributeType: field.attributeType || 'project',
@@ -228,8 +333,8 @@ export function TicketDetailModalEnhanced({
       setEditDescription(ticket.description || '')
       setEditStatus(ticket.status || 'BACKLOG')
       setEditPriority(ticket.priority || 'MEDIUM')
-      setEditDueDate((ticket as any).dueDate || '')
-      setEditStartDate((ticket as any).startDate || '')
+      setEditDueDate(toDateInputValue((ticket as any).dueDate))
+      setEditStartDate(toDateInputValue((ticket as any).startDate))
       setEditEstimate((ticket as any).estimate?.toString() || '')
       setCustomFields(
         (ticket.attributes || []).map((attribute: any) => ({
@@ -237,7 +342,7 @@ export function TicketDetailModalEnhanced({
           name: attribute.name,
           displayName: attribute.displayName || attribute.name,
           type: attribute.type || 'TEXT',
-          value: attribute.value || '',
+          value: attribute.type === 'DATE' ? toDateInputValue(attribute.value) : attribute.value || '',
           isRequired: attribute.isRequired || false,
           attributeType: attribute.attributeType || 'project',
           sharing: attribute.sharing || { mode: 'individual', projectIds: [] },
@@ -312,6 +417,8 @@ export function TicketDetailModalEnhanced({
       if (response.ok) {
         const data = await response.json()
         setServiceDeskConfig(data.config)
+      } else {
+        setServiceDeskConfig(null)
       }
     } catch (error) {
       console.error('Failed to check ServiceDesk config:', error)
@@ -997,6 +1104,7 @@ export function TicketDetailModalEnhanced({
 
   const isNew = !(ticket as any).id
   const isDrawer = displayMode === 'drawer'
+  const ticketAssignees = ticket.assignees || []
   const totalHours = timeLogs.reduce((sum, log) => sum + Number(log.hours), 0)
 
   const handleSave = async () => {
@@ -1037,6 +1145,38 @@ export function TicketDetailModalEnhanced({
     onSave?.(updatedTicket)
   }
 
+  const attributeInputClass = 'h-9 rounded-md border-0 bg-muted/70 shadow-none focus-visible:ring-1 focus-visible:ring-ring'
+  const priorityOptions = [
+    { value: 'LOW', label: 'Low' },
+    { value: 'MEDIUM', label: 'Medium' },
+    { value: 'HIGH', label: 'High' },
+    { value: 'URGENT', label: 'Urgent' },
+  ]
+  const ticketTypeOptions = [
+    { value: '', label: 'None' },
+    { value: 'Request', label: 'Request' },
+    { value: 'Change Request', label: 'Change Request' },
+    { value: 'Issue', label: 'Issue' },
+    { value: 'Problem', label: 'Problem' },
+    { value: 'Incident', label: 'Incident' },
+  ]
+  const projectOptions = [
+    { value: '__none__', label: 'None' },
+    ...projects.map((project) => ({ value: project.id, label: project.name })),
+  ]
+  const moduleOptions = [
+    { value: '__none__', label: 'None' },
+    ...modules.map((module) => ({ value: module.id, label: module.name })),
+  ]
+  const milestoneOptions = [
+    { value: '__none__', label: 'None' },
+    ...milestones.map((milestone) => ({ value: milestone.id, label: milestone.name })),
+  ]
+  const releaseOptions = [
+    { value: '__none__', label: 'None' },
+    ...releases.map((release) => ({ value: release.id, label: release.name })),
+  ]
+
   const renderFieldInput = (
     field: {
       name: string
@@ -1058,31 +1198,32 @@ export function TicketDetailModalEnhanced({
 
     if (field.type === 'SELECT') {
       return (
-        <Select value={field.value || '__none__'} onValueChange={(value) => updateField(value === '__none__' ? '' : value)}>
-          <SelectTrigger className="h-9 rounded-md">
-            <SelectValue placeholder="Select value" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__none__">None</SelectItem>
-            {(field.options || []).map((option) => (
-              <SelectItem key={`${field.name}-${option.value}`} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <SearchableSelect
+          value={field.value || '__none__'}
+          onValueChange={(value) => updateField(value === '__none__' ? '' : value)}
+          options={[
+            { value: '__none__', label: 'None' },
+            ...(field.options || []).map((option) => ({
+              value: option.value,
+              label: option.label,
+            })),
+          ]}
+          placeholder="Select value"
+          searchPlaceholder={`Search ${field.displayName.toLowerCase()}...`}
+          className={attributeInputClass}
+        />
       )
     }
 
     if (field.type === 'DATE') {
-      return <Input type="date" value={field.value || ''} onChange={(e) => updateField(e.target.value)} className="h-9 rounded-md" />
+      return <Input type="date" value={toDateInputValue(field.value)} onChange={(e) => updateField(e.target.value)} className={attributeInputClass} />
     }
 
     if (field.type === 'NUMBER') {
-      return <Input type="number" value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" className="h-9 rounded-md" />
+      return <Input type="number" value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" className={attributeInputClass} />
     }
 
-    return <Input value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" className="h-9 rounded-md" />
+    return <Input value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" className={attributeInputClass} />
   }
 
   const systemAttributes = [
@@ -1101,13 +1242,13 @@ export function TicketDetailModalEnhanced({
 
   // Common header content
   const headerContent = (
-    <div className="space-y-2">
-      <Input
-        value={editTitle}
-        onChange={(e) => setEditTitle(e.target.value)}
-        placeholder="Ticket title"
-        className="h-11 rounded-md border-transparent bg-transparent px-0 text-xl font-semibold tracking-tight shadow-none focus-visible:ring-0"
-      />
+      <div className="space-y-2">
+        <Input
+          value={editTitle}
+          onChange={(e) => setEditTitle(e.target.value)}
+          placeholder="Ticket title"
+          className="h-11 rounded-md border-transparent bg-transparent px-0 text-xl font-semibold tracking-tight shadow-none focus-visible:ring-0"
+        />
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <Badge variant="outline" className="rounded-md">{isNew ? 'New ticket' : ticket.id.slice(0, 8)}</Badge>
         <span>{projectStatuses.find((status) => status.value === editStatus)?.label || editStatus}</span>
@@ -1186,42 +1327,39 @@ export function TicketDetailModalEnhanced({
 
   const ticketDetailsFields = (
     <div className="space-y-5">
-      <div className="overflow-hidden rounded-md border border-border bg-background">
-          <RichMarkdownEditor
-            content={editDescription}
-            onChange={setEditDescription}
-            placeholder="Add description..."
-            editable
-            showToolbar={false}
-            className="min-h-[360px] bg-background"
-          />
+      <div className="rounded-md bg-white">
+        <RichMarkdownEditor
+          content={editDescription}
+          onChange={setEditDescription}
+          placeholder='Add description, or type "/" for tools...'
+          editable
+          showToolbar={false}
+          className="bg-white [&_.ProseMirror]:min-h-[220px] [&_.ProseMirror]:p-0 [&_.ProseMirror_p]:my-2"
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <Label>Status</Label>
-          <Select value={editStatus} onValueChange={setEditStatus}>
-            <SelectTrigger className="mt-1 rounded-md"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {projectStatuses.map((status) => (
-                <SelectItem key={status.value} value={status.value}>
-                  {status.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <SearchableSelect
+            value={editStatus}
+            onValueChange={setEditStatus}
+            options={projectStatuses.map((status) => ({ value: status.value, label: status.label }))}
+            placeholder="Select status"
+            searchPlaceholder="Search statuses..."
+            className="mt-1"
+          />
         </div>
         <div>
           <Label>Priority</Label>
-          <Select value={editPriority} onValueChange={setEditPriority}>
-            <SelectTrigger className="mt-1 rounded-md"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="LOW">Low</SelectItem>
-              <SelectItem value="MEDIUM">Medium</SelectItem>
-              <SelectItem value="HIGH">High</SelectItem>
-              <SelectItem value="URGENT">Urgent</SelectItem>
-            </SelectContent>
-          </Select>
+          <SearchableSelect
+            value={editPriority}
+            onValueChange={setEditPriority}
+            options={priorityOptions}
+            placeholder="Select priority"
+            searchPlaceholder="Search priorities..."
+            className="mt-1"
+          />
         </div>
       </div>
 
@@ -1261,30 +1399,26 @@ export function TicketDetailModalEnhanced({
       {!isNew && (
         <div>
           <Label htmlFor="ticketType">Ticket Type</Label>
-          <Select value={ticketType} onValueChange={setTicketType}>
-            <SelectTrigger className="mt-1 rounded-md" id="ticketType">
-              <SelectValue placeholder="Select ticket type (for ServiceDesk)" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">None</SelectItem>
-              <SelectItem value="Request">Request</SelectItem>
-              <SelectItem value="Change Request">Change Request</SelectItem>
-              <SelectItem value="Issue">Issue</SelectItem>
-              <SelectItem value="Problem">Problem</SelectItem>
-              <SelectItem value="Incident">Incident</SelectItem>
-            </SelectContent>
-          </Select>
+          <SearchableSelect
+            id="ticketType"
+            value={ticketType}
+            onValueChange={setTicketType}
+            options={ticketTypeOptions}
+            placeholder="Select ticket type (for ServiceDesk)"
+            searchPlaceholder="Search ticket types..."
+            className="mt-1"
+          />
           <p className="mt-1 text-xs text-muted-foreground">
             This will be mapped to ServiceDesk category when pushing.
           </p>
         </div>
       )}
 
-      {!isNew && ticket.assignees && ticket.assignees.length > 0 && (
+      {!isNew && ticketAssignees.length > 0 && (
         <div>
           <Label>Assignees</Label>
           <div className="mt-2 flex gap-2">
-            {ticket.assignees.map((assignee) => (
+            {ticketAssignees.map((assignee) => (
               <Avatar key={assignee.user.id} className="h-8 w-8">
                 <AvatarImage src={assignee.user.avatar || undefined} />
                 <AvatarFallback>
@@ -1299,7 +1433,8 @@ export function TicketDetailModalEnhanced({
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <Label htmlFor={isNew ? 'project-create' : 'project'}>Project</Label>
-          <Select
+          <SearchableSelect
+            id={isNew ? 'project-create' : 'project'}
             value={selectedProject || '__none__'}
             onValueChange={(value) => {
               const nextProjectId = value === '__none__' ? '' : value
@@ -1309,40 +1444,25 @@ export function TicketDetailModalEnhanced({
               setSelectedRelease('')
               applyProjectFieldDefinitions(nextProjectId, projects)
             }}
-          >
-            <SelectTrigger className="mt-1" id={isNew ? 'project-create' : 'project'}>
-              <SelectValue placeholder="Select project" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">None</SelectItem>
-              {projects.map((project) => (
-                <SelectItem key={project.id} value={project.id}>
-                  {project.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            options={projectOptions}
+            placeholder="Select project"
+            searchPlaceholder="Search projects..."
+            className="mt-1"
+          />
         </div>
 
         {selectedProject && (
           <div>
             <Label htmlFor={isNew ? 'module-create' : 'module'}>Module</Label>
-            <Select
+            <SearchableSelect
+              id={isNew ? 'module-create' : 'module'}
               value={selectedModule || '__none__'}
               onValueChange={(value) => setSelectedModule(value === '__none__' ? '' : value)}
-            >
-              <SelectTrigger className="mt-1 rounded-md" id={isNew ? 'module-create' : 'module'}>
-                <SelectValue placeholder="Select module" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">None</SelectItem>
-                {modules.map((module) => (
-                  <SelectItem key={module.id} value={module.id}>
-                    {module.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              options={moduleOptions}
+              placeholder="Select module"
+              searchPlaceholder="Search modules..."
+              className="mt-1"
+            />
           </div>
         )}
       </div>
@@ -1351,41 +1471,27 @@ export function TicketDetailModalEnhanced({
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <Label htmlFor={isNew ? 'milestone-create' : 'milestone'}>Milestone</Label>
-            <Select
+            <SearchableSelect
+              id={isNew ? 'milestone-create' : 'milestone'}
               value={selectedMilestone || '__none__'}
               onValueChange={(value) => setSelectedMilestone(value === '__none__' ? '' : value)}
-            >
-              <SelectTrigger className="mt-1 rounded-md" id={isNew ? 'milestone-create' : 'milestone'}>
-                <SelectValue placeholder="Select milestone" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">None</SelectItem>
-                {milestones.map((milestone) => (
-                  <SelectItem key={milestone.id} value={milestone.id}>
-                    {milestone.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              options={milestoneOptions}
+              placeholder="Select milestone"
+              searchPlaceholder="Search milestones..."
+              className="mt-1"
+            />
           </div>
           <div>
             <Label htmlFor={isNew ? 'release-create' : 'release'}>Release</Label>
-            <Select
+            <SearchableSelect
+              id={isNew ? 'release-create' : 'release'}
               value={selectedRelease || '__none__'}
               onValueChange={(value) => setSelectedRelease(value === '__none__' ? '' : value)}
-            >
-              <SelectTrigger className="mt-1 rounded-md" id={isNew ? 'release-create' : 'release'}>
-                <SelectValue placeholder="Select release" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">None</SelectItem>
-                {releases.map((release) => (
-                  <SelectItem key={release.id} value={release.id}>
-                    {release.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              options={releaseOptions}
+              placeholder="Select release"
+              searchPlaceholder="Search releases..."
+              className="mt-1"
+            />
           </div>
         </div>
       )}
@@ -1424,15 +1530,17 @@ export function TicketDetailModalEnhanced({
         {!isNew && gitLabConfig?.isConfigured && (
           <>
             {gitLabRepositories.length > 0 && (
-              <Select value={selectedRepository} onValueChange={setSelectedRepository}>
-                <SelectTrigger className="w-48"><SelectValue placeholder="Repository" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Default Repository</SelectItem>
-                  {gitLabRepositories.map((repo) => (
-                    <SelectItem key={repo.id} value={repo.projectId}>{repo.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                value={selectedRepository}
+                onValueChange={setSelectedRepository}
+                options={[
+                  { value: '', label: 'Default Repository' },
+                  ...gitLabRepositories.map((repo) => ({ value: repo.projectId, label: repo.name })),
+                ]}
+                placeholder="Repository"
+                searchPlaceholder="Search repositories..."
+                className="w-48"
+              />
             )}
             <Button variant="outline" onClick={handlePushToGitLab} disabled={pushingToGitLab || loadingRepositories}>
               {pushingToGitLab ? <Loader className="h-4 w-4 mr-2 animate-spin" /> : <GitBranch className="h-4 w-4 mr-2" />}
@@ -1644,17 +1752,7 @@ export function TicketDetailModalEnhanced({
                       <Label>{field.displayName}</Label>
                       {renderFieldInput(field, index)}
                     </div>
-                    <Select value={field.type} disabled>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="TEXT">Text</SelectItem>
-                        <SelectItem value="NUMBER">Number</SelectItem>
-                        <SelectItem value="DATE">Date</SelectItem>
-                        <SelectItem value="SELECT">Select</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input value={field.type} disabled className="bg-muted/70" />
                   </div>
                 ))}
               </div>
@@ -1817,11 +1915,11 @@ export function TicketDetailModalEnhanced({
                 />
               </div>
             </div>
-            {ticket.assignees && ticket.assignees.length > 0 && (
+            {ticketAssignees.length > 0 && (
               <div>
                 <Label>Assignees</Label>
                 <div className="flex gap-2 mt-2">
-                  {ticket.assignees.map((assignee) => (
+                  {ticketAssignees.map((assignee) => (
                     <Avatar key={assignee.user.id} className="h-8 w-8">
                       <AvatarImage src={assignee.user.avatar || undefined} />
                       <AvatarFallback>
@@ -1956,17 +2054,7 @@ export function TicketDetailModalEnhanced({
                           placeholder="Value"
                         />
                       </div>
-                      <Select value={field.type} disabled>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="TEXT">Text</SelectItem>
-                          <SelectItem value="NUMBER">Number</SelectItem>
-                          <SelectItem value="DATE">Date</SelectItem>
-                          <SelectItem value="SELECT">Select</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input value={field.type} disabled className="bg-muted/70" />
                     </div>
                   ))}
                 </div>
@@ -2435,20 +2523,18 @@ export function TicketDetailModalEnhanced({
                             onChange={(e) => setNewServiceDeskLink({ ...newServiceDeskLink, requestId: e.target.value })}
                             className="flex-1"
                           />
-                          <Select
+                          <SearchableSelect
                             value={newServiceDeskLink.linkType}
                             onValueChange={(value) => setNewServiceDeskLink({ ...newServiceDeskLink, linkType: value })}
-                          >
-                            <SelectTrigger className="w-40">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="relates_to">Relates To</SelectItem>
-                              <SelectItem value="duplicate">Duplicate</SelectItem>
-                              <SelectItem value="depends_on">Depends On</SelectItem>
-                              <SelectItem value="blocked_by">Blocked By</SelectItem>
-                            </SelectContent>
-                          </Select>
+                            options={[
+                              { value: 'relates_to', label: 'Relates To' },
+                              { value: 'duplicate', label: 'Duplicate' },
+                              { value: 'depends_on', label: 'Depends On' },
+                              { value: 'blocked_by', label: 'Blocked By' },
+                            ]}
+                            searchPlaceholder="Search link types..."
+                            className="w-40"
+                          />
                           <Button onClick={handleLinkServiceDeskTickets} disabled={!newServiceDeskLink.requestId}>
                             <GitBranch className="h-4 w-4 mr-2" />
                             Link
@@ -2522,7 +2608,7 @@ export function TicketDetailModalEnhanced({
   if (isDrawer) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-[96vw] sm:max-w-[1100px] overflow-y-auto flex flex-col gap-0 p-0">
+        <SheetContent side="right" className="w-[96vw] sm:max-w-[1100px] overflow-y-auto flex flex-col gap-0 bg-white p-0 text-zinc-950">
           <SheetHeader className="px-6 py-4 border-b">
             <SheetTitle className="sr-only">Ticket</SheetTitle>
             {headerContent}
@@ -2540,7 +2626,7 @@ export function TicketDetailModalEnhanced({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col bg-white text-zinc-950">
         <DialogHeader className="flex-shrink-0">
           {headerContent}
         </DialogHeader>

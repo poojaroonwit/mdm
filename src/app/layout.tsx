@@ -23,6 +23,10 @@ const ibmPlexSansThai = IBM_Plex_Sans_Thai({
 export const metadata: Metadata = {
   title: 'Unified Data Platform',
   description: 'Comprehensive Unified Data Platform for event organizations',
+  icons: {
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
+    shortcut: ['/favicon.svg'],
+  },
   robots: {
     index: false,
     follow: false,

@@ -93,6 +93,13 @@ function addDays(date: Date, days: number) {
   return next
 }
 
+function toDateInputValue(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 function dayDiff(start: Date, end: Date) {
   return Math.max(0, Math.round((end.getTime() - start.getTime()) / 86400000))
 }
@@ -109,6 +116,8 @@ function ProjectGanttView({
   onScheduleChange: (ticketId: string, updates: { startDate: string; dueDate: string }) => Promise<void>
 }) {
   const timelineRef = useRef<HTMLDivElement | null>(null)
+  const latestDraftRangesRef = useRef<Record<string, { start: Date; end: Date }>>({})
+  const didDragRef = useRef(false)
   const [interaction, setInteraction] = useState<{
     ticketId: string
     mode: 'move' | 'resize-start' | 'resize-end'
@@ -117,6 +126,10 @@ function ProjectGanttView({
     end: Date
   } | null>(null)
   const [draftRanges, setDraftRanges] = useState<Record<string, { start: Date; end: Date }>>({})
+
+  useEffect(() => {
+    latestDraftRangesRef.current = draftRanges
+  }, [draftRanges])
 
   const preparedTickets = tickets.map((ticket) => {
     const draft = draftRanges[ticket.id]
@@ -142,11 +155,13 @@ function ProjectGanttView({
 
     const handleMove = (event: MouseEvent) => {
       if (!timelineRef.current) return
-      const dayWidth = timelineRef.current.getBoundingClientRect().width / totalDays
+      const timelineWidth = Math.max(timelineRef.current.getBoundingClientRect().width - 320, 1)
+      const dayWidth = timelineWidth / totalDays
       const deltaDays = Math.round((event.clientX - interaction.originX) / Math.max(dayWidth, 1))
       if (!deltaDays) {
         return
       }
+      didDragRef.current = true
 
       let nextStart = interaction.start
       let nextEnd = interaction.end
@@ -166,20 +181,28 @@ function ProjectGanttView({
         }
       }
 
+      const nextRange = { start: nextStart, end: nextEnd }
+      latestDraftRangesRef.current = {
+        ...latestDraftRangesRef.current,
+        [interaction.ticketId]: nextRange,
+      }
       setDraftRanges((prev) => ({
         ...prev,
-        [interaction.ticketId]: { start: nextStart, end: nextEnd },
+        [interaction.ticketId]: nextRange,
       }))
     }
 
     const handleUp = async () => {
-      const draft = draftRanges[interaction.ticketId]
+      const draft = latestDraftRangesRef.current[interaction.ticketId]
       setInteraction(null)
+      window.setTimeout(() => {
+        didDragRef.current = false
+      }, 0)
       if (!draft) return
 
       await onScheduleChange(interaction.ticketId, {
-        startDate: draft.start.toISOString(),
-        dueDate: draft.end.toISOString(),
+        startDate: toDateInputValue(draft.start),
+        dueDate: toDateInputValue(draft.end),
       })
     }
 
@@ -190,7 +213,7 @@ function ProjectGanttView({
       window.removeEventListener('mousemove', handleMove)
       window.removeEventListener('mouseup', handleUp)
     }
-  }, [draftRanges, interaction, onScheduleChange, totalDays])
+  }, [interaction, onScheduleChange, totalDays])
 
   return (
     <div className="overflow-auto border border-border bg-background">
@@ -237,9 +260,18 @@ function ProjectGanttView({
                       }}
                     >
                       <button
-                        onClick={() => onTicketClick(ticket)}
+                        onClick={(event) => {
+                          if (didDragRef.current) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                            return
+                          }
+                          onTicketClick(ticket)
+                        }}
                         onMouseDown={(event) => {
+                          event.preventDefault()
                           event.stopPropagation()
+                          didDragRef.current = false
                           setInteraction({
                             ticketId: ticket.id,
                             mode: 'move',
@@ -260,6 +292,7 @@ function ProjectGanttView({
                         onMouseDown={(event) => {
                           event.preventDefault()
                           event.stopPropagation()
+                          didDragRef.current = false
                           setInteraction({
                             ticketId: ticket.id,
                             mode: 'resize-start',
@@ -276,6 +309,7 @@ function ProjectGanttView({
                         onMouseDown={(event) => {
                           event.preventDefault()
                           event.stopPropagation()
+                          didDragRef.current = false
                           setInteraction({
                             ticketId: ticket.id,
                             mode: 'resize-end',

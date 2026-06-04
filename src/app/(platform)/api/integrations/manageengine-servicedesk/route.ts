@@ -25,26 +25,34 @@ async function getHandler(request: NextRequest) {
 
   // Check access
   const { rows: access } = await query(
-    'SELECT 1 FROM space_members WHERE space_id = $1::uuid AND user_id = $2::uuid',
+    'SELECT 1 FROM space_members WHERE space_id::text = $1 AND user_id::text = $2',
     [spaceId, session.user.id]
   )
   if (access.length === 0) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  // Get configuration from external_connections table
-  const { rows } = await query(
-    `SELECT id, name, api_url, api_auth_type, api_auth_apikey_name, 
-            is_active, created_at, updated_at
-     FROM public.external_connections 
-     WHERE space_id = $1::uuid 
-       AND connection_type = 'api'
-       AND name LIKE '%ServiceDesk%'
-       AND deleted_at IS NULL
-     ORDER BY created_at DESC
-     LIMIT 1`,
-    [spaceId]
-  )
+  let rows: any[] = []
+
+  try {
+    // Get configuration from external_connections table
+    const result = await query(
+      `SELECT id, name, api_url, api_auth_type, api_auth_apikey_name,
+              is_active, created_at, updated_at
+       FROM public.external_connections
+       WHERE space_id::text = $1
+         AND connection_type = 'api'
+         AND name LIKE '%ServiceDesk%'
+         AND deleted_at IS NULL
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [spaceId]
+    )
+    rows = result.rows
+  } catch (error) {
+    console.warn('ServiceDesk configuration lookup failed:', error)
+    return NextResponse.json({ config: null })
+  }
 
   if (rows.length === 0) {
     return NextResponse.json({ config: null })
@@ -83,7 +91,7 @@ async function postHandler(request: NextRequest) {
 
   // Check access
   const { rows: access } = await query(
-    'SELECT 1 FROM space_members WHERE space_id = $1::uuid AND user_id = $2::uuid',
+    'SELECT 1 FROM space_members WHERE space_id::text = $1 AND user_id::text = $2',
     [space_id, session.user.id]
   )
   if (access.length === 0) {
@@ -131,7 +139,7 @@ async function postHandler(request: NextRequest) {
   // Check if configuration already exists
   const { rows: existing } = await query(
     `SELECT id FROM public.external_connections 
-     WHERE space_id = $1::uuid 
+     WHERE space_id::text = $1
        AND connection_type = 'api'
        AND name LIKE '%ServiceDesk%'
        AND deleted_at IS NULL
@@ -150,7 +158,7 @@ async function postHandler(request: NextRequest) {
        api_auth_apikey_name = $3,
        api_auth_apikey_value = $4,
        updated_at = NOW()
-       WHERE id = $5`,
+       WHERE id::text = $5`,
       [baseUrl, 'apikey', 'TECHNICIAN_KEY', storedApiKey, connectionId]
     )
   } else {
