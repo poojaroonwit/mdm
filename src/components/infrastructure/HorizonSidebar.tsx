@@ -427,7 +427,7 @@ export function HorizonSidebar({
                               <div className="flex items-center gap-3 w-full min-w-0">
                                 <Server className={cn(
                                "h-4 w-4 flex-shrink-0 transition-colors",
-                               selectedVmId !== vm.id && "text-zinc-400 dark:text-zinc-500"
+                               selectedVmId !== instance.id && "text-zinc-400 dark:text-zinc-500"
                              )} strokeWidth={3} />
                                 <div className="min-w-0 text-left">
                                   <div className="truncate font-medium">{instance.name}</div>

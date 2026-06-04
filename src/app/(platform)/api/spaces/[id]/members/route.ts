@@ -41,7 +41,7 @@ async function getHandler(
         u.is_active
       FROM space_members sm
       LEFT JOIN users u ON sm.user_id = u.id
-      WHERE sm.space_id = $1::uuid
+      WHERE sm.space_id::text = $1
       ORDER BY sm.role DESC, u.name ASC
     `, [spaceId])
 
@@ -96,7 +96,7 @@ async function postHandler(
     // Additional check: verify user is owner or admin
     const memberCheck = await query(`
       SELECT role FROM space_members 
-      WHERE space_id = $1::uuid AND user_id = $2::uuid
+      WHERE space_id::text = $1 AND user_id::text = $2
     `, [spaceId, session.user.id])
 
     if (memberCheck.rows.length === 0 || !['owner', 'admin'].includes(memberCheck.rows[0].role)) {
@@ -106,7 +106,7 @@ async function postHandler(
 
     // Check if user exists
     const userCheck = await query(`
-      SELECT id, name, email FROM users WHERE id = $1::uuid AND is_active = true
+      SELECT id, name, email FROM users WHERE id::text = $1 AND is_active = true
     `, [user_id])
 
     if (userCheck.rows.length === 0) {

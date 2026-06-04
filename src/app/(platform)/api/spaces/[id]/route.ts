@@ -41,8 +41,8 @@ async function getHandler(
         sm.role as user_role
       FROM spaces s
       LEFT JOIN users u ON s.created_by = u.id
-      LEFT JOIN space_members sm ON s.id = sm.space_id AND sm.user_id = $2::uuid
-      WHERE s.id = $1::uuid AND s.deleted_at IS NULL
+      LEFT JOIN space_members sm ON s.id = sm.space_id AND sm.user_id::text = $2
+      WHERE s.id::text = $1 AND s.deleted_at IS NULL
     `, [spaceId, session.user.id])
 
   if (space.rows.length === 0) {
@@ -61,7 +61,7 @@ async function getHandler(
         u.role as user_system_role
       FROM space_members sm
       LEFT JOIN users u ON sm.user_id = u.id
-      WHERE sm.space_id = $1::uuid
+      WHERE sm.space_id::text = $1
       ORDER BY sm.role DESC, u.name ASC
     `, [spaceId])
 
@@ -125,7 +125,7 @@ async function putHandler(
   // Check if user has permission to update this space (admin/owner only)
   const memberCheck = await query(`
       SELECT role FROM space_members 
-      WHERE space_id = $1::uuid AND user_id = $2::uuid
+      WHERE space_id::text = $1 AND user_id::text = $2
     `, [spaceId, session.user.id])
 
   if (memberCheck.rows.length === 0 || !['owner', 'admin'].includes(memberCheck.rows[0].role)) {
@@ -146,7 +146,7 @@ async function putHandler(
         features = CASE WHEN $10 THEN COALESCE($11::jsonb, features) ELSE features END,
         sidebar_config = CASE WHEN $12 THEN COALESCE($13::jsonb, sidebar_config) ELSE sidebar_config END,
         updated_at = NOW()
-      WHERE id = $1::uuid AND deleted_at IS NULL
+      WHERE id::text = $1 AND deleted_at IS NULL
       RETURNING *
     `, [spaceId, name?.trim(), description?.trim(), is_default, slug?.trim(), icon ?? null, logo_url ?? null, iconProvided, logoProvided, featuresProvided, features ?? null, sidebarProvided, sidebar_config ?? null])
 
@@ -194,7 +194,7 @@ async function deleteHandler(
   await query(`
       UPDATE spaces 
       SET deleted_at = NOW(), updated_at = NOW()
-      WHERE id = $1::uuid
+      WHERE id::text = $1
     `, [spaceId])
 
   const duration = Date.now() - startTime

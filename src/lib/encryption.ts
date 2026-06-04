@@ -52,8 +52,9 @@ function getEncryptionKey(): Buffer {
 
   // If key is provided as hex string, convert it
   if (envKey.length === 64) {
-    cachedKey = Buffer.from(envKey, 'hex')
-    return cachedKey
+    const key = Buffer.from(envKey, 'hex')
+    cachedKey = key
+    return key
   }
 
   // Otherwise derive key from the environment variable
@@ -62,8 +63,9 @@ function getEncryptionKey(): Buffer {
     throw new Error('ENCRYPTION_SALT environment variable is not set. Please set it in your .env file.')
   }
 
-  cachedKey = crypto.pbkdf2Sync(envKey, salt, ITERATIONS, KEY_LENGTH, 'sha256')
-  return cachedKey
+  const key = crypto.pbkdf2Sync(envKey, salt, ITERATIONS, KEY_LENGTH, 'sha256')
+  cachedKey = key
+  return key
 }
 
 /**

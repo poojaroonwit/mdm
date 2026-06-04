@@ -22,7 +22,7 @@ async function getHandler(
 
     // Check if user has access to this space
     const memberResult = await query(
-      'SELECT role FROM space_members WHERE space_id = $1 AND user_id = $2',
+      'SELECT role FROM space_members WHERE space_id::text = $1 AND user_id::text = $2',
       [spaceId, userId]
     )
 
@@ -34,7 +34,7 @@ async function getHandler(
 
     // Get storage configuration for this space
     const storageResult = await query(
-      'SELECT * FROM space_attachment_storage WHERE space_id = $1 AND is_active = true ORDER BY created_at DESC LIMIT 1',
+      'SELECT * FROM space_attachment_storage WHERE space_id::text = $1 AND is_active = true ORDER BY created_at DESC LIMIT 1',
       [spaceId]
     )
 
@@ -79,7 +79,7 @@ async function putHandler(
 
     // Check if user has admin/owner role
     const memberResult = await query(
-      'SELECT role FROM space_members WHERE space_id = $1 AND user_id = $2',
+      'SELECT role FROM space_members WHERE space_id::text = $1 AND user_id::text = $2',
       [spaceId, userId]
     )
 
@@ -99,7 +99,7 @@ async function putHandler(
 
     // Deactivate existing configurations
     await query(
-      'UPDATE space_attachment_storage SET is_active = false WHERE space_id = $1',
+      'UPDATE space_attachment_storage SET is_active = false WHERE space_id::text = $1',
       [spaceId]
     )
 

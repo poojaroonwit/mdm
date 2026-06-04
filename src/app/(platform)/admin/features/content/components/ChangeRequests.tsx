@@ -17,6 +17,11 @@ import {
   Search
 } from 'lucide-react'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
   DialogTrigger,
   DialogBody,

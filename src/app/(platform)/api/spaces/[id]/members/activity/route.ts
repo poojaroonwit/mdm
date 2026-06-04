@@ -45,7 +45,7 @@ async function getHandler(
     // Check if user has access to this space
     const memberCheck = await query(`
       SELECT role FROM space_members 
-      WHERE space_id = $1 AND user_id = $2
+      WHERE space_id::text = $1 AND user_id::text = $2
     `, [spaceId, session.user.id])
 
     if (memberCheck.rows.length === 0) {
@@ -67,7 +67,7 @@ async function getHandler(
         MAX(u.last_sign_in_at) as last_activity
       FROM space_members sm
       LEFT JOIN users u ON sm.user_id = u.id
-      WHERE sm.space_id = $1
+      WHERE sm.space_id::text = $1
         AND u.last_sign_in_at >= NOW() - INTERVAL '${days} days'
       GROUP BY sm.user_id, u.name, u.email, u.avatar, sm.role, u.last_sign_in_at, u.is_active
       ORDER BY last_activity DESC NULLS LAST
@@ -85,7 +85,7 @@ async function getHandler(
             END) as avg_hours_since_activity
       FROM space_members sm
       LEFT JOIN users u ON sm.user_id = u.id
-      WHERE sm.space_id = $1
+      WHERE sm.space_id::text = $1
     `, [spaceId])
 
     // Get daily activity for chart
@@ -95,7 +95,7 @@ async function getHandler(
         COUNT(DISTINCT u.id) as active_users
       FROM space_members sm
       LEFT JOIN users u ON sm.user_id = u.id
-      WHERE sm.space_id = $1
+      WHERE sm.space_id::text = $1
         AND u.last_sign_in_at >= NOW() - INTERVAL '${days} days'
       GROUP BY DATE(u.last_sign_in_at)
       ORDER BY activity_date DESC
@@ -164,7 +164,7 @@ async function postHandler(
     await query(`
       UPDATE users 
       SET last_sign_in_at = NOW()
-      WHERE id = $1
+      WHERE id::text = $1
     `, [session.user.id])
 
     // Log activity if needed

@@ -38,7 +38,7 @@ async function getHandler(
       `SELECT s.id, s.name
        FROM spaces s
        JOIN space_members sm ON s.id = sm.space_id
-       WHERE s.id = $1::uuid AND sm.user_id = $2::uuid AND sm.role IN ('owner', 'admin', 'member')`,
+       WHERE s.id::text = $1 AND sm.user_id::text = $2 AND sm.role IN ('owner', 'admin', 'member')`,
       [spaceId, userId]
     )
 
@@ -61,7 +61,7 @@ async function getHandler(
         u.email as created_by_email
        FROM layout_versions lv
        LEFT JOIN users u ON lv.created_by = u.id
-       WHERE lv.space_id = $1::uuid
+       WHERE lv.space_id::text = $1
        ORDER BY lv.version_number DESC`,
       [spaceId]
     )
@@ -125,7 +125,7 @@ async function postHandler(
       `SELECT s.id, s.name
        FROM spaces s
        JOIN space_members sm ON s.id = sm.space_id
-       WHERE s.id = $1::uuid AND sm.user_id = $2::uuid AND sm.role IN ('owner', 'admin', 'member')`,
+       WHERE s.id::text = $1 AND sm.user_id::text = $2 AND sm.role IN ('owner', 'admin', 'member')`,
       [spaceId, userId]
     )
 
@@ -142,7 +142,7 @@ async function postHandler(
 
     // Mark all other versions as not current
     await query(
-      'UPDATE layout_versions SET is_current = false WHERE space_id = $1::uuid',
+      'UPDATE layout_versions SET is_current = false WHERE space_id::text = $1',
       [spaceId]
     )
 

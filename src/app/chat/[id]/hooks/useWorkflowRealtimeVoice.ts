@@ -176,7 +176,7 @@ export function useWorkflowRealtimeVoice({
   }
 
   const connectWebSocket = async (): Promise<boolean> => {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
       try {
         // Get API key from chatbot config
         const apiKey = chatbot?.openaiAgentSdkApiKey

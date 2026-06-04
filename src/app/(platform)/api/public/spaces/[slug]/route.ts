@@ -11,7 +11,7 @@ export async function GET(
     const result = await query(
       `SELECT id, name, slug, logo_url, features
        FROM spaces
-       WHERE deleted_at IS NULL AND (slug = $1 OR id = $1)
+       WHERE deleted_at IS NULL AND (slug = $1 OR id::text = $1)
        LIMIT 1`,
       [identifier]
     )

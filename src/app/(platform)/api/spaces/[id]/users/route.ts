@@ -42,7 +42,7 @@ async function getHandler(
         u.is_active
       FROM space_members sm
       JOIN users u ON sm.user_id = u.id
-      WHERE sm.space_id = $1::uuid AND u.is_active = true
+      WHERE sm.space_id::text = $1 AND u.is_active = true
       ORDER BY u.name ASC
     `, [spaceId])
 

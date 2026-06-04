@@ -3,6 +3,9 @@
 import { useState } from 'react'
 import { PluginDefinition } from '../types'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogBody,

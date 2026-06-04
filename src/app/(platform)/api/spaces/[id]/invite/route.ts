@@ -48,7 +48,7 @@ async function postHandler(
     // Check if current user has permission to invite members (must be owner or admin)
     const memberCheck = await query(`
       SELECT role FROM space_members 
-      WHERE space_id = $1 AND user_id = $2
+      WHERE space_id::text = $1 AND user_id::text = $2
     `, [spaceId, session.user.id])
 
     if (memberCheck.rows.length === 0 || !['owner', 'admin'].includes(memberCheck.rows[0].role)) {
@@ -58,7 +58,7 @@ async function postHandler(
 
     // Get space details
     const spaceResult = await query(`
-      SELECT name, description FROM spaces WHERE id = $1
+      SELECT name, description FROM spaces WHERE id::text = $1
     `, [spaceId])
 
     if (spaceResult.rows.length === 0) {
@@ -79,7 +79,7 @@ async function postHandler(
       
       // Check if they're already a member
       const existingMember = await query(`
-        SELECT id FROM space_members WHERE space_id = $1 AND user_id = $2
+        SELECT id FROM space_members WHERE space_id::text = $1 AND user_id::text = $2
       `, [spaceId, user.id])
 
       if (existingMember.rows.length > 0) {

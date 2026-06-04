@@ -35,7 +35,7 @@ async function getHandler(
     // Check if current user has permission to view member permissions
     const memberCheck = await query(`
       SELECT role FROM space_members 
-      WHERE space_id = $1::uuid AND user_id = $2::uuid
+      WHERE space_id::text = $1 AND user_id::text = $2
     `, [spaceId, session.user.id])
 
     if (memberCheck.rows.length === 0 || !['owner', 'admin'].includes(memberCheck.rows[0].role)) {
@@ -46,7 +46,7 @@ async function getHandler(
     // Get member permissions
     const permissions = await query(`
       SELECT permissions FROM member_permissions 
-      WHERE space_id = $1::uuid AND user_id = $2::uuid
+      WHERE space_id::text = $1 AND user_id::text = $2
     `, [spaceId, userId])
 
     const duration = Date.now() - startTime
@@ -105,7 +105,7 @@ async function putHandler(
     // Check if current user has permission to manage member permissions
     const memberCheck = await query(`
       SELECT role FROM space_members 
-      WHERE space_id = $1::uuid AND user_id = $2::uuid
+      WHERE space_id::text = $1 AND user_id::text = $2
     `, [spaceId, session.user.id])
 
     if (memberCheck.rows.length === 0 || !['owner', 'admin'].includes(memberCheck.rows[0].role)) {
@@ -116,7 +116,7 @@ async function putHandler(
     // Check if target user is a member of the space
     const targetMemberCheck = await query(`
       SELECT role FROM space_members 
-      WHERE space_id = $1::uuid AND user_id = $2::uuid
+      WHERE space_id::text = $1 AND user_id::text = $2
     `, [spaceId, userId])
 
     if (targetMemberCheck.rows.length === 0) {

@@ -249,19 +249,36 @@ const DropdownMenuItem = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
     inset?: boolean
+    asChild?: boolean
   }
->(({ className, inset, ...props }, ref) => (
-  <div
-    ref={ref}
-    role="menuitem"
-    className={cn(
-      "relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-sm outline-none transition-all duration-200 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 focus:bg-zinc-100/50 dark:focus:bg-zinc-800/50 disabled:pointer-events-none disabled:opacity-40",
-      inset && "pl-8",
-      className
-    )}
-    {...props}
-  />
-))
+>(({ className, inset, asChild, children, ...props }, ref) => {
+  const itemClassName = cn(
+    "relative flex cursor-default select-none items-center rounded-lg px-2 py-1.5 text-sm outline-none transition-all duration-200 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 focus:bg-zinc-100/50 dark:focus:bg-zinc-800/50 disabled:pointer-events-none disabled:opacity-40",
+    inset && "pl-8",
+    className
+  )
+
+  if (asChild && React.isValidElement(children)) {
+    const child = children as React.ReactElement<any>
+    return React.cloneElement(child, {
+      ...props,
+      ref,
+      role: child.props.role ?? "menuitem",
+      className: cn(itemClassName, child.props.className),
+    })
+  }
+
+  return (
+    <div
+      ref={ref}
+      role="menuitem"
+      className={itemClassName}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+})
 DropdownMenuItem.displayName = "DropdownMenuItem"
 
 const DropdownMenuCheckboxItem = React.forwardRef<

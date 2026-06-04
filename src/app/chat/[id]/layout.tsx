@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 
 interface ChatLayoutProps {
   children: React.ReactNode
-  params: Promise<{ id: string }>
+  params: Promise<unknown>
 }
 
 /**
@@ -133,7 +133,7 @@ const getLoadingConfig = (chatbot: any) => {
 }
 
 export default async function ChatLayout({ children, params }: ChatLayoutProps) {
-  const { id: chatbotId } = await params
+  const { id: chatbotId } = await params as { id: string }
 
   // Fetch chatbot config for loading styles
   let loadingStyles = { backgroundColor: '#ffffff', spinnerColor: '#000000', text: '' }

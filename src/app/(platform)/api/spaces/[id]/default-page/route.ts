@@ -31,7 +31,7 @@ async function getHandler(
     
     // Get space ID from slug or id
     const spaceResult = await query(
-      'SELECT id FROM spaces WHERE slug = $1 OR id = $1 LIMIT 1',
+      'SELECT id FROM spaces WHERE slug = $1 OR id::text = $1 LIMIT 1',
       [spaceSlugOrId]
     )
 
@@ -58,7 +58,9 @@ async function getHandler(
 
     if (configResult.rows.length > 0) {
       try {
-        const config: SpacesEditorConfig = JSON.parse(configResult.rows[0].value)
+        const storedValue = configResult.rows[0].value
+        const config: SpacesEditorConfig =
+          typeof storedValue === 'string' ? JSON.parse(storedValue) : storedValue
         
         // First, check if postAuthRedirectPageId is configured
         if (config.postAuthRedirectPageId && config.pages && config.pages.length > 0) {

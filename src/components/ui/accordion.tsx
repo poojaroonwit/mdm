@@ -6,9 +6,10 @@ import { cn } from "@/lib/utils";
 
 // Context for Accordion (manages which item is open)
 interface AccordionContextValue {
-  value: string;
-  onValueChange: (value: string) => void;
+  value: string | string[];
+  onValueChange: (value: string | string[]) => void;
   collapsible: boolean;
+  type: "single" | "multiple";
 }
 
 const AccordionContext = React.createContext<AccordionContextValue | undefined>(undefined);
@@ -25,9 +26,9 @@ const AccordionItemContext = React.createContext<AccordionItemContextValue | und
 interface AccordionProps {
   type?: "single" | "multiple";
   collapsible?: boolean;
-  value?: string;
-  defaultValue?: string;
-  onValueChange?: (value: string) => void;
+  value?: string | string[];
+  defaultValue?: string | string[];
+  onValueChange?: (value: string | string[]) => void;
   className?: string;
   children?: React.ReactNode;
   // Legacy items-based API (kept for backward compatibility)
@@ -39,19 +40,21 @@ interface AccordionProps {
 }
 
 export const Accordion = ({
+  type = "single",
   collapsible = false,
   value: controlledValue,
-  defaultValue = "",
+  defaultValue,
   onValueChange,
   className,
   children,
   items,
 }: AccordionProps) => {
-  const [internalValue, setInternalValue] = React.useState(defaultValue);
+  const fallbackValue = type === "multiple" ? [] : "";
+  const [internalValue, setInternalValue] = React.useState<string | string[]>(defaultValue ?? fallbackValue);
   const isControlled = controlledValue !== undefined;
-  const value = isControlled ? (controlledValue as string) : internalValue;
+  const value = isControlled ? controlledValue : internalValue;
 
-  const handleValueChange = (newValue: string) => {
+  const handleValueChange = (newValue: string | string[]) => {
     if (!isControlled) setInternalValue(newValue);
     onValueChange?.(newValue);
   };
@@ -59,12 +62,19 @@ export const Accordion = ({
   // Legacy items-based rendering
   if (items) {
     return (
-      <AccordionContext.Provider value={{ value, onValueChange: handleValueChange, collapsible }}>
+      <AccordionContext.Provider value={{ value, onValueChange: handleValueChange, collapsible, type }}>
         <div className={cn("w-full space-y-3", className)}>
           {(items ?? []).map((item) => {
-            const isOpen = value === item.id;
+            const isOpen = Array.isArray(value) ? value.includes(item.id) : value === item.id;
             const onToggle = () => {
-              if (collapsible && value === item.id) {
+              if (type === "multiple") {
+                const current = Array.isArray(value) ? value : [];
+                handleValueChange(
+                  current.includes(item.id)
+                    ? current.filter((openItem) => openItem !== item.id)
+                    : [...current, item.id]
+                );
+              } else if (collapsible && value === item.id) {
                 handleValueChange("");
               } else {
                 handleValueChange(item.id);
@@ -108,7 +118,7 @@ export const Accordion = ({
   }
 
   return (
-    <AccordionContext.Provider value={{ value, onValueChange: handleValueChange, collapsible }}>
+    <AccordionContext.Provider value={{ value, onValueChange: handleValueChange, collapsible, type }}>
       <div className={cn("w-full", className)}>
         {children}
       </div>
@@ -122,11 +132,22 @@ export const AccordionItem = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement> & { value: string }
 >(({ className, value, children, ...props }, ref) => {
   const context = React.useContext(AccordionContext);
-  const isOpen = context ? context.value === value : false;
+  const isOpen = context
+    ? Array.isArray(context.value)
+      ? context.value.includes(value)
+      : context.value === value
+    : false;
 
   const onToggle = () => {
     if (!context) return;
-    if (context.collapsible && context.value === value) {
+    if (context.type === "multiple") {
+      const current = Array.isArray(context.value) ? context.value : [];
+      context.onValueChange(
+        current.includes(value)
+          ? current.filter((openItem) => openItem !== value)
+          : [...current, value]
+      );
+    } else if (context.collapsible && context.value === value) {
       context.onValueChange("");
     } else {
       context.onValueChange(value);

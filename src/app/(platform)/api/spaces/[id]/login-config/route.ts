@@ -27,7 +27,7 @@ export async function GET(
     
     // Get space ID from slug
     const spaceResult = await query(
-      'SELECT id FROM spaces WHERE slug = $1 OR id = $1 LIMIT 1',
+      'SELECT id FROM spaces WHERE slug = $1 OR id::text = $1 LIMIT 1',
       [spaceSlugOrId]
     )
 
@@ -47,7 +47,9 @@ export async function GET(
 
     if (configResult.rows.length > 0) {
       try {
-        const config: SpacesEditorConfig = JSON.parse(configResult.rows[0].value)
+        const storedValue = configResult.rows[0].value
+        const config: SpacesEditorConfig =
+          typeof storedValue === 'string' ? JSON.parse(storedValue) : storedValue
         const duration = Date.now() - startTime
         logger.apiResponse('GET', `/api/spaces/${spaceSlugOrId}/login-config`, 200, duration)
         return addSecurityHeaders(NextResponse.json({ 

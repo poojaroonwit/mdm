@@ -13,7 +13,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,9 +30,9 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
 import {
-  Calendar, Clock, User, X, Plus, MessageSquare, Paperclip,
+  Clock, Plus, MessageSquare, Paperclip,
   ListChecks, GitBranch, Trash2, Edit, Download, ExternalLink, Loader, Network,
-  AlignLeft, SlidersHorizontal
+  AlignLeft
 } from 'lucide-react'
 import { TicketRelationshipGraph } from './TicketRelationshipGraph'
 import { TicketRelationshipsPanel } from './TicketRelationshipsPanel'
@@ -1123,19 +1122,9 @@ export function TicketDetailModalEnhanced({
     return <Input value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" className={attributeInputClass} />
   }
 
-  const systemAttributes = [
-    { label: 'Status', value: projectStatuses.find((status) => status.value === editStatus)?.label || editStatus, type: 'SYSTEM' },
-    { label: 'Priority', value: editPriority, type: 'SYSTEM' },
-    { label: 'Start Date', value: editStartDate || 'Not set', type: 'SYSTEM' },
-    { label: 'Due Date', value: editDueDate || 'Not set', type: 'SYSTEM' },
-    { label: 'Estimate', value: editEstimate ? `${editEstimate}h` : 'Not estimated', type: 'SYSTEM' },
-    { label: 'Project', value: projects.find((project) => project.id === selectedProject)?.name || 'No project', type: 'SYSTEM' },
-    { label: 'Module', value: modules.find((module) => module.id === selectedModule)?.name || 'No module', type: 'SYSTEM' },
-    { label: 'Milestone', value: milestones.find((milestone) => milestone.id === selectedMilestone)?.name || 'No milestone', type: 'SYSTEM' },
-    { label: 'Release', value: releases.find((release) => release.id === selectedRelease)?.name || 'No release', type: 'SYSTEM' },
-  ]
-
   const projectFields = customFields.filter((field) => field.attributeType !== 'system')
+  const attributeGroupClass = 'space-y-4'
+  const attributeFieldClass = 'space-y-1.5'
 
   // Common header content
   const headerContent = (
@@ -1156,68 +1145,173 @@ export function TicketDetailModalEnhanced({
   )
 
   const customFieldsPanel = (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <Label className="text-sm font-semibold">Attributes</Label>
-          <p className="text-xs text-muted-foreground">System fields and project-specific fields for this ticket.</p>
-        </div>
-        <Badge variant="secondary" className="rounded-md">{systemAttributes.length + projectFields.length}</Badge>
-      </div>
-
-      <div className="space-y-2 rounded-md border border-border bg-card p-3">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          <SlidersHorizontal className="h-3.5 w-3.5" />
-          System Attributes
-        </div>
-        <div className="space-y-2">
-          {systemAttributes.map((attribute) => (
-            <div key={attribute.label} className="grid grid-cols-[112px_minmax(0,1fr)] gap-3 rounded-md border border-border/70 bg-background px-3 py-2 text-sm">
-              <span className="text-muted-foreground">{attribute.label}</span>
-              <span className="truncate font-medium">{attribute.value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-3 rounded-md border border-border bg-card p-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            <ListChecks className="h-3.5 w-3.5" />
-            Project Attributes
+    <div className="space-y-6 rounded-md border border-border bg-background p-4">
+      <div className={attributeGroupClass}>
+        <h3 className="text-sm font-medium">Details</h3>
+        <div className="grid gap-3">
+          <div className={attributeFieldClass}>
+            <Label>Status</Label>
+            <SearchableSelect
+              value={editStatus}
+              onValueChange={setEditStatus}
+              options={projectStatuses.map((status) => ({ value: status.value, label: status.label }))}
+              placeholder="Select status"
+              searchPlaceholder="Search statuses..."
+              className={attributeInputClass}
+            />
           </div>
-          <Badge variant="outline" className="rounded-md">
-            {projectFields.filter((field) => field.sharing?.mode === 'shared').length} shared
-          </Badge>
-        </div>
-      {!selectedProject ? (
-        <div className="rounded-md border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
-          Select a project to load project attributes.
-        </div>
-      ) : projectFields.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
-          This project has no configured attributes yet.
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {projectFields.map((field) => {
-            const index = customFields.findIndex((item) => item.name === field.name)
-            return (
-            <div key={field.name} className="space-y-2 rounded-md border border-border/70 bg-background p-3">
-              <div className="flex items-start justify-between gap-3">
-                <Label>{field.displayName}</Label>
-                <div className="flex items-center gap-1">
-                  <Badge variant="outline" className="rounded-md text-[10px]">{field.type}</Badge>
-                  <Badge variant={field.sharing?.mode === 'shared' ? 'secondary' : 'outline'} className="rounded-md text-[10px]">
-                    {field.sharing?.mode === 'shared' ? 'Shared' : 'Individual'}
-                  </Badge>
+
+          <div className={attributeFieldClass}>
+            <Label>Priority</Label>
+            <SearchableSelect
+              value={editPriority}
+              onValueChange={setEditPriority}
+              options={priorityOptions}
+              placeholder="Select priority"
+              searchPlaceholder="Search priorities..."
+              className={attributeInputClass}
+            />
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+            <div className={attributeFieldClass}>
+              <Label>Start Date</Label>
+              <Input
+                type="date"
+                value={editStartDate}
+                onChange={(e) => setEditStartDate(e.target.value)}
+                className={attributeInputClass}
+              />
+            </div>
+            <div className={attributeFieldClass}>
+              <Label>Due Date</Label>
+              <Input
+                type="date"
+                value={editDueDate}
+                onChange={(e) => setEditDueDate(e.target.value)}
+                className={attributeInputClass}
+              />
+            </div>
+          </div>
+
+          <div className={attributeFieldClass}>
+            <Label>Estimate (hours)</Label>
+            <Input
+              type="number"
+              min="0"
+              step="0.5"
+              placeholder="0"
+              value={editEstimate}
+              onChange={(e) => setEditEstimate(e.target.value)}
+              className={attributeInputClass}
+            />
+          </div>
+
+          {!isNew && (
+            <div className={attributeFieldClass}>
+              <Label htmlFor="ticketType">Ticket Type</Label>
+              <SearchableSelect
+                id="ticketType"
+                value={ticketType}
+                onValueChange={setTicketType}
+                options={ticketTypeOptions}
+                placeholder="Select ticket type"
+                searchPlaceholder="Search ticket types..."
+                className={attributeInputClass}
+              />
+            </div>
+          )}
+
+          <div className={attributeFieldClass}>
+            <Label htmlFor={isNew ? 'project-create' : 'project'}>Project</Label>
+            <SearchableSelect
+              id={isNew ? 'project-create' : 'project'}
+              value={selectedProject || '__none__'}
+              onValueChange={(value) => {
+                const nextProjectId = value === '__none__' ? '' : value
+                setSelectedProject(nextProjectId)
+                setSelectedModule('')
+                setSelectedMilestone('')
+                setSelectedRelease('')
+                applyProjectFieldDefinitions(nextProjectId, projects)
+              }}
+              options={projectOptions}
+              placeholder="Select project"
+              searchPlaceholder="Search projects..."
+              className={attributeInputClass}
+            />
+          </div>
+
+          {selectedProject && (
+            <>
+              <div className={attributeFieldClass}>
+                <Label htmlFor={isNew ? 'module-create' : 'module'}>Module</Label>
+                <SearchableSelect
+                  id={isNew ? 'module-create' : 'module'}
+                  value={selectedModule || '__none__'}
+                  onValueChange={(value) => setSelectedModule(value === '__none__' ? '' : value)}
+                  options={moduleOptions}
+                  placeholder="Select module"
+                  searchPlaceholder="Search modules..."
+                  className={attributeInputClass}
+                />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+                <div className={attributeFieldClass}>
+                  <Label htmlFor={isNew ? 'milestone-create' : 'milestone'}>Milestone</Label>
+                  <SearchableSelect
+                    id={isNew ? 'milestone-create' : 'milestone'}
+                    value={selectedMilestone || '__none__'}
+                    onValueChange={(value) => setSelectedMilestone(value === '__none__' ? '' : value)}
+                    options={milestoneOptions}
+                    placeholder="Select milestone"
+                    searchPlaceholder="Search milestones..."
+                    className={attributeInputClass}
+                  />
+                </div>
+
+                <div className={attributeFieldClass}>
+                  <Label htmlFor={isNew ? 'release-create' : 'release'}>Release</Label>
+                  <SearchableSelect
+                    id={isNew ? 'release-create' : 'release'}
+                    value={selectedRelease || '__none__'}
+                    onValueChange={(value) => setSelectedRelease(value === '__none__' ? '' : value)}
+                    options={releaseOptions}
+                    placeholder="Select release"
+                    searchPlaceholder="Search releases..."
+                    className={attributeInputClass}
+                  />
                 </div>
               </div>
-              {renderFieldInput(field, index)}
-            </div>
-          )})}
+            </>
+          )}
         </div>
-      )}
+      </div>
+
+      <div className={`${attributeGroupClass} border-t border-border pt-5`}>
+        <h3 className="text-sm font-medium">Project attributes</h3>
+        {!selectedProject ? (
+          <div className="rounded-md border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
+            Select a project to load project attributes.
+          </div>
+        ) : projectFields.length === 0 ? (
+          <div className="rounded-md border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
+            This project has no configured attributes yet.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {projectFields.map((field) => {
+              const index = customFields.findIndex((item) => item.name === field.name)
+              return (
+                <div key={field.name} className={attributeFieldClass}>
+                  <Label>{field.displayName}</Label>
+                  {renderFieldInput(field, index)}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -1235,82 +1329,6 @@ export function TicketDetailModalEnhanced({
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <Label>Status</Label>
-          <SearchableSelect
-            value={editStatus}
-            onValueChange={setEditStatus}
-            options={projectStatuses.map((status) => ({ value: status.value, label: status.label }))}
-            placeholder="Select status"
-            searchPlaceholder="Search statuses..."
-            className="mt-1"
-          />
-        </div>
-        <div>
-          <Label>Priority</Label>
-          <SearchableSelect
-            value={editPriority}
-            onValueChange={setEditPriority}
-            options={priorityOptions}
-            placeholder="Select priority"
-            searchPlaceholder="Search priorities..."
-            className="mt-1"
-          />
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <div>
-          <Label>Start Date</Label>
-          <Input
-            type="date"
-            value={editStartDate}
-            onChange={(e) => setEditStartDate(e.target.value)}
-            className="mt-1 rounded-md"
-          />
-        </div>
-        <div>
-          <Label>Due Date</Label>
-          <Input
-            type="date"
-            value={editDueDate}
-            onChange={(e) => setEditDueDate(e.target.value)}
-            className="mt-1 rounded-md"
-          />
-        </div>
-        <div>
-          <Label>Estimate (hours)</Label>
-          <Input
-            type="number"
-            min="0"
-            step="0.5"
-            placeholder="0"
-            value={editEstimate}
-            onChange={(e) => setEditEstimate(e.target.value)}
-            className="mt-1 rounded-md"
-          />
-        </div>
-      </div>
-
-      {!isNew && (
-        <div>
-          <Label htmlFor="ticketType">Ticket Type</Label>
-          <SearchableSelect
-            id="ticketType"
-            value={ticketType}
-            onValueChange={setTicketType}
-            options={ticketTypeOptions}
-            placeholder="Select ticket type (for ServiceDesk)"
-            searchPlaceholder="Search ticket types..."
-            className="mt-1"
-          />
-          <p className="mt-1 text-xs text-muted-foreground">
-            This will be mapped to ServiceDesk category when pushing.
-          </p>
-        </div>
-      )}
-
       {!isNew && ticketAssignees.length > 0 && (
         <div>
           <Label>Assignees</Label>
@@ -1323,72 +1341,6 @@ export function TicketDetailModalEnhanced({
                 </AvatarFallback>
               </Avatar>
             ))}
-          </div>
-        </div>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <Label htmlFor={isNew ? 'project-create' : 'project'}>Project</Label>
-          <SearchableSelect
-            id={isNew ? 'project-create' : 'project'}
-            value={selectedProject || '__none__'}
-            onValueChange={(value) => {
-              const nextProjectId = value === '__none__' ? '' : value
-              setSelectedProject(nextProjectId)
-              setSelectedModule('')
-              setSelectedMilestone('')
-              setSelectedRelease('')
-              applyProjectFieldDefinitions(nextProjectId, projects)
-            }}
-            options={projectOptions}
-            placeholder="Select project"
-            searchPlaceholder="Search projects..."
-            className="mt-1"
-          />
-        </div>
-
-        {selectedProject && (
-          <div>
-            <Label htmlFor={isNew ? 'module-create' : 'module'}>Module</Label>
-            <SearchableSelect
-              id={isNew ? 'module-create' : 'module'}
-              value={selectedModule || '__none__'}
-              onValueChange={(value) => setSelectedModule(value === '__none__' ? '' : value)}
-              options={moduleOptions}
-              placeholder="Select module"
-              searchPlaceholder="Search modules..."
-              className="mt-1"
-            />
-          </div>
-        )}
-      </div>
-
-      {selectedProject && (
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <Label htmlFor={isNew ? 'milestone-create' : 'milestone'}>Milestone</Label>
-            <SearchableSelect
-              id={isNew ? 'milestone-create' : 'milestone'}
-              value={selectedMilestone || '__none__'}
-              onValueChange={(value) => setSelectedMilestone(value === '__none__' ? '' : value)}
-              options={milestoneOptions}
-              placeholder="Select milestone"
-              searchPlaceholder="Search milestones..."
-              className="mt-1"
-            />
-          </div>
-          <div>
-            <Label htmlFor={isNew ? 'release-create' : 'release'}>Release</Label>
-            <SearchableSelect
-              id={isNew ? 'release-create' : 'release'}
-              value={selectedRelease || '__none__'}
-              onValueChange={(value) => setSelectedRelease(value === '__none__' ? '' : value)}
-              options={releaseOptions}
-              placeholder="Select release"
-              searchPlaceholder="Search releases..."
-              className="mt-1"
-            />
           </div>
         </div>
       )}

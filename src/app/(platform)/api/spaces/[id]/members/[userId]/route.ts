@@ -46,7 +46,7 @@ async function putHandler(
     // Check if current user has permission to update members (must be owner or admin)
     const memberCheck = await query(`
       SELECT role FROM space_members 
-      WHERE space_id = $1 AND user_id = $2
+      WHERE space_id::text = $1 AND user_id::text = $2
     `, [spaceId, session.user.id])
 
     if (memberCheck.rows.length === 0 || !['owner', 'admin'].includes(memberCheck.rows[0].role)) {
@@ -64,7 +64,7 @@ async function putHandler(
     const result = await query(`
       UPDATE space_members 
       SET role = $3, updated_at = NOW()
-      WHERE space_id = $1 AND user_id = $2
+      WHERE space_id::text = $1 AND user_id::text = $2
       RETURNING *
     `, [spaceId, userId, role])
 
@@ -112,7 +112,7 @@ async function deleteHandler(
     // Check if current user has permission to remove members (must be owner or admin)
     const memberCheck = await query(`
       SELECT role FROM space_members 
-      WHERE space_id = $1 AND user_id = $2
+      WHERE space_id::text = $1 AND user_id::text = $2
     `, [spaceId, session.user.id])
 
     if (memberCheck.rows.length === 0 || !['owner', 'admin'].includes(memberCheck.rows[0].role)) {
@@ -129,7 +129,7 @@ async function deleteHandler(
     // Check if target user is owner
     const targetMemberCheck = await query(`
       SELECT role FROM space_members 
-      WHERE space_id = $1 AND user_id = $2
+      WHERE space_id::text = $1 AND user_id::text = $2
     `, [spaceId, userId])
 
     if (targetMemberCheck.rows.length > 0 && targetMemberCheck.rows[0].role === 'owner') {
@@ -140,7 +140,7 @@ async function deleteHandler(
     // Remove member
     const result = await query(`
       DELETE FROM space_members 
-      WHERE space_id = $1 AND user_id = $2
+      WHERE space_id::text = $1 AND user_id::text = $2
       RETURNING *
     `, [spaceId, userId])
 

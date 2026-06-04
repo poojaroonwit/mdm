@@ -72,11 +72,11 @@ const SelectGroup = ({ children }: { children: React.ReactNode }) => {
   return <div role="group">{children}</div>
 }
 
-const SelectValue = ({ placeholder }: { placeholder?: string }) => {
+const SelectValue = ({ placeholder, children }: { placeholder?: string; children?: React.ReactNode }) => {
   const context = React.useContext(SelectContext)
-  if (!context) return <span>{placeholder}</span>
+  if (!context) return <span>{children || placeholder}</span>
   
-  const displayLabel = context.labels?.get(context.value) || context.value || placeholder
+  const displayLabel = children || context.labels?.get(context.value) || context.value || placeholder
   return <span>{displayLabel}</span>
 }
 

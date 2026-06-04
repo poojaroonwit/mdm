@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 
 // --- AppKit Style Tooltip (New) ---
 interface AppKitTooltipProps {
-  content: string | ReactNode
+  content?: string | ReactNode
   children: ReactNode
   position?: 'top' | 'bottom' | 'left' | 'right'
   delay?: number
@@ -22,6 +22,10 @@ export function Tooltip({
   delay = 300,
   className = ''
 }: AppKitTooltipProps) {
+  if (content === undefined) {
+    return <TooltipClassic>{children}</TooltipClassic>
+  }
+
   const [isVisible, setIsVisible] = useState(false)
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 })
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)

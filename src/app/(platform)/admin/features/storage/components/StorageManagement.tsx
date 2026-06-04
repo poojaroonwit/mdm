@@ -537,19 +537,19 @@ export function StorageManagement() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-foreground">Sources</h2>
             <div className="flex items-center gap-1">
-              <Button className="rounded-xl font-bold"
+              <Button
                 size="sm"
                 variant="ghost"
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 rounded-xl p-0 font-bold"
                 onClick={() => setShowCreateBucket(true)}
                 title="Create Bucket"
               >
                 <Plus className="h-4 w-4" />
               </Button>
-              <Button className="rounded-xl font-bold"
+              <Button
                 size="sm"
                 variant="ghost"
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 rounded-xl p-0 font-bold"
                 onClick={() => setShowConnectionsManager(true)}
                 title="Add Storage Connection"
               >
@@ -557,11 +557,11 @@ export function StorageManagement() {
               </Button>
             </div>
           </div>
-          <Button className="rounded-xl font-bold"
+          <Button
             variant="outline"
             size="sm"
             className={cn(
-              "w-full justify-start mb-2",
+              "mb-2 w-full justify-start rounded-xl font-bold",
               !selectedBucket && selectedSourceTypes.includes('all') && "bg-muted font-medium"
             )}
             onClick={() => {
@@ -573,10 +573,10 @@ export function StorageManagement() {
             <HardDrive className="h-4 w-4 mr-2" />
             All Sources
           </Button>
-          <Button className="rounded-xl font-bold"
+          <Button
             variant="outline"
             size="sm"
-            className="w-full justify-start"
+            className="w-full justify-start rounded-xl font-bold"
             onClick={() => {
               setShowCreateBucket(true)
             }}
@@ -606,7 +606,7 @@ export function StorageManagement() {
                     <span className="truncate">{bucket.name}</span>
                   </div>
                   {bucket.public && (
-                    <Badge className="rounded-lg font-bold text-[10px]" variant="outline" className="text-xs ml-2">Public</Badge>
+                    <Badge className="ml-2 rounded-lg text-xs font-bold" variant="outline">Public</Badge>
                   )}
                 </div>
                 <div className="text-xs text-muted-foreground mt-1 ml-6">
@@ -719,11 +719,11 @@ export function StorageManagement() {
           <div className="flex items-center gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input className="rounded-xl h-10 border-zinc-200 dark:border-zinc-800"
+              <Input
                 placeholder="Search files..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="h-10 rounded-xl border-zinc-200 pl-10 dark:border-zinc-800"
               />
             </div>
             {!selectedBucket && (
@@ -885,7 +885,7 @@ export function StorageManagement() {
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button className="rounded-xl font-bold" variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 rounded-xl p-0 font-bold">
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -1033,7 +1033,7 @@ export function StorageManagement() {
                           {isFolder ? 'Folder' : formatBytes(file.size)}
                         </p>
                         {(file as any).sourceName && (
-                          <Badge className="rounded-lg font-bold text-[10px]" variant="outline" className="text-xs">
+                          <Badge className="rounded-lg text-xs font-bold" variant="outline">
                             {(file as any).sourceType === 'bucket'
                               ? (file as any).sourceName
                               : (file as any).sourceType}
@@ -1043,7 +1043,7 @@ export function StorageManagement() {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button className="rounded-xl font-bold" variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100">
+                        <Button variant="ghost" size="sm" className="h-6 w-6 rounded-xl p-0 font-bold opacity-0 group-hover:opacity-100">
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>

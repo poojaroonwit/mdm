@@ -39,7 +39,7 @@ async function getHandler(
       `SELECT s.id, s.name
        FROM spaces s
        JOIN space_members sm ON s.id = sm.space_id
-       WHERE s.id = $1::uuid AND sm.user_id = $2::uuid AND sm.role IN ('owner', 'admin', 'member')`,
+       WHERE s.id::text = $1 AND sm.user_id::text = $2 AND sm.role IN ('owner', 'admin', 'member')`,
       [spaceId, userId]
     )
 
@@ -63,7 +63,7 @@ async function getHandler(
         u.email as created_by_email
        FROM layout_versions lv
        LEFT JOIN users u ON lv.created_by = u.id
-       WHERE lv.id = $1::uuid AND lv.space_id = $2::uuid`,
+       WHERE lv.id::text = $1 AND lv.space_id::text = $2`,
       [versionId, spaceId]
     )
 
@@ -121,7 +121,7 @@ async function deleteHandler(
       `SELECT s.id, s.name
        FROM spaces s
        JOIN space_members sm ON s.id = sm.space_id
-       WHERE s.id = $1::uuid AND sm.user_id = $2::uuid AND sm.role IN ('owner', 'admin')`,
+       WHERE s.id::text = $1 AND sm.user_id::text = $2 AND sm.role IN ('owner', 'admin')`,
       [spaceId, userId]
     )
 
@@ -132,7 +132,7 @@ async function deleteHandler(
 
     // Prevent deleting current version
     const versionResult = await query(
-      'SELECT is_current FROM layout_versions WHERE id = $1::uuid AND space_id = $2::uuid',
+      'SELECT is_current FROM layout_versions WHERE id::text = $1 AND space_id::text = $2',
       [versionId, spaceId]
     )
 
@@ -148,7 +148,7 @@ async function deleteHandler(
 
     // Delete the version
     await query(
-      'DELETE FROM layout_versions WHERE id = $1::uuid AND space_id = $2::uuid',
+      'DELETE FROM layout_versions WHERE id::text = $1 AND space_id::text = $2',
       [versionId, spaceId]
     )
 

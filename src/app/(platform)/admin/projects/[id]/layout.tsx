@@ -3,13 +3,11 @@ import { notFound } from 'next/navigation'
 
 interface LayoutProps {
     children: React.ReactNode
-    params: Promise<{
-        id: string
-    }>
+    params: Promise<unknown>
 }
 
 export default async function Layout({ children, params }: LayoutProps) {
-    const { id } = await params
+    const { id } = await params as { id: string }
     const project = await prisma.project.findUnique({
         where: { id },
         select: { id: true, name: true }

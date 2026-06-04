@@ -50,7 +50,7 @@ async function postHandler(
       `SELECT s.id, s.name
        FROM spaces s
        JOIN space_members sm ON s.id = sm.space_id
-       WHERE s.id = $1::uuid AND sm.user_id = $2::uuid AND sm.role IN ('owner', 'admin', 'member')`,
+       WHERE s.id::text = $1 AND sm.user_id::text = $2 AND sm.role IN ('owner', 'admin', 'member')`,
       [spaceId, userId]
     )
 
@@ -68,7 +68,7 @@ async function postHandler(
         lv.change_description,
         lv.is_current
        FROM layout_versions lv
-       WHERE lv.id = $1::uuid AND lv.space_id = $2::uuid`,
+       WHERE lv.id::text = $1 AND lv.space_id::text = $2`,
       [versionId, spaceId]
     )
 
@@ -83,7 +83,7 @@ async function postHandler(
       // Create a new version from the restored one (preserves history)
       // Mark all versions as not current
       await query(
-        'UPDATE layout_versions SET is_current = false WHERE space_id = $1::uuid',
+        'UPDATE layout_versions SET is_current = false WHERE space_id::text = $1',
         [spaceId]
       )
 
@@ -121,12 +121,12 @@ async function postHandler(
     } else {
       // Just mark this version as current (overwrites current)
       await query(
-        'UPDATE layout_versions SET is_current = false WHERE space_id = $1::uuid',
+        'UPDATE layout_versions SET is_current = false WHERE space_id::text = $1',
         [spaceId]
       )
 
       await query(
-        'UPDATE layout_versions SET is_current = true WHERE id = $1::uuid AND space_id = $2::uuid',
+        'UPDATE layout_versions SET is_current = true WHERE id::text = $1 AND space_id::text = $2',
         [versionId, spaceId]
       )
 

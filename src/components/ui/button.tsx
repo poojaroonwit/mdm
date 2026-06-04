@@ -1,7 +1,7 @@
 'use client'
 
 import { cva, type VariantProps } from 'class-variance-authority'
-import { ButtonHTMLAttributes, forwardRef } from 'react'
+import { ButtonHTMLAttributes, cloneElement, forwardRef, isValidElement, type ReactElement } from 'react'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { Tooltip } from './tooltip'
@@ -43,6 +43,8 @@ export const buttonVariants = cva(
           'bg-transparent text-foreground border border-border hover:bg-accent hover:text-accent-foreground',
         ghost:
           'bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+        link:
+          'h-auto bg-transparent p-0 text-primary underline-offset-4 shadow-none hover:underline',
       },
       size: {
         sm: 'h-8 px-3 text-xs rounded-md gap-1.5',
@@ -64,16 +66,34 @@ export interface ButtonProps
     VariantProps<typeof buttonVariants> {
   tooltip?: string
   as?: 'button' | 'span'
+  asChild?: boolean
 }
 
 export const Button = forwardRef<HTMLButtonElement | HTMLSpanElement, ButtonProps>(
-  ({ className, variant, size, tooltip, children, as = 'button', ...props }, ref) => {
+  ({ className, variant, size, tooltip, children, as = 'button', asChild = false, ...props }, ref) => {
+    const composedClassName = buttonVariants({ variant, size, className })
+
+    if (asChild && isValidElement(children)) {
+      const child = children as ReactElement<any>
+      const button = cloneElement(child, {
+        ...props,
+        ref,
+        className: cn(composedClassName, child.props.className),
+      })
+
+      if (tooltip) {
+        return <Tooltip content={tooltip}>{button}</Tooltip>
+      }
+
+      return button
+    }
+
     const Element = as === 'span' ? 'span' : 'button'
 
     const button = (
       <Element
         ref={ref as any}
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(composedClassName)}
         {...(as === 'button' ? (props as any) : {})}
       >
         {children}
