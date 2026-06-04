@@ -29,6 +29,18 @@ function readBoolean(value: unknown, fallback = false) {
   return fallback
 }
 
+function readForcePathStyle(value: unknown, urlStyle: unknown, endpoint: string | undefined) {
+  if (typeof urlStyle === 'string') {
+    const normalizedStyle = urlStyle.trim().toLowerCase()
+    if (['virtual', 'virtual-hosted', 'virtual_hosted'].includes(normalizedStyle)) return false
+    if (['path', 'path-style', 'path_style'].includes(normalizedStyle)) return true
+  }
+
+  const lowerEndpoint = endpoint?.toLowerCase()
+  const defaultForcePathStyle = lowerEndpoint ? !lowerEndpoint.includes('storage.railway.app') : false
+  return readBoolean(value, defaultForcePathStyle)
+}
+
 export function normalizeS3Endpoint(endpoint: string | undefined) {
   const trimmed = endpoint?.trim()
   if (!trimmed) return undefined
@@ -53,13 +65,14 @@ function buildS3Config(input: {
   accessKeyId?: string
   secretAccessKey?: string
   forcePathStyle?: unknown
+  urlStyle?: unknown
 }): ResolvedS3Config | null {
   if (!input.accessKeyId || !input.secretAccessKey) {
     return null
   }
 
   const endpoint = normalizeS3Endpoint(input.endpoint)
-  const forcePathStyle = readBoolean(input.forcePathStyle, Boolean(endpoint))
+  const forcePathStyle = readForcePathStyle(input.forcePathStyle, input.urlStyle, endpoint)
 
   return {
     region: input.region || 'us-east-1',
@@ -81,6 +94,7 @@ function buildS3ConfigFromStoredConfig(config: any): ResolvedS3Config | null {
     accessKeyId: config?.accessKeyId || config?.access_key_id || config?.access_key,
     secretAccessKey: config?.secretAccessKey || config?.secret_access_key || config?.secret_key,
     forcePathStyle: config?.forcePathStyle ?? config?.force_path_style,
+    urlStyle: config?.urlStyle || config?.url_style,
   })
 }
 
@@ -88,6 +102,9 @@ function buildS3ConfigFromEnv(): ResolvedS3Config | null {
   const endpoint = firstEnv(
     'S3_ENDPOINT',
     'S3_ENDPOINT_URL',
+    'BUCKET_ENDPOINT',
+    'ENDPOINT',
+    'AWS_ENDPOINT_URL',
     'AWS_ENDPOINT_URL_S3',
     'AWS_S3_ENDPOINT',
     'RAILWAY_S3_ENDPOINT',
@@ -97,13 +114,23 @@ function buildS3ConfigFromEnv(): ResolvedS3Config | null {
 
   return buildS3Config({
     endpoint,
-    region: firstEnv('S3_REGION', 'AWS_REGION', 'AWS_DEFAULT_REGION', 'RAILWAY_S3_REGION', 'MINIO_REGION'),
+    region: firstEnv(
+      'S3_REGION',
+      'BUCKET_REGION',
+      'REGION',
+      'AWS_REGION',
+      'AWS_DEFAULT_REGION',
+      'RAILWAY_S3_REGION',
+      'MINIO_REGION'
+    ),
     bucket: firstEnv(
       'S3_BUCKET',
       'S3_BUCKET_NAME',
-      'AWS_S3_BUCKET',
-      'AWS_BUCKET_NAME',
+      'BUCKET',
       'BUCKET_NAME',
+      'AWS_S3_BUCKET',
+      'AWS_S3_BUCKET_NAME',
+      'AWS_BUCKET_NAME',
       'RAILWAY_S3_BUCKET',
       'RAILWAY_BUCKET_NAME',
       'MINIO_UPLOADS_BUCKET',
@@ -112,6 +139,8 @@ function buildS3ConfigFromEnv(): ResolvedS3Config | null {
     accessKeyId: firstEnv(
       'S3_ACCESS_KEY_ID',
       'S3_ACCESS_KEY',
+      'BUCKET_ACCESS_KEY_ID',
+      'ACCESS_KEY_ID',
       'AWS_ACCESS_KEY_ID',
       'RAILWAY_S3_ACCESS_KEY_ID',
       'RAILWAY_S3_ACCESS_KEY',
@@ -120,12 +149,15 @@ function buildS3ConfigFromEnv(): ResolvedS3Config | null {
     secretAccessKey: firstEnv(
       'S3_SECRET_ACCESS_KEY',
       'S3_SECRET_KEY',
+      'BUCKET_SECRET_ACCESS_KEY',
+      'SECRET_ACCESS_KEY',
       'AWS_SECRET_ACCESS_KEY',
       'RAILWAY_S3_SECRET_ACCESS_KEY',
       'RAILWAY_S3_SECRET_KEY',
       'MINIO_SECRET_KEY'
     ),
     forcePathStyle: firstEnv('S3_FORCE_PATH_STYLE', 'AWS_S3_FORCE_PATH_STYLE', 'RAILWAY_S3_FORCE_PATH_STYLE', 'MINIO_FORCE_PATH_STYLE'),
+    urlStyle: firstEnv('S3_URL_STYLE', 'AWS_S3_URL_STYLE', 'RAILWAY_S3_URL_STYLE', 'BUCKET_URL_STYLE'),
   })
 }
 
