@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
@@ -460,21 +461,6 @@ export function APIConfiguration() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800'
-      case 'inactive':
-        return 'bg-muted text-foreground'
-      case 'error':
-        return 'bg-red-100 text-red-800'
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800'
-      default:
-        return 'bg-muted text-foreground'
-    }
-  }
-
   const getModelIcon = (type: string) => {
     switch (type) {
       case 'text':
@@ -547,9 +533,7 @@ export function APIConfiguration() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Badge className={getStatusColor(provider.status)}>
-                      {provider.status}
-                    </Badge>
+                    <StatusBadge status={provider.status} />
                     <Badge variant={provider.isConfigured ? 'default' : 'secondary'}>
                       {provider.isConfigured ? 'Configured' : 'Not Configured'}
                     </Badge>

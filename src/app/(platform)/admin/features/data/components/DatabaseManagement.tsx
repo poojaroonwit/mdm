@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Switch } from '@/components/ui/switch'
@@ -310,19 +311,6 @@ export function DatabaseManagement() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'connected':
-        return 'bg-green-100 text-green-800'
-      case 'disconnected':
-        return 'bg-gray-100 text-gray-800'
-      case 'error':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
   const getDatabaseIcon = (type: string) => {
     // Try to find the asset and use its icon/color
     const asset = databaseTypes.find(t => t.code === type)
@@ -604,9 +592,7 @@ export function DatabaseManagement() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Status</span>
-                    <Badge className={getStatusColor(connection.status)}>
-                      {connection.status}
-                    </Badge>
+                    <StatusBadge status={connection.status} />
                   </div>
                   
                   <div className="space-y-2">

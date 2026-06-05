@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Dialog, DialogContent, DialogDescription, DialogBody, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
@@ -346,21 +347,6 @@ export function SystemIntegrations({ hideHeader = false }: SystemIntegrationsPro
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800'
-      case 'inactive':
-        return 'bg-gray-100 text-gray-800'
-      case 'error':
-        return 'bg-red-100 text-red-800'
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
   const getConfigFields = (type: string) => {
     switch (type.toLowerCase()) {
       case 'servicedesk':
@@ -541,9 +527,7 @@ export function SystemIntegrations({ hideHeader = false }: SystemIntegrationsPro
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Badge className={getStatusColor(integration.status)}>
-                    {integration.status}
-                  </Badge>
+                  <StatusBadge status={integration.status} />
                   <Badge variant={integration.isConfigured ? 'default' : 'secondary'}>
                     {integration.isConfigured ? 'Configured' : 'Not Configured'}
                   </Badge>

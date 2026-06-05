@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
@@ -154,21 +155,6 @@ export function AuditLogs() {
         return <AlertTriangle className="h-4 w-4 text-yellow-500" />
       default:
         return <Info className="h-4 w-4 text-blue-500" />
-    }
-  }
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'critical':
-        return 'bg-red-100 text-red-800 border-red-200'
-      case 'high':
-        return 'bg-orange-100 text-orange-800 border-orange-200'
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'low':
-        return 'bg-green-100 text-green-800 border-green-200'
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
 
@@ -383,9 +369,7 @@ export function AuditLogs() {
                     </div>
                     <div className="flex items-center gap-2">
                       {getStatusIcon(log.status)}
-                      <Badge className={getSeverityColor(log.severity)}>
-                        {log.severity}
-                      </Badge>
+                      <StatusBadge status={log.severity} />
                     </div>
                   </div>
                 ))}
@@ -423,9 +407,7 @@ export function AuditLogs() {
               </div>
               <div>
                 <span className="font-medium">Status:</span> 
-                <Badge className="ml-2" variant={selectedLog.status === 'success' ? 'default' : 'destructive'}>
-                  {selectedLog.status}
-                </Badge>
+                <StatusBadge status={selectedLog.status} className="ml-2" />
               </div>
             </div>
             

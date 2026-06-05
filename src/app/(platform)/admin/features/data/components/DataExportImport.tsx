@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Switch } from '@/components/ui/switch'
@@ -262,21 +263,6 @@ export function DataExportImport() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800'
-      case 'running':
-        return 'bg-blue-100 text-blue-800'
-      case 'failed':
-        return 'bg-red-100 text-red-800'
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
   const getFormatIcon = (format: string) => {
     switch (format) {
       case 'json':
@@ -482,9 +468,7 @@ export function DataExportImport() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className={getStatusColor(job.status)}>
-                        {job.status}
-                      </Badge>
+                      <StatusBadge status={job.status} />
                       {job.status === 'running' && (
                         <div className="w-24">
                           <Progress value={job.progress} />
@@ -595,9 +579,7 @@ export function DataExportImport() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className={getStatusColor(job.status)}>
-                        {job.status}
-                      </Badge>
+                      <StatusBadge status={job.status} />
                       {job.status === 'running' && (
                         <div className="w-24">
                           <Progress value={job.progress} />

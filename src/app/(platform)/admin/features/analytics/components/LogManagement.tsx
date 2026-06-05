@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { cn } from '@/lib/utils'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 import { Button } from '@/components/ui/button'
@@ -9,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
@@ -245,17 +245,6 @@ export function LogManagement() {
     }
   }
 
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'DEBUG': return 'bg-zinc-100/50 dark:bg-zinc-800/20 text-zinc-700 dark:text-zinc-300 border-zinc-200/50 dark:border-zinc-700/30'
-      case 'INFO': return 'bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border-emerald-100/50 dark:border-emerald-900/30'
-      case 'WARN': return 'bg-amber-50/50 dark:bg-amber-950/20 text-amber-700 dark:amber-300 border-amber-100/50 dark:border-amber-900/30'
-      case 'ERROR': return 'bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 border-rose-100/50 dark:border-rose-900/30'
-      case 'FATAL': return 'bg-rose-900 dark:bg-rose-100 text-white dark:text-rose-950 border-transparent'
-      default: return 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200/50 dark:border-zinc-700/30'
-    }
-  }
-
   const getServiceIcon = (service: string) => {
     switch (service.toLowerCase()) {
       case 'api':
@@ -488,9 +477,7 @@ export function LogManagement() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-zinc-100">{log.service}</span>
-                            <Badge className={cn("text-[8px] h-4 py-0 font-black", getLevelColor(log.level))}>
-                              {log.level}
-                            </Badge>
+                            <StatusBadge status={log.level} label={log.level} size="sm" className="h-4 py-0 text-[8px] font-black" />
                             <span className="text-[10px] text-zinc-400 dark:text-zinc-500 ml-auto">
                               {log.timestamp.toLocaleString()}
                             </span>
@@ -748,9 +735,7 @@ export function LogManagement() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="font-medium">Level:</span> 
-                    <Badge className={`ml-2 ${getLevelColor(selectedLog.level)}`}>
-                      {selectedLog.level}
-                    </Badge>
+                    <StatusBadge status={selectedLog.level} label={selectedLog.level} className="ml-2" />
                   </div>
                   <div>
                     <span className="font-medium">Service:</span> {selectedLog.service}

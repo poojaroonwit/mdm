@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import {
   Table,
   TableBody,
@@ -337,11 +338,9 @@ export function ChatbotList({
       <TableCell>v{chatbot.currentVersion}</TableCell>
       <TableCell>
         {chatbot.isPublished ? (
-          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
-            Published
-          </Badge>
+          <StatusBadge status="published" label="Published" />
         ) : (
-          <Badge variant="secondary">Draft</Badge>
+          <StatusBadge status="draft" label="Draft" />
         )}
       </TableCell>
       <TableCell className="text-right">
@@ -394,11 +393,9 @@ export function ChatbotList({
             </div>
           </div>
           {chatbot.isPublished ? (
-            <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
-              Published
-            </Badge>
+            <StatusBadge status="published" label="Published" />
           ) : (
-            <Badge variant="secondary">Draft</Badge>
+            <StatusBadge status="draft" label="Draft" />
           )}
         </div>
       </CardHeader>
@@ -445,11 +442,9 @@ export function ChatbotList({
               <div className="flex items-center gap-2">
                 <CardTitle className="text-base">{chatbot.name}</CardTitle>
                 {chatbot.isPublished ? (
-                  <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
-                    Published
-                  </Badge>
+                  <StatusBadge status="published" label="Published" />
                 ) : (
-                  <Badge variant="secondary">Draft</Badge>
+                  <StatusBadge status="draft" label="Draft" />
                 )}
               </div>
               {chatbot.description && (

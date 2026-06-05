@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { FileCode, History, ArrowUp, ArrowDown, Plus, Eye } from 'lucide-react'
@@ -93,15 +93,9 @@ export function SchemaMigrations() {
     }
   }
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      pending: 'secondary',
-      applied: 'default',
-      rolled_back: 'destructive',
-    }
-
-    return <Badge variant={variants[status] || 'default'}>{status.replace('_', ' ').toUpperCase()}</Badge>
-  }
+  const getStatusBadge = (status: string) => (
+    <StatusBadge status={status} label={status.replace('_', ' ').toUpperCase()} />
+  )
 
   if (loading) {
     return (

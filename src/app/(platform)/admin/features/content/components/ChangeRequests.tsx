@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { 
@@ -164,13 +164,6 @@ export function ChangeRequests() {
   }
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      pending: 'secondary',
-      approved: 'default',
-      rejected: 'destructive',
-      merged: 'default'
-    }
-
     const icons: Record<string, React.ReactNode> = {
       pending: <Clock className="w-3 h-3" />,
       approved: <CheckCircle2 className="w-3 h-3" />,
@@ -179,10 +172,10 @@ export function ChangeRequests() {
     }
 
     return (
-      <Badge variant={variants[status] || 'default'} className="flex items-center gap-1">
+      <StatusBadge status={status} className="flex items-center gap-1">
         {icons[status]}
         {status.toUpperCase()}
-      </Badge>
+      </StatusBadge>
     )
   }
 

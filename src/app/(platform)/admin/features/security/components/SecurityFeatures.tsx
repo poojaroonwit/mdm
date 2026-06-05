@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Switch } from '@/components/ui/switch'
@@ -255,21 +256,6 @@ export function SecurityFeatures() {
     })
   }
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'critical':
-        return 'bg-red-100 text-red-800 border-red-200'
-      case 'high':
-        return 'bg-orange-100 text-orange-800 border-orange-200'
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'low':
-        return 'bg-green-100 text-green-800 border-green-200'
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
-    }
-  }
-
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case 'critical':
@@ -457,9 +443,7 @@ export function SecurityFeatures() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge className={getSeverityColor(event.severity)}>
-                          {event.severity}
-                        </Badge>
+                        <StatusBadge status={event.severity} />
                         {!event.resolved && (
                           <Button
                             size="sm"
