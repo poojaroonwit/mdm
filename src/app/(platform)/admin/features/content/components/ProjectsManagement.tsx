@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { SpaceSelector } from '@/components/project-management/SpaceSelector'
-import { Grid3X3, KanbanSquare, LayoutList, Plus, FolderKanban, CalendarDays, Ticket } from 'lucide-react'
+import { Grid3X3, KanbanSquare, LayoutList, Plus, FolderKanban, CalendarDays, Ticket, X } from 'lucide-react'
 import { showError, showSuccess } from '@/lib/toast-utils'
 import { cn } from '@/lib/utils'
 
@@ -21,6 +21,10 @@ interface ProjectFieldDefinition {
   displayName: string
   type: string
   isRequired?: boolean
+  options?: Array<{
+    label: string
+    value: string
+  }>
 }
 
 interface ProjectRecord {
@@ -67,6 +71,7 @@ export function ProjectsManagement() {
   const [projectForm, setProjectForm] = useState(EMPTY_PROJECT_FORM)
   const [projectFields, setProjectFields] = useState<ProjectFieldDefinition[]>([])
   const [newFieldName, setNewFieldName] = useState('')
+  const [newOptionDrafts, setNewOptionDrafts] = useState<Record<string, string>>({})
   const [creating, setCreating] = useState(false)
 
   useEffect(() => {
@@ -116,6 +121,30 @@ export function ProjectsManagement() {
     setProjectForm(EMPTY_PROJECT_FORM)
     setProjectFields([])
     setNewFieldName('')
+    setNewOptionDrafts({})
+  }
+
+  const addFieldOption = (fieldName: string) => {
+    const draft = (newOptionDrafts[fieldName] || '').trim()
+    if (!draft) return
+
+    setProjectFields((prev) =>
+      prev.map((field) =>
+        field.name === fieldName
+          ? {
+              ...field,
+              options: [
+                ...(field.options || []),
+                {
+                  label: draft,
+                  value: draft,
+                },
+              ],
+            }
+          : field
+      )
+    )
+    setNewOptionDrafts((prev) => ({ ...prev, [fieldName]: '' }))
   }
 
   const handleCreateProject = async () => {
@@ -470,7 +499,12 @@ export function ProjectsManagement() {
                         onValueChange={(value) =>
                           setProjectFields((prev) =>
                             prev.map((item, itemIndex) =>
-                              itemIndex === index ? { ...item, type: value } : item
+                              itemIndex === index
+                                ? {
+                                    ...item,
+                                    type: value,
+                                  }
+                                : item
                             )
                           )
                         }
@@ -490,9 +524,74 @@ export function ProjectsManagement() {
                         variant="ghost"
                         size="icon"
                         onClick={() => setProjectFields((prev) => prev.filter((_, itemIndex) => itemIndex !== index))}
+                        aria-label={`Remove ${field.displayName}`}
                       >
-                        Remove
+                        <X className="h-4 w-4" />
                       </Button>
+                      {field.type === 'SELECT' && (
+                        <div className="space-y-2 rounded-xl bg-muted/30 p-3 md:col-span-4">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <Label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                              Dropdown Options
+                            </Label>
+                            <div className="flex gap-2">
+                              <Input
+                                value={newOptionDrafts[field.name] || ''}
+                                onChange={(event) =>
+                                  setNewOptionDrafts((prev) => ({ ...prev, [field.name]: event.target.value }))
+                                }
+                                onKeyDown={(event) => {
+                                  if (event.key === 'Enter') {
+                                    event.preventDefault()
+                                    addFieldOption(field.name)
+                                  }
+                                }}
+                                placeholder="New option"
+                                className="h-8 w-40"
+                              />
+                              <Button type="button" size="sm" variant="outline" onClick={() => addFieldOption(field.name)}>
+                                Add
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {(field.options || []).length === 0 ? (
+                              <span className="text-xs text-muted-foreground">
+                                Add options so tickets can show a selectable dropdown.
+                              </span>
+                            ) : (
+                              field.options?.map((option) => (
+                                <span
+                                  key={`${field.name}-${option.value}`}
+                                  className="inline-flex items-center gap-2 rounded-md bg-background px-3 py-1 text-xs"
+                                >
+                                  {option.label}
+                                  <button
+                                    type="button"
+                                    aria-label={`Remove ${option.label}`}
+                                    onClick={() =>
+                                      setProjectFields((prev) =>
+                                        prev.map((item) =>
+                                          item.name === field.name
+                                            ? {
+                                                ...item,
+                                                options: (item.options || []).filter(
+                                                  (candidate) => candidate.value !== option.value
+                                                ),
+                                              }
+                                            : item
+                                        )
+                                      )
+                                    }
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </span>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

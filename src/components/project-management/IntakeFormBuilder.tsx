@@ -29,7 +29,6 @@ import {
   Trash2,
   Edit,
   Save,
-  Eye,
   Type,
   FileText,
   List,
@@ -134,18 +133,27 @@ export function IntakeFormBuilder({ formId, spaceId, onSave, onCancel }: IntakeF
       return
     }
 
-    if (editingField.type === 'select' && (!editingField.options || editingField.options.length === 0)) {
+    const cleanedOptions = (editingField.options || [])
+      .map((option) => option.trim())
+      .filter(Boolean)
+
+    if (editingField.type === 'select' && cleanedOptions.length === 0) {
       showError('Select fields must have at least one option')
       return
     }
 
-    const existingIndex = fields.findIndex(f => f.id === editingField.id)
+    const fieldToSave: FormField = {
+      ...editingField,
+      options: editingField.type === 'select' ? cleanedOptions : undefined,
+    }
+
+    const existingIndex = fields.findIndex(f => f.id === fieldToSave.id)
     if (existingIndex >= 0) {
       const updated = [...fields]
-      updated[existingIndex] = editingField
+      updated[existingIndex] = fieldToSave
       setFields(updated)
     } else {
-      setFields([...fields, editingField])
+      setFields([...fields, fieldToSave])
     }
 
     setIsFieldDialogOpen(false)
@@ -269,7 +277,7 @@ export function IntakeFormBuilder({ formId, spaceId, onSave, onCancel }: IntakeF
             </div>
           ) : (
             <div className="space-y-3">
-              {fields.map((field, index) => {
+              {fields.map((field) => {
                 const FieldIcon = fieldTypes.find(t => t.value === field.type)?.icon || Type
                 return (
                   <div

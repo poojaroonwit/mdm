@@ -146,8 +146,11 @@ export function IntakeFormViewer({ formId, onSubmit, onCancel }: IntakeFormViewe
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {formFields.map((field) => (
-            <div key={field.id}>
+          {formFields.map((field) => {
+            const selectOptions = (field.options || []).filter((option) => option.trim())
+
+            return (
+              <div key={field.id}>
               <Label htmlFor={field.name}>
                 {field.label}
                 {field.required && <span className="text-red-500 ml-1">*</span>}
@@ -195,21 +198,32 @@ export function IntakeFormViewer({ formId, onSubmit, onCancel }: IntakeFormViewe
                 />
               )}
               {field.type === 'select' && (
-                <Select
-                  value={formData[field.name] || ''}
-                  onValueChange={(value) => handleFieldChange(field.name, value)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder={field.placeholder || 'Select an option'} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {field.options?.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                selectOptions.length > 0 ? (
+                  <Select
+                    value={formData[field.name] || ''}
+                    onValueChange={(value) => handleFieldChange(field.name, value)}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder={field.placeholder || 'Select an option'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectOptions.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id={field.name}
+                    value={formData[field.name] || ''}
+                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                    placeholder={field.placeholder || 'Enter value'}
+                    className="mt-1"
+                    required={field.required}
+                  />
+                )
               )}
               {field.type === 'number' && (
                 <Input
@@ -247,8 +261,9 @@ export function IntakeFormViewer({ formId, onSubmit, onCancel }: IntakeFormViewe
               {errors[field.name] && (
                 <p className="text-sm text-red-500 mt-1">{errors[field.name]}</p>
               )}
-            </div>
-          ))}
+              </div>
+            )
+          })}
 
           <div className="flex gap-2 pt-4">
             <Button type="submit" className="flex-1" disabled={submitting}>

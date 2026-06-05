@@ -782,13 +782,26 @@ export function TicketDetailModalEnhanced({
     }
 
     if (field.type === 'SELECT') {
+      const fieldOptions = field.options || []
+
+      if (fieldOptions.length === 0) {
+        return (
+          <Input
+            value={field.value || ''}
+            onChange={(e) => updateField(e.target.value)}
+            placeholder="Enter value"
+            className={ATTRIBUTE_INPUT_CLASS}
+          />
+        )
+      }
+
       return (
         <SearchableSelect
           value={field.value || '__none__'}
           onValueChange={(value) => updateField(value === '__none__' ? '' : value)}
           options={[
             { value: '__none__', label: 'None' },
-            ...(field.options || []).map((option) => ({
+            ...fieldOptions.map((option) => ({
               value: option.value,
               label: option.label,
             })),

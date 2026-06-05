@@ -104,6 +104,20 @@ function dayDiff(start: Date, end: Date) {
   return Math.max(0, Math.round((end.getTime() - start.getTime()) / 86400000))
 }
 
+function normalizeCustomFieldTemplates(fields: ProjectFieldDefinition[]) {
+  return fields.map((field) => ({
+    ...field,
+    options: field.type === 'SELECT'
+      ? (field.options || [])
+          .map((option) => ({
+            label: option.label.trim(),
+            value: option.value.trim(),
+          }))
+          .filter((option) => option.label && option.value)
+      : [],
+  }))
+}
+
 function ProjectGanttView({
   tickets,
   statusStyles,
@@ -470,10 +484,11 @@ export function TicketsList({
       const data = await response.json()
       const project = data.project
       const metadata = normalizeProjectMetadata(project?.metadata)
+      const customFields = normalizeCustomFieldTemplates(updates.customFields || customFieldTemplates)
       const body = {
         metadata: {
           ...metadata,
-          customFields: updates.customFields || customFieldTemplates,
+          customFields,
           ticketConfig: {
             ...metadata.ticketConfig,
             statuses: updates.statuses || statusDefinitions,
