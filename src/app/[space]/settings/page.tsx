@@ -14,9 +14,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { UserInviteInput } from '@/components/ui/user-invite-input'
-import { MemberManagementPanel } from '@/components/space-management/MemberManagementPanel'
-import { MemberPermissionsPanel } from '@/components/space-management/MemberPermissionsPanel'
-import { MemberAuditLog } from '@/components/space-management/MemberAuditLog'
 import { Building2, Layout, Database, History, Users as UsersIcon, UserCog, UserPlus, Plus, Edit, Trash2, Search, Type, AlertTriangle, FolderPlus, Share2, Folder, FolderOpen, Move, Settings, Palette, Shield, Archive, Trash, MoreVertical, ChevronDown, ChevronRight, ArrowLeft, Grid3X3, CheckCircle2, Circle, Lock } from 'lucide-react'
 import { showSuccess, showError, ToastMessages } from '@/lib/toast-utils'
 import { useSpace } from '@/contexts/space-context'
@@ -38,6 +35,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { SpaceSettingsSidebar } from '@/components/space-management/SpaceSettingsSidebar'
 import { SpaceSettingsHeader } from '@/components/space-management/SpaceSettingsHeader'
 import { LoginPageSettingsPanel } from '@/components/space-management/LoginPageSettingsPanel'
+import { SpaceBasicInformationPanel } from '@/components/space-management/SpaceBasicInformationPanel'
+import { SpaceMembersTabs } from '@/components/space-management/SpaceMembersTabs'
+import { SpaceDangerZone } from '@/components/space-management/SpaceDangerZone'
 import { DataSyncManagement } from '@/components/data-sync/DataSyncManagement'
 import { AttachmentBrowser } from '@/components/attachment-storage/AttachmentBrowser'
 import { DataModelBrowser } from '@/components/data-model/DataModelBrowser'
@@ -1393,80 +1393,10 @@ export default function SpaceSettingsPage() {
                     </TabsList>
 
                     <TabsContent value="basic" className="space-y-6 mt-6">
-                      <Card className="border-0 shadow-lg bg-card">
-                        <CardHeader className="pb-4">
-                          <CardTitle className="flex items-center space-x-2 text-lg">
-                            <Settings className="h-5 w-5" />
-                            <span>Basic Information</span>
-                          </CardTitle>
-                          <CardDescription>Update your space's core details and configuration</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                              <Label htmlFor="space-name" className="text-sm font-medium">Space Name</Label>
-                              <Input
-                                id="space-name"
-                                defaultValue={selectedSpace.name}
-                                className="h-11 border border-input bg-background"
-                                onBlur={async (e) => {
-                                  const name = e.currentTarget.value.trim()
-                                  if (!name || name === selectedSpace.name) return
-                                  const res = await fetch(`/api/spaces/${selectedSpace.id}`, {
-                                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ name })
-                                  })
-                                  if (res.ok) { showSuccess('Space name updated'); await refreshSpaces() } else { showError('Failed to update name') }
-                                }}
-                              />
-                              <p className="text-xs text-muted-foreground">The display name for your space</p>
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="space-slug" className="text-sm font-medium">Custom URL (Slug)</Label>
-                              <div className="relative">
-                                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">/</span>
-                                <Input
-                                  id="space-slug"
-                                  defaultValue={selectedSpace.slug || ''}
-                                  className="h-11 pl-8 border border-input bg-background"
-                                  placeholder="my-space"
-                                  onBlur={async (e) => {
-                                    const slug = e.currentTarget.value.trim()
-                                    if (slug === (selectedSpace.slug || '')) return
-                                    const res = await fetch(`/api/spaces/${selectedSpace.id}`, {
-                                      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({ slug })
-                                    })
-                                    if (res.ok) { showSuccess('Slug updated'); await refreshSpaces() } else { showError('Failed to update slug') }
-                                  }}
-                                />
-                              </div>
-                              <p className="text-xs text-muted-foreground">Custom URL: /{selectedSpace.slug || selectedSpace.id}/dashboard</p>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="space-desc" className="text-sm font-medium">Description</Label>
-                            <Textarea
-                              id="space-desc"
-                              defaultValue={selectedSpace.description || ''}
-                              rows={4}
-                              className="resize-none border border-input bg-background"
-                              placeholder="Describe what this space is used for..."
-                              onBlur={async (e) => {
-                                const description = e.currentTarget.value
-                                if (description === (selectedSpace.description || '')) return
-                                const res = await fetch(`/api/spaces/${selectedSpace.id}`, {
-                                  method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ description })
-                                })
-                                if (res.ok) { showSuccess('Description updated'); await refreshSpaces() } else { showError('Failed to update description') }
-                              }}
-                            />
-                            <p className="text-xs text-muted-foreground">A brief description of your space's purpose</p>
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <SpaceBasicInformationPanel
+                        space={selectedSpace}
+                        onRefreshSpaces={refreshSpaces}
+                      />
                     </TabsContent>
 
                     <TabsContent value="login" className="space-y-6 mt-6">
@@ -1493,94 +1423,18 @@ export default function SpaceSettingsPage() {
 
                 {/* Members Sub-tabs */}
                 <div className="w-full">
-                  <Tabs defaultValue="members">
-                    <TabsList className="flex gap-2 justify-start flex-wrap">
-                      <TabsTrigger value="members" className="justify-start flex items-center gap-2">
-                        <UsersIcon className="h-4 w-4" />
-                        Members
-                      </TabsTrigger>
-                      <TabsTrigger value="groups" className="justify-start flex items-center gap-2">
-                        <Folder className="h-4 w-4" />
-                        Groups
-                      </TabsTrigger>
-                      <TabsTrigger value="roles" className="justify-start flex items-center gap-2">
-                        <Shield className="h-4 w-4" />
-                        Roles
-                      </TabsTrigger>
-                      <TabsTrigger value="permissions" className="justify-start flex items-center gap-2">
-                        <Lock className="h-4 w-4" />
-                        Permissions
-                      </TabsTrigger>
-                      <TabsTrigger value="audit" className="justify-start flex items-center gap-2">
-                        <Archive className="h-4 w-4" />
-                        Audit Log
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="members" className="space-y-6 mt-6">
-                      <MemberManagementPanel
-                        spaceId={selectedSpace.id}
-                        members={members}
-                        onInvite={handleInviteUser}
-                        onUpdateRole={handleUpdateRole}
-                        onRemoveMember={handleRemoveMember}
-                        onBulkOperation={handleBulkOperation}
-                        canManageMembers={canManageMembers}
-                        loading={false}
-                      />
-                    </TabsContent>
-
-                    <TabsContent value="groups" className="space-y-6 mt-6">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Groups</CardTitle>
-                          <CardDescription>
-                            Manage member groups and group assignments
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-center py-8 text-muted-foreground">
-                            <Folder className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p>Group management coming soon...</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </TabsContent>
-
-                    <TabsContent value="roles" className="space-y-6 mt-6">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Roles</CardTitle>
-                          <CardDescription>
-                            Manage role definitions and role assignments
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-center py-8 text-muted-foreground">
-                            <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p>Role management coming soon...</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </TabsContent>
-
-                    <TabsContent value="permissions" className="space-y-6 mt-6">
-                      <MemberPermissionsPanel
-                        spaceId={selectedSpace.id}
-                        members={members}
-                        onUpdatePermissions={handleUpdatePermissions}
-                        canManagePermissions={canManageMembers}
-                      />
-                    </TabsContent>
-
-                    <TabsContent value="audit" className="space-y-6 mt-6">
-                      <MemberAuditLog
-                        spaceId={selectedSpace.id}
-                        auditLogs={auditLogs}
-                        loading={auditLogsLoading}
-                      />
-                    </TabsContent>
-                  </Tabs>
+                  <SpaceMembersTabs
+                    spaceId={selectedSpace.id}
+                    members={members}
+                    auditLogs={auditLogs}
+                    auditLogsLoading={auditLogsLoading}
+                    canManageMembers={canManageMembers}
+                    onInvite={handleInviteUser}
+                    onUpdateRole={handleUpdateRole}
+                    onRemoveMember={handleRemoveMember}
+                    onBulkOperation={handleBulkOperation}
+                    onUpdatePermissions={handleUpdatePermissions}
+                  />
                 </div>
               </TabsContent>
 
@@ -1596,98 +1450,11 @@ export default function SpaceSettingsPage() {
               </TabsContent>
 
               <TabsContent value="danger" className="mt-0 space-y-6 w-full">
-                <Card className="border-destructive/30">
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2 text-destructive">
-                      <AlertTriangle className="h-5 w-5" />
-                      <span>Danger Zone</span>
-                    </CardTitle>
-                    <CardDescription>
-                      Irreversible and destructive actions. Please proceed with caution.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="border border-destructive/30 rounded-lg p-4 bg-destructive/10">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium text-destructive">Delete Space</h4>
-                          <p className="text-sm text-destructive/80 mt-1">
-                            Permanently delete this space and all its data. This action cannot be undone.
-                          </p>
-                        </div>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="destructive"
-                              className="ml-4 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete Space
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle className="text-destructive">Delete Space</DialogTitle>
-                              <DialogDescription>
-                                Are you absolutely sure you want to delete "{selectedSpace?.name}"? This will permanently delete:
-                                <ul className="list-disc list-inside mt-2 space-y-1">
-                                  <li>All data models and their data</li>
-                                  <li>All dashboards and visualizations</li>
-                                  <li>All space members and permissions</li>
-                                  <li>All workflows and automation</li>
-                                  <li>All imported/exported data</li>
-                                </ul>
-                                <strong className="text-destructive mt-3 block">
-                                  This action cannot be undone.
-                                </strong>
-                              </DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter>
-                              <Button variant="outline" className="border-0" onClick={() => { }}>
-                                Cancel
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                                onClick={async () => {
-                                  try {
-                                    const response = await fetch(`/api/spaces/${selectedSpace.id}`, {
-                                      method: 'DELETE',
-                                    })
-
-                                    if (!response.ok) {
-                                      const error = await response.json()
-                                      throw new Error(error.error || 'Failed to delete space')
-                                    }
-
-                                    showSuccess('Space deleted successfully')
-                                    await refreshSpaces()
-
-                                    // Redirect to spaces page or another space
-                                    const remainingSpaces = spaces.filter(s => s.id !== selectedSpace.id)
-                                    if (remainingSpaces.length > 0) {
-                                      const defaultSpace = remainingSpaces.find(s => s.is_default) || remainingSpaces[0]
-                                      window.location.href = `/${defaultSpace.slug || defaultSpace.id}/settings`
-                                    } else {
-                                      sessionStorage.setItem('navigate-to-spaces', 'true')
-                                      window.location.href = '/spaces'
-                                    }
-                                  } catch (error) {
-                                    console.error('Error deleting space:', error)
-                                    showError(error instanceof Error ? error.message : 'Failed to delete space')
-                                  }
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete Space
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <SpaceDangerZone
+                  selectedSpace={selectedSpace}
+                  spaces={spaces}
+                  onRefreshSpaces={refreshSpaces}
+                />
               </TabsContent>
             </div>
           </div>

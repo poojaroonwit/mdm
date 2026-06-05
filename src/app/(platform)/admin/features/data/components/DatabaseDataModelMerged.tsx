@@ -8,18 +8,12 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
-import { CentralizedDrawer } from '@/components/ui/centralized-drawer'
-import { DrawerClose } from '@/components/ui/drawer'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Database,
   Folder,
   ChevronRight,
   ChevronDown,
-  ChevronLeft,
   Search,
   Table,
   RefreshCw,
@@ -32,19 +26,11 @@ import {
   Lock,
   Plus,
   Server,
-  Play,
-  Loader,
   Code,
   Building2,
   Filter,
   Eye,
-  List,
   X,
-  Settings,
-  Type,
-  Hash,
-  ToggleLeft,
-  Calendar,
   LayoutGrid,
   LayoutList,
   Rows3
@@ -57,7 +43,9 @@ import { getDatabaseTypes, type Asset } from '@/lib/assets'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import type { BrandingConfig } from '@/types/branding'
+import { AddDatabaseConnectionDialog } from './AddDatabaseConnectionDialog'
 import { DataModelTree } from './DataModelTree'
+import { DataModelDetailDrawer } from './DataModelDetailDrawer'
 
 // Built-in database constant
 const BUILTIN_DATABASE: DatabaseConnection = {
@@ -1419,561 +1407,40 @@ export function DatabaseDataModelMerged() {
         </div>
       </div>
 
-      {/* Add Database Connection Dialog */}
-      <Dialog open={showAddConnection} onOpenChange={(open) => {
-        setShowAddConnection(open)
-        if (!open) resetNewConnection()
-      }}>
-        <DialogContent className="max-w-lg p-0 overflow-hidden">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              Add Database Connection
-            </DialogTitle>
-            <DialogDescription>
-              Connect to an external database to use its tables as data models
-            </DialogDescription>
-          </DialogHeader>
-
-          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="conn-name">Connection Name</Label>
-                <Input
-                  id="conn-name"
-                  value={newConnection.name}
-                  onChange={(e) => setNewConnection({ ...newConnection, name: e.target.value })}
-                  placeholder="My Database"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="conn-space">Space</Label>
-                <Select value={newConnection.spaceId} onValueChange={(value) => setNewConnection({ ...newConnection, spaceId: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a space" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {spaces.map(space => (
-                      <SelectItem key={space.id} value={space.id}>
-                        {space.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="conn-type">Database Type</Label>
-                <Select value={newConnection.type} onValueChange={(value) => {
-                  const selectedType = databaseTypes.find(t => t.code === value)
-                  setNewConnection({
-                    ...newConnection,
-                    type: value,
-                    port: selectedType?.metadata?.defaultPort || newConnection.port
-                  })
-                }}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {databaseTypes.map((type) => (
-                      <SelectItem key={type.id} value={type.code}>
-                        <div className="flex items-center gap-2">
-                          {type.icon && <span>{type.icon}</span>}
-                          <span>{type.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="conn-host">Host</Label>
-                <Input
-                  id="conn-host"
-                  value={newConnection.host}
-                  onChange={(e) => setNewConnection({ ...newConnection, host: e.target.value })}
-                  placeholder="localhost"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="conn-port">Port</Label>
-                <Input
-                  id="conn-port"
-                  type="number"
-                  value={newConnection.port}
-                  onChange={(e) => setNewConnection({ ...newConnection, port: parseInt(e.target.value) || 5432 })}
-                  placeholder="5432"
-                />
-              </div>
-              <div className="col-span-2 space-y-2">
-                <Label htmlFor="conn-database">Database</Label>
-                <Input
-                  id="conn-database"
-                  value={newConnection.database}
-                  onChange={(e) => setNewConnection({ ...newConnection, database: e.target.value })}
-                  placeholder="mydb"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="conn-username">Username</Label>
-                <Input
-                  id="conn-username"
-                  value={newConnection.username}
-                  onChange={(e) => setNewConnection({ ...newConnection, username: e.target.value })}
-                  placeholder="user"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="conn-password">Password</Label>
-                <Input
-                  id="conn-password"
-                  type="password"
-                  value={newConnection.password}
-                  onChange={(e) => setNewConnection({ ...newConnection, password: e.target.value })}
+      <AddDatabaseConnectionDialog
+        connectionTestResult={connectionTestResult}
+        databaseTypes={databaseTypes}
+        discoveredTables={discoveredTables}
+        isTestingConnection={isTestingConnection}
+        newConnection={newConnection}
+        open={showAddConnection}
+        spaces={spaces}
+        setNewConnection={setNewConnection}
+        onCreateConnection={createConnection}
+        onOpenChange={(open) => {
+          setShowAddConnection(open)
+          if (!open) resetNewConnection()
+        }}
+        onResetConnection={resetNewConnection}
+        onTestConnection={testNewConnection}
+      />
+      {/*
                   placeholder="••••••••"
-                />
-              </div>
-            </div>
-
-            {/* Table Scope Selection */}
-            <div className="p-4 border rounded-lg bg-muted/30 space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Table className="h-4 w-4 text-muted-foreground" />
-                    <Label>Table Scope</Label>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Choose which tables to import as data models
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <Checkbox
-                    checked={newConnection.scopeAllTables}
-                    onCheckedChange={(checked) => setNewConnection({
-                      ...newConnection,
-                      scopeAllTables: checked === true,
-                      specificTables: checked ? [] : newConnection.specificTables
-                    })}
-                  />
-                  <span className="text-sm">All Tables</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <Checkbox
-                    checked={!newConnection.scopeAllTables}
-                    onCheckedChange={(checked) => setNewConnection({
-                      ...newConnection,
-                      scopeAllTables: checked !== true
-                    })}
-                  />
-                  <span className="text-sm">Specific Tables</span>
-                </label>
-              </div>
-
-              {!newConnection.scopeAllTables && discoveredTables.length > 0 && (
-                <div className="space-y-2 pt-2 border-t">
-                  <p className="text-xs text-muted-foreground">Select tables to import:</p>
-                  <ScrollArea className="h-32">
-                    <div className="space-y-1">
-                      {discoveredTables.map(table => (
-                        <label key={table} className="flex items-center gap-2 p-1.5 rounded hover:bg-muted cursor-pointer">
-                          <Checkbox
-                            checked={newConnection.specificTables.includes(table)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setNewConnection({
-                                  ...newConnection,
-                                  specificTables: [...newConnection.specificTables, table]
-                                })
-                              } else {
-                                setNewConnection({
-                                  ...newConnection,
-                                  specificTables: newConnection.specificTables.filter(t => t !== table)
-                                })
-                              }
-                            }}
-                          />
-                          <span className="text-sm font-mono">{table}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </div>
-              )}
-
-              {!newConnection.scopeAllTables && discoveredTables.length === 0 && (
-                <p className="text-xs text-amber-600 dark:text-amber-400">
-                  Test connection first to discover available tables
-                </p>
-              )}
-            </div>
-
-            {/* Connection Test Result */}
-            {connectionTestResult && (
-              <div className={cn(
-                "flex items-center gap-2 p-3 rounded-lg text-sm",
-                connectionTestResult === 'success' ? "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400" : "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400"
-              )}>
-                {connectionTestResult === 'success' ? (
-                  <>
-                    <CheckCircle className="h-4 w-4" />
-                    Connection successful! {discoveredTables.length > 0 && `Found ${discoveredTables.length} tables.`}
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-4 w-4" />
-                    Connection failed. Please check your credentials.
-                  </>
-                )}
-              </div>
-            )}
-          </DialogBody>
-
-          <DialogFooter className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={testNewConnection}
-              disabled={!newConnection.host || !newConnection.database || isTestingConnection}
-            >
-              {isTestingConnection ? (
-                <>
-                  <Loader className="h-4 w-4 mr-2 animate-spin" />
-                  Testing...
-                </>
-              ) : (
-                <>
-                  <Play className="h-4 w-4 mr-2" />
-                  Test Connection
-                </>
-              )}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowAddConnection(false)
-                resetNewConnection()
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={createConnection}
-              disabled={!newConnection.name || !newConnection.host || !newConnection.spaceId}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create Connection
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog >
-
-      {/* Detail Drawer - Model/Table Columns and Attributes */}
-      <CentralizedDrawer
+      */}
+      <DataModelDetailDrawer
         open={isDetailDrawerOpen}
         onOpenChange={setIsDetailDrawerOpen}
-        title={selectedAttribute
-          ? (selectedAttribute.display_name || selectedAttribute.name)
-          : (selectedDetailItem?.displayName || selectedDetailItem?.name)}
-        description={selectedAttribute
-          ? `Attribute of ${selectedDetailItem?.displayName || selectedDetailItem?.name}`
-          : (selectedDetailItem?.type === 'model' ? 'Data Model' : 'Database Table')}
-        icon={selectedDetailItem?.type === 'model' ? Database : Table}
-        headerActions={selectedAttribute && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0"
-            onClick={() => setSelectedAttribute(null)}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-        )}
-        width="w-[720px]"
-        floating={true}
-        floatingMargin="16px"
-      >
-        <div className="flex-1 overflow-hidden">
-          {!selectedAttribute ? (
-            /* Attribute/Column List */
-            <ScrollArea className="h-[calc(100vh-200px)]">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    <List className="h-3.5 w-3.5" />
-                    {selectedDetailItem?.type === 'model' ? 'Attributes' : 'Columns'}
-                  </div>
-                  <Badge variant="outline" className="text-[10px]">
-                    {selectedDetailItem?.type === 'model'
-                      ? modelAttributes.length
-                      : databaseSchema?.tables.find(t => t.name === selectedDetailItem?.name)?.columns.length || 0}
-                  </Badge>
-                </div>
-
-                {isLoadingAttributes ? (
-                  <div className="w-full space-y-3 p-4">
-                    <Skeleton className="h-10 w-full rounded-md" />
-                    <Skeleton className="h-12 w-full rounded-md" />
-                    <Skeleton className="h-12 w-full rounded-md" />
-                  </div>
-                ) : selectedDetailItem?.type === 'model' ? (
-                  /* Model Attributes */
-                  modelAttributes.length > 0 ? (
-                    modelAttributes.map((attr: any) => (
-                      <div
-                        key={attr.id}
-                        className="group p-3 border rounded-lg cursor-pointer transition-all hover:border-primary/30 hover:bg-primary/5"
-                        onClick={() => handleAttributeClick(attr)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 rounded flex items-center justify-center bg-muted">
-                              {attr.type?.toLowerCase().includes('text') || attr.type?.toLowerCase().includes('string') ? (
-                                <Type className="h-3 w-3 text-muted-foreground" />
-                              ) : attr.type?.toLowerCase().includes('number') || attr.type?.toLowerCase().includes('int') ? (
-                                <Hash className="h-3 w-3 text-muted-foreground" />
-                              ) : attr.type?.toLowerCase().includes('bool') ? (
-                                <ToggleLeft className="h-3 w-3 text-muted-foreground" />
-                              ) : attr.type?.toLowerCase().includes('date') ? (
-                                <Calendar className="h-3 w-3 text-muted-foreground" />
-                              ) : (
-                                <Settings className="h-3 w-3 text-muted-foreground" />
-                              )}
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium">{attr.display_name || attr.name}</div>
-                              <div className="text-xs text-muted-foreground font-mono">{attr.type}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {attr.is_required && <Badge variant="secondary" className="text-[9px] py-0 h-4">Required</Badge>}
-                            <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                      <List className="h-8 w-8 mb-2 opacity-50" />
-                      <p className="text-sm">No attributes defined</p>
-                    </div>
-                  )
-                ) : (
-                  /* Table Columns as Table */
-                  (() => {
-                    const table = databaseSchema?.tables.find(t => t.name === selectedDetailItem?.name)
-                    return table && table.columns.length > 0 ? (
-                      <div className="border rounded-lg overflow-hidden">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="bg-muted/50 border-b">
-                              <th className="text-left py-2 px-3 font-medium text-muted-foreground text-xs">Column</th>
-                              <th className="text-left py-2 px-3 font-medium text-muted-foreground text-xs">Type</th>
-                              <th className="text-center py-2 px-3 font-medium text-muted-foreground text-xs">Nullable</th>
-                              <th className="text-left py-2 px-3 font-medium text-muted-foreground text-xs">Default</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {table.columns.map((col, idx) => (
-                              <tr
-                                key={idx}
-                                className="border-b last:border-0 cursor-pointer hover:bg-primary/5 transition-colors"
-                                onClick={() => setSelectedAttribute(col)}
-                              >
-                                <td className="py-2.5 px-3">
-                                  <div className="font-mono font-medium">{col.name}</div>
-                                </td>
-                                <td className="py-2.5 px-3">
-                                  <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 h-5">
-                                    {col.type}
-                                  </Badge>
-                                </td>
-                                <td className="py-2.5 px-3 text-center">
-                                  {col.nullable ? (
-                                    <CheckCircle className="h-4 w-4 text-green-500 mx-auto" />
-                                  ) : (
-                                    <XCircle className="h-4 w-4 text-red-400 mx-auto" />
-                                  )}
-                                </td>
-                                <td className="py-2.5 px-3">
-                                  <span className="font-mono text-xs text-muted-foreground">
-                                    {col.default || '-'}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                        <Table className="h-8 w-8 mb-2 opacity-50" />
-                        <p className="text-sm">No columns found</p>
-                      </div>
-                    )
-                  })()
-                )}
-              </div>
-            </ScrollArea>
-          ) : (
-            /* Attribute Detail View */
-            <ScrollArea className="h-[calc(100vh-200px)]">
-              {selectedDetailItem?.type === 'model' &&
-                (selectedAttribute.type?.toLowerCase() === 'dropdown' ||
-                  selectedAttribute.type?.toLowerCase() === 'select' ||
-                  selectedAttribute.type?.toLowerCase() === 'enum') ? (
-                /* Model Attribute with Options Tab */
-                <Tabs defaultValue="properties" className="w-full">
-                  <TabsList className="w-full grid grid-cols-2 mb-4">
-                    <TabsTrigger value="properties">Properties</TabsTrigger>
-                    <TabsTrigger value="options">Options</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="properties" className="space-y-4">
-                    <div className="space-y-3">
-                      <div className="p-3 bg-muted/50 rounded-lg">
-                        <Label className="text-xs text-muted-foreground">Display Name</Label>
-                        <p className="font-medium">{selectedAttribute.display_name || selectedAttribute.name}</p>
-                      </div>
-                      <div className="p-3 bg-muted/50 rounded-lg">
-                        <Label className="text-xs text-muted-foreground">Field Name</Label>
-                        <p className="font-mono text-sm">{selectedAttribute.name}</p>
-                      </div>
-                      <div className="p-3 bg-muted/50 rounded-lg">
-                        <Label className="text-xs text-muted-foreground">Type</Label>
-                        <p className="font-mono text-sm">{selectedAttribute.type}</p>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="p-3 bg-muted/50 rounded-lg">
-                          <Label className="text-xs text-muted-foreground">Required</Label>
-                          <p>{selectedAttribute.is_required ? 'Yes' : 'No'}</p>
-                        </div>
-                        <div className="p-3 bg-muted/50 rounded-lg">
-                          <Label className="text-xs text-muted-foreground">Unique</Label>
-                          <p>{selectedAttribute.is_unique ? 'Yes' : 'No'}</p>
-                        </div>
-                      </div>
-                      {selectedAttribute.description && (
-                        <div className="p-3 bg-muted/50 rounded-lg">
-                          <Label className="text-xs text-muted-foreground">Description</Label>
-                          <p className="text-sm">{selectedAttribute.description}</p>
-                        </div>
-                      )}
-                      {selectedAttribute.default_value && (
-                        <div className="p-3 bg-muted/50 rounded-lg">
-                          <Label className="text-xs text-muted-foreground">Default Value</Label>
-                          <p className="font-mono text-sm">{selectedAttribute.default_value}</p>
-                        </div>
-                      )}
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="options" className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium">Dropdown Options</Label>
-                      <Badge variant="outline" className="text-[10px]">{attributeOptions.length}</Badge>
-                    </div>
-                    {isLoadingOptions ? (
-                      <div className="w-full space-y-3 p-4">
-                        <Skeleton className="h-10 w-full rounded-md" />
-                        <Skeleton className="h-12 w-full rounded-md" />
-                      </div>
-                    ) : attributeOptions.length > 0 ? (
-                      <div className="space-y-2">
-                        {attributeOptions.map((opt: any, idx: number) => (
-                          <div key={idx} className="flex items-center gap-3 p-2 border rounded-lg">
-                            <div
-                              className="w-3 h-3 rounded-full"
-                              style={{ backgroundColor: opt.color || primaryColor }}
-                            />
-                            <div className="flex-1">
-                              <div className="text-sm font-medium">{opt.label || opt.value}</div>
-                              {opt.value !== opt.label && (
-                                <div className="text-xs text-muted-foreground font-mono">{opt.value}</div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                        <List className="h-8 w-8 mb-2 opacity-50" />
-                        <p className="text-sm">No options defined</p>
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
-              ) : (
-                /* Regular Attribute/Column Properties */
-                <div className="space-y-3">
-                  <div className="p-3 bg-muted/50 rounded-lg">
-                    <Label className="text-xs text-muted-foreground">
-                      {selectedDetailItem?.type === 'model' ? 'Display Name' : 'Column Name'}
-                    </Label>
-                    <p className="font-medium">{selectedAttribute.display_name || selectedAttribute.name}</p>
-                  </div>
-                  {selectedDetailItem?.type === 'model' && (
-                    <div className="p-3 bg-muted/50 rounded-lg">
-                      <Label className="text-xs text-muted-foreground">Field Name</Label>
-                      <p className="font-mono text-sm">{selectedAttribute.name}</p>
-                    </div>
-                  )}
-                  <div className="p-3 bg-muted/50 rounded-lg">
-                    <Label className="text-xs text-muted-foreground">Type</Label>
-                    <p className="font-mono text-sm">{selectedAttribute.type}</p>
-                  </div>
-                  {selectedDetailItem?.type === 'model' ? (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3 bg-muted/50 rounded-lg">
-                        <Label className="text-xs text-muted-foreground">Required</Label>
-                        <p>{selectedAttribute.is_required ? 'Yes' : 'No'}</p>
-                      </div>
-                      <div className="p-3 bg-muted/50 rounded-lg">
-                        <Label className="text-xs text-muted-foreground">Unique</Label>
-                        <p>{selectedAttribute.is_unique ? 'Yes' : 'No'}</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3 bg-muted/50 rounded-lg">
-                        <Label className="text-xs text-muted-foreground">Nullable</Label>
-                        <p>{selectedAttribute.nullable ? 'Yes' : 'No'}</p>
-                      </div>
-                      {selectedAttribute.default !== undefined && (
-                        <div className="p-3 bg-muted/50 rounded-lg">
-                          <Label className="text-xs text-muted-foreground">Default</Label>
-                          <p className="font-mono text-sm">{selectedAttribute.default || '-'}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {selectedAttribute.description && (
-                    <div className="p-3 bg-muted/50 rounded-lg">
-                      <Label className="text-xs text-muted-foreground">Description</Label>
-                      <p className="text-sm">{selectedAttribute.description}</p>
-                    </div>
-                  )}
-                  {selectedAttribute.default_value && (
-                    <div className="p-3 bg-muted/50 rounded-lg">
-                      <Label className="text-xs text-muted-foreground">Default Value</Label>
-                      <p className="font-mono text-sm">{selectedAttribute.default_value}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </ScrollArea>
-          )}
-        </div>
-      </CentralizedDrawer>
+        selectedDetailItem={selectedDetailItem}
+        selectedAttribute={selectedAttribute}
+        setSelectedAttribute={setSelectedAttribute}
+        modelAttributes={modelAttributes}
+        isLoadingAttributes={isLoadingAttributes}
+        attributeOptions={attributeOptions}
+        isLoadingOptions={isLoadingOptions}
+        databaseSchema={databaseSchema}
+        primaryColor={primaryColor}
+        onAttributeClick={handleAttributeClick}
+      />
     </div >
   )
 }

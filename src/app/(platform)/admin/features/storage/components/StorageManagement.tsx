@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -53,7 +52,6 @@ import {
   ExternalLink,
   ChevronRight,
   Settings,
-  X,
   Check,
   Loader2,
   Share2,
@@ -68,12 +66,12 @@ import {
   Cloud
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { FileViewer } from '@/components/storage/FileViewer'
 import { Bucket, StorageFile } from '../types'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { StorageConnections } from '../../system/components/StorageConnections'
 import { StorageProviderType } from '@/lib/storage-config'
+import { StorageFilePreviewDialog } from './StorageFilePreviewDialog'
 
 interface StorageConnection {
   id: string
@@ -1319,51 +1317,13 @@ export function StorageManagement() {
         </div>
       </CrudDialog>
 
-      {/* File Preview Dialog */}
-      {showFilePreview && (
-        <Dialog open={!!showFilePreview} onOpenChange={() => setShowFilePreview(null)}>
-          <DialogContent className="max-w-6xl max-h-[90vh]">
-            <DialogHeader className="p-6 pb-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <DialogTitle className="flex items-center gap-2">
-                    {getFileIcon(showFilePreview)}
-                    {showFilePreview.name}
-                  </DialogTitle>
-                  <DialogDescription>
-                    {formatBytes(showFilePreview.size)} • {formatDateTime(showFilePreview.updatedAt)} • {showFilePreview.mimeType}
-                  </DialogDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button className="rounded-xl font-bold"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDownload(showFilePreview)}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
-                  <Button className="rounded-xl font-bold"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowFilePreview(null)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </DialogHeader>
-            <DialogBody className="mt-4 p-0">
-              <FileViewer
-                fileId={showFilePreview.id}
-                fileName={showFilePreview.name}
-                mimeType={showFilePreview.mimeType || 'application/octet-stream'}
-                publicUrl={showFilePreview.publicUrl}
-              />
-            </DialogBody>
-          </DialogContent>
-        </Dialog>
-      )}
+      <StorageFilePreviewDialog
+        file={showFilePreview}
+        onClose={() => setShowFilePreview(null)}
+        onDownload={handleDownload}
+        renderFileIcon={getFileIcon}
+        formatBytes={formatBytes}
+      />
 
       {/* Metadata Dialog */}
       <CrudDialog

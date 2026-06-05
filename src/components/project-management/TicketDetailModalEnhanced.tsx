@@ -17,7 +17,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -28,10 +27,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Card, CardContent } from '@/components/ui/card'
 import {
   Clock, MessageSquare, Paperclip,
-  ListChecks, GitBranch, Trash2, Edit, ExternalLink, Loader, Network,
+  ListChecks, GitBranch, ExternalLink, Network,
   AlignLeft
 } from 'lucide-react'
 import { RichMarkdownEditor } from '@/components/knowledge-base/RichMarkdownEditor'
@@ -77,7 +75,6 @@ import {
   pushTicketToGitLab,
   pushTicketToServiceDesk,
   resolveServiceDeskConflicts,
-  searchServiceDeskTickets,
   setServiceDeskResolution,
   syncTicketFromServiceDesk,
   updateServiceDeskTicket,
@@ -86,12 +83,6 @@ import {
   uploadTicketAttachment,
 } from './ticket-detail-api'
 import {
-  ATTRIBUTE_FIELD_CLASS,
-  ATTRIBUTE_GROUP_CLASS,
-  ATTRIBUTE_INPUT_CLASS,
-  NONE_SELECT_OPTION,
-  PRIORITY_OPTIONS,
-  SERVICE_DESK_TICKET_TYPE_OPTIONS,
   getTicketSpaceId,
 } from './ticket-detail-helpers'
 import {
@@ -111,9 +102,11 @@ import {
   TimeTab,
 } from './ticket-detail-activity-tabs'
 import {
-  TicketCustomFieldInput,
   TicketCustomFieldsPanel,
 } from './TicketCustomFieldsPanel'
+import { TicketFooterActions } from './TicketFooterActions'
+import { TicketDetailsSidebar } from './TicketDetailsSidebar'
+import { TicketServiceDeskTab } from './TicketServiceDeskTab'
 
 export function TicketDetailModalEnhanced({
   ticket,
@@ -749,25 +742,6 @@ export function TicketDetailModalEnhanced({
     }))
   }
 
-  const projectOptions = [
-    NONE_SELECT_OPTION,
-    ...projects.map((project) => ({ value: project.id, label: project.name })),
-  ]
-  const moduleOptions = [
-    NONE_SELECT_OPTION,
-    ...modules.map((module) => ({ value: module.id, label: module.name })),
-  ]
-  const milestoneOptions = [
-    NONE_SELECT_OPTION,
-    ...milestones.map((milestone) => ({ value: milestone.id, label: milestone.name })),
-  ]
-  const releaseOptions = [
-    NONE_SELECT_OPTION,
-    ...releases.map((release) => ({ value: release.id, label: release.name })),
-  ]
-
-  const projectFields = customFields.filter((field) => field.attributeType !== 'system')
-
   // Common header content
   const headerContent = (
       <div className="space-y-2">
@@ -782,182 +756,6 @@ export function TicketDetailModalEnhanced({
         <span>{projectStatuses.find((status) => status.value === editStatus)?.label || editStatus}</span>
         <span>{editPriority}</span>
         {selectedProject && <span>{projects.find((project) => project.id === selectedProject)?.name}</span>}
-      </div>
-    </div>
-  )
-
-  const customFieldsPanel = (
-    <div className="space-y-6 text-foreground dark:text-zinc-50">
-      <div className={ATTRIBUTE_GROUP_CLASS}>
-        <h3 className="text-sm font-medium">Details</h3>
-        <div className="grid gap-3">
-          <div className={ATTRIBUTE_FIELD_CLASS}>
-            <Label>Status</Label>
-            <SearchableSelect
-              value={editStatus}
-              onValueChange={setEditStatus}
-              options={projectStatuses.map((status) => ({ value: status.value, label: status.label }))}
-              placeholder="Select status"
-              searchPlaceholder="Search statuses..."
-              className={ATTRIBUTE_INPUT_CLASS}
-            />
-          </div>
-
-          <div className={ATTRIBUTE_FIELD_CLASS}>
-            <Label>Priority</Label>
-            <SearchableSelect
-              value={editPriority}
-              onValueChange={setEditPriority}
-              options={PRIORITY_OPTIONS}
-              placeholder="Select priority"
-              searchPlaceholder="Search priorities..."
-              className={ATTRIBUTE_INPUT_CLASS}
-            />
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-            <div className={ATTRIBUTE_FIELD_CLASS}>
-              <Label>Start Date</Label>
-              <Input
-                type="date"
-                value={editStartDate}
-                onChange={(e) => setEditStartDate(e.target.value)}
-                className={ATTRIBUTE_INPUT_CLASS}
-              />
-            </div>
-            <div className={ATTRIBUTE_FIELD_CLASS}>
-              <Label>Due Date</Label>
-              <Input
-                type="date"
-                value={editDueDate}
-                onChange={(e) => setEditDueDate(e.target.value)}
-                className={ATTRIBUTE_INPUT_CLASS}
-              />
-            </div>
-          </div>
-
-          <div className={ATTRIBUTE_FIELD_CLASS}>
-            <Label>Estimate (hours)</Label>
-            <Input
-              type="number"
-              min="0"
-              step="0.5"
-              placeholder="0"
-              value={editEstimate}
-              onChange={(e) => setEditEstimate(e.target.value)}
-              className={ATTRIBUTE_INPUT_CLASS}
-            />
-          </div>
-
-          {!isNew && (
-            <div className={ATTRIBUTE_FIELD_CLASS}>
-              <Label htmlFor="ticketType">Ticket Type</Label>
-              <SearchableSelect
-                id="ticketType"
-                value={ticketType}
-                onValueChange={setTicketType}
-                options={SERVICE_DESK_TICKET_TYPE_OPTIONS}
-                placeholder="Select ticket type"
-                searchPlaceholder="Search ticket types..."
-                className={ATTRIBUTE_INPUT_CLASS}
-              />
-            </div>
-          )}
-
-          <div className={ATTRIBUTE_FIELD_CLASS}>
-            <Label htmlFor={isNew ? 'project-create' : 'project'}>Project</Label>
-            <SearchableSelect
-              id={isNew ? 'project-create' : 'project'}
-              value={selectedProject || '__none__'}
-              onValueChange={(value) => {
-                const nextProjectId = value === '__none__' ? '' : value
-                setSelectedProject(nextProjectId)
-                setSelectedModule('')
-                setSelectedMilestone('')
-                setSelectedRelease('')
-                applyProjectFieldDefinitions(nextProjectId, projects)
-              }}
-              options={projectOptions}
-              placeholder="Select project"
-              searchPlaceholder="Search projects..."
-              className={ATTRIBUTE_INPUT_CLASS}
-            />
-          </div>
-
-          {selectedProject && (
-            <>
-              <div className={ATTRIBUTE_FIELD_CLASS}>
-                <Label htmlFor={isNew ? 'module-create' : 'module'}>Module</Label>
-                <SearchableSelect
-                  id={isNew ? 'module-create' : 'module'}
-                  value={selectedModule || '__none__'}
-                  onValueChange={(value) => setSelectedModule(value === '__none__' ? '' : value)}
-                  options={moduleOptions}
-                  placeholder="Select module"
-                  searchPlaceholder="Search modules..."
-                  className={ATTRIBUTE_INPUT_CLASS}
-                />
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-                <div className={ATTRIBUTE_FIELD_CLASS}>
-                  <Label htmlFor={isNew ? 'milestone-create' : 'milestone'}>Milestone</Label>
-                  <SearchableSelect
-                    id={isNew ? 'milestone-create' : 'milestone'}
-                    value={selectedMilestone || '__none__'}
-                    onValueChange={(value) => setSelectedMilestone(value === '__none__' ? '' : value)}
-                    options={milestoneOptions}
-                    placeholder="Select milestone"
-                    searchPlaceholder="Search milestones..."
-                    className={ATTRIBUTE_INPUT_CLASS}
-                  />
-                </div>
-
-                <div className={ATTRIBUTE_FIELD_CLASS}>
-                  <Label htmlFor={isNew ? 'release-create' : 'release'}>Release</Label>
-                  <SearchableSelect
-                    id={isNew ? 'release-create' : 'release'}
-                    value={selectedRelease || '__none__'}
-                    onValueChange={(value) => setSelectedRelease(value === '__none__' ? '' : value)}
-                    options={releaseOptions}
-                    placeholder="Select release"
-                    searchPlaceholder="Search releases..."
-                    className={ATTRIBUTE_INPUT_CLASS}
-                  />
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className={`${ATTRIBUTE_GROUP_CLASS} border-t border-border pt-5 dark:border-zinc-800`}>
-        <h3 className="text-sm font-medium">Project attributes</h3>
-        {!selectedProject ? (
-          <div className="rounded-md border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
-            Select a project to load project attributes.
-          </div>
-        ) : projectFields.length === 0 ? (
-          <div className="rounded-md border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
-            This project has no configured attributes yet.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {projectFields.map((field) => {
-              const index = customFields.findIndex((item) => item.name === field.name)
-              return (
-                <div key={field.name} className={ATTRIBUTE_FIELD_CLASS}>
-                  <Label>{field.displayName}</Label>
-                  <TicketCustomFieldInput
-                    field={field}
-                    index={index}
-                    setCustomFields={setCustomFields}
-                  />
-                </div>
-              )
-            })}
-          </div>
-        )}
       </div>
     </div>
   )
@@ -999,7 +797,37 @@ export function TicketDetailModalEnhanced({
         {ticketDetailsFields}
       </div>
       <div className="min-w-0 xl:sticky xl:top-0 xl:self-start">
-        {customFieldsPanel}
+        <TicketDetailsSidebar
+          isNew={isNew}
+          editStatus={editStatus}
+          setEditStatus={setEditStatus}
+          projectStatuses={projectStatuses}
+          editPriority={editPriority}
+          setEditPriority={setEditPriority}
+          editStartDate={editStartDate}
+          setEditStartDate={setEditStartDate}
+          editDueDate={editDueDate}
+          setEditDueDate={setEditDueDate}
+          editEstimate={editEstimate}
+          setEditEstimate={setEditEstimate}
+          ticketType={ticketType}
+          setTicketType={setTicketType}
+          projects={projects}
+          modules={modules}
+          milestones={milestones}
+          releases={releases}
+          selectedProject={selectedProject}
+          setSelectedProject={setSelectedProject}
+          selectedModule={selectedModule}
+          setSelectedModule={setSelectedModule}
+          selectedMilestone={selectedMilestone}
+          setSelectedMilestone={setSelectedMilestone}
+          selectedRelease={selectedRelease}
+          setSelectedRelease={setSelectedRelease}
+          customFields={customFields}
+          setCustomFields={setCustomFields}
+          applyProjectFieldDefinitions={applyProjectFieldDefinitions}
+        />
       </div>
     </div>
   )
@@ -1015,47 +843,22 @@ export function TicketDetailModalEnhanced({
   // Common footer
   const footerContent = (
     <div className="flex flex-col items-end gap-3 border-t pt-4">
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        {!isNew && serviceDeskConfig?.isConfigured && (
-          <Button variant="outline" onClick={handlePushToServiceDesk} disabled={pushingToServiceDesk}>
-            {pushingToServiceDesk ? <Loader className="h-4 w-4 mr-2 animate-spin" /> : <ExternalLink className="h-4 w-4 mr-2" />}
-            Push to ServiceDesk
-          </Button>
-        )}
-        {!isNew && gitLabConfig?.isConfigured && (
-          <>
-            {gitLabRepositories.length > 0 && (
-              <SearchableSelect
-                value={selectedRepository}
-                onValueChange={setSelectedRepository}
-                options={[
-                  { value: '', label: 'Default Repository' },
-                  ...gitLabRepositories.map((repo) => ({ value: repo.projectId, label: repo.name })),
-                ]}
-                placeholder="Repository"
-                searchPlaceholder="Search repositories..."
-                className="w-48"
-              />
-            )}
-            <Button variant="outline" onClick={handlePushToGitLab} disabled={pushingToGitLab || loadingRepositories}>
-              {pushingToGitLab ? <Loader className="h-4 w-4 mr-2 animate-spin" /> : <GitBranch className="h-4 w-4 mr-2" />}
-              {gitLabIssueUrl ? 'Update GitLab Issue' : 'Push to GitLab'}
-            </Button>
-          </>
-        )}
-        {!isNew && gitLabIssueUrl && (
-          <Button variant="outline" onClick={() => window.open(gitLabIssueUrl, '_blank')}>
-            <ExternalLink className="h-4 w-4 mr-2" />
-            View in GitLab
-          </Button>
-        )}
-        {onDelete && !isNew && (
-          <Button variant="destructive" onClick={() => onDelete(ticket.id)}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
-        )}
-      </div>
+      <TicketFooterActions
+        isNew={isNew}
+        ticketId={ticket.id}
+        serviceDeskConfig={serviceDeskConfig}
+        pushingToServiceDesk={pushingToServiceDesk}
+        onPushToServiceDesk={handlePushToServiceDesk}
+        gitLabConfig={gitLabConfig}
+        gitLabIssueUrl={gitLabIssueUrl}
+        gitLabRepositories={gitLabRepositories}
+        selectedRepository={selectedRepository}
+        onSelectedRepositoryChange={setSelectedRepository}
+        loadingRepositories={loadingRepositories}
+        pushingToGitLab={pushingToGitLab}
+        onPushToGitLab={handlePushToGitLab}
+        onDelete={onDelete}
+      />
       <div className="flex justify-end">
         <Button onClick={handleSave} className="min-w-[160px]">
           {isNew ? 'Create Ticket' : 'Save Changes'}
@@ -1539,267 +1342,34 @@ export function TicketDetailModalEnhanced({
           />
 
           {serviceDeskConfig?.isConfigured && (
-            <TabsContent value="servicedesk" className="space-y-4 mt-4">
-              <div className="space-y-4">
-                {serviceDeskRequestId ? (
-                  <>
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-4">
-                          <div>
-                            <div className="text-sm text-muted-foreground">ServiceDesk Request ID</div>
-                            <div className="text-lg font-bold">{serviceDeskRequestId}</div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleUpdateServiceDeskTicket}
-                              disabled={updatingServiceDesk}
-                            >
-                              {updatingServiceDesk ? (
-                                <Loader className="h-4 w-4 mr-2 animate-spin" />
-                              ) : (
-                                <Edit className="h-4 w-4 mr-2" />
-                              )}
-                              Update Ticket
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleSyncFromServiceDesk}
-                              disabled={syncingFromServiceDesk}
-                            >
-                              {syncingFromServiceDesk ? (
-                                <Loader className="h-4 w-4 mr-2 animate-spin" />
-                              ) : (
-                                <ExternalLink className="h-4 w-4 mr-2" />
-                              )}
-                              Sync from ServiceDesk
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleDeleteServiceDeskTicket}
-                              disabled={deletingServiceDesk}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              {deletingServiceDesk ? (
-                                <Loader className="h-4 w-4 mr-2 animate-spin" />
-                              ) : (
-                                <Trash2 className="h-4 w-4 mr-2" />
-                              )}
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <div className="space-y-4">
-                      <div>
-                        <Label className="mb-2 block">ServiceDesk Comments</Label>
-                        <div className="space-y-2 mb-4">
-                          {serviceDeskComments.map((comment, idx) => (
-                            <Card key={idx}>
-                              <CardContent className="p-3">
-                                <div className="text-sm">{comment.content || comment.description}</div>
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  {comment.created_time ? format(new Date(comment.created_time), 'MMM d, yyyy HH:mm') : ''}
-                                  {comment.technician?.name && ` by ${comment.technician.name}`}
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                        <div className="flex gap-2">
-                          <Textarea
-                            placeholder="Add a comment to ServiceDesk..."
-                            value={newServiceDeskComment}
-                            onChange={(e) => setNewServiceDeskComment(e.target.value)}
-                            className="flex-1"
-                          />
-                          <Button onClick={handleAddServiceDeskComment} disabled={!newServiceDeskComment.trim()}>
-                            <MessageSquare className="h-4 w-4 mr-2" />
-                            Add Comment
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label className="mb-2 block">ServiceDesk Attachments</Label>
-                        <div className="space-y-2 mb-4">
-                          {serviceDeskAttachments.map((attachment, idx) => (
-                            <Card key={idx}>
-                              <CardContent className="p-3 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <Paperclip className="h-5 w-5 text-muted-foreground" />
-                                  <div>
-                                    <div className="font-medium text-sm">{attachment.file_name || attachment.name}</div>
-                                    {attachment.file_size && (
-                                      <div className="text-xs text-muted-foreground">
-                                        {(attachment.file_size / 1024).toFixed(2)} KB
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                        <Input
-                          type="file"
-                          onChange={handleUploadServiceDeskAttachment}
-                          className="cursor-pointer"
-                        />
-                      </div>
-
-                      <div>
-                        <Label className="mb-2 block">ServiceDesk Time Logs</Label>
-                        <div className="space-y-2 mb-4">
-                          {serviceDeskTimeLogs.map((log, idx) => (
-                            <Card key={idx}>
-                              <CardContent className="p-3">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <div className="font-medium">
-                                      {log.hours || 0}h {log.minutes || 0}m
-                                    </div>
-                                    {log.description && (
-                                      <div className="text-sm text-muted-foreground mt-1">{log.description}</div>
-                                    )}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {log.technician?.name || log.created_by?.name}
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                        <div className="flex gap-2">
-                          <Input
-                            type="number"
-                            step="0.25"
-                            placeholder="Hours"
-                            value={newServiceDeskTimeLog.hours}
-                            onChange={(e) => setNewServiceDeskTimeLog({ ...newServiceDeskTimeLog, hours: e.target.value })}
-                            className="w-24"
-                          />
-                          <Input
-                            type="number"
-                            placeholder="Minutes"
-                            value={newServiceDeskTimeLog.minutes}
-                            onChange={(e) => setNewServiceDeskTimeLog({ ...newServiceDeskTimeLog, minutes: e.target.value })}
-                            className="w-24"
-                          />
-                          <Input
-                            placeholder="Description (optional)"
-                            value={newServiceDeskTimeLog.description}
-                            onChange={(e) => setNewServiceDeskTimeLog({ ...newServiceDeskTimeLog, description: e.target.value })}
-                            className="flex-1"
-                          />
-                          <Button onClick={handleLogServiceDeskTime} disabled={!newServiceDeskTimeLog.hours}>
-                            <Clock className="h-4 w-4 mr-2" />
-                            Log Time
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label className="mb-2 block">Set Resolution</Label>
-                        <div className="flex gap-2">
-                          <Textarea
-                            placeholder="Enter resolution details..."
-                            value={newServiceDeskResolution}
-                            onChange={(e) => setNewServiceDeskResolution(e.target.value)}
-                            className="flex-1"
-                          />
-                          <Button onClick={handleSetServiceDeskResolution} disabled={!newServiceDeskResolution.trim()}>
-                            Set Resolution
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label className="mb-2 block">Link Tickets</Label>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="ServiceDesk Request ID"
-                            value={newServiceDeskLink.requestId}
-                            onChange={(e) => setNewServiceDeskLink({ ...newServiceDeskLink, requestId: e.target.value })}
-                            className="flex-1"
-                          />
-                          <SearchableSelect
-                            value={newServiceDeskLink.linkType}
-                            onValueChange={(value) => setNewServiceDeskLink({ ...newServiceDeskLink, linkType: value })}
-                            options={[
-                              { value: 'relates_to', label: 'Relates To' },
-                              { value: 'duplicate', label: 'Duplicate' },
-                              { value: 'depends_on', label: 'Depends On' },
-                              { value: 'blocked_by', label: 'Blocked By' },
-                            ]}
-                            searchPlaceholder="Search link types..."
-                            className="w-40"
-                          />
-                          <Button onClick={handleLinkServiceDeskTickets} disabled={!newServiceDeskLink.requestId}>
-                            <GitBranch className="h-4 w-4 mr-2" />
-                            Link
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label className="mb-2 block">Search ServiceDesk Tickets</Label>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Search by subject, ID, or requester..."
-                            id="servicedesk-search"
-                            className="flex-1"
-                            onKeyDown={async (e) => {
-                              if (e.key === 'Enter' && e.currentTarget.value) {
-                                const spaceId = getTicketSpaceId(ticket)
-                                if (!spaceId) return
-                                
-                                try {
-                                  const data = await searchServiceDeskTickets(spaceId, e.currentTarget.value)
-                                  showInfo(`Found ${data.total || 0} ticket(s)`)
-                                  // In a full implementation, show results in a dialog
-                                } catch (error) {
-                                  console.error('Search error:', error)
-                                }
-                              }
-                            }}
-                          />
-                          <Button variant="outline">
-                            <ExternalLink className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <p className="text-sm text-muted-foreground mb-4">
-                        This ticket has not been pushed to ServiceDesk yet.
-                      </p>
-                      <Button
-                        onClick={handlePushToServiceDesk}
-                        disabled={pushingToServiceDesk}
-                      >
-                        {pushingToServiceDesk ? (
-                          <Loader className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                        )}
-                        Push to ServiceDesk
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            </TabsContent>
+            <TicketServiceDeskTab
+              ticket={ticket}
+              serviceDeskRequestId={serviceDeskRequestId}
+              serviceDeskComments={serviceDeskComments}
+              serviceDeskAttachments={serviceDeskAttachments}
+              serviceDeskTimeLogs={serviceDeskTimeLogs}
+              syncingFromServiceDesk={syncingFromServiceDesk}
+              updatingServiceDesk={updatingServiceDesk}
+              deletingServiceDesk={deletingServiceDesk}
+              pushingToServiceDesk={pushingToServiceDesk}
+              newServiceDeskComment={newServiceDeskComment}
+              setNewServiceDeskComment={setNewServiceDeskComment}
+              newServiceDeskResolution={newServiceDeskResolution}
+              setNewServiceDeskResolution={setNewServiceDeskResolution}
+              newServiceDeskTimeLog={newServiceDeskTimeLog}
+              setNewServiceDeskTimeLog={setNewServiceDeskTimeLog}
+              newServiceDeskLink={newServiceDeskLink}
+              setNewServiceDeskLink={setNewServiceDeskLink}
+              onUpdateServiceDeskTicket={handleUpdateServiceDeskTicket}
+              onSyncFromServiceDesk={handleSyncFromServiceDesk}
+              onDeleteServiceDeskTicket={handleDeleteServiceDeskTicket}
+              onAddServiceDeskComment={handleAddServiceDeskComment}
+              onUploadServiceDeskAttachment={handleUploadServiceDeskAttachment}
+              onLogServiceDeskTime={handleLogServiceDeskTime}
+              onSetServiceDeskResolution={handleSetServiceDeskResolution}
+              onLinkServiceDeskTickets={handleLinkServiceDeskTickets}
+              onPushToServiceDesk={handlePushToServiceDesk}
+            />
           )}
         </Tabs>
         </div>

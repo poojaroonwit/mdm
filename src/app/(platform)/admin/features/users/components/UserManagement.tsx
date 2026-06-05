@@ -11,8 +11,7 @@ import { RoleBadge } from '@/components/ui/role-badge'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
-import { CrudDialog } from '@/components/ui/crud-dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { AvatarUpload } from '@/components/ui/avatar-upload'
@@ -49,15 +48,24 @@ import {
   Globe,
   Mail,
   Calendar,
-  AlertCircle,
-  RefreshCw
+  AlertCircle
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Space, User, UserGroup } from '../types'
 import { formatLoginMethod } from '../utils'
 import { cn } from '@/lib/utils'
+import {
+  AllowedLoginMethodsSelector,
+  CreateSpaceAccessSelector,
+  GroupMembershipSelector,
+  SpaceAssociationsEditor,
+} from './UserFormSections'
 import { UserManagementToolbar } from './UserManagementToolbar'
 import { UserPagination } from './UserPagination'
+import { UserDetailsDialog } from './UserDetailsDialog'
+import { UserImportDialog } from './UserImportDialog'
+import { UserSyncSettingsDialog } from './UserSyncSettingsDialog'
+import { UserResetPasswordDialog } from './UserResetPasswordDialog'
 
 export function UserManagement() {
   const [users, setUsers] = useState<User[]>([])
@@ -125,9 +133,6 @@ export function UserManagement() {
 
   // Import
   const [showImportDialog, setShowImportDialog] = useState(false)
-  const [importFile, setImportFile] = useState<File | null>(null)
-  const [importing, setImporting] = useState(false)
-  const [importResults, setImportResults] = useState<{ success: any[]; failed: any[] } | null>(null)
   
   const [isSyncing, setIsSyncing] = useState(false)
 
@@ -149,51 +154,6 @@ export function UserManagement() {
 
   // Sync Schedule
   const [showSyncSettingsDialog, setShowSyncSettingsDialog] = useState(false)
-  const [syncSchedule, setSyncSchedule] = useState({ enabled: false, frequency: 'daily', time: '00:00' })
-  const [savingSyncSettings, setSavingSyncSettings] = useState(false)
-
-  const loadSyncSettings = async () => {
-      try {
-          const res = await fetch('/api/admin/settings/ad-sync-schedule')
-          if (res.ok) {
-              const data = await res.json()
-              setSyncSchedule({
-                  enabled: data.enabled ?? false,
-                  frequency: data.frequency || 'daily',
-                  time: data.time || '00:00'
-              })
-          }
-      } catch (e) {
-          console.error(e)
-      }
-  }
-
-  const saveSyncSettings = async () => {
-      setSavingSyncSettings(true)
-      try {
-          const res = await fetch('/api/admin/settings/ad-sync-schedule', {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(syncSchedule)
-          })
-          if (res.ok) {
-              toast.success('Sync schedule saved')
-              setShowSyncSettingsDialog(false)
-          } else {
-              toast.error('Failed to save settings')
-          }
-      } catch(e) {
-          toast.error('Error saving settings')
-      } finally {
-          setSavingSyncSettings(false)
-      }
-  }
-
-  useEffect(() => {
-    if (showSyncSettingsDialog) {
-        loadSyncSettings()
-    }
-  }, [showSyncSettingsDialog])
 
   const [ssoConfig, setSsoConfig] = useState<{ google: boolean; azure: boolean }>({ google: false, azure: false })
 
@@ -899,38 +859,21 @@ export function UserManagement() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Allowed Login Methods</Label>
-                    <p className="text-xs text-muted-foreground">Select allowed methods. Leave empty to allow all configured methods.</p>
-                    <div className="flex flex-wrap gap-2 p-3 border rounded-md">
-                      {getAvailableLoginMethods().map((method) => {
-                        const isSelected = editForm.allowedLoginMethods?.includes(method)
-                        return (
-                          <div
-                            key={method}
-                            className={cn(
-                              "cursor-pointer px-3 py-1.5 rounded-full text-sm border transition-colors select-none",
-                              isSelected
-                                ? "bg-primary text-primary-foreground border-primary"
-                                : "bg-background hover:bg-muted border-input"
-                            )}
-                            onClick={() => {
-                              setEditForm(prev => {
-                                const current = prev.allowedLoginMethods || []
-                                if (current.includes(method)) {
-                                  return { ...prev, allowedLoginMethods: current.filter(m => m !== method) }
-                                } else {
-                                  return { ...prev, allowedLoginMethods: [...current, method] }
-                                }
-                              })
-                            }}
-                          >
-                            {formatLoginMethod(method)}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
+                  <AllowedLoginMethodsSelector
+                    methods={getAvailableLoginMethods()}
+                    selectedMethods={editForm.allowedLoginMethods || []}
+                    onToggleMethod={(method) => {
+                      setEditForm(prev => {
+                        const current = prev.allowedLoginMethods || []
+                        return {
+                          ...prev,
+                          allowedLoginMethods: current.includes(method)
+                            ? current.filter(m => m !== method)
+                            : [...current, method],
+                        }
+                      })
+                    }}
+                  />
 
                   <div className="flex items-center space-x-2">
                     <Switch
@@ -983,151 +926,19 @@ export function UserManagement() {
                 </TabsContent>
 
                 <TabsContent value="spaces" className="space-y-4 mt-4">
-                  <div className="space-y-4">
-                    <Label className="text-base font-semibold flex items-center gap-2">
-                      <Folder className="h-4 w-4" />
-                      Space Associations
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Manage roles assigned in specific spaces
-                    </p>
-
-                    <div className="space-y-2">
-                      {editForm.spaces.map((space, index) => (
-                        <div key={index} className="flex items-center gap-2 p-2 border rounded">
-                          <Select
-                            value={space.spaceId}
-                            onValueChange={(value) => {
-                              const newSpaces = [...editForm.spaces]
-                              newSpaces[index] = { ...newSpaces[index], spaceId: value }
-                              setEditForm({ ...editForm, spaces: newSpaces })
-                            }}
-                          >
-                            <SelectTrigger className="flex-1">
-                              <SelectValue placeholder="Select space" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {spaces.map(s => (
-                                <SelectItem key={s.id} value={s.id}>
-                                  {s.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-
-                          <Select
-                            value={space.role}
-                            onValueChange={(value) => {
-                              const newSpaces = [...editForm.spaces]
-                              newSpaces[index] = { ...newSpaces[index], role: value }
-                              setEditForm({ ...editForm, spaces: newSpaces })
-                            }}
-                          >
-                            <SelectTrigger className="w-[120px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="member">Member</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                              <SelectItem value="owner">Owner</SelectItem>
-                            </SelectContent>
-                          </Select>
-
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-9 w-9 p-0 text-muted-foreground hover:text-destructive"
-                            onClick={() => {
-                              const newSpaces = editForm.spaces.filter((_, i) => i !== index)
-                              setEditForm({ ...editForm, spaces: newSpaces })
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => {
-                        setEditForm({
-                          ...editForm,
-                          spaces: [...editForm.spaces, { spaceId: '', role: 'member' }]
-                        })
-                      }}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Space Association
-                    </Button>
-                  </div>
+                  <SpaceAssociationsEditor
+                    formSpaces={editForm.spaces}
+                    spaces={spaces}
+                    onChange={(nextSpaces) => setEditForm({ ...editForm, spaces: nextSpaces })}
+                  />
                 </TabsContent>
 
                 <TabsContent value="groups" className="space-y-4 mt-4">
-                  <div>
-                    <Label>Group Memberships</Label>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Select groups this user should belong to
-                    </p>
-                    <div className="border rounded-md max-h-[300px] overflow-y-auto">
-                      {groups.length === 0 ? (
-                        <div className="p-4 text-center text-muted-foreground">
-                          <FolderTree className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p className="text-sm">No groups available</p>
-                          <p className="text-xs">Create groups in the Groups tab first</p>
-                        </div>
-                      ) : (
-                        <div className="divide-y">
-                          {groups.map((group) => {
-                            const isSelected = editForm.groupIds.includes(group.id)
-                            return (
-                              <div
-                                key={group.id}
-                                className={cn(
-                                  "flex items-center gap-3 p-3 cursor-pointer transition-colors",
-                                  isSelected
-                                    ? "bg-primary/5"
-                                    : "hover:bg-muted/50"
-                                )}
-                                onClick={() => {
-                                  setEditForm(prev => ({
-                                    ...prev,
-                                    groupIds: isSelected
-                                      ? prev.groupIds.filter(id => id !== group.id)
-                                      : [...prev.groupIds, group.id]
-                                  }))
-                                }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={() => {}}
-                                  className="rounded"
-                                />
-                                <FolderTree className="h-4 w-4 text-muted-foreground" />
-                                <div className="flex-1">
-                                  <p className="text-sm font-medium">{group.name}</p>
-                                  {group.description && (
-                                    <p className="text-xs text-muted-foreground truncate">{group.description}</p>
-                                  )}
-                                </div>
-                                <Badge variant="outline" className="text-xs">
-                                  {group.memberCount || 0} members
-                                </Badge>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
-                    {editForm.groupIds.length > 0 && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {editForm.groupIds.length} group(s) selected
-                      </p>
-                    )}
-                  </div>
+                  <GroupMembershipSelector
+                    groups={groups}
+                    selectedGroupIds={editForm.groupIds}
+                    onChange={(groupIds) => setEditForm({ ...editForm, groupIds })}
+                  />
                 </TabsContent>
               </Tabs>
             </div>
@@ -1221,38 +1032,21 @@ export function UserManagement() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Allowed Login Methods</Label>
-                <p className="text-xs text-muted-foreground">Select allowed methods. Leave empty to allow all configured methods.</p>
-                <div className="flex flex-wrap gap-2 p-3 border rounded-md">
-                  {getAvailableLoginMethods().map((method) => {
-                    const isSelected = createForm.allowedLoginMethods.includes(method)
-                    return (
-                      <div
-                        key={method}
-                        className={cn(
-                          "cursor-pointer px-3 py-1.5 rounded-full text-sm border transition-colors select-none",
-                          isSelected
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "bg-background hover:bg-muted border-input"
-                        )}
-                        onClick={() => {
-                          setCreateForm(prev => {
-                            const current = prev.allowedLoginMethods
-                            if (current.includes(method)) {
-                              return { ...prev, allowedLoginMethods: current.filter(m => m !== method) }
-                            } else {
-                              return { ...prev, allowedLoginMethods: [...current, method] }
-                            }
-                          })
-                        }}
-                      >
-                        {formatLoginMethod(method)}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
+              <AllowedLoginMethodsSelector
+                methods={getAvailableLoginMethods()}
+                selectedMethods={createForm.allowedLoginMethods}
+                onToggleMethod={(method) => {
+                  setCreateForm(prev => {
+                    const current = prev.allowedLoginMethods
+                    return {
+                      ...prev,
+                      allowedLoginMethods: current.includes(method)
+                        ? current.filter(m => m !== method)
+                        : [...current, method],
+                    }
+                  })
+                }}
+              />
 
               <div className="flex items-center space-x-2">
                 <Switch
@@ -1263,72 +1057,11 @@ export function UserManagement() {
                 <Label htmlFor="create-active">Active</Label>
               </div>
 
-              {/* Space Assignments */}
-              <div className="space-y-2">
-                <Label>Space Access</Label>
-                <div className="text-sm text-muted-foreground mb-2">
-                  Assign user to spaces and set their role in each space
-                </div>
-                <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
-                  {spaces.length === 0 ? (
-                    <div className="text-sm text-muted-foreground">No spaces available</div>
-                  ) : (
-                    spaces.map(space => {
-                      const userSpace = createForm.spaces.find((s: any) => s.spaceId === space.id)
-                      return (
-                        <div key={space.id} className="flex items-center justify-between py-1">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              id={`create-space-${space.id}`}
-                              checked={!!userSpace}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setCreateForm({
-                                    ...createForm,
-                                    spaces: [...createForm.spaces, { spaceId: space.id, role: 'member' }]
-                                  })
-                                } else {
-                                  setCreateForm({
-                                    ...createForm,
-                                    spaces: createForm.spaces.filter((s: any) => s.spaceId !== space.id)
-                                  })
-                                }
-                              }}
-                              className="rounded"
-                            />
-                            <label htmlFor={`create-space-${space.id}`} className="text-sm cursor-pointer">
-                              {space.name}
-                            </label>
-                          </div>
-                          {userSpace && (
-                            <Select
-                              value={userSpace.role}
-                              onValueChange={(role) => {
-                                setCreateForm({
-                                  ...createForm,
-                                  spaces: createForm.spaces.map((s: any) =>
-                                    s.spaceId === space.id ? { ...s, role } : s
-                                  )
-                                })
-                              }}
-                            >
-                              <SelectTrigger className="w-28 h-8 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="member">Member</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
-                                <SelectItem value="owner">Owner</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          )}
-                        </div>
-                      )
-                    })
-                  )}
-                </div>
-              </div>
+              <CreateSpaceAccessSelector
+                formSpaces={createForm.spaces}
+                spaces={spaces}
+                onChange={(nextSpaces) => setCreateForm({ ...createForm, spaces: nextSpaces })}
+              />
             </div>
           </DialogBody>
             <DialogFooter className="flex-shrink-0 border-t-0 p-6 pt-2">
@@ -1513,368 +1246,42 @@ export function UserManagement() {
           </DialogContent>
         </Dialog>
 
-        {/* User Details Dialog */}
-        <Dialog open={showUserDetails} onOpenChange={setShowUserDetails}>
-          <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
-            <DialogHeader className="flex-shrink-0">
-              <DialogTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                User Details
-              </DialogTitle>
-            </DialogHeader>
-            {selectedUser && (
-              <>
-                <DialogBody className="flex-1 overflow-y-auto p-6 pt-2 pb-4">
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-20 w-20">
-                        <AvatarImage src={selectedUser.avatar} />
-                        <AvatarFallback className="text-2xl">
-                          {selectedUser.name.split(' ').map(n => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-semibold">{selectedUser.name}</h3>
-                        <p className="text-muted-foreground">{selectedUser.email}</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          {getStatusIcon(selectedUser.isActive)}
-                          <RoleBadge role={selectedUser.role} label={selectedUser.role} />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-xs text-muted-foreground">User ID</Label>
-                        <p className="text-sm font-mono">{selectedUser.id}</p>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground">Status</Label>
-                        <p className="text-sm">{selectedUser.isActive ? 'Active' : 'Inactive'}</p>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground">Created</Label>
-                        <p className="text-sm">{new Date(selectedUser.createdAt).toLocaleString()}</p>
-                      </div>
-                      {selectedUser.lastLoginAt && (
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Last Login</Label>
-                          <p className="text-sm">{new Date(selectedUser.lastLoginAt).toLocaleString()}</p>
-                        </div>
-                      )}
-                      {selectedUser.defaultSpaceId && (
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Default Space</Label>
-                          <p className="text-sm">{spaces.find(s => s.id === selectedUser.defaultSpaceId)?.name || 'N/A'}</p>
-                        </div>
-                      )}
-                      <div className="col-span-2">
-                        <Label className="text-xs text-muted-foreground">Allowed Login Methods</Label>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {(selectedUser.allowedLoginMethods && selectedUser.allowedLoginMethods.length > 0
-                            ? selectedUser.allowedLoginMethods
-                            : ['all']
-                          ).map((method) => (
-                            <Badge key={method} variant="outline">
-                              {method === 'all' ? 'All Configured Methods' : formatLoginMethod(method)}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {selectedUser.spaces && selectedUser.spaces.length > 0 && (
-                      <div>
-                        <Label className="text-base font-semibold mb-2 block">Space Memberships</Label>
-                        <div className="space-y-2">
-                          {selectedUser.spaces.map((space, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-3 border rounded">
-                              <span className="text-sm font-medium">{space.spaceName}</span>
-                              <RoleBadge role={space.role} label={space.role} />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </DialogBody>
-                <DialogFooter className="flex-shrink-0 border-t p-4 px-6 flex justify-end gap-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setShowUserDetails(false)
-                      openEditDialog(selectedUser)
-                    }}
-                    className="rounded-xl h-10 px-4"
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit User
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setShowUserDetails(false)
-                      setResetPasswordUser(selectedUser)
-                      setShowResetPasswordDialog(true)
-                    }}
-                    className="rounded-xl h-10 px-4"
-                  >
-                    <Key className="h-4 w-4 mr-2" />
-                    Reset Password
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowUserDetails(false)}
-                    className="rounded-xl h-10 px-4"
-                  >
-                    Close
-                  </Button>
-                </DialogFooter>
-              </>
-            )}
-          </DialogContent>
-        </Dialog>
-
-
-      <CrudDialog
-        open={showSyncSettingsDialog}
-        onOpenChange={setShowSyncSettingsDialog}
-        title="AD Sync Settings"
-        description="Configure automatic synchronization with Azure AD."
-        bodyClassName="space-y-4"
-        footer={(
-          <>
-            <Button variant="outline" onClick={() => setShowSyncSettingsDialog(false)}>Cancel</Button>
-            <Button onClick={saveSyncSettings} disabled={savingSyncSettings}>
-              {savingSyncSettings ? <RefreshCw className="h-4 w-4 animate-spin" /> : 'Save'}
-            </Button>
-          </>
-        )}
-      >
-             <div className="flex items-center justify-between">
-                <Label>Enable Automatic Sync</Label>
-                <Switch 
-                   checked={syncSchedule.enabled}
-                   onCheckedChange={c => setSyncSchedule({...syncSchedule, enabled: c})}
-                />
-             </div>
-             {syncSchedule.enabled && (
-                 <>
-                    <div className="space-y-2">
-                        <Label>Frequency</Label>
-                        <Select 
-                            value={syncSchedule.frequency} 
-                            onValueChange={v => setSyncSchedule({...syncSchedule, frequency: v})}
-                        >
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="hourly">Hourly</SelectItem>
-                                <SelectItem value="daily">Daily</SelectItem>
-                                <SelectItem value="weekly">Weekly</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                 </>
-             )}
-      </CrudDialog>
+        <UserDetailsDialog
+          open={showUserDetails}
+          onOpenChange={setShowUserDetails}
+          user={selectedUser}
+          spaces={spaces}
+          onEditUser={(user) => {
+            setShowUserDetails(false)
+            openEditDialog(user)
+          }}
+          onResetPassword={(user) => {
+            setShowUserDetails(false)
+            setResetPasswordUser(user)
+            setShowResetPasswordDialog(true)
+          }}
+        />
+        <UserSyncSettingsDialog
+          open={showSyncSettingsDialog}
+          onOpenChange={setShowSyncSettingsDialog}
+        />
       
-        {/* Import Users Dialog */}
-        <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
-          <DialogContent className="max-w-2xl p-0 overflow-hidden">
-            <DialogHeader>
-              <DialogTitle>Import Users</DialogTitle>
-              <DialogDescription>
-                Upload a CSV file to import users. Required columns: name, email, password. Optional: role, isActive
-              </DialogDescription>
-            </DialogHeader>
-            <DialogBody className="space-y-4 p-6 pt-2 pb-4">
-              {!importResults ? (
-                <>
-                  <div>
-                    <Label htmlFor="import-file">CSV File</Label>
-                    <Input
-                      id="import-file"
-                      type="file"
-                      accept=".csv"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) {
-                          setImportFile(file)
-                        }
-                      }}
-                    />
-                    <p className="text-xs text-muted-foreground mt-2">
-                      CSV format: name,email,password,role,isActive
-                    </p>
-                  </div>
-                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                    <p className="text-sm text-blue-900 dark:text-blue-200">
-                      <strong>Example CSV:</strong><br />
-                      name,email,password,role,isActive<br />
-                      John Doe,john@example.com,password123,USER,true<br />
-                      Jane Smith,jane@example.com,password456,ADMIN,true
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <div className="space-y-4">
-                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-md">
-                    <p className="text-sm text-green-900 dark:text-green-200 font-semibold">
-                      Successfully imported {importResults.success.length} user(s)
-                    </p>
-                  </div>
-                  {importResults.failed.length > 0 && (
-                    <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-md">
-                      <p className="text-sm text-red-900 dark:text-red-200 font-semibold mb-2">
-                        Failed to import {importResults.failed.length} user(s):
-                      </p>
-                      <div className="max-h-40 overflow-y-auto space-y-1">
-                        {importResults.failed.map((failure, idx) => (
-                          <p key={idx} className="text-xs text-red-800 dark:text-red-200">
-                            {failure.email}: {failure.error}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </DialogBody>
-            <DialogFooter>
-              {importResults ? (
-                <>
-                  <Button variant="outline" onClick={() => {
-                    setShowImportDialog(false)
-                    setImportFile(null)
-                    setImportResults(null)
-                    loadUsers()
-                  }}>
-                    Close
-                  </Button>
-                  <Button onClick={() => {
-                    setImportFile(null)
-                    setImportResults(null)
-                  }}>
-                    Import More
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button variant="outline" onClick={() => {
-                    setShowImportDialog(false)
-                    setImportFile(null)
-                  }}>
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={async () => {
-                      if (!importFile) {
-                        toast.error('Please select a file')
-                        return
-                      }
-
-                      setImporting(true)
-                      try {
-                        const formData = new FormData()
-                        formData.append('file', importFile)
-
-                        const response = await fetch('/api/admin/users/import', {
-                          method: 'POST',
-                          body: formData
-                        })
-
-                        if (response.ok) {
-                          const data = await response.json()
-                          setImportResults(data.results)
-                          toast.success(`Imported ${data.results.success.length} user(s)`)
-                          if (data.results.failed.length > 0) {
-                            toast.error(`${data.results.failed.length} user(s) failed to import`)
-                          }
-                        } else {
-                          const error = await response.json()
-                          toast.error(error.error || 'Failed to import users')
-                        }
-                      } catch (error) {
-                        console.error('Error importing users:', error)
-                        toast.error('Failed to import users')
-                      } finally {
-                        setImporting(false)
-                      }
-                    }}
-                    disabled={!importFile || importing}
-                  >
-                    {importing ? 'Importing...' : 'Import Users'}
-                  </Button>
-                </>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-        {/* Reset Password Dialog */}
-        <CrudDialog
+        <UserImportDialog
+          open={showImportDialog}
+          onOpenChange={setShowImportDialog}
+          onImported={loadUsers}
+        />
+        <UserResetPasswordDialog
           open={showResetPasswordDialog}
           onOpenChange={setShowResetPasswordDialog}
-          title="Reset Password"
-          description={`Set a new password for ${resetPasswordUser?.name}.`}
-          bodyClassName="space-y-4"
-          footer={(
-            <>
-              <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)}>
-                Cancel
-              </Button>
-              <Button
-                disabled={resettingPassword || !newPassword || newPassword !== confirmPassword || newPassword.length < 6}
-                onClick={async () => {
-                  if (!resetPasswordUser) return
-                  setResettingPassword(true)
-                  try {
-                    const res = await fetch(`/api/admin/users/${resetPasswordUser.id}/reset-password`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ password: newPassword })
-                    })
-                    
-                    if (res.ok) {
-                      toast.success('Password reset successfully')
-                      setShowResetPasswordDialog(false)
-                    } else {
-                      const err = await res.json()
-                      toast.error(err.error || 'Failed to reset password')
-                    }
-                  } catch (error) {
-                    toast.error('Failed to reset password')
-                  } finally {
-                    setResettingPassword(false)
-                  }
-                }}
-              >
-                {resettingPassword ? 'Resetting...' : 'Reset Password'}
-              </Button>
-            </>
-          )}
-        >
-              <div className="space-y-2">
-                <Label htmlFor="new-password">New Password</Label>
-                <Input
-                  id="new-password"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm Password</Label>
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-              </div>
-        </CrudDialog>
+          user={resetPasswordUser}
+          newPassword={newPassword}
+          confirmPassword={confirmPassword}
+          resettingPassword={resettingPassword}
+          setNewPassword={setNewPassword}
+          setConfirmPassword={setConfirmPassword}
+          onResetPassword={resetPassword}
+        />
       </div>
     </div>
   )

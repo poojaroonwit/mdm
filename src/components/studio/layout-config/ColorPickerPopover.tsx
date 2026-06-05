@@ -233,6 +233,53 @@ const ColorSwatchGrid = React.memo(({
 })
 ColorSwatchGrid.displayName = 'ColorSwatchGrid'
 
+function applySolidColorSwatchStyles(button: HTMLButtonElement, swatchStyle: React.CSSProperties) {
+  const size = '20px'
+  button.style.setProperty('aspect-ratio', '1 / 1', 'important')
+  button.style.setProperty('width', size, 'important')
+  button.style.setProperty('height', size, 'important')
+  button.style.setProperty('min-width', size, 'important')
+  button.style.setProperty('min-height', size, 'important')
+  button.style.setProperty('max-width', size, 'important')
+  button.style.setProperty('max-height', size, 'important')
+  button.style.setProperty('padding', '0', 'important')
+  button.style.setProperty('margin', '0', 'important')
+  button.style.setProperty('border', 'none', 'important')
+  button.style.setProperty('border-width', '0', 'important')
+  button.style.setProperty('border-radius', '0', 'important')
+  button.style.setProperty('box-sizing', 'border-box', 'important')
+
+  button.style.removeProperty('background')
+  button.style.removeProperty('background-color')
+  button.style.removeProperty('background-image')
+  button.style.removeProperty('background-size')
+  button.style.removeProperty('background-position')
+  button.style.removeProperty('background-repeat')
+
+  if (swatchStyle.background) {
+    button.style.setProperty('background', String(swatchStyle.background), 'important')
+    return
+  }
+
+  button.style.setProperty(
+    'background-color',
+    String(swatchStyle.backgroundColor || '#e5e5e5'),
+    'important'
+  )
+  if (swatchStyle.backgroundImage) {
+    button.style.setProperty('background-image', String(swatchStyle.backgroundImage), 'important')
+  }
+  if (swatchStyle.backgroundSize) {
+    button.style.setProperty('background-size', String(swatchStyle.backgroundSize), 'important')
+  }
+  if (swatchStyle.backgroundPosition) {
+    button.style.setProperty('background-position', String(swatchStyle.backgroundPosition), 'important')
+  }
+  if (swatchStyle.backgroundRepeat) {
+    button.style.setProperty('background-repeat', String(swatchStyle.backgroundRepeat), 'important')
+  }
+}
+
 interface ColorPickerPopoverProps {
   value: string
   onChange: (value: string) => void
@@ -553,53 +600,7 @@ export function ColorPickerPopover({
   // element whenever the color changes, keeping the swatch in sync.
   const solidColorSwatchButtonRefCallback = React.useCallback((button: HTMLButtonElement | null) => {
     solidColorSwatchButtonRef.current = button
-    if (!button) return
-
-    // Apply size styles immediately when button is available (always 1:1)
-    const size = '20px'
-    button.style.setProperty('aspect-ratio', '1 / 1', 'important')
-    button.style.setProperty('width', size, 'important')
-    button.style.setProperty('height', size, 'important')
-    button.style.setProperty('min-width', size, 'important')
-    button.style.setProperty('min-height', size, 'important')
-    button.style.setProperty('max-width', size, 'important')
-    button.style.setProperty('max-height', size, 'important')
-    button.style.setProperty('padding', '0', 'important')
-    button.style.setProperty('margin', '0', 'important')
-    button.style.setProperty('border', 'none', 'important')
-    button.style.setProperty('border-width', '0', 'important')
-    button.style.setProperty('border-radius', '0', 'important')
-    button.style.setProperty('box-sizing', 'border-box', 'important')
-
-    // Apply background/swatch styles immediately so the color shows on first open
-    button.style.removeProperty('background')
-    button.style.removeProperty('background-color')
-    button.style.removeProperty('background-image')
-    button.style.removeProperty('background-size')
-    button.style.removeProperty('background-position')
-    button.style.removeProperty('background-repeat')
-
-    if (swatchStyle.background) {
-      button.style.setProperty('background', String(swatchStyle.background), 'important')
-    } else {
-      if (swatchStyle.backgroundColor) {
-        button.style.setProperty('background-color', swatchStyle.backgroundColor, 'important')
-      } else {
-        button.style.setProperty('background-color', '#e5e5e5', 'important')
-      }
-      if (swatchStyle.backgroundImage) {
-        button.style.setProperty('background-image', swatchStyle.backgroundImage, 'important')
-      }
-      if (swatchStyle.backgroundSize) {
-        button.style.setProperty('background-size', String(swatchStyle.backgroundSize), 'important')
-      }
-      if (swatchStyle.backgroundPosition) {
-        button.style.setProperty('background-position', String(swatchStyle.backgroundPosition), 'important')
-      }
-      if (swatchStyle.backgroundRepeat) {
-        button.style.setProperty('background-repeat', swatchStyle.backgroundRepeat, 'important')
-      }
-    }
+    if (button) applySolidColorSwatchStyles(button, swatchStyle)
   }, [swatchStyle])
 
   // Calculate proper padding: button width (20px) + left offset (4px) + gap (6px) = 30px
@@ -632,115 +633,10 @@ export function ColorPickerPopover({
     }
   }, [solidColor, opacity])
 
-  // Apply swatch styles to button with !important - same approach as ColorInput
-  // This function applies all styles and can be called multiple times
-  const applyButtonStyles = React.useCallback(() => {
-    const button = solidColorSwatchButtonRef.current
-    if (!button) return
-
-    // Force strict 1:1 aspect ratio - set width and height to be exactly equal (same as ColorInput)
-    const size = '20px'
-    button.style.setProperty('aspect-ratio', '1 / 1', 'important')
-    button.style.setProperty('width', size, 'important')
-    button.style.setProperty('height', size, 'important')
-    button.style.setProperty('min-width', size, 'important')
-    button.style.setProperty('min-height', size, 'important')
-    button.style.setProperty('max-width', size, 'important')
-    button.style.setProperty('max-height', size, 'important')
-    button.style.setProperty('padding', '0', 'important')
-    button.style.setProperty('margin', '0', 'important')
-    button.style.setProperty('border', 'none', 'important')
-    button.style.setProperty('border-width', '0', 'important')
-    button.style.setProperty('border-radius', '0', 'important')
-    button.style.setProperty('box-sizing', 'border-box', 'important')
-
-    // Clear any existing background styles first
-    button.style.removeProperty('background')
-    button.style.removeProperty('background-color')
-    button.style.removeProperty('background-image')
-    button.style.removeProperty('background-size')
-    button.style.removeProperty('background-position')
-    button.style.removeProperty('background-repeat')
-
-    // Apply swatch styles with !important (same as ColorInput)
-    if (swatchStyle.background) {
-      // For gradients, use the background shorthand
-      button.style.setProperty('background', String(swatchStyle.background), 'important')
-    } else {
-      // For other types, use individual properties
-      if (swatchStyle.backgroundColor) {
-        button.style.setProperty('background-color', swatchStyle.backgroundColor, 'important')
-      } else {
-        button.style.setProperty('background-color', '#e5e5e5', 'important')
-      }
-      if (swatchStyle.backgroundImage) {
-        button.style.setProperty('background-image', swatchStyle.backgroundImage, 'important')
-      }
-      if (swatchStyle.backgroundSize) {
-        button.style.setProperty('background-size', String(swatchStyle.backgroundSize), 'important')
-      }
-      if (swatchStyle.backgroundPosition) {
-        button.style.setProperty('background-position', String(swatchStyle.backgroundPosition), 'important')
-      }
-      if (swatchStyle.backgroundRepeat) {
-        button.style.setProperty('background-repeat', swatchStyle.backgroundRepeat, 'important')
-      }
-    }
-  }, [swatchStyle])
-
   // Apply styles immediately on mount and whenever swatchStyle changes (same as ColorInput)
   React.useEffect(() => {
     const button = solidColorSwatchButtonRef.current
-    if (!button) return
-
-    // Force strict 1:1 aspect ratio - set width and height to be exactly equal (same as ColorInput)
-    const size = '20px'
-    button.style.setProperty('aspect-ratio', '1 / 1', 'important')
-    button.style.setProperty('width', size, 'important')
-    button.style.setProperty('height', size, 'important')
-    button.style.setProperty('min-width', size, 'important')
-    button.style.setProperty('min-height', size, 'important')
-    button.style.setProperty('max-width', size, 'important')
-    button.style.setProperty('max-height', size, 'important')
-    button.style.setProperty('padding', '0', 'important')
-    button.style.setProperty('margin', '0', 'important')
-    button.style.setProperty('border', 'none', 'important')
-    button.style.setProperty('border-width', '0', 'important')
-    button.style.setProperty('border-radius', '0', 'important')
-    button.style.setProperty('box-sizing', 'border-box', 'important')
-
-    // Clear any existing background styles first
-    button.style.removeProperty('background')
-    button.style.removeProperty('background-color')
-    button.style.removeProperty('background-image')
-    button.style.removeProperty('background-size')
-    button.style.removeProperty('background-position')
-    button.style.removeProperty('background-repeat')
-
-    // Apply swatch styles with !important (same as ColorInput)
-    if (swatchStyle.background) {
-      // For gradients, use the background shorthand
-      button.style.setProperty('background', String(swatchStyle.background), 'important')
-    } else {
-      // For other types, use individual properties
-      if (swatchStyle.backgroundColor) {
-        button.style.setProperty('background-color', swatchStyle.backgroundColor, 'important')
-      } else {
-        button.style.setProperty('background-color', '#e5e5e5', 'important')
-      }
-      if (swatchStyle.backgroundImage) {
-        button.style.setProperty('background-image', swatchStyle.backgroundImage, 'important')
-      }
-      if (swatchStyle.backgroundSize) {
-        button.style.setProperty('background-size', String(swatchStyle.backgroundSize), 'important')
-      }
-      if (swatchStyle.backgroundPosition) {
-        button.style.setProperty('background-position', String(swatchStyle.backgroundPosition), 'important')
-      }
-      if (swatchStyle.backgroundRepeat) {
-        button.style.setProperty('background-repeat', swatchStyle.backgroundRepeat, 'important')
-      }
-    }
+    if (button) applySolidColorSwatchStyles(button, swatchStyle)
   }, [swatchStyle])
 
   // Auto-switch to valid set if current becomes unavailable (only when selectedColorSet changes, not when colors are added)
