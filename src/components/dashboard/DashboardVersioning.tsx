@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -204,13 +205,9 @@ export function DashboardVersioning({
                 <TableRow key={version.id} className={version.is_current ? 'bg-blue-50' : ''}>
                   <TableCell>
                     <div className="flex items-center space-x-2">
-                      <Badge variant={version.is_current ? "default" : "secondary"}>
-                        {version.version}
-                      </Badge>
+                      <StatusBadge status={version.is_current ? 'current' : 'draft'} label={version.version} />
                       {version.is_current && (
-                        <Badge variant="outline" className="text-xs">
-                          Current
-                        </Badge>
+                        <StatusBadge status="current" size="sm" className="text-xs" />
                       )}
                     </div>
                   </TableCell>

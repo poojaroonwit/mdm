@@ -10,6 +10,7 @@ export interface UsePaginationOptions {
   initialPage?: number
   initialLimit?: number
   total?: number
+  onPageChange?: (page: number, limit: number) => void
 }
 
 export interface UsePaginationReturn {
@@ -22,6 +23,7 @@ export interface UsePaginationReturn {
   setTotal: (total: number) => void
   nextPage: () => void
   prevPage: () => void
+  previousPage: () => void
   goToPage: (page: number) => void
   reset: () => void
 }
@@ -30,22 +32,43 @@ export function usePagination(options: UsePaginationOptions = {}): UsePagination
   const {
     initialPage = DEFAULT_PAGINATION.page,
     initialLimit = DEFAULT_PAGINATION.limit,
-    total: initialTotal = 0
+    total: initialTotal = 0,
+    onPageChange,
   } = options
 
-  const [page, setPage] = useState(initialPage)
-  const [limit, setLimit] = useState(initialLimit)
+  const [page, setPageState] = useState(initialPage)
+  const [limit, setLimitState] = useState(initialLimit)
   const [total, setTotal] = useState(initialTotal)
 
   const totalPages = Math.ceil(total / limit)
 
+  const setPage = useCallback(
+    (newPage: number) => {
+      setPageState(newPage)
+      onPageChange?.(newPage, limit)
+    },
+    [limit, onPageChange]
+  )
+
+  const setLimit = useCallback(
+    (newLimit: number) => {
+      setLimitState(newLimit)
+      setPageState(1)
+      onPageChange?.(1, newLimit)
+    },
+    [onPageChange]
+  )
+
   const nextPage = useCallback(() => {
-    setPage(prev => Math.min(prev + 1, totalPages))
-  }, [totalPages])
+    const maxPage = totalPages > 0 ? totalPages : page + 1
+    setPage(Math.min(page + 1, maxPage))
+  }, [page, setPage, totalPages])
 
   const prevPage = useCallback(() => {
-    setPage(prev => Math.max(1, prev - 1))
-  }, [])
+    setPage(Math.max(1, page - 1))
+  }, [page, setPage])
+
+  const previousPage = prevPage
 
   const goToPage = useCallback((newPage: number) => {
     setPage(Math.max(1, Math.min(newPage, totalPages)))
@@ -67,6 +90,7 @@ export function usePagination(options: UsePaginationOptions = {}): UsePagination
     setTotal,
     nextPage,
     prevPage,
+    previousPage,
     goToPage,
     reset
   }

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { 
   BarChart3,
   Power,
@@ -102,9 +102,10 @@ export function SourceTypeView({
                 <div className={`p-3 rounded-lg ${source.bgColor}`}>
                   <Icon className={`h-6 w-6 ${source.color}`} />
                 </div>
-                <Badge variant={isConfigured ? 'default' : 'secondary'}>
-                  {count} {count === 1 ? 'report' : 'reports'}
-                </Badge>
+                <StatusBadge
+                  status={isConfigured ? 'configured' : 'not-configured'}
+                  label={`${count} ${count === 1 ? 'report' : 'reports'}`}
+                />
               </div>
               <CardTitle className="mt-4">{source.name}</CardTitle>
               <CardDescription>{source.description}</CardDescription>

@@ -5,6 +5,7 @@ import { MainLayout } from '@/components/layout/main-layout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -701,9 +702,7 @@ export default function ExportProfilesPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={profile.is_public ? "default" : "secondary"}>
-                        {profile.is_public ? "Yes" : "No"}
-                      </Badge>
+                      <StatusBadge status={profile.is_public ? 'public' : 'private'} label={profile.is_public ? 'Yes' : 'No'} />
                     </TableCell>
                     <TableCell>
                       <div className="text-sm text-muted-foreground">

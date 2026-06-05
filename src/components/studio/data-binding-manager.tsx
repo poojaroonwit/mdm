@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { 
@@ -182,9 +183,7 @@ export function DataBindingManager({
                   <CardTitle className="flex items-center gap-2">
                     <Database className="h-5 w-5" />
                     {dataSource.name}
-                    <Badge variant={dataSource.enabled ? 'default' : 'secondary'}>
-                      {dataSource.enabled ? 'Active' : 'Inactive'}
-                    </Badge>
+                    <StatusBadge status={dataSource.enabled ? 'active' : 'inactive'} />
                     <Badge variant="outline">
                       {dataSource.type}
                     </Badge>
@@ -323,9 +322,7 @@ export function DataBindingManager({
                     <CardTitle className="flex items-center gap-2">
                       <Link className="h-5 w-5" />
                       Component Binding
-                      <Badge variant={binding.enabled ? 'default' : 'secondary'}>
-                        {binding.enabled ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <StatusBadge status={binding.enabled ? 'active' : 'inactive'} />
                     </CardTitle>
                     <div className="flex items-center gap-2">
                       <Button
@@ -423,9 +420,7 @@ export function DataBindingManager({
                   <Zap className="h-5 w-5" />
                   {dataSource.name}
                   {testResults[dataSource.id] && (
-                    <Badge variant={testResults[dataSource.id].error ? 'destructive' : 'default'}>
-                      {testResults[dataSource.id].error ? 'Error' : 'Success'}
-                    </Badge>
+                    <StatusBadge status={testResults[dataSource.id].error ? 'error' : 'success'} />
                   )}
                 </CardTitle>
               </CardHeader>

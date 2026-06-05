@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import {
   Table,
   TableBody,
@@ -480,9 +481,7 @@ export function AssetManagement() {
                           {asset.description || '-'}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={asset.isActive ? 'default' : 'secondary'}>
-                            {asset.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
+                          <StatusBadge status={asset.isActive ? 'active' : 'inactive'} />
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -540,9 +539,7 @@ export function AssetManagement() {
                         <Badge>{type.category}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={type.isActive ? 'default' : 'secondary'}>
-                          {type.isActive ? 'Active' : 'Inactive'}
-                        </Badge>
+                        <StatusBadge status={type.isActive ? 'active' : 'inactive'} />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -608,9 +605,7 @@ export function AssetManagement() {
                       <TableCell>{lang.nativeName}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Badge variant={lang.isActive ? 'default' : 'secondary'}>
-                            {lang.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
+                          <StatusBadge status={lang.isActive ? 'active' : 'inactive'} />
                           {lang.isDefault && (
                             <Badge variant="outline">Default</Badge>
                           )}

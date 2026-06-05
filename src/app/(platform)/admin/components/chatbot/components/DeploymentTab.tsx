@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 
 import { Copy, Globe, Info, Smartphone, Check } from 'lucide-react'
 import * as Icons from 'lucide-react'
@@ -69,12 +70,12 @@ export function DeploymentTab({
             v{currentVersion || '1.0.0'}
           </Badge>
           {formData.isPublished ? (
-            <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+            <StatusBadge status="published">
               <Check className="h-3 w-3 mr-1" />
               Published
-            </Badge>
+            </StatusBadge>
           ) : (
-            <Badge variant="secondary">Draft</Badge>
+            <StatusBadge status="draft" />
           )}
           {(() => {
             const latestVersion = versions[0]
@@ -92,10 +93,10 @@ export function DeploymentTab({
 
             if (hasChanges) {
               return (
-                <Badge variant="outline" className="text-amber-500 border-amber-500/50 bg-amber-500/10 gap-1 animate-pulse">
+                <StatusBadge status="unpublished-changes" className="gap-1 animate-pulse">
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                   Unpublished Changes
-                </Badge>
+                </StatusBadge>
               )
             }
             return null

@@ -724,9 +724,7 @@ export function DatabaseManagement() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={index.isPrimary ? 'default' : 'outline'}>
-                        {index.type}
-                      </Badge>
+                      <StatusBadge status={index.isPrimary ? 'primary' : 'standard'} label={index.type} />
                       <span className="text-sm text-muted-foreground">
                         {formatBytes(index.size)}
                       </span>

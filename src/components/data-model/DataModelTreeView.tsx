@@ -4,13 +4,6 @@ import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import {
   Dialog,
   DialogContent,
@@ -23,52 +16,20 @@ import {
 import { Label } from '@/components/ui/label'
 import { 
   Database, 
-  Folder, 
-  FolderOpen, 
-  ChevronRight, 
-  ChevronDown,
   Plus,
-  Edit,
-  Trash2,
-  MoreVertical,
   Search,
   FolderPlus,
-  Move,
-  Share2,
-  Eye,
-  EyeOff
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
-
-interface DataModel {
-  id: string
-  name: string
-  display_name?: string
-  description?: string
-  folder_id?: string
-  icon?: string
-  primary_color?: string
-  tags?: string[]
-  shared_spaces?: any[]
-  created_at?: string
-  updated_at?: string
-}
-
-interface Folder {
-  id: string
-  name: string
-  description?: string
-  parent_id?: string
-  children?: Folder[]
-  models?: DataModel[]
-  created_at?: string
-  updated_at?: string
-}
+import {
+  DataModelTreeList,
+  type DataModel,
+  type DataModelFolder,
+} from './DataModelTreeList'
 
 interface DataModelTreeViewProps {
   models: DataModel[]
-  folders: Folder[]
+  folders: DataModelFolder[]
   loading?: boolean
   searchValue: string
   onSearchChange: (value: string) => void
@@ -78,8 +39,8 @@ interface DataModelTreeViewProps {
   onModelShare: (model: DataModel) => void
   onCreateModel: () => void
   onCreateFolder: (name: string, parentId?: string) => void
-  onEditFolder: (folder: Folder) => void
-  onDeleteFolder: (folder: Folder) => void
+  onEditFolder: (folder: DataModelFolder) => void
+  onDeleteFolder: (folder: DataModelFolder) => void
   onFolderExpand?: (folderId: string) => void
   onFolderCollapse?: (folderId: string) => void
   expandedFolders?: string[]
@@ -109,8 +70,8 @@ export function DataModelTreeView({
   const [selectedParentFolder, setSelectedParentFolder] = useState<string | null>(null)
   // Build tree structure
   const treeStructure = useMemo(() => {
-    const folderMap = new Map<string, Folder>()
-    const rootFolders: Folder[] = []
+    const folderMap = new Map<string, DataModelFolder>()
+    const rootFolders: DataModelFolder[] = []
     
     // Create folder map
     folders.forEach(folder => {
@@ -170,77 +131,6 @@ export function DataModelTreeView({
     setShowCreateFolderDialog(false)
   }
 
-  const renderModelItem = (model: DataModel) => (
-    <div key={`model:${model.id}`} className="p-2 ml-6 rounded-md hover:bg-accent transition-colors">
-      <div className="flex items-center gap-2">
-        <Database className="h-4 w-4 text-muted-foreground" />
-        <div className="flex-1 min-w-0">
-          <div className="font-medium text-foreground truncate">
-            {model.display_name || model.name}
-          </div>
-          {model.description && (
-            <div className="text-xs text-muted-foreground truncate mt-1">
-              {model.description}
-            </div>
-          )}
-        </div>
-        <div className="flex items-center gap-1">
-          <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => onModelEdit(model)}>
-            <Edit className="h-3 w-3" />
-          </Button>
-          <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => onModelShare(model)}>
-            <Share2 className="h-3 w-3" />
-          </Button>
-          <Button size="sm" variant="ghost" className="h-6 px-2 text-red-600 hover:text-red-700" onClick={() => onModelDelete(model)}>
-            <Trash2 className="h-3 w-3" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderFolderItem = (folder: Folder, level = 0) => {
-    const isExpanded = expandedFolders.includes(folder.id)
-    
-    return (
-      <div key={`folder:${folder.id}`} className="select-none">
-        <div
-          className="flex items-center gap-2 p-2 rounded-md hover:bg-accent transition-colors cursor-pointer"
-          style={{ paddingLeft: `${level * 16 + 8}px` }}
-        >
-          <button
-            onClick={() => toggleFolder(folder.id)}
-            className="p-1 hover:bg-muted rounded"
-          >
-            {isExpanded ? (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            )}
-          </button>
-          
-          <Folder className="h-4 w-4 text-blue-500" />
-          <span className="font-medium flex-1 truncate">{folder.name}</span>
-          <div className="flex items-center gap-1">
-            <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => onEditFolder(folder)}>
-              <Edit className="h-3 w-3" />
-            </Button>
-            <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => onDeleteFolder(folder)}>
-              <Trash2 className="h-3 w-3" />
-            </Button>
-          </div>
-        </div>
-        
-        {isExpanded && (
-          <div>
-            {(folder.models || []).map(renderModelItem)}
-            {(folder.children || []).map(childFolder => renderFolderItem(childFolder, level + 1))}
-          </div>
-        )}
-      </div>
-    )
-  }
-
   const toggleFolder = (folderId: string) => {
     if (expandedFolders.includes(folderId)) {
       onFolderCollapse?.(folderId)
@@ -297,21 +187,17 @@ export function DataModelTreeView({
             </div>
           ) : (
             <div className="space-y-2">
-              {/* Root Models Section */}
-              {rootModels.length > 0 && (
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 p-3 text-sm font-medium text-foreground bg-muted/40 rounded-lg border border-border">
-                    <Database className="h-4 w-4" />
-                    <span>Root Models ({rootModels.length})</span>
-                  </div>
-                  <div className="space-y-1">
-                    {rootModels.map(renderModelItem)}
-                  </div>
-                </div>
-              )}
-              
-              {/* Folders */}
-              {treeStructure.map(folder => renderFolderItem(folder))}
+              <DataModelTreeList
+                expandedFolders={expandedFolders}
+                folders={treeStructure}
+                rootModels={rootModels}
+                onDeleteFolder={onDeleteFolder}
+                onEditFolder={onEditFolder}
+                onModelDelete={onModelDelete}
+                onModelEdit={onModelEdit}
+                onModelShare={onModelShare}
+                onToggleFolder={toggleFolder}
+              />
 
               {/* Empty State */}
               {models.length === 0 && folders.length === 0 && (

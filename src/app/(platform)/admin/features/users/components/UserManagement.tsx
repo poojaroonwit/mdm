@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { RoleBadge } from '@/components/ui/role-badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
@@ -28,7 +29,6 @@ import {
 import {
   Users,
   Plus,
-  Search,
   Filter,
   Trash2,
   Key,
@@ -38,17 +38,11 @@ import {
   MoreHorizontal,
   Settings,
   Folder,
-  Download,
-  Upload,
   User as UserIcon,
-  ChevronDown,
   ChevronUp,
-  ChevronLeft,
-  ChevronRight,
   X,
   FolderTree,
   Smartphone,
-  Cloud,
   Edit,
   UserPlus,
   UserMinus,
@@ -59,14 +53,11 @@ import {
   RefreshCw
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { User, UserGroup } from '../types'
+import { Space, User, UserGroup } from '../types'
+import { formatLoginMethod } from '../utils'
 import { cn } from '@/lib/utils'
-
-interface Space {
-  id: string
-  name: string
-  slug: string
-}
+import { UserManagementToolbar } from './UserManagementToolbar'
+import { UserPagination } from './UserPagination'
 
 export function UserManagement() {
   const [users, setUsers] = useState<User[]>([])
@@ -218,13 +209,6 @@ export function UserManagement() {
     if (ssoConfig.azure) methods.push('azure-ad')
     if (ssoConfig.google) methods.push('google')
     return methods
-  }
-
-  const formatLoginMethod = (method: string) => {
-    if (method === 'email') return 'Email/Password'
-    if (method === 'azure-ad') return 'Azure AD'
-    if (method === 'google') return 'Google'
-    return method
   }
 
   const pages = useMemo(() => Math.ceil(total / limit), [total, limit])
@@ -444,6 +428,35 @@ export function UserManagement() {
     }
   }
 
+  const exportUsers = async () => {
+    try {
+      const params = new URLSearchParams({
+        search,
+        role: roleFilter === 'all' ? '' : roleFilter,
+        active: activeFilter === 'all' ? '' : activeFilter,
+        spaceId: spaceFilter === 'all' ? '' : spaceFilter
+      })
+      const response = await fetch(`/api/admin/users/export?${params}`)
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+        toast.success('Users exported successfully')
+      } else {
+        toast.error('Failed to export users')
+      }
+    } catch (error) {
+      console.error('Error exporting users:', error)
+      toast.error('Failed to export users')
+    }
+  }
+
   const resetPassword = async () => {
     if (!resetPasswordUser || !newPassword || newPassword !== confirmPassword) {
       toast.error('Please enter matching passwords')
@@ -492,161 +505,30 @@ export function UserManagement() {
   return (
     <div className="bg-background">
       <div className="max-w-[1600px] mx-auto">
-        {/* Toolbar with Actions and Filters */}
-        <div className="flex flex-col gap-4 mb-6">
-          {/* Action buttons row */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {selectedUserIds.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setShowBulkDialog(true)
-                  }}
-                  className="h-8 text-[10px] font-black uppercase tracking-widest border-zinc-200/60 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/20 backdrop-blur-xl"
-                >
-                  <Users className="h-3 w-3 mr-2" />
-                  Bulk Actions ({selectedUserIds.length})
-                </Button>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-8 text-[10px] font-black uppercase tracking-widest border-zinc-200/60 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/20 backdrop-blur-xl">
-                    <MoreHorizontal className="h-3 w-3 mr-2" />
-                    More
-                    <ChevronDown className="h-3 w-3 ml-2" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-2xl border-zinc-200/50 dark:border-zinc-800/50">
-                  <DropdownMenuItem onClick={() => {
-                    const url = new URL(window.location.href)
-                    url.searchParams.set('tab', 'roles')
-                    window.location.href = url.toString()
-                  }} className="text-xs font-medium">
-                    <Shield className="h-3.5 w-3.5 mr-2" />
-                    Manage Roles
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setShowSyncSettingsDialog(true)} className="text-xs font-medium">
-                    <Settings className="h-3.5 w-3.5 mr-2" />
-                    Sync Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setShowImportDialog(true)} className="text-xs font-medium">
-                    <Upload className="h-3.5 w-3.5 mr-2" />
-                    Import Users
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={async () => {
-                    try {
-                      const params = new URLSearchParams({
-                        search,
-                        role: roleFilter === 'all' ? '' : roleFilter,
-                        active: activeFilter === 'all' ? '' : activeFilter,
-                        spaceId: spaceFilter === 'all' ? '' : spaceFilter
-                      })
-                      const response = await fetch(`/api/admin/users/export?${params}`)
-                      if (response.ok) {
-                        const blob = await response.blob()
-                        const url = window.URL.createObjectURL(blob)
-                        const a = document.createElement('a')
-                        a.href = url
-                        a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`
-                        document.body.appendChild(a)
-                        a.click()
-                        window.URL.revokeObjectURL(url)
-                        document.body.removeChild(a)
-                        toast.success('Users exported successfully')
-                      } else {
-                        toast.error('Failed to export users')
-                      }
-                    } catch (error) {
-                      console.error('Error exporting users:', error)
-                      toast.error('Failed to export users')
-                    }
-                  }} className="text-xs font-medium">
-                    <Download className="h-3.5 w-3.5 mr-2" />
-                    Export Users
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button onClick={handleSyncAd} disabled={isSyncing} variant="outline" size="sm" className="h-8 text-[10px] font-black uppercase tracking-widest border-zinc-200/60 dark:border-zinc-800/60 bg-white/50 dark:bg-zinc-950/20 backdrop-blur-xl">
-                <Cloud className={`h-3 w-3 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
-                {isSyncing ? 'Syncing...' : 'Sync AD'}
-              </Button>
-              <Button onClick={openCreateDialog} size="sm" className="h-8 text-[10px] font-black uppercase tracking-widest bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-lg shadow-zinc-900/10 dark:shadow-zinc-100/10">
-                <UserPlus className="h-3 w-3 mr-2" />
-                Add User
-              </Button>
-            </div>
-          </div>
-
-          {/* Search and Filters row */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by name or email..."
-                className="pl-9 h-10 text-xs font-medium bg-white/50 dark:bg-zinc-950/20 border-zinc-200/60 dark:border-zinc-800/60 rounded-xl placeholder:text-zinc-400 backdrop-blur-xl"
-              />
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-[140px] h-10 text-[10px] font-black uppercase tracking-widest bg-white/50 dark:bg-zinc-950/20 border-zinc-200/60 dark:border-zinc-800/60 rounded-xl backdrop-blur-xl">
-                  <SelectValue placeholder="All Roles" />
-                </SelectTrigger>
-                <SelectContent className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-2xl border-zinc-200/50 dark:border-zinc-800/50">
-                  <SelectItem value="all" className="text-xs font-medium">All Roles</SelectItem>
-                  <SelectItem value="SUPER_ADMIN" className="text-xs font-medium text-rose-500">Super Admin</SelectItem>
-                  <SelectItem value="ADMIN" className="text-xs font-medium text-amber-500">Admin</SelectItem>
-                  <SelectItem value="MANAGER" className="text-xs font-medium text-sky-500">Manager</SelectItem>
-                  <SelectItem value="USER" className="text-xs font-medium text-emerald-500">User</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={activeFilter} onValueChange={setActiveFilter}>
-                <SelectTrigger className="w-[130px] h-10 text-[10px] font-black uppercase tracking-widest bg-white/50 dark:bg-zinc-950/20 border-zinc-200/60 dark:border-zinc-800/60 rounded-xl backdrop-blur-xl">
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-2xl border-zinc-200/50 dark:border-zinc-800/50">
-                  <SelectItem value="all" className="text-xs font-medium">All Status</SelectItem>
-                  <SelectItem value="true" className="text-xs font-medium text-emerald-500">Active</SelectItem>
-                  <SelectItem value="false" className="text-xs font-medium text-rose-500">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={spaceFilter} onValueChange={setSpaceFilter}>
-                <SelectTrigger className="w-[160px] h-10 text-[10px] font-black uppercase tracking-widest bg-white/50 dark:bg-zinc-950/20 border-zinc-200/60 dark:border-zinc-800/60 rounded-xl backdrop-blur-xl">
-                  <SelectValue placeholder="All Spaces" />
-                </SelectTrigger>
-                <SelectContent className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-2xl border-zinc-200/50 dark:border-zinc-800/50">
-                  <SelectItem value="all" className="text-xs font-medium">All Spaces</SelectItem>
-                  {spaces.map(space => (
-                    <SelectItem key={space.id} value={space.id} className="text-xs font-medium">
-                      {space.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {(search || roleFilter !== 'all' || activeFilter !== 'all' || spaceFilter !== 'all') && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSearch('')
-                    setRoleFilter('all')
-                    setActiveFilter('all')
-                    setSpaceFilter('all')
-                  }}
-                  className="h-10 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-all"
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  Clear
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
+        <UserManagementToolbar
+          activeFilter={activeFilter}
+          isSyncing={isSyncing}
+          roleFilter={roleFilter}
+          search={search}
+          selectedCount={selectedUserIds.length}
+          spaceFilter={spaceFilter}
+          spaces={spaces}
+          onBulkActions={() => setShowBulkDialog(true)}
+          onCreateUser={openCreateDialog}
+          onExportUsers={exportUsers}
+          onImportUsers={() => setShowImportDialog(true)}
+          onManageRoles={() => {
+            const url = new URL(window.location.href)
+            url.searchParams.set('tab', 'roles')
+            window.location.href = url.toString()
+          }}
+          onSearchChange={setSearch}
+          onSetActiveFilter={setActiveFilter}
+          onSetRoleFilter={setRoleFilter}
+          onSetSpaceFilter={setSpaceFilter}
+          onSyncAd={handleSyncAd}
+          onSyncSettings={() => setShowSyncSettingsDialog(true)}
+        />
 
         {/* Users Table - Supabase Style */}
         <div className="bg-white/50 dark:bg-zinc-950/20 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl overflow-hidden backdrop-blur-xl shadow-lg">
@@ -817,17 +699,10 @@ export function UserManagement() {
                       </TableCell>
                       <TableCell className="h-16">
                         <div className="flex flex-wrap items-center gap-2">
-                           {user.isTwoFactorEnabled ? (
-                               <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-400 gap-1 pr-2">
-                                   <Smartphone className="h-3 w-3" />
-                                   On
-                               </Badge>
-                           ) : (
-                               <Badge variant="outline" className="border-gray-200 bg-gray-50 text-gray-500 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400 gap-1 pr-2">
-                                   <Smartphone className="h-3 w-3 opacity-50" />
-                                   Off
-                               </Badge>
-                           )}
+                           <StatusBadge status={user.isTwoFactorEnabled ? 'on' : 'off'} className="gap-1 pr-2">
+                               <Smartphone className="h-3 w-3" />
+                               {user.isTwoFactorEnabled ? 'On' : 'Off'}
+                           </StatusBadge>
                            {(user.allowedLoginMethods && user.allowedLoginMethods.length > 0 ? user.allowedLoginMethods : ['all']).map((method) => (
                              <Badge
                                key={method}
@@ -940,61 +815,13 @@ export function UserManagement() {
           )}
         </div>
 
-        {/* Pagination - Supabase Style */}
-        {pages > 1 && (
-          <div className="flex items-center justify-between mt-6 pt-6 border-t border-border">
-            <div className="text-sm text-muted-foreground">
-              Showing <span className="font-medium text-foreground">{((page - 1) * limit) + 1}</span> to{' '}
-              <span className="font-medium text-foreground">{Math.min(page * limit, total)}</span> of{' '}
-              <span className="font-medium text-foreground">{total}</span> users
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(Math.max(1, page - 1))}
-                disabled={page === 1}
-                className="h-8"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(5, pages) }, (_, i) => {
-                  let pageNum
-                  if (pages <= 5) {
-                    pageNum = i + 1
-                  } else if (page <= 3) {
-                    pageNum = i + 1
-                  } else if (page >= pages - 2) {
-                    pageNum = pages - 4 + i
-                  } else {
-                    pageNum = page - 2 + i
-                  }
-                  return (
-                    <Button
-                      key={pageNum}
-                      variant={page === pageNum ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setPage(pageNum)}
-                      className="w-8 h-8 p-0 text-xs"
-                    >
-                      {pageNum}
-                    </Button>
-                  )
-                })}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(Math.min(pages, page + 1))}
-                disabled={page === pages}
-                className="h-8"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        )}
+        <UserPagination
+          limit={limit}
+          page={page}
+          pages={pages}
+          total={total}
+          onPageChange={setPage}
+        />
 
         {/* Edit User Dialog */}
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>

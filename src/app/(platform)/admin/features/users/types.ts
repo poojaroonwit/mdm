@@ -31,6 +31,12 @@ export interface User {
   organization?: string
 }
 
+export interface Space {
+  id: string
+  name: string
+  slug: string
+}
+
 export interface Permission {
   id: string
   name: string

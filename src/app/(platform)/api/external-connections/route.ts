@@ -1,10 +1,54 @@
-import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from '@/lib/api-middleware'
-import { requireSpaceAccess } from '@/lib/space-access'
+import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 import { getSecretsManager } from '@/lib/secrets-manager'
-import { encryptApiKey, decryptApiKey } from '@/lib/encryption'
+import { encryptApiKey } from '@/lib/encryption'
 import { createAuditContext } from '@/lib/audit-context-helper'
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+const FIELD_MAPPING: Record<string, string> = {
+  connectionType: 'connection_type',
+  dbType: 'db_type',
+  isActive: 'is_active',
+  apiUrl: 'api_url',
+  apiMethod: 'api_method',
+  apiHeaders: 'api_headers',
+  apiAuthType: 'api_auth_type',
+  apiAuthToken: 'api_auth_token',
+  apiAuthUsername: 'api_auth_username',
+  apiAuthPassword: 'api_auth_password',
+  apiAuthApiKeyName: 'api_auth_apikey_name',
+  apiAuthApiKeyValue: 'api_auth_apikey_value',
+  apiBody: 'api_body',
+  apiResponsePath: 'api_response_path',
+  apiPaginationType: 'api_pagination_type',
+  apiPaginationConfig: 'api_pagination_config',
+}
+
+function parseSpaceId(rawSpaceId: string | null | undefined, missingMessage = 'space_id is required') {
+  if (!rawSpaceId) {
+    return { response: NextResponse.json({ error: missingMessage }, { status: 400 }) }
+  }
+
+  const spaceId = rawSpaceId.split(':')[0]
+  if (!UUID_REGEX.test(spaceId)) {
+    return { response: NextResponse.json({ error: 'Invalid space_id format' }, { status: 400 }) }
+  }
+
+  return { spaceId }
+}
+
+async function ensureSpaceMemberAccess(spaceId: string, userId: string) {
+  const { rows: access } = await query(
+    'SELECT 1 FROM space_members WHERE space_id = $1::uuid AND user_id = $2::uuid',
+    [spaceId, userId]
+  )
+
+  return access.length === 0
+    ? NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    : null
+}
 
 async function getHandler(request: NextRequest) {
   const authResult = await requireAuthWithId()
@@ -13,23 +57,12 @@ async function getHandler(request: NextRequest) {
 
   const { searchParams } = new URL(request.url)
   const rawSpaceId = searchParams.get('space_id')
-  if (!rawSpaceId) return NextResponse.json({ error: 'space_id is required' }, { status: 400 })
-  
-  // Normalize space_id: strip any colon suffix (e.g., "uuid:1" -> "uuid")
-  const spaceId = rawSpaceId.split(':')[0]
-  
-  // Validate UUID format
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-  if (!uuidRegex.test(spaceId)) {
-    return NextResponse.json({ error: 'Invalid space_id format' }, { status: 400 })
-  }
+  const parsedSpace = parseSpaceId(rawSpaceId)
+  if (parsedSpace.response) return parsedSpace.response
+  const spaceId = parsedSpace.spaceId
 
-  // Check access
-  const { rows: access } = await query(
-    'SELECT 1 FROM space_members WHERE space_id = $1::uuid AND user_id = $2::uuid',
-    [spaceId, session.user.id]
-  )
-  if (access.length === 0) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const accessResponse = await ensureSpaceMemberAccess(spaceId, session.user.id)
+  if (accessResponse) return accessResponse
 
   const { rows } = await query(
     `SELECT * FROM public.external_connections 
@@ -112,15 +145,10 @@ async function postHandler(request: NextRequest) {
   if (!rawSpaceId || !name) {
     return NextResponse.json({ error: 'space_id and name are required' }, { status: 400 })
   }
-  
-  // Normalize space_id: strip any colon suffix (e.g., "uuid:1" -> "uuid")
-  const space_id = rawSpaceId.split(':')[0]
-  
-  // Validate UUID format
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-  if (!uuidRegex.test(space_id)) {
-    return NextResponse.json({ error: 'Invalid space_id format' }, { status: 400 })
-  }
+
+  const parsedSpace = parseSpaceId(rawSpaceId)
+  if (parsedSpace.response) return parsedSpace.response
+  const space_id = parsedSpace.spaceId
 
   // Validate based on connection type
   if (final_connection_type === 'api') {
@@ -133,13 +161,10 @@ async function postHandler(request: NextRequest) {
     }
   }
 
-  const { rows: access } = await query(
-    'SELECT 1 FROM space_members WHERE space_id = $1::uuid AND user_id = $2::uuid',
-    [space_id, session.user.id]
-  )
-  if (access.length === 0) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const accessResponse = await ensureSpaceMemberAccess(space_id, session.user.id)
+  if (accessResponse) return accessResponse
 
-  if (connection_type === 'api') {
+  if (final_connection_type === 'api') {
     const secretsManager = getSecretsManager()
     const useVault = secretsManager.getBackend() === 'vault'
     
@@ -306,20 +331,12 @@ async function putHandler(request: NextRequest) {
   const rawSpaceId = s_id || spaceId
   if (!id || !rawSpaceId) return NextResponse.json({ error: 'id and space_id are required' }, { status: 400 })
 
-  // Normalize space_id: strip any colon suffix (e.g., "uuid:1" -> "uuid")
-  const space_id = rawSpaceId.split(':')[0]
-  
-  // Validate UUID format
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-  if (!uuidRegex.test(space_id)) {
-    return NextResponse.json({ error: 'Invalid space_id format' }, { status: 400 })
-  }
+  const parsedSpace = parseSpaceId(rawSpaceId)
+  if (parsedSpace.response) return parsedSpace.response
+  const space_id = parsedSpace.spaceId
 
-  const { rows: access } = await query(
-    'SELECT 1 FROM space_members WHERE space_id = $1::uuid AND user_id = $2::uuid',
-    [space_id, session.user.id]
-  )
-  if (access.length === 0) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const accessResponse = await ensureSpaceMemberAccess(space_id, session.user.id)
+  if (accessResponse) return accessResponse
 
   const secretsManager = getSecretsManager()
   const useVault = secretsManager.getBackend() === 'vault'
@@ -404,28 +421,8 @@ async function putHandler(request: NextRequest) {
   const params: any[] = []
   let idx = 1
 
-  // Map camelCase to snake_case for database columns
-  const fieldMapping: Record<string, string> = {
-    connectionType: 'connection_type',
-    dbType: 'db_type',
-    isActive: 'is_active',
-    apiUrl: 'api_url',
-    apiMethod: 'api_method',
-    apiHeaders: 'api_headers',
-    apiAuthType: 'api_auth_type',
-    apiAuthToken: 'api_auth_token',
-    apiAuthUsername: 'api_auth_username',
-    apiAuthPassword: 'api_auth_password',
-    apiAuthApiKeyName: 'api_auth_apikey_name',
-    apiAuthApiKeyValue: 'api_auth_apikey_value',
-    apiBody: 'api_body',
-    apiResponsePath: 'api_response_path',
-    apiPaginationType: 'api_pagination_type',
-    apiPaginationConfig: 'api_pagination_config'
-  }
-
   for (const [key, value] of Object.entries(processedUpdates)) {
-    const dbColumn = fieldMapping[key] || key
+    const dbColumn = FIELD_MAPPING[key] || key
     fields.push(`${dbColumn} = $${idx++}`)
     params.push(value)
   }
@@ -449,21 +446,13 @@ async function deleteHandler(request: NextRequest) {
   const id = searchParams.get('id')
   const rawSpaceId = searchParams.get('space_id') || searchParams.get('spaceId')
   if (!id || !rawSpaceId) return NextResponse.json({ error: 'id and space_id are required' }, { status: 400 })
-  
-  // Normalize space_id: strip any colon suffix (e.g., "uuid:1" -> "uuid")
-  const spaceId = rawSpaceId.split(':')[0]
-  
-  // Validate UUID format
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-  if (!uuidRegex.test(spaceId)) {
-    return NextResponse.json({ error: 'Invalid space_id format' }, { status: 400 })
-  }
 
-  const { rows: access } = await query(
-    'SELECT 1 FROM space_members WHERE space_id = $1::uuid AND user_id = $2::uuid',
-    [spaceId, session.user.id]
-  )
-  if (access.length === 0) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const parsedSpace = parseSpaceId(rawSpaceId)
+  if (parsedSpace.response) return parsedSpace.response
+  const spaceId = parsedSpace.spaceId
+
+  const accessResponse = await ensureSpaceMemberAccess(spaceId, session.user.id)
+  if (accessResponse) return accessResponse
 
   // Clean up Vault secrets if using Vault
   const secretsManager = getSecretsManager()

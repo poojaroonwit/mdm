@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
@@ -261,9 +262,7 @@ export function IngestionManagement() {
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Status:</span>
-                  <Badge variant={pipeline.enabled ? 'default' : 'secondary'}>
-                    {pipeline.enabled ? 'Enabled' : 'Disabled'}
-                  </Badge>
+                  <StatusBadge status={pipeline.enabled ? 'enabled' : 'disabled'} />
                 </div>
                 {pipeline.lastRun && (
                   <div className="text-sm text-muted-foreground">

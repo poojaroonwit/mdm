@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
@@ -410,12 +411,12 @@ function ImpactAnalysisView() {
               <div className="flex items-center gap-2 p-2 border rounded bg-yellow-50">
                 <LayoutGrid className="h-4 w-4 text-yellow-600" />
                 <span className="text-sm">Sales Dashboard</span>
-                <Badge variant="outline" className="ml-auto text-yellow-600">Medium</Badge>
+                <StatusBadge status="medium" className="ml-auto" />
               </div>
               <div className="flex items-center gap-2 p-2 border rounded bg-red-50">
                 <Bot className="h-4 w-4 text-red-600" />
                 <span className="text-sm">AI Sales Agent</span>
-                <Badge variant="outline" className="ml-auto text-red-600">High</Badge>
+                <StatusBadge status="high" className="ml-auto" />
               </div>
             </div>
           </CardContent>

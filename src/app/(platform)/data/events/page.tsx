@@ -5,7 +5,7 @@ import { MainLayout } from '@/components/layout/main-layout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { 
   Table, 
   TableBody, 
@@ -185,9 +185,7 @@ export default function EventsPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={event.isActive ? 'default' : 'secondary'}>
-                        {event.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <StatusBadge status={event.isActive ? 'active' : 'inactive'} />
                     </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -227,9 +225,7 @@ export default function EventsPage() {
                       <div>
                         <label className="text-sm font-medium">Status</label>
                         <p className="text-sm text-muted-foreground">
-                          <Badge variant={selectedEvent?.isActive ? 'default' : 'secondary'}>
-                            {selectedEvent?.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
+                          <StatusBadge status={selectedEvent?.isActive ? 'active' : 'inactive'} />
                         </p>
                       </div>
                       <div>

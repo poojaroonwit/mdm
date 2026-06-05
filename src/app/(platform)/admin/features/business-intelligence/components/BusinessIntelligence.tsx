@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
@@ -727,9 +728,7 @@ export function BusinessIntelligence() {
                     </CardTitle>
                     <div className="flex items-center gap-1">
                       <Badge variant="outline" className="text-xs">Report</Badge>
-                      <Badge variant={report.type === 'scheduled' ? 'default' : 'outline'}>
-                        {report.type}
-                      </Badge>
+                      <StatusBadge status={report.type} />
                       <Button
                         size="sm"
                         variant="outline"
@@ -757,7 +756,7 @@ export function BusinessIntelligence() {
                       )}
                     </div>
                     {report.isActive && (
-                      <Badge variant="outline" className="text-green-600">Active</Badge>
+                      <StatusBadge status="active" />
                     )}
                   </div>
                   <div className="flex items-center gap-1">
@@ -821,9 +820,7 @@ export function BusinessIntelligence() {
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <Badge variant={source.isActive ? 'default' : 'outline'}>
-                        {source.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <StatusBadge status={source.isActive ? 'active' : 'inactive'} />
                       <Button size="sm" variant="outline">
                         <Settings className="h-3 w-3" />
                       </Button>

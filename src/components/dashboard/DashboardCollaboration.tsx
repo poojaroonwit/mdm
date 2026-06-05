@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { RoleBadge } from '@/components/ui/role-badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -426,10 +427,10 @@ export function DashboardCollaboration({
                       </div>
                       <div className="flex items-center space-x-2">
                         {comment.resolved ? (
-                          <Badge variant="outline" className="text-green-600">
+                          <StatusBadge status="resolved">
                             <CheckCircle className="h-3 w-3 mr-1" />
                             Resolved
-                          </Badge>
+                          </StatusBadge>
                         ) : (
                           <Button
                             variant="ghost"

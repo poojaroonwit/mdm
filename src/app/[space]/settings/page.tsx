@@ -17,7 +17,7 @@ import { UserInviteInput } from '@/components/ui/user-invite-input'
 import { MemberManagementPanel } from '@/components/space-management/MemberManagementPanel'
 import { MemberPermissionsPanel } from '@/components/space-management/MemberPermissionsPanel'
 import { MemberAuditLog } from '@/components/space-management/MemberAuditLog'
-import { Building2, Layout, Database, History, Users as UsersIcon, UserCog, UserPlus, Plus, Edit, Trash2, Search, Type, AlertTriangle, FolderPlus, Share2, Folder, FolderOpen, Move, Settings, Palette, Shield, Archive, Trash, MoreVertical, ChevronDown, ChevronRight, ArrowLeft, ExternalLink, Grid3X3, CheckCircle2, Circle, Lock } from 'lucide-react'
+import { Building2, Layout, Database, History, Users as UsersIcon, UserCog, UserPlus, Plus, Edit, Trash2, Search, Type, AlertTriangle, FolderPlus, Share2, Folder, FolderOpen, Move, Settings, Palette, Shield, Archive, Trash, MoreVertical, ChevronDown, ChevronRight, ArrowLeft, Grid3X3, CheckCircle2, Circle, Lock } from 'lucide-react'
 import { showSuccess, showError, ToastMessages } from '@/lib/toast-utils'
 import { useSpace } from '@/contexts/space-context'
 import { useSession } from 'next-auth/react'
@@ -27,8 +27,6 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } f
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import IconPickerPopover from '@/components/ui/icon-picker-popover'
-import { ColorInput } from '@/components/studio/layout-config/ColorInput'
-import { ColorPickerPopover } from '@/components/studio/layout-config/ColorPickerPopover'
 import { AttributeDetailDrawer } from '@/components/data-models/AttributeDetailDrawer'
 import { AttributeManagementPanel } from '@/components/attribute-management/AttributeManagementPanel'
 import { DraggableAttributeList } from '@/components/attribute-management/DraggableAttributeList'
@@ -39,9 +37,15 @@ import LayoutConfig from '@/components/studio/layout-config'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { SpaceSettingsSidebar } from '@/components/space-management/SpaceSettingsSidebar'
 import { SpaceSettingsHeader } from '@/components/space-management/SpaceSettingsHeader'
+import { LoginPageSettingsPanel } from '@/components/space-management/LoginPageSettingsPanel'
 import { DataSyncManagement } from '@/components/data-sync/DataSyncManagement'
 import { AttachmentBrowser } from '@/components/attachment-storage/AttachmentBrowser'
 import { DataModelBrowser } from '@/components/data-model/DataModelBrowser'
+import {
+  DEFAULT_LOGIN_PAGE_CONFIG,
+  normalizeLoginPageConfig,
+  type LoginPageConfig,
+} from '@/lib/login-page-config'
 
 function EffectRedirect({ to }: { to: string }) {
   const router = useRouter()
@@ -49,49 +53,6 @@ function EffectRedirect({ to }: { to: string }) {
     router.push(to)
   }, [router, to])
   return null
-}
-
-const DEFAULT_LOGIN_PAGE_CONFIG = {
-  backgroundType: 'gradient',
-  backgroundColor: '#f8fafc',
-  backgroundImage: '',
-  gradient: {
-    from: '#eff6ff',
-    to: '#dbeafe',
-    angle: 135,
-  },
-  leftPanelWidth: '60%',
-  rightPanelWidth: '40%',
-  title: 'Welcome back',
-  description: 'Sign in to access this workspace.',
-  heroTitle: 'Your space, ready when you are',
-  heroDescription: 'Secure access for your team, data, and workflows in one place.',
-  signInButtonLabel: 'Sign in',
-  helpText: '',
-  showLogo: true,
-  logoUrl: '',
-  cardStyle: {
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    textColor: '#111827',
-    borderColor: 'rgba(226, 232, 240, 0.9)',
-    borderRadius: 24,
-    shadow: true,
-  },
-}
-
-function normalizeLoginPageConfig(config: any) {
-  return {
-    ...DEFAULT_LOGIN_PAGE_CONFIG,
-    ...(config || {}),
-    gradient: {
-      ...DEFAULT_LOGIN_PAGE_CONFIG.gradient,
-      ...(config?.gradient || {}),
-    },
-    cardStyle: {
-      ...DEFAULT_LOGIN_PAGE_CONFIG.cardStyle,
-      ...(config?.cardStyle || {}),
-    },
-  }
 }
 
 export default function SpaceSettingsPage() {
@@ -395,7 +356,7 @@ export default function SpaceSettingsPage() {
   const [folderForm, setFolderForm] = useState({ name: '', parent_id: '' })
   const [shareForm, setShareForm] = useState({ space_ids: [] as string[] })
   const [spaceDetails, setSpaceDetails] = useState<any | null>(null)
-  const [loginPageConfig, setLoginPageConfig] = useState<any>(DEFAULT_LOGIN_PAGE_CONFIG)
+  const [loginPageConfig, setLoginPageConfig] = useState<LoginPageConfig>(DEFAULT_LOGIN_PAGE_CONFIG)
   const [savingLoginConfig, setSavingLoginConfig] = useState(false)
   const [expandedFolders, setExpandedFolders] = useState<string[]>([])
   const [showEditFolderDialog, setShowEditFolderDialog] = useState(false)
@@ -1509,332 +1470,13 @@ export default function SpaceSettingsPage() {
                     </TabsContent>
 
                     <TabsContent value="login" className="space-y-6 mt-6">
-                      <Card className="border-0 shadow-lg bg-card">
-                        <CardHeader className="gap-4 pb-2 md:flex-row md:items-start md:justify-between">
-                          <div className="space-y-2">
-                            <CardTitle className="flex items-center space-x-2 text-lg">
-                              <Layout className="h-5 w-5" />
-                              <span>Login Page Customization</span>
-                            </CardTitle>
-                            <CardDescription>
-                              Configure the actual space login experience, not just the artwork. These settings drive the live sign-in page.
-                            </CardDescription>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <Button variant="outline" asChild>
-                              <a
-                                href={`/${selectedSpace?.slug || selectedSpace?.id}/auth/signin`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5"
-                              >
-                                <ExternalLink className="h-3.5 w-3.5" />
-                                Open Login Page
-                              </a>
-                            </Button>
-                            <Button onClick={saveLoginPageSettings} disabled={savingLoginConfig}>
-                              {savingLoginConfig ? 'Saving...' : 'Save Login Page'}
-                            </Button>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                          <div className="rounded-2xl border border-border/60 bg-muted/30 p-5">
-                            <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-                              <div className="space-y-4">
-                                <div>
-                                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Hero Preview</p>
-                                  <h3 className="mt-2 text-3xl font-semibold text-foreground">
-                                    {loginPageConfig.heroTitle || DEFAULT_LOGIN_PAGE_CONFIG.heroTitle}
-                                  </h3>
-                                  <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                                    {loginPageConfig.heroDescription || DEFAULT_LOGIN_PAGE_CONFIG.heroDescription}
-                                  </p>
-                                </div>
-                                <div
-                                  className="min-h-[180px] rounded-2xl border border-white/40 p-5"
-                                  style={{
-                                    background:
-                                      loginPageConfig.backgroundType === 'color'
-                                        ? loginPageConfig.backgroundColor
-                                        : loginPageConfig.backgroundType === 'image' && loginPageConfig.backgroundImage
-                                          ? `url(${loginPageConfig.backgroundImage}) center / cover no-repeat`
-                                          : `linear-gradient(${loginPageConfig.gradient?.angle || 135}deg, ${loginPageConfig.gradient?.from || '#eff6ff'}, ${loginPageConfig.gradient?.to || '#dbeafe'})`,
-                                  }}
-                                >
-                                  <div
-                                    className="ml-auto flex max-w-sm flex-col gap-3 rounded-2xl border p-4"
-                                    style={{
-                                      backgroundColor: loginPageConfig.cardStyle?.backgroundColor || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.backgroundColor,
-                                      borderColor: loginPageConfig.cardStyle?.borderColor || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.borderColor,
-                                      color: loginPageConfig.cardStyle?.textColor || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.textColor,
-                                      borderRadius: loginPageConfig.cardStyle?.borderRadius || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.borderRadius,
-                                      boxShadow: loginPageConfig.cardStyle?.shadow === false ? 'none' : '0 20px 45px rgba(15, 23, 42, 0.12)',
-                                    }}
-                                  >
-                                    <div className="space-y-1">
-                                      <p className="text-lg font-semibold">{loginPageConfig.title || DEFAULT_LOGIN_PAGE_CONFIG.title}</p>
-                                      <p className="text-sm opacity-80">{loginPageConfig.description || DEFAULT_LOGIN_PAGE_CONFIG.description}</p>
-                                    </div>
-                                    <div className="rounded-md border bg-background/70 px-3 py-2 text-sm text-muted-foreground">name@example.com</div>
-                                    <div className="rounded-md border bg-background/70 px-3 py-2 text-sm text-muted-foreground">Password</div>
-                                    <div className="rounded-md bg-primary px-3 py-2 text-center text-sm font-medium text-primary-foreground">
-                                      {loginPageConfig.signInButtonLabel || DEFAULT_LOGIN_PAGE_CONFIG.signInButtonLabel}
-                                    </div>
-                                    {loginPageConfig.helpText ? (
-                                      <p className="text-xs opacity-80">{loginPageConfig.helpText}</p>
-                                    ) : null}
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="grid gap-4">
-                                <Card className="border border-border/60 shadow-none">
-                                  <CardHeader className="pb-3">
-                                    <CardTitle className="text-base">Content</CardTitle>
-                                    <CardDescription>Headline, helper copy, and call-to-action text.</CardDescription>
-                                  </CardHeader>
-                                  <CardContent className="grid gap-4">
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                      <div className="space-y-2">
-                                        <Label>Sign-in Title</Label>
-                                        <Input
-                                          value={loginPageConfig.title || ''}
-                                          onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, title: e.target.value }))}
-                                          placeholder="Welcome back"
-                                        />
-                                      </div>
-                                      <div className="space-y-2">
-                                        <Label>Button Label</Label>
-                                        <Input
-                                          value={loginPageConfig.signInButtonLabel || ''}
-                                          onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, signInButtonLabel: e.target.value }))}
-                                          placeholder="Sign in"
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label>Sign-in Description</Label>
-                                      <Textarea
-                                        value={loginPageConfig.description || ''}
-                                        onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, description: e.target.value }))}
-                                        rows={2}
-                                        placeholder="Sign in to access this workspace."
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label>Hero Title</Label>
-                                      <Input
-                                        value={loginPageConfig.heroTitle || ''}
-                                        onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, heroTitle: e.target.value }))}
-                                        placeholder="Your space, ready when you are"
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label>Hero Description</Label>
-                                      <Textarea
-                                        value={loginPageConfig.heroDescription || ''}
-                                        onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, heroDescription: e.target.value }))}
-                                        rows={3}
-                                        placeholder="Secure access for your team, data, and workflows in one place."
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label>Helper Text</Label>
-                                      <Textarea
-                                        value={loginPageConfig.helpText || ''}
-                                        onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, helpText: e.target.value }))}
-                                        rows={2}
-                                        placeholder="Optional support text shown under the form."
-                                      />
-                                    </div>
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                      <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-                                        <div>
-                                          <p className="text-sm font-medium">Show Logo</p>
-                                          <p className="text-xs text-muted-foreground">Display a space-specific mark above the hero title.</p>
-                                        </div>
-                                        <Select
-                                          value={loginPageConfig.showLogo === false ? 'hide' : 'show'}
-                                          onValueChange={(value) => setLoginPageConfig((prev: any) => ({ ...prev, showLogo: value === 'show' }))}
-                                        >
-                                          <SelectTrigger className="w-[110px]">
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="show">Show</SelectItem>
-                                            <SelectItem value="hide">Hide</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      <div className="space-y-2">
-                                        <Label>Logo URL</Label>
-                                        <Input
-                                          value={loginPageConfig.logoUrl || ''}
-                                          onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, logoUrl: e.target.value }))}
-                                          placeholder="https://example.com/logo.svg"
-                                        />
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-
-                                <Card className="border border-border/60 shadow-none">
-                                  <CardHeader className="pb-3">
-                                    <CardTitle className="text-base">Visual Style</CardTitle>
-                                    <CardDescription>Background, layout split, and card appearance.</CardDescription>
-                                  </CardHeader>
-                                  <CardContent className="grid gap-4">
-                                    <div className="grid gap-4 md:grid-cols-3">
-                                      <div className="space-y-2">
-                                        <Label>Background Type</Label>
-                                        <Select
-                                          value={loginPageConfig.backgroundType || 'gradient'}
-                                          onValueChange={(value) => setLoginPageConfig((prev: any) => ({ ...prev, backgroundType: value }))}
-                                        >
-                                          <SelectTrigger>
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="gradient">Gradient</SelectItem>
-                                            <SelectItem value="color">Solid Color</SelectItem>
-                                            <SelectItem value="image">Image</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      <div className="space-y-2">
-                                        <Label>Left Panel Width</Label>
-                                        <Input
-                                          value={loginPageConfig.leftPanelWidth || ''}
-                                          onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, leftPanelWidth: e.target.value }))}
-                                          placeholder="60%"
-                                        />
-                                      </div>
-                                      <div className="space-y-2">
-                                        <Label>Right Panel Width</Label>
-                                        <Input
-                                          value={loginPageConfig.rightPanelWidth || ''}
-                                          onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, rightPanelWidth: e.target.value }))}
-                                          placeholder="40%"
-                                        />
-                                      </div>
-                                    </div>
-
-                                    {loginPageConfig.backgroundType === 'color' ? (
-                                      <div className="space-y-2">
-                                        <Label>Background Color</Label>
-                                        <ColorInput
-                                          value={loginPageConfig.backgroundColor || '#f8fafc'}
-                                          onChange={(value) => setLoginPageConfig((prev: any) => ({ ...prev, backgroundColor: value }))}
-                                          allowImageVideo={false}
-                                        />
-                                      </div>
-                                    ) : null}
-
-                                    {loginPageConfig.backgroundType === 'gradient' ? (
-                                      <div className="grid gap-4 md:grid-cols-3">
-                                        <div className="space-y-2">
-                                          <Label>Gradient From</Label>
-                                          <ColorInput
-                                            value={loginPageConfig.gradient?.from || '#eff6ff'}
-                                            onChange={(value) => setLoginPageConfig((prev: any) => ({
-                                              ...prev,
-                                              gradient: { ...(prev.gradient || {}), from: value },
-                                            }))}
-                                            allowImageVideo={false}
-                                          />
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label>Gradient To</Label>
-                                          <ColorInput
-                                            value={loginPageConfig.gradient?.to || '#dbeafe'}
-                                            onChange={(value) => setLoginPageConfig((prev: any) => ({
-                                              ...prev,
-                                              gradient: { ...(prev.gradient || {}), to: value },
-                                            }))}
-                                            allowImageVideo={false}
-                                          />
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label>Angle</Label>
-                                          <Input
-                                            type="number"
-                                            value={loginPageConfig.gradient?.angle || 135}
-                                            onChange={(e) => setLoginPageConfig((prev: any) => ({
-                                              ...prev,
-                                              gradient: { ...(prev.gradient || {}), angle: Number(e.target.value) || 135 },
-                                            }))}
-                                            min="0"
-                                            max="360"
-                                          />
-                                        </div>
-                                      </div>
-                                    ) : null}
-
-                                    {loginPageConfig.backgroundType === 'image' ? (
-                                      <div className="space-y-2">
-                                        <Label>Background Image URL</Label>
-                                        <Input
-                                          value={loginPageConfig.backgroundImage || ''}
-                                          onChange={(e) => setLoginPageConfig((prev: any) => ({ ...prev, backgroundImage: e.target.value }))}
-                                          placeholder="https://example.com/background.jpg"
-                                        />
-                                      </div>
-                                    ) : null}
-
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                      <div className="space-y-2">
-                                        <Label>Card Background</Label>
-                                        <ColorInput
-                                          value={loginPageConfig.cardStyle?.backgroundColor || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.backgroundColor}
-                                          onChange={(value) => setLoginPageConfig((prev: any) => ({
-                                            ...prev,
-                                            cardStyle: { ...(prev.cardStyle || {}), backgroundColor: value },
-                                          }))}
-                                          allowImageVideo={false}
-                                        />
-                                      </div>
-                                      <div className="space-y-2">
-                                        <Label>Card Text Color</Label>
-                                        <ColorInput
-                                          value={loginPageConfig.cardStyle?.textColor || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.textColor}
-                                          onChange={(value) => setLoginPageConfig((prev: any) => ({
-                                            ...prev,
-                                            cardStyle: { ...(prev.cardStyle || {}), textColor: value },
-                                          }))}
-                                          allowImageVideo={false}
-                                        />
-                                      </div>
-                                      <div className="space-y-2">
-                                        <Label>Card Border Color</Label>
-                                        <ColorInput
-                                          value={loginPageConfig.cardStyle?.borderColor || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.borderColor}
-                                          onChange={(value) => setLoginPageConfig((prev: any) => ({
-                                            ...prev,
-                                            cardStyle: { ...(prev.cardStyle || {}), borderColor: value },
-                                          }))}
-                                          allowImageVideo={false}
-                                        />
-                                      </div>
-                                      <div className="space-y-2">
-                                        <Label>Card Radius</Label>
-                                        <Input
-                                          type="number"
-                                          value={loginPageConfig.cardStyle?.borderRadius || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.borderRadius}
-                                          onChange={(e) => setLoginPageConfig((prev: any) => ({
-                                            ...prev,
-                                            cardStyle: { ...(prev.cardStyle || {}), borderRadius: Number(e.target.value) || DEFAULT_LOGIN_PAGE_CONFIG.cardStyle.borderRadius },
-                                          }))}
-                                          min="0"
-                                        />
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <LoginPageSettingsPanel
+                        config={loginPageConfig}
+                        loginPageUrl={`/${selectedSpace?.slug || selectedSpace?.id}/auth/signin`}
+                        saving={savingLoginConfig}
+                        setConfig={setLoginPageConfig}
+                        onSave={saveLoginPageSettings}
+                      />
                     </TabsContent>
                   </Tabs>
                 </div>

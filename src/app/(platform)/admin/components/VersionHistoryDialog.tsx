@@ -4,6 +4,7 @@ import React from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { History, Rocket } from 'lucide-react'
 
@@ -32,9 +33,7 @@ export function VersionHistoryDialog({ open, onOpenChange, selectedChatbot }: Ve
                 <div className="font-medium">Current Version</div>
                 <div className="text-sm text-muted-foreground">v{selectedChatbot.currentVersion}</div>
               </div>
-              <Badge variant={selectedChatbot.isPublished ? 'default' : 'secondary'}>
-                {selectedChatbot.isPublished ? 'Published' : 'Draft'}
-              </Badge>
+              <StatusBadge status={selectedChatbot.isPublished ? 'published' : 'draft'} />
             </div>
 
             <div className="space-y-2">
@@ -49,13 +48,11 @@ export function VersionHistoryDialog({ open, onOpenChange, selectedChatbot }: Ve
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
-                                <Badge variant={version.isPublished ? 'default' : 'outline'}>
-                                  v{version.version}
-                                </Badge>
+                                <StatusBadge status={version.isPublished ? 'published' : 'draft'} label={`v${version.version}`} />
                                 {version.isPublished && (
-                                  <Badge variant="secondary" className="text-xs">
+                                  <StatusBadge status="published" size="sm" className="text-xs">
                                     Published
-                                  </Badge>
+                                  </StatusBadge>
                                 )}
                               </div>
                               <div className="text-sm text-muted-foreground">

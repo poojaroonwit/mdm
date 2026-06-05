@@ -110,6 +110,10 @@ import {
   SubtasksTab,
   TimeTab,
 } from './ticket-detail-activity-tabs'
+import {
+  TicketCustomFieldInput,
+  TicketCustomFieldsPanel,
+} from './TicketCustomFieldsPanel'
 
 export function TicketDetailModalEnhanced({
   ticket,
@@ -762,68 +766,6 @@ export function TicketDetailModalEnhanced({
     ...releases.map((release) => ({ value: release.id, label: release.name })),
   ]
 
-  const renderFieldInput = (
-    field: {
-      name: string
-      displayName: string
-      type: string
-      value?: string | null
-      isRequired?: boolean
-      options?: TicketCustomField['options']
-    },
-    index: number
-  ) => {
-    const updateField = (value: string) => {
-      setCustomFields((prev) =>
-        prev.map((item, itemIndex) =>
-          itemIndex === index ? { ...item, value } : item
-        )
-      )
-    }
-
-    if (field.type === 'SELECT') {
-      const fieldOptions = field.options || []
-
-      if (fieldOptions.length === 0) {
-        return (
-          <Input
-            value={field.value || ''}
-            onChange={(e) => updateField(e.target.value)}
-            placeholder="Enter value"
-            className={ATTRIBUTE_INPUT_CLASS}
-          />
-        )
-      }
-
-      return (
-        <SearchableSelect
-          value={field.value || '__none__'}
-          onValueChange={(value) => updateField(value === '__none__' ? '' : value)}
-          options={[
-            { value: '__none__', label: 'None' },
-            ...fieldOptions.map((option) => ({
-              value: option.value,
-              label: option.label,
-            })),
-          ]}
-          placeholder="Select value"
-          searchPlaceholder={`Search ${field.displayName.toLowerCase()}...`}
-          className={ATTRIBUTE_INPUT_CLASS}
-        />
-      )
-    }
-
-    if (field.type === 'DATE') {
-      return <Input type="date" value={toDateInputValue(field.value)} onChange={(e) => updateField(e.target.value)} className={ATTRIBUTE_INPUT_CLASS} />
-    }
-
-    if (field.type === 'NUMBER') {
-      return <Input type="number" value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" className={ATTRIBUTE_INPUT_CLASS} />
-    }
-
-    return <Input value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" className={ATTRIBUTE_INPUT_CLASS} />
-  }
-
   const projectFields = customFields.filter((field) => field.attributeType !== 'system')
 
   // Common header content
@@ -1006,7 +948,11 @@ export function TicketDetailModalEnhanced({
               return (
                 <div key={field.name} className={ATTRIBUTE_FIELD_CLASS}>
                   <Label>{field.displayName}</Label>
-                  {renderFieldInput(field, index)}
+                  <TicketCustomFieldInput
+                    field={field}
+                    index={index}
+                    setCustomFields={setCustomFields}
+                  />
                 </div>
               )
             })}
@@ -1278,35 +1224,11 @@ export function TicketDetailModalEnhanced({
               </div>
             </div>
           )}
-          <div className="space-y-3 rounded-xl border border-border p-4">
-            <div>
-              <Label>Custom Fields</Label>
-              <p className="mt-1 text-xs text-muted-foreground">
-                These fields are inherited from the selected project and apply to every ticket in that project.
-              </p>
-            </div>
-            {!selectedProject ? (
-              <div className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
-                Select a project to load its shared ticket fields.
-              </div>
-            ) : customFields.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
-                This project has no shared custom fields yet.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {customFields.map((field, index) => (
-                  <div key={`${field.name}-${index}`} className="grid grid-cols-[minmax(0,1fr)_140px] gap-3">
-                    <div className="space-y-2">
-                      <Label>{field.displayName}</Label>
-                      {renderFieldInput(field, index)}
-                    </div>
-                    <Input value={field.type} disabled className="bg-muted/70" />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <TicketCustomFieldsPanel
+            customFields={customFields}
+            selectedProject={selectedProject}
+            setCustomFields={setCustomFields}
+          />
         </div>
       ) : (
         <div className="grid min-h-0 grid-cols-[48px_minmax(0,1fr)] gap-4">
@@ -1570,45 +1492,11 @@ export function TicketDetailModalEnhanced({
                 </div>
               </div>
             )}
-            <div className="space-y-3 rounded-xl border border-border p-4">
-              <div>
-                <Label>Custom Fields</Label>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  These fields are inherited from the selected project and apply to every ticket in that project.
-                </p>
-              </div>
-              {!selectedProject ? (
-                <div className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
-                  Select a project to load its shared ticket fields.
-                </div>
-              ) : customFields.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
-                  This project has no shared custom fields yet.
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {customFields.map((field, index) => (
-                    <div key={`${field.name}-${index}`} className="grid grid-cols-[minmax(0,1fr)_140px] gap-3">
-                      <div className="space-y-2">
-                        <Label>{field.displayName}</Label>
-                        <Input
-                          value={field.value || ''}
-                          onChange={(e) =>
-                            setCustomFields((prev) =>
-                              prev.map((item, itemIndex) =>
-                                itemIndex === index ? { ...item, value: e.target.value } : item
-                              )
-                            )
-                          }
-                          placeholder="Value"
-                        />
-                      </div>
-                      <Input value={field.type} disabled className="bg-muted/70" />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <TicketCustomFieldsPanel
+              customFields={customFields}
+              selectedProject={selectedProject}
+              setCustomFields={setCustomFields}
+            />
               </>
             )}
           </TabsContent>

@@ -5,7 +5,7 @@ import { MainLayout } from '@/components/layout/main-layout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { 
   Table, 
   TableBody, 
@@ -160,9 +160,7 @@ export default function CompaniesPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={company.isActive ? 'default' : 'secondary'}>
-                        {company.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <StatusBadge status={company.isActive ? 'active' : 'inactive'} />
                     </TableCell>
                     <TableCell>{company.createdAt}</TableCell>
                     <TableCell>{company.updatedAt}</TableCell>
@@ -204,9 +202,7 @@ export default function CompaniesPage() {
                       <div>
                         <label className="text-sm font-medium">Status</label>
                         <p className="text-sm text-muted-foreground">
-                          <Badge variant={selectedCompany?.isActive ? 'default' : 'secondary'}>
-                            {selectedCompany?.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
+                          <StatusBadge status={selectedCompany?.isActive ? 'active' : 'inactive'} />
                         </p>
                       </div>
                       <div className="col-span-2">

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import {
   Dialog,
   DialogContent,
@@ -192,14 +192,14 @@ export function IntakeFormList({ spaceId, onFormSelect }: IntakeFormListProps) {
                       <CardDescription className="mt-1">{form.description}</CardDescription>
                     )}
                   </div>
-                  <Badge variant={form.isActive ? 'default' : 'secondary'}>
+                  <StatusBadge status={form.isActive ? 'active' : 'inactive'}>
                     {form.isActive ? (
                       <CheckCircle2 className="h-3 w-3 mr-1" />
                     ) : (
                       <XCircle className="h-3 w-3 mr-1" />
                     )}
                     {form.isActive ? 'Active' : 'Inactive'}
-                  </Badge>
+                  </StatusBadge>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col justify-between">

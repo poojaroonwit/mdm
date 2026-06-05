@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { TaxonomyBadge } from '@/components/ui/taxonomy-badge'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -285,9 +286,7 @@ export function RelationshipManager({
                         ) : (
                           <AlertTriangle className="h-4 w-4 text-red-500" />
                         )}
-                        <Badge variant={relationship.is_active ? 'default' : 'secondary'}>
-                          {relationship.is_active ? 'Active' : 'Inactive'}
-                        </Badge>
+                        <StatusBadge status={relationship.is_active ? 'active' : 'inactive'} />
                       </div>
                     </div>
                   </CardHeader>
@@ -335,9 +334,7 @@ export function RelationshipManager({
                 <CardTitle className="flex items-center justify-between">
                   {selectedRelationship.name}
                   <div className="flex items-center gap-2">
-                    <Badge variant={selectedRelationship.is_active ? 'default' : 'secondary'}>
-                      {selectedRelationship.is_active ? 'Active' : 'Inactive'}
-                    </Badge>
+                    <StatusBadge status={selectedRelationship.is_active ? 'active' : 'inactive'} />
                     <Button size="sm" variant="outline">
                       <Settings className="h-4 w-4" />
                     </Button>
@@ -593,9 +590,7 @@ export function RelationshipManager({
                           </div>
                         </div>
                       </div>
-                      <Badge variant={validation.valid ? 'default' : 'destructive'}>
-                        {validation.valid ? 'Valid' : 'Invalid'}
-                      </Badge>
+                      <StatusBadge status={validation.valid ? 'valid' : 'invalid'} />
                     </div>
                     {!validation.valid && (
                       <div className="mt-2 text-sm text-red-600">

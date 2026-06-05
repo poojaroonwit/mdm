@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Switch } from '@/components/ui/switch'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
@@ -404,9 +405,7 @@ export function FileQuotas({ spaceId }: FileQuotasProps) {
                 onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isEnforced: checked }))}
               />
             ) : (
-              <Badge variant={quota.is_enforced ? 'default' : 'secondary'}>
-                {quota.is_enforced ? 'Enabled' : 'Disabled'}
-              </Badge>
+              <StatusBadge status={quota.is_enforced ? 'enabled' : 'disabled'} />
             )}
           </div>
         </CardContent>

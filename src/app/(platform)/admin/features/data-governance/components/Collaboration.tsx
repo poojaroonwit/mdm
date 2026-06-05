@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
+import { TaxonomyBadge } from '@/components/ui/taxonomy-badge'
 import { 
   MessageSquare, 
   Send,
@@ -205,9 +205,7 @@ export function Collaboration({ asset, config }: CollaborationProps) {
                           </div>
                         </div>
                       </div>
-                      <Badge variant={thread.type === 'task' ? 'default' : 'secondary'}>
-                        {thread.type}
-                      </Badge>
+                      <TaxonomyBadge taxonomy="collaboration" value={thread.type} />
                     </div>
                   </CardHeader>
                   <CardContent>

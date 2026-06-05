@@ -5,7 +5,7 @@ import { MainLayout } from '@/components/layout/main-layout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { 
   Table, 
   TableBody, 
@@ -165,9 +165,7 @@ export default function SourcesPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={source.isActive ? 'default' : 'secondary'}>
-                        {source.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <StatusBadge status={source.isActive ? 'active' : 'inactive'} />
                     </TableCell>
                     <TableCell>{source.createdAt}</TableCell>
                     <TableCell>{source.updatedAt}</TableCell>
@@ -209,9 +207,7 @@ export default function SourcesPage() {
                       <div>
                         <label className="text-sm font-medium">Status</label>
                         <p className="text-sm text-muted-foreground">
-                          <Badge variant={selectedSource?.isActive ? 'default' : 'secondary'}>
-                            {selectedSource?.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
+                          <StatusBadge status={selectedSource?.isActive ? 'active' : 'inactive'} />
                         </p>
                       </div>
                       <div className="col-span-2">

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
@@ -333,7 +334,7 @@ export function SpaceManagement() {
                       <CardTitle className="flex items-center gap-2">
                         {space.name}
                         {space.isDefault && (
-                          <Badge variant="default" className="text-xs">Default</Badge>
+                          <StatusBadge status="default" className="text-xs" />
                         )}
                       </CardTitle>
                       <CardDescription>
@@ -380,11 +381,7 @@ export function SpaceManagement() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      {space.isActive ? (
-                        <Badge variant="outline" className="text-green-600">Active</Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-red-600">Inactive</Badge>
-                      )}
+                      <StatusBadge status={space.isActive ? 'active' : 'inactive'} />
                     </div>
                   </div>
 
@@ -453,15 +450,11 @@ export function SpaceManagement() {
                   <TableCell>{space.memberCount}</TableCell>
                   <TableCell>{space.dataModelCount}</TableCell>
                   <TableCell>
-                    {space.isActive ? (
-                      <Badge variant="outline" className="text-green-600">Active</Badge>
-                    ) : (
-                      <Badge variant="outline" className="text-red-600">Inactive</Badge>
-                    )}
+                    <StatusBadge status={space.isActive ? 'active' : 'inactive'} />
                   </TableCell>
                   <TableCell>
                     {space.isDefault && (
-                      <Badge variant="default" className="text-xs">Default</Badge>
+                      <StatusBadge status="default" className="text-xs" />
                     )}
                   </TableCell>
                   <TableCell className="text-right">

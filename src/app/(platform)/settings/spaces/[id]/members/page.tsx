@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { RoleBadge } from '@/components/ui/role-badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -414,9 +415,7 @@ export default function SpaceMembersPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={member.is_active ? "default" : "secondary"}>
-                        {member.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <StatusBadge status={member.is_active ? 'active' : 'inactive'} />
                     </TableCell>
                     {canManageMembers && (
                       <TableCell>

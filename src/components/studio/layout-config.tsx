@@ -19,6 +19,7 @@ import { DataModelExplorer } from './layout-config/DataModelExplorer'
 import { MobileExportDialog } from './mobile-export-dialog'
 // Sidebar visibility utilities removed - pages now use secondary platform sidebar
 import { useUndoRedo } from '@/hooks/useUndoRedo'
+import { useMobileViewport } from './layout-config/useMobileViewport'
 
 export default function LayoutConfig({ spaceId, layoutName: initialLayoutName }: { spaceId: string; layoutName?: string }) {
   const params = useParams() as { space?: string; layoutname?: string }
@@ -42,9 +43,8 @@ export default function LayoutConfig({ spaceId, layoutName: initialLayoutName }:
   const [permissionsUserIds, setPermissionsUserIds] = useState<string[]>([])
   const [permissionsGroupIds, setPermissionsGroupIds] = useState<string[]>([])
   const [userGroups, setUserGroups] = useState<Array<{ id: string; name: string }>>([])
-  const [isMobileViewport, setIsMobileViewport] = useState(false)
+  const isMobileViewport = useMobileViewport()
   const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false)
-  const [mobileActiveTab, setMobileActiveTab] = useState<'preview' | 'settings'>('preview')
   
   // Track if we're performing undo/redo to avoid adding to history
   const isUndoRedoOperation = useRef(false)
@@ -75,72 +75,6 @@ export default function LayoutConfig({ spaceId, layoutName: initialLayoutName }:
   const urlPageType = searchParams.get('pageType') as PageType | null
   const [pageType, setPageType] = useState<PageType>(urlPageType || 'general')
   const canvasRef = useRef<HTMLDivElement>(null)
-  
-  // Resizable sidebar state
-  const [sidebarWidth, setSidebarWidth] = useState(20) // Percentage
-  const [isResizing, setIsResizing] = useState(false)
-  const resizeRef = useRef<HTMLDivElement>(null)
-  const sidebarResizeStartX = useRef<number>(0)
-  const sidebarResizeStartWidth = useRef<number>(20)
-  
-  // Stub functions for sidebar visibility (removed but still needed by some components)
-  const isPageVisibleInSidebar = useCallback((pageId: string, pageType: 'built-in' | 'custom') => {
-    return true // Default to visible
-  }, [])
-  const updateSidebarMenuItem = useCallback((key: string | number | symbol, value: boolean) => {
-    // No-op: sidebar visibility is now handled by secondary platform sidebar
-  }, [])
-  const updateCustomPageSidebarVisibility = useCallback((pageId: string, visible: boolean) => {
-    // No-op: sidebar visibility is now handled by secondary platform sidebar
-  }, [])
-
-  // Sidebar resize handlers
-  const handleSidebarResizeStart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsResizing(true)
-    sidebarResizeStartX.current = e.clientX
-    sidebarResizeStartWidth.current = sidebarWidth
-    document.body.style.cursor = 'col-resize'
-    document.body.style.userSelect = 'none'
-  }, [sidebarWidth])
-  
-  const handleSidebarResizeMove = useCallback((e: MouseEvent) => {
-    if (!isResizing || !resizeRef.current) return
-    
-    const containerRect = resizeRef.current.getBoundingClientRect()
-    const containerWidth = containerRect.width
-    
-    if (containerWidth === 0) return // Avoid division by zero
-    
-    const deltaX = e.clientX - sidebarResizeStartX.current
-    const deltaPercent = (deltaX / containerWidth) * 100
-    
-    let newWidth = sidebarResizeStartWidth.current - deltaPercent
-    
-    // Constrain between 15% and 40%
-    newWidth = Math.max(15, Math.min(40, newWidth))
-    
-    setSidebarWidth(newWidth)
-  }, [isResizing])
-  
-  const handleSidebarResizeEnd = useCallback(() => {
-    setIsResizing(false)
-    document.body.style.cursor = ''
-    document.body.style.userSelect = ''
-  }, [])
-  
-  // Add global mouse event listeners when resizing
-  useEffect(() => {
-    if (isResizing) {
-      window.addEventListener('mousemove', handleSidebarResizeMove, { passive: true })
-      window.addEventListener('mouseup', handleSidebarResizeEnd)
-      return () => {
-        window.removeEventListener('mousemove', handleSidebarResizeMove)
-        window.removeEventListener('mouseup', handleSidebarResizeEnd)
-      }
-    }
-  }, [isResizing, handleSidebarResizeMove, handleSidebarResizeEnd])
   
   // Wrapper for setPlacedWidgets that tracks history
   const setPlacedWidgets = useCallback((updater: React.SetStateAction<PlacedWidget[]>) => {
@@ -188,16 +122,6 @@ export default function LayoutConfig({ spaceId, layoutName: initialLayoutName }:
   const [componentConfigs, setComponentConfigs] = useState<Record<string, ComponentConfig>>({
     // Sidebar, top, and footer removed - pages now use secondary platform sidebar
   })
-
-  // Detect mobile viewport
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobileViewport(window.innerWidth < 768)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -1052,7 +976,7 @@ export default function LayoutConfig({ spaceId, layoutName: initialLayoutName }:
       />
 
         {/* Layout: Preview area | Data model panel (optional) - Responsive */}
-        <div ref={resizeRef} className={`flex-1 ${isMobileViewport ? 'flex flex-col' : 'flex'} border overflow-hidden min-h-0 relative`}>
+        <div className={`flex-1 ${isMobileViewport ? 'flex flex-col' : 'flex'} border overflow-hidden min-h-0 relative`}>
           {/* Body/Preview area - full width (minus data model if shown) */}
           <div 
             className={`${isMobileViewport ? 'w-full' : ''} overflow-hidden h-full flex flex-col min-h-0 border-r relative`}

@@ -52,10 +52,12 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import ERDDiagram from '@/components/erd/ERDDiagram'
 import { DatabaseConnection } from '../types'
+import type { DataModel, Folder as DataFolder } from '../types'
 import { getDatabaseTypes, type Asset } from '@/lib/assets'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import type { BrandingConfig } from '@/types/branding'
+import { DataModelTree } from './DataModelTree'
 
 // Built-in database constant
 const BUILTIN_DATABASE: DatabaseConnection = {
@@ -72,31 +74,6 @@ const BUILTIN_DATABASE: DatabaseConnection = {
   connectionPool: { current: 5, max: 20 },
   isBuiltin: true
 } as DatabaseConnection & { isBuiltin: boolean }
-
-interface DataModel {
-  id: string
-  name: string
-  display_name?: string
-  description?: string
-  folder_id?: string
-  icon?: string
-  primary_color?: string
-  tags?: string[]
-  shared_spaces?: any[]
-  created_at?: string
-  updated_at?: string
-}
-
-interface Folder {
-  id: string
-  name: string
-  description?: string
-  parent_id?: string
-  children?: Folder[]
-  models?: DataModel[]
-  created_at?: string
-  updated_at?: string
-}
 
 interface DatabaseSchema {
   tables: Array<{
@@ -143,7 +120,7 @@ export function DatabaseDataModelMerged() {
 
   // Data Model state
   const [models, setModels] = useState<DataModel[]>([])
-  const [folders, setFolders] = useState<Folder[]>([])
+  const [folders, setFolders] = useState<DataFolder[]>([])
   const [searchValue, setSearchValue] = useState('')
   const [expandedFolders, setExpandedFolders] = useState<string[]>([])
   const [isLoadingModels, setIsLoadingModels] = useState(false)
@@ -627,8 +604,8 @@ export function DatabaseDataModelMerged() {
 
   // Build tree structure for data models
   const treeStructure = useMemo(() => {
-    const folderMap = new Map<string, Folder>()
-    const rootFolders: Folder[] = []
+    const folderMap = new Map<string, DataFolder>()
+    const rootFolders: DataFolder[] = []
 
     folders.forEach(folder => {
       folderMap.set(folder.id, { ...folder, children: [], models: [] })
@@ -681,117 +658,6 @@ export function DatabaseDataModelMerged() {
       prev.includes(folderId)
         ? prev.filter(id => id !== folderId)
         : [...prev, folderId]
-    )
-  }
-
-  const renderModelItem = (model: DataModel) => (
-    <div
-      key={`model:${model.id}`}
-      className="group flex items-center gap-3 px-3 py-2.5 ml-6 rounded-lg transition-all duration-200 cursor-pointer"
-      style={{
-        backgroundColor: 'transparent',
-        borderRadius: borderRadius,
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = `color-mix(in srgb, ${primaryColor} 3%, transparent)`
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = 'transparent'
-      }}
-      onClick={() => openDetailDrawer({
-        type: 'model',
-        id: model.id,
-        name: model.name,
-        displayName: model.display_name,
-        description: model.description
-      })}
-    >
-      <div
-        className="flex items-center justify-center w-5 h-5 rounded-md"
-        style={{ backgroundColor: `color-mix(in srgb, ${primaryColor} 10%, transparent)` }}
-      >
-        <Database className="h-3.5 w-3.5" style={{ color: primaryColor }} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div
-          className="font-medium text-sm truncate"
-          style={{ color: bodyText }}
-        >
-          {model.display_name || model.name}
-        </div>
-        {model.description && (
-          <div
-            className="text-xs truncate mt-0.5"
-            style={{ color: bodyText, opacity: 0.6 }}
-          >
-            {model.description}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-
-  const renderFolderItem = (folder: Folder, level = 0) => {
-    const isExpanded = expandedFolders.includes(folder.id)
-
-    return (
-      <div key={`folder:${folder.id}`} className="select-none">
-        <div
-          className={cn(
-            "group flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all duration-200 cursor-pointer",
-            level === 0 && "font-medium"
-          )}
-          style={{
-            paddingLeft: `${level * 16 + 12}px`,
-            backgroundColor: 'transparent',
-            borderRadius: borderRadius,
-          }}
-          onClick={() => toggleFolder(folder.id)}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = `color-mix(in srgb, ${primaryColor} 3%, transparent)`
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent'
-          }}
-        >
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              toggleFolder(folder.id)
-            }}
-            className="p-0.5 hover:bg-white/20 dark:hover:bg-white/10 rounded transition-colors"
-          >
-            {isExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5" style={{ color: bodyText, opacity: 0.6 }} />
-            ) : (
-              <ChevronRight className="h-3.5 w-3.5" style={{ color: bodyText, opacity: 0.6 }} />
-            )}
-          </button>
-
-          <Folder
-            className="h-4 w-4 transition-colors"
-            style={{ color: isExpanded ? primaryColor : bodyText, opacity: isExpanded ? 1 : 0.6 }}
-          />
-          <span
-            className="flex-1 truncate text-sm"
-            style={{ color: bodyText }}
-          >
-            {folder.name}
-          </span>
-          {folder.models && folder.models.length > 0 && (
-            <Badge variant="secondary" className="text-xs px-1.5 py-0 h-5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-              {folder.models.length}
-            </Badge>
-          )}
-        </div>
-
-        {isExpanded && (
-          <div className="mt-1">
-            {(folder.models || []).map(renderModelItem)}
-            {(folder.children || []).map(childFolder => renderFolderItem(childFolder, level + 1))}
-          </div>
-        )}
-      </div>
     )
   }
 
@@ -1517,14 +1383,19 @@ export function DatabaseDataModelMerged() {
                                 <Database className="h-3.5 w-3.5" />
                                 <span>Data Models ({rootModels.length})</span>
                               </div>
-                              <div className="space-y-0.5">
-                                {rootModels.map(renderModelItem)}
-                              </div>
                             </div>
                           )}
 
-                          {/* Folders */}
-                          {treeStructure.map(folder => renderFolderItem(folder))}
+                          <DataModelTree
+                            bodyText={bodyText}
+                            borderRadius={borderRadius}
+                            expandedFolders={expandedFolders}
+                            folders={treeStructure}
+                            primaryColor={primaryColor}
+                            rootModels={rootModels}
+                            onOpenDetail={openDetailDrawer}
+                            onToggleFolder={toggleFolder}
+                          />
 
                           {/* Empty State */}
                           {models.length === 0 && folders.length === 0 && (

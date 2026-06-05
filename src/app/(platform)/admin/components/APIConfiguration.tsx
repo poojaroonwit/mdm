@@ -534,9 +534,7 @@ export function APIConfiguration() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <StatusBadge status={provider.status} />
-                    <Badge variant={provider.isConfigured ? 'default' : 'secondary'}>
-                      {provider.isConfigured ? 'Configured' : 'Not Configured'}
-                    </Badge>
+                    <StatusBadge status={provider.isConfigured ? 'configured' : 'not-configured'} label={provider.isConfigured ? 'Configured' : 'Not Configured'} />
                   </div>
 
                   {provider.lastTested && (
@@ -638,9 +636,7 @@ export function APIConfiguration() {
                               {getModelIcon(model.type)}
                               <span className="font-medium">{model.name}</span>
                             </div>
-                            <Badge variant={model.isAvailable ? 'default' : 'secondary'}>
-                              {model.isAvailable ? 'Available' : 'Unavailable'}
-                            </Badge>
+                            <StatusBadge status={model.isAvailable ? 'available' : 'unavailable'} />
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">
                             {model.description}

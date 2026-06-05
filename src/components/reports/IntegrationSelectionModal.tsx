@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { 
   Power,
   Activity,
@@ -189,9 +189,7 @@ export function IntegrationSelectionModal({
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Badge variant={status === 'configured' ? 'default' : 'outline'}>
-                    {status === 'configured' ? 'Configured' : 'Not Configured'}
-                  </Badge>
+                  <StatusBadge status={status === 'configured' ? 'configured' : 'not-configured'} label={status === 'configured' ? 'Configured' : 'Not Configured'} />
                 </CardContent>
               </Card>
             )

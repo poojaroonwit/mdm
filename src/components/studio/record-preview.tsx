@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { 
   Search, 
   Filter, 
@@ -146,11 +146,7 @@ export function RecordPreview({ config }: RecordPreviewProps) {
       case 'URL':
         return <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{value}</a>
       case 'BOOLEAN':
-        return (
-          <Badge variant={value ? "default" : "secondary"}>
-            {value ? 'Yes' : 'No'}
-          </Badge>
-        )
+        return <StatusBadge status={value ? 'yes' : 'no'} label={value ? 'Yes' : 'No'} />
       case 'DATE':
       case 'DATETIME':
         return <span className="text-muted-foreground">{value}</span>

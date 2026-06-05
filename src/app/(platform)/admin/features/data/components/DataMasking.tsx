@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Input } from '@/components/ui/input'
 import { ShieldCheck, Plus, Eye, EyeOff, Edit, Trash2, ToggleLeft, ToggleRight } from 'lucide-react'
 import { CrudDialog } from '@/components/ui/crud-dialog'
@@ -233,14 +234,14 @@ export function DataMasking() {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <CardTitle className="text-lg">{rule.name}</CardTitle>
-                  <Badge variant={rule.enabled ? 'default' : 'secondary'}>
+                  <StatusBadge status={rule.enabled ? 'enabled' : 'disabled'}>
                     {rule.enabled ? (
                       <Eye className="w-3 h-3 mr-1" />
                     ) : (
                       <EyeOff className="w-3 h-3 mr-1" />
                     )}
                     {rule.enabled ? 'Enabled' : 'Disabled'}
-                  </Badge>
+                  </StatusBadge>
                 </div>
                 <CardDescription>
                   {rule.tableName}.{rule.columnName}

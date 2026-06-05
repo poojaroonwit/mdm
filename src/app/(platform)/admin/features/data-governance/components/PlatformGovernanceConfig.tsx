@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
@@ -307,7 +308,7 @@ export function PlatformGovernanceConfig() {
                       <Tag className="h-5 w-5" />
                       {scheme.name}
                       {scheme.isDefault && (
-                        <Badge variant="default">Default</Badge>
+                        <StatusBadge status="default" />
                       )}
                     </CardTitle>
                     <Button
@@ -352,9 +353,7 @@ export function PlatformGovernanceConfig() {
                       <CardDescription>{rule.description}</CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={rule.isActive ? 'default' : 'secondary'}>
-                        {rule.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <StatusBadge status={rule.isActive ? 'active' : 'inactive'} />
                       <Badge variant="outline">{rule.type}</Badge>
                       <Button
                         size="sm"
@@ -378,12 +377,7 @@ export function PlatformGovernanceConfig() {
                     </div>
                     <div>
                       <span className="text-muted-foreground">Severity:</span>
-                      <Badge className="ml-2" variant={
-                        rule.severity === 'error' ? 'destructive' :
-                        rule.severity === 'warning' ? 'default' : 'secondary'
-                      }>
-                        {rule.severity}
-                      </Badge>
+                      <StatusBadge className="ml-2" status={rule.severity} />
                     </div>
                     <div>
                       <span className="text-muted-foreground">Applies to:</span>
@@ -414,9 +408,7 @@ export function PlatformGovernanceConfig() {
                       <CardTitle className="text-lg">{policy.name}</CardTitle>
                       <CardDescription>{policy.description}</CardDescription>
                     </div>
-                    <Badge variant={policy.isActive ? 'default' : 'secondary'}>
-                      {policy.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
+                    <StatusBadge status={policy.isActive ? 'active' : 'inactive'} />
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -462,9 +454,7 @@ export function PlatformGovernanceConfig() {
                       <CardTitle className="text-lg">{rule.name}</CardTitle>
                       <CardDescription>{rule.description}</CardDescription>
                     </div>
-                    <Badge variant={rule.isActive ? 'default' : 'secondary'}>
-                      {rule.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
+                    <StatusBadge status={rule.isActive ? 'active' : 'inactive'} />
                   </div>
                 </CardHeader>
                 <CardContent>

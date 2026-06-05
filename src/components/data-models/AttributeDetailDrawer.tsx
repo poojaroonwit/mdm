@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CentralizedDrawer } from '@/components/ui/centralized-drawer'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -465,9 +466,7 @@ export function AttributeDetailDrawer({
                         onCheckedChange={(checked) => setEditForm({ ...editForm, is_required: checked })}
                       />
                     ) : (
-                      <Badge variant={attribute.is_required ? 'default' : 'secondary'}>
-                        {attribute.is_required ? 'Required' : 'Optional'}
-                      </Badge>
+                      <StatusBadge status={attribute.is_required ? 'required' : 'optional'} label={attribute.is_required ? 'Required' : 'Optional'} />
                     )}
                   </div>
 
@@ -484,9 +483,7 @@ export function AttributeDetailDrawer({
                         onCheckedChange={(checked) => setEditForm({ ...editForm, is_unique: checked })}
                       />
                     ) : (
-                      <Badge variant={attribute.is_unique ? 'default' : 'secondary'}>
-                        {attribute.is_unique ? 'Unique' : 'Not Unique'}
-                      </Badge>
+                      <StatusBadge status={attribute.is_unique ? 'unique' : 'not-unique'} label={attribute.is_unique ? 'Unique' : 'Not Unique'} />
                     )}
                   </div>
 
@@ -530,9 +527,7 @@ export function AttributeDetailDrawer({
                           onCheckedChange={(checked) => setIncrementConfig({ ...incrementConfig, enabled: checked })}
                         />
                       ) : (
-                        <Badge variant={incrementConfig.enabled ? 'default' : 'secondary'}>
-                          {incrementConfig.enabled ? 'Enabled' : 'Disabled'}
-                        </Badge>
+                        <StatusBadge status={incrementConfig.enabled ? 'enabled' : 'disabled'} />
                       )}
                     </div>
 

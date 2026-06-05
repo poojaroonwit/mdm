@@ -388,9 +388,7 @@ export function SecurityFeatures() {
                       {getTypeIcon(policy.type)}
                       {policy.name}
                     </CardTitle>
-                    <Badge variant={policy.isActive ? 'default' : 'secondary'}>
-                      {policy.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
+                    <StatusBadge status={policy.isActive ? 'active' : 'inactive'} />
                   </div>
                   <CardDescription>{policy.description}</CardDescription>
                 </CardHeader>

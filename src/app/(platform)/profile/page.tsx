@@ -11,7 +11,8 @@ import { AvatarUpload } from '@/components/ui/avatar-upload'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
+import { RoleBadge } from '@/components/ui/role-badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { User, Mail, Shield, Calendar, Globe } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -213,14 +214,7 @@ export default function ProfilePage() {
                   <Shield className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Role</span>
                 </div>
-                <Badge variant={
-                  user.role === 'SUPER_ADMIN' ? 'destructive' :
-                  user.role === 'ADMIN' ? 'default' :
-                  user.role === 'MANAGER' ? 'secondary' :
-                  'outline'
-                }>
-                  {user.role}
-                </Badge>
+                <RoleBadge role={user.role} label={user.role} />
               </div>
 
               <div className="flex items-center justify-between">
@@ -238,9 +232,7 @@ export default function ProfilePage() {
                   <Globe className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Status</span>
                 </div>
-                <Badge variant={user.is_active ? 'default' : 'secondary'}>
-                  {user.is_active ? 'Active' : 'Inactive'}
-                </Badge>
+                <StatusBadge status={user.is_active ? 'active' : 'inactive'} />
               </div>
 
               {user.default_space_name && (
@@ -262,9 +254,7 @@ export default function ProfilePage() {
                     {user.spaces.map((space: any) => (
                       <div key={space.id} className="flex items-center justify-between text-sm">
                         <span>{space.name}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {space.role}
-                        </Badge>
+                        <RoleBadge role={space.role} label={space.role} className="text-xs" />
                       </div>
                     ))}
                   </div>

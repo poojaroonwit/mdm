@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import {
   Drawer,
   DrawerTrigger,
@@ -136,21 +137,17 @@ export function VersionDrawer({
                           
                           {/* Draft/Published Badge */}
                           {version.isPublished ? (
-                            <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-xs">
+                            <StatusBadge status="published" className="text-xs">
                               <Check className="h-3 w-3 mr-1" />
                               Published
-                            </Badge>
+                            </StatusBadge>
                           ) : (
-                            <Badge variant="secondary" className="text-xs">
-                              Draft
-                            </Badge>
+                            <StatusBadge status="draft" className="text-xs" />
                           )}
 
                           {/* Current Indicator */}
                           {isCurrent && (
-                            <Badge variant="outline" className="text-xs border-primary text-primary">
-                              Current
-                            </Badge>
+                            <StatusBadge status="current" className="text-xs" />
                           )}
                         </div>
 
@@ -197,9 +194,9 @@ export function VersionDrawer({
             <div className="flex items-center gap-2">
               <span className="font-medium">v{currentVersion || sortedVersions[0]?.version || '1.0.0'}</span>
               {chatbot?.isPublished ? (
-                <Badge variant="default" className="bg-green-600 text-xs">Published</Badge>
+                <StatusBadge status="published" className="text-xs" />
               ) : (
-                <Badge variant="secondary" className="text-xs">Draft</Badge>
+                <StatusBadge status="draft" className="text-xs" />
               )}
             </div>
           </div>

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { 
   GitBranch, 
   History, 
@@ -79,9 +80,7 @@ export function VersionControl({
                 v{currentVersion}
               </Badge>
               {hasUnsavedChanges && (
-                <Badge variant="destructive" className="text-xs">
-                  Unsaved Changes
-                </Badge>
+                <StatusBadge status="unsaved-changes" label="Unsaved Changes" size="sm" className="text-xs" />
               )}
             </div>
             <div className="flex gap-1">
@@ -143,14 +142,12 @@ export function VersionControl({
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="text-sm font-medium">{version.name}</h4>
-                      <Badge variant={version.isCurrent ? "default" : "outline"} className="text-xs">
-                        v{version.version}
-                      </Badge>
+                      <StatusBadge status={version.isCurrent ? 'current' : 'draft'} label={`v${version.version}`} size="sm" className="text-xs" />
                       {version.isCurrent && (
-                        <Badge variant="secondary" className="text-xs">
+                        <StatusBadge status="current" size="sm" className="text-xs">
                           <CheckCircle className="h-3 w-3 mr-1" />
                           Current
-                        </Badge>
+                        </StatusBadge>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mb-2">

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { 
   Layout, 
   Sparkles, 
@@ -76,10 +76,10 @@ export function SpaceStudioLauncher({ className }: SpaceStudioLauncherProps) {
               </CardDescription>
             </div>
           </div>
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
+          <StatusBadge status="new">
             <Sparkles className="h-3 w-3 mr-1" />
             New
-          </Badge>
+          </StatusBadge>
         </div>
       </CardHeader>
       

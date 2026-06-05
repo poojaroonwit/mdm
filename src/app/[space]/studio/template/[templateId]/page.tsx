@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Switch } from '@/components/ui/switch'
 import { 
   ArrowLeft, 
@@ -344,9 +344,7 @@ export default function TemplateStudioPage() {
         </div>
         
         <div className="flex items-center gap-2">
-            <Badge variant={isDirty ? "destructive" : "secondary"}>
-              {isDirty ? "Unsaved changes" : "Saved"}
-            </Badge>
+            <StatusBadge status={isDirty ? 'unsaved-changes' : 'saved'} label={isDirty ? 'Unsaved changes' : 'Saved'} />
           <Button 
               onClick={handleSave} 
               disabled={!isDirty || isSaving}

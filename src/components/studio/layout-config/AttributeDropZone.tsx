@@ -289,56 +289,6 @@ function AttributeStylePopover({
   onChange?: (partial: Record<string, any>) => void
   children: React.ReactNode
 }) {
-  // Helper to determine if text should be light or dark based on background color
-  const getTextColor = (hexColor: string): string => {
-    if (!hexColor || hexColor === 'transparent') return '#000000'
-    const hex = hexColor.replace('#', '')
-    const r = parseInt(hex.substring(0, 2), 16)
-    const g = parseInt(hex.substring(2, 4), 16)
-    const b = parseInt(hex.substring(4, 6), 16)
-    // Calculate relative luminance
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-    return luminance > 0.5 ? '#000000' : '#ffffff'
-  }
-
-  // Helper to check if color has transparency
-  const hasTransparency = (color: string): boolean => {
-    if (!color || color === 'transparent') return true
-    if (color.startsWith('rgba')) {
-      const match = color.match(/rgba\([^)]+,\s*([\d.]+)\)/)
-      if (match) {
-        const alpha = parseFloat(match[1])
-        return alpha < 1
-      }
-    }
-    return false
-  }
-
-  // Helper to get swatch style with checkerboard background for transparency
-  const getSwatchStyle = (color: string): React.CSSProperties => {
-    const baseStyle: React.CSSProperties = {
-      border: 'none',
-      outline: 'none',
-      backgroundColor: color || '#ffffff'
-    }
-    
-    if (hasTransparency(color)) {
-      // Checkerboard pattern for transparency
-      baseStyle.backgroundImage = `
-        linear-gradient(45deg, #d0d0d0 25%, transparent 25%),
-        linear-gradient(-45deg, #d0d0d0 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, #d0d0d0 75%),
-        linear-gradient(-45deg, transparent 75%, #d0d0d0 75%)
-      `
-      baseStyle.backgroundSize = '8px 8px'
-      baseStyle.backgroundPosition = '0 0, 0 4px, 4px -4px, -4px 0px'
-      // Keep the actual color as an overlay
-      baseStyle.backgroundColor = color
-    }
-    
-    return baseStyle
-  }
-
   const triggerRef = React.useRef<HTMLDivElement | null>(null)
   const [panelWidth, setPanelWidth] = React.useState<number | undefined>(undefined)
   const openChanged = (open: boolean) => { if (open && triggerRef.current) setPanelWidth(triggerRef.current.offsetWidth) }

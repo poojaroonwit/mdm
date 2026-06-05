@@ -528,9 +528,7 @@ export function SystemIntegrations({ hideHeader = false }: SystemIntegrationsPro
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <StatusBadge status={integration.status} />
-                  <Badge variant={integration.isConfigured ? 'default' : 'secondary'}>
-                    {integration.isConfigured ? 'Configured' : 'Not Configured'}
-                  </Badge>
+                  <StatusBadge status={integration.isConfigured ? 'configured' : 'not-configured'} label={integration.isConfigured ? 'Configured' : 'Not Configured'} />
                 </div>
 
                 {integration.isConfigured && (

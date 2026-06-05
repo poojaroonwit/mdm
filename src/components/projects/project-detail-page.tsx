@@ -993,9 +993,7 @@ export function ProjectDetailPage({ projectId, spaceId, onViewChange }: ProjectD
                         {project.chatbots.map((cb) => (
                           <div key={cb.id} className="flex items-center justify-between p-2 border rounded">
                             <span className="text-sm">{cb.chatbot?.name}</span>
-                            <Badge variant={cb.chatbot?.isPublished ? 'default' : 'secondary'}>
-                              {cb.chatbot?.isPublished ? 'Published' : 'Draft'}
-                            </Badge>
+                            <StatusBadge status={cb.chatbot?.isPublished ? 'published' : 'draft'} />
                           </div>
                         ))}
                       </div>

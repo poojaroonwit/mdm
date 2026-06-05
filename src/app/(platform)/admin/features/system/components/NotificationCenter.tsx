@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { TaxonomyBadge } from '@/components/ui/taxonomy-badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CrudDialog } from "@/components/ui/crud-dialog"
 import { Switch } from '@/components/ui/switch'
@@ -532,9 +533,7 @@ export function NotificationCenter() {
                       </div>
                       <div className="flex items-center gap-2">
                         {getStatusIcon(notification.status)}
-                        <Badge variant={notification.status === 'sent' ? 'default' : 'destructive'}>
-                          {notification.status}
-                        </Badge>
+                        <StatusBadge status={notification.status} label={notification.status} />
                       </div>
                     </div>
                   ))}

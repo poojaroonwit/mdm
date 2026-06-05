@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { ScrollableList } from '@/components/ui/scrollable-list'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Plus, Search, Edit, Trash2, Database, Type, Settings, GitBranch, MoreVertical, Folder, FolderOpen, FolderPlus } from 'lucide-react'
 import { AttributeDetailDrawer } from '@/components/data-models/AttributeDetailDrawer'
@@ -483,9 +483,7 @@ export default function DataModelsPage() {
                     <TableCell>{m.display_name}</TableCell>
                     <TableCell className="max-w-[360px] truncate">{m.description}</TableCell>
                     <TableCell>
-                      <Badge variant={m.is_active ? 'default' : 'secondary'}>
-                        {m.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <StatusBadge status={m.is_active ? 'active' : 'inactive'} />
                     </TableCell>
                     <TableCell>{(m as any).data_model_attributes?.[0]?.count ?? 0}</TableCell>
                     <TableCell className="text-right space-x-2">

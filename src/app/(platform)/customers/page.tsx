@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Combobox } from '@/components/ui/combobox'
  
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { 
   Table, 
   TableBody, 
@@ -1011,9 +1011,7 @@ export default function CustomersPage() {
                         <TableCell>{customer.sources?.name || '-'}</TableCell>
                         <TableCell>{customer.industries?.name || '-'}</TableCell>
                     <TableCell>
-                          <Badge variant={customer.is_active ? 'default' : 'secondary'}>
-                            {customer.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
+                          <StatusBadge status={customer.is_active ? 'active' : 'inactive'} />
                     </TableCell>
                         <TableCell>{customer.updated_at?.slice(0, 10) || customer.created_at?.slice(0, 10) || '-'}</TableCell>
                     <TableCell>

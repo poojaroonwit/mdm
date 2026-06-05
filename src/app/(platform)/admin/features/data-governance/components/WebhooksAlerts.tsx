@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
@@ -168,9 +169,7 @@ export function WebhooksAlerts() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">{webhook.name}</CardTitle>
-                <Badge variant={webhook.enabled ? 'default' : 'secondary'}>
-                  {webhook.enabled ? 'Active' : 'Inactive'}
-                </Badge>
+                <StatusBadge status={webhook.enabled ? 'active' : 'inactive'} />
               </div>
               {webhook.description && (
                 <CardDescription>{webhook.description}</CardDescription>

@@ -48,6 +48,16 @@ export function formatPermissionName(permission: Permission): string {
 }
 
 /**
+ * Format login method identifiers for display.
+ */
+export function formatLoginMethod(method: string): string {
+  if (method === 'email') return 'Email/Password'
+  if (method === 'azure-ad') return 'Azure AD'
+  if (method === 'google') return 'Google'
+  return method
+}
+
+/**
  * Filter users by search query
  */
 export function filterUsers(users: User[], query: string): User[] {

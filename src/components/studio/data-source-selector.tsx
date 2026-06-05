@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import {
   Database,
   Search,
@@ -266,9 +267,7 @@ export function DataSourceSelector({ onSelect, selectedModel }: DataSourceSelect
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant={selectedModel.is_external ? "secondary" : "default"}>
-                  {selectedModel.source_type}
-                </Badge>
+                <StatusBadge status={selectedModel.is_external ? 'external' : 'internal'} label={selectedModel.source_type} />
                 <Button size="sm" variant="outline" onClick={() => onSelect(null as any)}>
                   Change
                 </Button>
@@ -305,9 +304,7 @@ export function DataSourceSelector({ onSelect, selectedModel }: DataSourceSelect
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <h4 className="font-semibold">{model.display_name}</h4>
-                        <Badge variant={model.is_external ? "secondary" : "outline"}>
-                          {model.source_type}
-                        </Badge>
+                        <StatusBadge status={model.is_external ? 'external' : 'internal'} label={model.source_type} />
                       </div>
                       <p className="text-sm text-muted-foreground mb-1">
                         {model.description}
