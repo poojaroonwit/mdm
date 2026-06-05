@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react'
 import { useTheme as useNextTheme } from 'next-themes'
 import { ThemeConfig, getThemeById, getThemeByVariant, lightThemes, darkThemes } from '@/lib/themes'
 import { THEME_STORAGE_KEYS, THEME_DEFAULTS, THEME_ERROR_MESSAGES } from '@/lib/theme-constants'
@@ -180,17 +180,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme, setTheme, applyTheme])
 
+  const contextValue = useMemo<ThemeContextType>(() => ({
+    currentTheme,
+    setThemeVariant,
+    setThemeById,
+    lightThemes,
+    darkThemes,
+    mounted,
+    error,
+  }), [currentTheme, error, mounted, setThemeById, setThemeVariant])
+
   return (
     <ThemeContext.Provider
-      value={{
-        currentTheme,
-        setThemeVariant,
-        setThemeById,
-        lightThemes,
-        darkThemes,
-        mounted,
-        error,
-      }}
+      value={contextValue}
     >
       {children}
     </ThemeContext.Provider>

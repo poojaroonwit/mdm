@@ -1,11 +1,11 @@
 'use client'
 
-import { useRef } from 'react'
+import { Suspense, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Paperclip, Mic, MicOff, Send, X } from 'lucide-react'
-import * as Icons from 'lucide-react'
 import { ChatbotConfig } from '../types'
+import { loadIcon } from '@/lib/utils/icon-loader'
 
 interface ChatInputProps {
   chatbot: ChatbotConfig
@@ -123,7 +123,7 @@ export function ChatInput({
   )
 
   const sendButtonIconName = (chatbot as any).sendButtonIcon || 'Send'
-  const SendIconComponent = (Icons as any)[sendButtonIconName] || Send
+  const SendIconComponent = loadIcon(sendButtonIconName)
   const sendButtonRounded = (chatbot as any).sendButtonRounded !== undefined ? (chatbot as any).sendButtonRounded : false // Deprecated
   const sendButtonBorderRadius = (chatbot as any).sendButtonBorderRadius
   const sendButtonBorderRadiusTopLeft = (chatbot as any).sendButtonBorderRadiusTopLeft
@@ -187,7 +187,13 @@ export function ChatInput({
         minHeight: defaultButtonHeight,
       }}
     >
-      <SendIconComponent className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" style={{ color: sendButtonIconColor }} />
+      <Suspense fallback={<Send className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" style={{ color: sendButtonIconColor }} />}>
+        {SendIconComponent ? (
+          <SendIconComponent className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" style={{ color: sendButtonIconColor }} />
+        ) : (
+          <Send className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" style={{ color: sendButtonIconColor }} />
+        )}
+      </Suspense>
     </Button>
   )
 

@@ -1,25 +1,56 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter, usePathname } from 'next/navigation'
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { PlatformSidebar } from './PlatformSidebar'
 import { TopMenuBar } from './TopMenuBar'
 import { Z_INDEX } from '@/lib/z-index'
-import { InfrastructureInstance } from '@/features/infrastructure/types'
-import { VMCredentialsCard } from '@/components/infrastructure/VMCredentialsCard'
-import { VMTerminal } from '@/components/infrastructure/VMTerminal'
-import { EditVMDialog } from '@/components/infrastructure/EditVMDialog'
-import { InfrastructurePlaceholder } from '@/components/infrastructure/InfrastructurePlaceholder'
-import { AddInstanceDialog } from '@/features/infrastructure/components/AddInstanceDialog'
-import { AddVMDialog } from '@/features/infrastructure/components/AddVMDialog'
-import { AddServiceDialog } from '@/features/infrastructure/components/AddServiceDialog'
+import type { InfrastructureInstance } from '@/features/infrastructure/types'
 import { useInfrastructureContext } from '@/contexts/infrastructure-context'
 import { useSpace } from '@/contexts/space-context'
 import { cn } from '@/lib/utils'
-import { SpaceSettingsSidebar } from '@/components/space-management/SpaceSettingsSidebar'
-import { SpaceSidebar } from '@/components/space-management/SpaceSidebar'
-import { ProjectManagementSidebar } from '@/components/project-management/ProjectManagementSidebar'
+
+const VMCredentialsCard = dynamic(
+  () => import('@/components/infrastructure/VMCredentialsCard').then(mod => mod.VMCredentialsCard),
+  { ssr: false }
+)
+const VMTerminal = dynamic(
+  () => import('@/components/infrastructure/VMTerminal').then(mod => mod.VMTerminal),
+  { ssr: false }
+)
+const EditVMDialog = dynamic(
+  () => import('@/components/infrastructure/EditVMDialog').then(mod => mod.EditVMDialog),
+  { ssr: false }
+)
+const InfrastructurePlaceholder = dynamic(
+  () => import('@/components/infrastructure/InfrastructurePlaceholder').then(mod => mod.InfrastructurePlaceholder),
+  { ssr: false }
+)
+const AddInstanceDialog = dynamic(
+  () => import('@/features/infrastructure/components/AddInstanceDialog').then(mod => mod.AddInstanceDialog),
+  { ssr: false }
+)
+const AddVMDialog = dynamic(
+  () => import('@/features/infrastructure/components/AddVMDialog').then(mod => mod.AddVMDialog),
+  { ssr: false }
+)
+const AddServiceDialog = dynamic(
+  () => import('@/features/infrastructure/components/AddServiceDialog').then(mod => mod.AddServiceDialog),
+  { ssr: false }
+)
+const SpaceSettingsSidebar = dynamic(
+  () => import('@/components/space-management/SpaceSettingsSidebar').then(mod => mod.SpaceSettingsSidebar),
+  { ssr: false }
+)
+const SpaceSidebar = dynamic(
+  () => import('@/components/space-management/SpaceSidebar').then(mod => mod.SpaceSidebar),
+  { ssr: false }
+)
+const ProjectManagementSidebar = dynamic(
+  () => import('@/components/project-management/ProjectManagementSidebar').then(mod => mod.ProjectManagementSidebar),
+  { ssr: false }
+)
 
 type BreadcrumbItem = string | { label: string; href?: string; onClick?: () => void }
 

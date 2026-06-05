@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react'
 
 export interface SystemSettings {
     siteName: string
@@ -29,28 +29,55 @@ const defaultSettings: SystemSettings = {
 }
 
 const SystemSettingsContext = createContext<SystemSettingsContextType | undefined>(undefined)
+const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000
+let settingsCache: { settings: SystemSettings; fetchedAt: number } | null = null
 
 export function SystemSettingsProvider({ children }: { children: React.ReactNode }) {
     const [settings, setSettings] = useState<SystemSettings>(defaultSettings)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const inFlightFetchRef = useRef<AbortController | null>(null)
 
-    const refreshSettings = useCallback(async () => {
+    const refreshSettings = useCallback(async (force = false) => {
+        if (!force && settingsCache && Date.now() - settingsCache.fetchedAt < SETTINGS_CACHE_TTL_MS) {
+            setSettings(settingsCache.settings)
+            setIsLoading(false)
+            setError(null)
+            return
+        }
+
+        inFlightFetchRef.current?.abort()
+        const controller = new AbortController()
+        inFlightFetchRef.current = controller
+
         try {
             setIsLoading(true)
             setError(null)
 
-            const response = await fetch('/api/system-settings')
+            const response = await fetch('/api/system-settings', {
+                signal: controller.signal,
+            })
             const data = await response.json()
 
             if (data.success && data.settings) {
-                setSettings({ ...defaultSettings, ...data.settings })
+                const nextSettings = { ...defaultSettings, ...data.settings }
+                settingsCache = {
+                    settings: nextSettings,
+                    fetchedAt: Date.now(),
+                }
+                setSettings(nextSettings)
             }
         } catch (err) {
+            if (err instanceof DOMException && err.name === 'AbortError') {
+                return
+            }
             console.error('Failed to load system settings:', err)
             setError('Failed to load system settings')
         } finally {
-            setIsLoading(false)
+            if (inFlightFetchRef.current === controller) {
+                inFlightFetchRef.current = null
+                setIsLoading(false)
+            }
         }
     }, [])
 
@@ -69,7 +96,12 @@ export function SystemSettingsProvider({ children }: { children: React.ReactNode
             const data = await response.json()
 
             if (data.success && data.settings) {
-                setSettings({ ...defaultSettings, ...data.settings })
+                const nextSettings = { ...defaultSettings, ...data.settings }
+                settingsCache = {
+                    settings: nextSettings,
+                    fetchedAt: Date.now(),
+                }
+                setSettings(nextSettings)
                 return true
             }
 
@@ -87,6 +119,12 @@ export function SystemSettingsProvider({ children }: { children: React.ReactNode
         refreshSettings()
     }, [refreshSettings])
 
+    useEffect(() => {
+        return () => {
+            inFlightFetchRef.current?.abort()
+        }
+    }, [])
+
     // Prevent right-click if setting is enabled
     useEffect(() => {
         const handleContextMenu = (e: MouseEvent) => {
@@ -96,21 +134,43 @@ export function SystemSettingsProvider({ children }: { children: React.ReactNode
             }
         }
 
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (!settings.uiProtectionEnabled) return
+
+            if (e.key === 'F12') {
+                e.preventDefault()
+            }
+
+            if (
+                e.ctrlKey &&
+                (
+                    e.key.toLowerCase() === 'u' ||
+                    (e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase()))
+                )
+            ) {
+                e.preventDefault()
+            }
+        }
+
         window.addEventListener('contextmenu', handleContextMenu)
+        document.addEventListener('keydown', handleKeyDown)
         return () => {
             window.removeEventListener('contextmenu', handleContextMenu)
+            document.removeEventListener('keydown', handleKeyDown)
         }
     }, [settings.uiProtectionEnabled])
 
+    const contextValue = useMemo<SystemSettingsContextType>(() => ({
+        settings,
+        isLoading,
+        error,
+        refreshSettings,
+        updateSettings
+    }), [error, isLoading, refreshSettings, settings, updateSettings])
+
     return (
         <SystemSettingsContext.Provider
-            value={{
-                settings,
-                isLoading,
-                error,
-                refreshSettings,
-                updateSettings
-            }}
+            value={contextValue}
         >
             {children}
         </SystemSettingsContext.Provider>

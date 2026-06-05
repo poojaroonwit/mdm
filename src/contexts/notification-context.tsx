@@ -1,13 +1,12 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { 
   Notification, 
   NotificationFilters, 
   NotificationContextType, 
-  CreateNotificationRequest,
-  NotificationStats 
+  CreateNotificationRequest
 } from '@/types/notifications';
 
 // Action types
@@ -37,6 +36,9 @@ const initialState: NotificationState = {
   error: null,
   lastFetch: 0,
 };
+
+const NOTIFICATION_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+const INITIAL_NOTIFICATION_FETCH_DELAY_MS = 1000;
 
 // Reducer
 function notificationReducer(state: NotificationState, action: NotificationAction): NotificationState {
@@ -100,14 +102,18 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const [state, dispatch] = useReducer(notificationReducer, initialState);
+  const inFlightFetchRef = useRef<AbortController | null>(null);
 
   // Fetch notifications
   const fetchNotifications = useCallback(async (filters?: NotificationFilters) => {
     // Don't fetch if user is not authenticated
-    if (status === 'unauthenticated' || !session?.user?.id) {
-      dispatch({ type: 'SET_ERROR', payload: 'Authentication required. Please sign in.' });
+    if (status !== 'authenticated' || !session?.user?.id) {
       return;
     }
+
+    inFlightFetchRef.current?.abort();
+    const controller = new AbortController();
+    inFlightFetchRef.current = controller;
 
     dispatch({ type: 'SET_LOADING', payload: true });
     dispatch({ type: 'SET_ERROR', payload: null });
@@ -121,7 +127,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       if (filters?.offset) params.append('offset', filters.offset.toString());
       if (filters?.search) params.append('search', filters.search);
 
-      const response = await fetch(`/api/notifications?${params.toString()}`);
+      const response = await fetch(`/api/notifications?${params.toString()}`, {
+        signal: controller.signal,
+      });
       
       if (!response.ok) {
         throw new Error('Failed to fetch notifications');
@@ -144,10 +152,17 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       dispatch({ type: 'SET_NOTIFICATIONS', payload: data.notifications });
       dispatch({ type: 'SET_UNREAD_COUNT', payload: data.unreadCount });
     } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return;
+      }
       console.error('Error fetching notifications:', error);
       dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to fetch notifications' });
+    } finally {
+      if (inFlightFetchRef.current === controller) {
+        inFlightFetchRef.current = null;
+      }
     }
-  }, []);
+  }, [session?.user?.id, status]);
 
   // Mark notification as read
   const markAsRead = useCallback(async (notificationId: string) => {
@@ -235,16 +250,40 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     await fetchNotifications();
   }, [fetchNotifications]);
 
-  // Auto-refresh notifications every 60 seconds (reduced frequency)
+  // Auto-refresh notifications while the page is visible.
   useEffect(() => {
+    if (status !== 'authenticated' || !session?.user?.id) {
+      return;
+    }
+
     const interval = setInterval(() => {
-      if (Date.now() - state.lastFetch > 60000) { // 60 seconds instead of 30
+      if (document.visibilityState === 'visible' && Date.now() - state.lastFetch > NOTIFICATION_REFRESH_INTERVAL_MS) {
         fetchNotifications();
       }
-    }, 60000);
+    }, NOTIFICATION_REFRESH_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [fetchNotifications, state.lastFetch]);
+  }, [fetchNotifications, session?.user?.id, state.lastFetch, status]);
+
+  useEffect(() => {
+    if (status !== 'authenticated' || !session?.user?.id) {
+      return;
+    }
+
+    const refreshIfStale = () => {
+      if (document.visibilityState === 'visible' && Date.now() - state.lastFetch > NOTIFICATION_REFRESH_INTERVAL_MS) {
+        fetchNotifications();
+      }
+    };
+
+    document.addEventListener('visibilitychange', refreshIfStale);
+    window.addEventListener('focus', refreshIfStale);
+
+    return () => {
+      document.removeEventListener('visibilitychange', refreshIfStale);
+      window.removeEventListener('focus', refreshIfStale);
+    };
+  }, [fetchNotifications, session?.user?.id, state.lastFetch, status]);
 
   // Initial fetch with delay to prevent blocking initial render
   useEffect(() => {
@@ -253,15 +292,19 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       // Add a delay to allow the page to render first
       const timer = setTimeout(() => {
         fetchNotifications();
-      }, 200);
+      }, INITIAL_NOTIFICATION_FETCH_DELAY_MS);
       
       return () => clearTimeout(timer);
-    } else if (status === 'unauthenticated') {
-      dispatch({ type: 'SET_ERROR', payload: 'Authentication required. Please sign in.' });
     }
   }, [status, session?.user?.id, fetchNotifications]);
 
-  const contextValue: NotificationContextType = {
+  useEffect(() => {
+    return () => {
+      inFlightFetchRef.current?.abort();
+    };
+  }, []);
+
+  const contextValue = useMemo<NotificationContextType>(() => ({
     notifications: state.notifications,
     unreadCount: state.unreadCount,
     isLoading: state.isLoading,
@@ -272,7 +315,18 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     deleteNotification,
     createNotification,
     refreshNotifications,
-  };
+  }), [
+    createNotification,
+    deleteNotification,
+    fetchNotifications,
+    markAllAsRead,
+    markAsRead,
+    refreshNotifications,
+    state.error,
+    state.isLoading,
+    state.notifications,
+    state.unreadCount,
+  ]);
 
   return (
     <NotificationContext.Provider value={contextValue}>

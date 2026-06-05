@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react'
 import { X, Bot } from 'lucide-react'
-import * as Icons from 'lucide-react'
 import { ChatbotConfig } from '../types'
 import { getWidgetConfig } from '../utils/widgetConfigHelper'
 import { buildChatKitTheme } from './chatkit/configBuilder'
@@ -224,8 +223,16 @@ export function ChatWidgetButton({
                         )
                     }
                     const IconName = config.avatarCloseIcon as string
-                    const IconComponent = (Icons as any)[IconName] || X
-                    return <IconComponent className="h-6 w-6" style={{ color: config.avatarIconColor }} />
+                    const LazyIcon = loadIcon(IconName)
+                    return (
+                        <React.Suspense fallback={<X className="h-6 w-6" style={{ color: config.avatarIconColor }} />}>
+                            {LazyIcon ? (
+                                <LazyIcon className="h-6 w-6" style={{ color: config.avatarIconColor }} />
+                            ) : (
+                                <X className="h-6 w-6" style={{ color: config.avatarIconColor }} />
+                            )}
+                        </React.Suspense>
+                    )
                 })()
             ) : (
                 (() => {

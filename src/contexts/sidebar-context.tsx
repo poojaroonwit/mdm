@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo, useCallback, ReactNode } from 'react'
 
 interface SidebarSettings {
   backgroundColor: string
@@ -63,16 +63,23 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     }
   }, [settings, isInitialized])
 
-  const updateSettings = (newSettings: Partial<SidebarSettings>) => {
+  const updateSettings = useCallback((newSettings: Partial<SidebarSettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }))
-  }
+  }, [])
 
-  const resetSettings = () => {
+  const resetSettings = useCallback(() => {
     setSettings(defaultSettings)
-  }
+  }, [])
+
+  const contextValue = useMemo<SidebarContextType>(() => ({
+    settings,
+    updateSettings,
+    resetSettings,
+    isHydrated,
+  }), [isHydrated, resetSettings, settings, updateSettings])
 
   return (
-    <SidebarContext.Provider value={{ settings, updateSettings, resetSettings, isHydrated }}>
+    <SidebarContext.Provider value={contextValue}>
       {children}
     </SidebarContext.Provider>
   )

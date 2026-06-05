@@ -1,10 +1,10 @@
 'use client'
 
 import { useSession, signOut } from 'next-auth/react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
-import { LogOut, User, Bell, CheckCircle, AlertCircle, Info, AlertTriangle, ExternalLink, MoreHorizontal, ChevronDown, Settings } from 'lucide-react'
+import { LogOut, Bell, CheckCircle, AlertCircle, Info, AlertTriangle, ExternalLink, MoreHorizontal, ChevronDown, Settings } from 'lucide-react'
 import { Z_INDEX } from '@/lib/z-index'
 import { useEffect, useState } from 'react'
 import { loadBrandingConfig } from '@/lib/branding'
@@ -13,11 +13,41 @@ import type { BrandingConfig } from '@/types/branding'
 import { useNotifications } from '@/contexts/notification-context'
 import { Badge } from '@/components/ui/badge'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from '@/components/ui/drawer'
-import { NotificationList } from '@/components/notifications/notification-list'
-import { formatDistanceToNow } from 'date-fns'
 import type { Notification } from '@/types/notifications'
-import { ProfileSettingsModal } from '@/components/settings/ProfileSettingsModal'
 import { useSystemSettingsSafe } from '@/contexts/system-settings-context'
+
+const NotificationList = dynamic(
+  () => import('@/components/notifications/notification-list').then(mod => mod.NotificationList),
+  { ssr: false }
+)
+const ProfileSettingsModal = dynamic(
+  () => import('@/components/settings/ProfileSettingsModal').then(mod => mod.ProfileSettingsModal),
+  { ssr: false }
+)
+
+const relativeTimeFormatter = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+const relativeTimeUnits: Array<[Intl.RelativeTimeFormatUnit, number]> = [
+  ['year', 1000 * 60 * 60 * 24 * 365],
+  ['month', 1000 * 60 * 60 * 24 * 30],
+  ['week', 1000 * 60 * 60 * 24 * 7],
+  ['day', 1000 * 60 * 60 * 24],
+  ['hour', 1000 * 60 * 60],
+  ['minute', 1000 * 60],
+  ['second', 1000],
+]
+
+function formatRelativeTime(date: Date) {
+  const diffMs = date.getTime() - Date.now()
+  const absDiffMs = Math.abs(diffMs)
+
+  for (const [unit, unitMs] of relativeTimeUnits) {
+    if (absDiffMs >= unitMs || unit === 'second') {
+      return relativeTimeFormatter.format(Math.round(diffMs / unitMs), unit)
+    }
+  }
+
+  return relativeTimeFormatter.format(0, 'second')
+}
 
 interface TopMenuBarProps {
   activeTab: string
@@ -281,7 +311,7 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
                             </p>
                             <div className="flex items-center justify-between">
                               <span className="text-xs text-muted-foreground">
-                                {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                                {formatRelativeTime(new Date(notification.created_at))}
                               </span>
                               {notification.action_url && (
                                 <Button
@@ -339,7 +369,7 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
               </DrawerDescription>
             </DrawerHeader>
             <div className="px-4 pb-4 overflow-y-auto max-h-[calc(100vh-120px)]">
-              <NotificationList showActions={true} maxHeight="none" />
+              {notificationDrawerOpen && <NotificationList showActions={true} maxHeight="none" />}
             </div>
           </DrawerContent>
         </Drawer>
@@ -398,11 +428,13 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
         </Popover>
 
         {/* Profile Settings Modal */}
-        <ProfileSettingsModal
-          open={profileModalOpen}
-          onOpenChange={setProfileModalOpen}
-          user={user}
-        />
+        {profileModalOpen && (
+          <ProfileSettingsModal
+            open={profileModalOpen}
+            onOpenChange={setProfileModalOpen}
+            user={user}
+          />
+        )}
       </div>
     </header>
   )

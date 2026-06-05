@@ -1,14 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Plus, Trash2, Edit2, X, Check, Bot } from 'lucide-react'
-import * as Icons from 'lucide-react'
 import { formatTimeAgo } from '@/lib/date-formatters'
 import { AgentThread } from '../hooks/useAgentThread'
 import { ChatbotConfig } from '../types'
+import { loadIcon } from '@/lib/utils/icon-loader'
 
 interface ThreadSelectorProps {
   threads: AgentThread[]
@@ -55,7 +55,7 @@ export function ThreadSelector({
       )
     } else if (headerAvatarType === 'icon') {
       const IconName = chatbot.headerAvatarIcon || chatbot.avatarIcon || 'Bot'
-      const IconComponent = (Icons as any)[IconName] || Bot
+      const IconComponent = loadIcon(IconName)
       const iconColor = chatbot.headerAvatarIconColor || chatbot.avatarIconColor || '#ffffff'
       const bgColor = chatbot.headerAvatarBackgroundColor || chatbot.avatarBackgroundColor || chatbot.primaryColor || '#1e40af'
       return (
@@ -63,7 +63,13 @@ export function ThreadSelector({
           className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: bgColor }}
         >
-          <IconComponent className="h-5 w-5" style={{ color: iconColor }} />
+          <Suspense fallback={<Bot className="h-5 w-5" style={{ color: iconColor }} />}>
+            {IconComponent ? (
+              <IconComponent className="h-5 w-5" style={{ color: iconColor }} />
+            ) : (
+              <Bot className="h-5 w-5" style={{ color: iconColor }} />
+            )}
+          </Suspense>
         </div>
       )
     }

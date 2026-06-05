@@ -1,12 +1,18 @@
 'use client'
 
+import { Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
-import { ThumbsUp, ThumbsDown, RotateCcw, Bot, User, BookOpen, Search } from 'lucide-react'
-import * as Icons from 'lucide-react'
+import { ThumbsUp, ThumbsDown, RotateCcw, Bot, User, BookOpen } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Message, ChatbotConfig } from '../types'
-import { MarkdownRenderer } from '@/components/knowledge-base/MarkdownRenderer'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { loadIcon } from '@/lib/utils/icon-loader'
+
+const MarkdownRenderer = dynamic(
+  () => import('@/components/knowledge-base/MarkdownRenderer').then(mod => mod.MarkdownRenderer),
+  { ssr: false }
+)
 
 // Component to convert URLs in plain text to clickable links
 function LinkifiedText({ content }: { content: string }) {
@@ -86,7 +92,7 @@ export function MessageBubble({
       )
     } else {
       const IconName = chatbot.avatarIcon || 'Bot'
-      const IconComponent = (Icons as any)[IconName] || Bot
+      const IconComponent = loadIcon(IconName)
       const iconColor = chatbot.avatarIconColor || '#ffffff'
       const chatKitAccent = (chatbot as any).chatkitOptions?.theme?.color?.accent?.primary
       // Ensure bgColor is never empty
@@ -99,7 +105,13 @@ export function MessageBubble({
           className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: bgColor }}
         >
-          <IconComponent className="h-5 w-5" style={{ color: iconColor }} />
+          <Suspense fallback={<Bot className="h-5 w-5" style={{ color: iconColor }} />}>
+            {IconComponent ? (
+              <IconComponent className="h-5 w-5" style={{ color: iconColor }} />
+            ) : (
+              <Bot className="h-5 w-5" style={{ color: iconColor }} />
+            )}
+          </Suspense>
         </div>
       )
     }
@@ -121,7 +133,7 @@ export function MessageBubble({
       )
     } else {
       const UserIconName = (chatbot as any).userAvatarIcon || 'User'
-      const UserIconComponent = (Icons as any)[UserIconName] || User
+      const UserIconComponent = loadIcon(UserIconName)
       const userIconColor = (chatbot as any).userAvatarIconColor || '#6b7280'
       const userBgColor = (chatbot as any).userAvatarBackgroundColor || '#e5e7eb'
       return (
@@ -129,7 +141,13 @@ export function MessageBubble({
           className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: userBgColor }}
         >
-          <UserIconComponent className="h-5 w-5" style={{ color: userIconColor }} />
+          <Suspense fallback={<User className="h-5 w-5" style={{ color: userIconColor }} />}>
+            {UserIconComponent ? (
+              <UserIconComponent className="h-5 w-5" style={{ color: userIconColor }} />
+            ) : (
+              <User className="h-5 w-5" style={{ color: userIconColor }} />
+            )}
+          </Suspense>
         </div>
       )
     }

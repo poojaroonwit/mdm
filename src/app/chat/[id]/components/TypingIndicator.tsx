@@ -1,8 +1,9 @@
 'use client'
 
+import { Suspense } from 'react'
 import { Loader2, Bot } from 'lucide-react'
-import * as Icons from 'lucide-react'
 import { ChatbotConfig } from '../types'
+import { loadIcon } from '@/lib/utils/icon-loader'
 
 interface TypingIndicatorProps {
   chatbot: ChatbotConfig
@@ -26,7 +27,7 @@ export function TypingIndicator({ chatbot }: TypingIndicatorProps) {
       )
     } else {
       const IconName = chatbot.avatarIcon || 'Bot'
-      const IconComponent = (Icons as any)[IconName] || Bot
+      const IconComponent = loadIcon(IconName)
       const iconColor = chatbot.avatarIconColor || '#ffffff'
       const bgColor = chatbot.avatarBackgroundColor || chatbot.primaryColor || '#1e40af'
       return (
@@ -34,7 +35,13 @@ export function TypingIndicator({ chatbot }: TypingIndicatorProps) {
           className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: bgColor }}
         >
-          <IconComponent className="h-5 w-5" style={{ color: iconColor }} />
+          <Suspense fallback={<Bot className="h-5 w-5" style={{ color: iconColor }} />}>
+            {IconComponent ? (
+              <IconComponent className="h-5 w-5" style={{ color: iconColor }} />
+            ) : (
+              <Bot className="h-5 w-5" style={{ color: iconColor }} />
+            )}
+          </Suspense>
         </div>
       )
     }

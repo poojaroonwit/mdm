@@ -1,7 +1,7 @@
 'use client'
 
 
-import React, { useEffect, useState } from 'react'
+import React, { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -9,22 +9,11 @@ import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/contexts/sidebar-context'
 import { useSpace } from '@/contexts/space-context'
 import {
-  LayoutDashboard,
-  Users,
-  ClipboardList,
-  Settings,
-  Download,
-  Workflow,
   ChevronDown,
-  ChevronRight,
   Building2,
-  Plus,
-  BarChart3,
-  Kanban,
   FileText,
-  Smartphone,
-  Database,
-  Store,
+  Grid,
+  RefreshCw,
 } from 'lucide-react'
 import { AnimatedIcon } from '@/components/ui/animated-icon'
 import {
@@ -40,74 +29,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { useMenuConfig, MenuGroupConfig, MenuItemConfig } from '@/hooks/useMenuConfig'
-import * as LucideIcons from 'lucide-react'
-import { sanitizeUrl } from '@/lib/utils/url'
 import DOMPurify from 'dompurify'
-
-interface MenuItem {
-  title: string
-  href?: string
-  icon: React.ComponentType<{ className?: string }>
-  children?: MenuItem[]
-}
-
-const getMenuItems = (
-  spaceId: string | null,
-  flags?: { assignments?: boolean; bulk_activity?: boolean; workflows?: boolean; dashboard?: boolean; projects?: boolean }
-): MenuItem[] => {
-  if (!spaceId) {
-    return [
-      {
-        title: 'Others',
-        icon: Settings,
-        children: [
-          { title: 'System Settings', href: `/settings`, icon: Settings },
-        ]
-      }
-    ]
-  }
-
-  const items: MenuItem[] = []
-
-  const generalChildren: MenuItem[] = []
-  if (flags?.dashboard !== false) {
-    generalChildren.push({ title: 'Dashboards', href: `/dashboards`, icon: BarChart3 })
-  }
-  generalChildren.push({ title: 'Reports', href: `/reports`, icon: FileText })
-  if (flags?.assignments !== false) {
-    generalChildren.push({ title: 'Assignment', href: `/${spaceId}/assignments`, icon: ClipboardList })
-  }
-  if (flags?.projects !== false) {
-    generalChildren.push({ title: 'Projects', href: `/${spaceId}/projects`, icon: Kanban })
-  }
-  if (generalChildren.length > 0) {
-    items.push({ title: 'General', icon: LayoutDashboard, children: generalChildren })
-  }
-
-
-  items.push({
-    title: 'Automation', icon: Workflow, children: [
-      { title: 'Workflows', href: `/${spaceId}/workflows`, icon: Workflow },
-    ]
-  })
-
-  // Channels / Tools
-  items.push({
-    title: 'Channels', icon: Store, children: [
-      { title: 'Marketplace', href: `/marketplace`, icon: Store },
-    ]
-  })
-
-  const otherChildren: MenuItem[] = []
-  if (flags?.bulk_activity !== false) {
-    otherChildren.push({ title: 'Bulk Activity', href: `/${spaceId}/import-export`, icon: Download })
-  }
-  otherChildren.push({ title: 'Users & Roles', href: `/user-roles`, icon: Users })
-  otherChildren.push({ title: 'System Settings', href: `/settings`, icon: Settings })
-  items.push({ title: 'Others', icon: Settings, children: otherChildren })
-
-  return items
-}
+import { loadIcon } from '@/lib/utils/icon-loader'
 
 interface SidebarProps {
   className?: string
@@ -202,7 +125,6 @@ export function Sidebar({ className }: SidebarProps) {
     )
   }
 
-  const customMenu = currentSpace?.sidebar_config?.menu
   const groups = (menuConfig?.groups || [])
 
   return (
@@ -294,12 +216,12 @@ export function Sidebar({ className }: SidebarProps) {
 
         {menuLoading ? (
           <div className="px-2 py-4 flex items-center justify-center">
-            <LucideIcons.RefreshCw className="h-4 w-4 animate-spin" style={{ color: settings.fontColor, opacity: 0.5 }} />
+            <RefreshCw className="h-4 w-4 animate-spin" style={{ color: settings.fontColor, opacity: 0.5 }} />
           </div>
         ) : (
           <Accordion type="single" collapsible defaultValue={groups[0]?.name}>
             {groups.map((group: MenuGroupConfig) => {
-              const IconComponent = (LucideIcons as any)[group.icon] || LucideIcons.Grid
+              const IconComponent = loadIcon(group.icon)
 
               // Group items by section
               const itemsBySection: Record<string, MenuItemConfig[]> = {}
@@ -313,7 +235,13 @@ export function Sidebar({ className }: SidebarProps) {
                 <AccordionItem key={group.slug} value={group.name} className="border-none">
                   <AccordionTrigger className="group px-2 py-2 hover:no-underline md:py-2" style={{ color: settings.fontColor, opacity: 0.9 }}>
                     <div className="flex items-center text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground group-hover:text-foreground transition-colors">
-                      <IconComponent className="mr-3 h-4 w-4" />
+                      <Suspense fallback={<Grid className="mr-3 h-4 w-4" />}>
+                        {IconComponent ? (
+                          <IconComponent className="mr-3 h-4 w-4" />
+                        ) : (
+                          <Grid className="mr-3 h-4 w-4" />
+                        )}
+                      </Suspense>
                       {group.name}
                     </div>
                   </AccordionTrigger>
@@ -327,7 +255,7 @@ export function Sidebar({ className }: SidebarProps) {
                             </div>
                           )}
                           {items.map((item) => {
-                            const ItemIcon = (LucideIcons as any)[item.icon] || LucideIcons.FileText
+                            const ItemIcon = loadIcon(item.icon)
                             const isSystemSettings = item.slug === 'settings' && item.href === '/admin/settings'
 
                             return (
@@ -342,7 +270,13 @@ export function Sidebar({ className }: SidebarProps) {
                                       backgroundColor: 'transparent'
                                     }}
                                   >
-                                    <ItemIcon className="mr-2 h-4 w-4" />
+                                    <Suspense fallback={<FileText className="mr-2 h-4 w-4" />}>
+                                      {ItemIcon ? (
+                                        <ItemIcon className="mr-2 h-4 w-4" />
+                                      ) : (
+                                        <FileText className="mr-2 h-4 w-4" />
+                                      )}
+                                    </Suspense>
                                     {item.name}
                                   </Button>
                                 ) : (
@@ -357,10 +291,22 @@ export function Sidebar({ className }: SidebarProps) {
                                         color: isActive(item.href) ? 'var(--brand-primary, hsl(var(--foreground)))' : undefined,
                                       }}
                                     >
-                                      <ItemIcon className={cn(
+                                      <Suspense fallback={<FileText className={cn(
                                         "mr-3 h-4 w-4",
                                         isActive(item.href) ? "text-zinc-900 dark:text-zinc-100" : "text-muted-foreground group-hover:text-foreground"
-                                      )} />
+                                      )} />}>
+                                        {ItemIcon ? (
+                                          <ItemIcon className={cn(
+                                            "mr-3 h-4 w-4",
+                                            isActive(item.href) ? "text-zinc-900 dark:text-zinc-100" : "text-muted-foreground group-hover:text-foreground"
+                                          )} />
+                                        ) : (
+                                          <FileText className={cn(
+                                            "mr-3 h-4 w-4",
+                                            isActive(item.href) ? "text-zinc-900 dark:text-zinc-100" : "text-muted-foreground group-hover:text-foreground"
+                                          )} />
+                                        )}
+                                      </Suspense>
                                       <span>{item.name}</span>
                                     </Button>
                                   </Link>

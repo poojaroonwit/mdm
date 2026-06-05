@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef, ReactNode } from 'react'
 import { useSession } from 'next-auth/react'
 
 interface Space {
@@ -52,6 +52,8 @@ interface SpaceContextType {
 }
 
 const SpaceContext = createContext<SpaceContextType | undefined>(undefined)
+const SPACE_CACHE_TTL_MS = 5 * 60 * 1000
+let spacesCache: { spaces: Space[]; fetchedAt: number } | null = null
 
 const defaultSidebarStyle = {
   backgroundType: 'color' as const,
@@ -112,14 +114,48 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
   const [spaces, setSpaces] = useState<Space[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const inFlightFetchRef = useRef<AbortController | null>(null)
 
-  const fetchSpaces = async () => {
+  const selectCurrentSpace = useCallback((nextSpaces: Space[]) => {
+    setCurrentSpace(previousSpace => {
+      if (previousSpace) {
+        const updatedPreviousSpace = nextSpaces.find(space => space.id === previousSpace.id)
+        if (updatedPreviousSpace) return updatedPreviousSpace
+      }
+
+      const savedSpaceId = localStorage.getItem('current-space-id')
+      if (savedSpaceId) {
+        const savedSpace = nextSpaces.find(space => space.id === savedSpaceId)
+        if (savedSpace) return savedSpace
+      }
+
+      const path = window.location.pathname
+      const firstSeg = path.split('/').filter(Boolean)[0] || ''
+      const bySlug = firstSeg && nextSpaces.find(space => (space.slug || '').toLowerCase() === firstSeg.toLowerCase())
+      if (bySlug) return bySlug
+
+      return nextSpaces.find(space => space.is_default) || nextSpaces[0] || null
+    })
+  }, [])
+
+  const fetchSpaces = useCallback(async (force = false) => {
     // Don't fetch if user is not authenticated
-    if (status === 'unauthenticated' || !session?.user?.id) {
+    if (status !== 'authenticated' || !session?.user?.id) {
       setIsLoading(false)
-      setError('Authentication required. Please sign in.')
       return
     }
+
+    if (!force && spacesCache && Date.now() - spacesCache.fetchedAt < SPACE_CACHE_TTL_MS) {
+      setSpaces(spacesCache.spaces)
+      selectCurrentSpace(spacesCache.spaces)
+      setIsLoading(false)
+      setError(null)
+      return
+    }
+
+    inFlightFetchRef.current?.abort()
+    const controller = new AbortController()
+    inFlightFetchRef.current = controller
 
     try {
       setIsLoading(true)
@@ -128,12 +164,18 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
       // Small utility to fetch with timeout
       const fetchWithTimeout = async (url: string, options: RequestInit & { timeoutMs?: number } = {}) => {
         const { timeoutMs = 8000, ...rest } = options
-        const controller = new AbortController()
-        const id = setTimeout(() => controller.abort(), timeoutMs)
+        const timeoutController = new AbortController()
+        const abortTimeoutFetch = () => timeoutController.abort()
+        const id = setTimeout(abortTimeoutFetch, timeoutMs)
+        if (controller.signal.aborted) {
+          timeoutController.abort()
+        }
+        controller.signal.addEventListener('abort', abortTimeoutFetch)
         try {
-          return await fetch(url, { ...rest, signal: controller.signal })
+          return await fetch(url, { ...rest, signal: timeoutController.signal })
         } finally {
           clearTimeout(id)
+          controller.signal.removeEventListener('abort', abortTimeoutFetch)
         }
       }
 
@@ -149,7 +191,10 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
             },
             timeoutMs: 8000
           })
-        } catch (e: any) {
+        } catch {
+          if (controller.signal.aborted) {
+            throw new DOMException('Request aborted', 'AbortError')
+          }
           // If aborted or failed once, retry once with a longer timeout
           return await fetchWithTimeout('/api/spaces?page=1&limit=50', {
             cache: 'no-store',
@@ -195,22 +240,17 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
         enable_workflows: space.features?.workflows ?? true,
         enable_dashboard: space.features?.dashboard ?? true,
       }))
-      setSpaces(spacesWithDefaults)
-      
-      // Try to select via slug from URL if present
-      if (spacesWithDefaults && spacesWithDefaults.length > 0) {
-        const path = typeof window !== 'undefined' ? window.location.pathname : ''
-        const firstSeg = path.split('/').filter(Boolean)[0] || ''
-        const bySlug = firstSeg && spacesWithDefaults.find((s: Space) => (s.slug || '').toLowerCase() === firstSeg.toLowerCase())
-        if (!currentSpace && bySlug) {
-          setCurrentSpace(bySlug)
-        } else if (!currentSpace) {
-          // Fallback: default space or first
-          const defaultSpace = spacesWithDefaults.find((space: Space) => space.is_default)
-          setCurrentSpace(defaultSpace || spacesWithDefaults[0])
-        }
+      spacesCache = {
+        spaces: spacesWithDefaults,
+        fetchedAt: Date.now(),
       }
+      setSpaces(spacesWithDefaults)
+      selectCurrentSpace(spacesWithDefaults)
+      
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        return
+      }
       console.error('Error fetching spaces:', err)
       if (err instanceof DOMException && err.name === 'AbortError') {
         setError('Request timed out while loading spaces. Please retry.')
@@ -219,13 +259,16 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
       }
       setSpaces([])
     } finally {
-      setIsLoading(false)
+      if (inFlightFetchRef.current === controller) {
+        inFlightFetchRef.current = null
+        setIsLoading(false)
+      }
     }
-  }
+  }, [selectCurrentSpace, session?.user?.id, status])
 
-  const refreshSpaces = async () => {
-    await fetchSpaces()
-  }
+  const refreshSpaces = useCallback(async () => {
+    await fetchSpaces(true)
+  }, [fetchSpaces])
 
   // Load spaces on mount with delay to prevent blocking initial render
   useEffect(() => {
@@ -239,9 +282,14 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
       return () => clearTimeout(timer)
     } else if (status === 'unauthenticated') {
       setIsLoading(false)
-      setError('Authentication required. Please sign in.')
     }
-  }, [status, session?.user?.id])
+  }, [fetchSpaces, status, session?.user?.id])
+
+  useEffect(() => {
+    return () => {
+      inFlightFetchRef.current?.abort()
+    }
+  }, [])
 
   // Save current space to localStorage
   useEffect(() => {
@@ -250,26 +298,17 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
     }
   }, [currentSpace])
 
-  // Load current space from localStorage on mount
-  useEffect(() => {
-    const savedSpaceId = localStorage.getItem('current-space-id')
-    if (savedSpaceId && spaces.length > 0) {
-      const savedSpace = spaces.find(space => space.id === savedSpaceId)
-      if (savedSpace) {
-        setCurrentSpace(savedSpace)
-      }
-    }
-  }, [spaces])
+  const contextValue = useMemo<SpaceContextType>(() => ({
+    currentSpace,
+    spaces,
+    setCurrentSpace,
+    refreshSpaces,
+    isLoading,
+    error
+  }), [currentSpace, error, isLoading, refreshSpaces, spaces])
 
   return (
-    <SpaceContext.Provider value={{
-      currentSpace,
-      spaces,
-      setCurrentSpace,
-      refreshSpaces,
-      isLoading,
-      error
-    }}>
+    <SpaceContext.Provider value={contextValue}>
       {children}
     </SpaceContext.Provider>
   )

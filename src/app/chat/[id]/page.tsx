@@ -10,14 +10,8 @@ import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { X, Bot, Menu, Loader2 } from 'lucide-react'
-import * as Icons from 'lucide-react'
-import { ChatbotConfig } from './types'
 import { ChatKitRenderer } from './components/ChatKitRenderer'
-import { ChatSidebar } from './components/ChatSidebar'
 import { ChatContent } from './components/ChatContent'
-import { ChatHeader } from './components/ChatHeader'
-import { ThreadSelector } from './components/ThreadSelector'
 import { useChatMessages } from './hooks/useChatMessages'
 import { useChatHistory } from './hooks/useChatHistory'
 import { useChatFileHandling } from './hooks/useChatFileHandling'
@@ -175,7 +169,7 @@ export default function ChatPage() {
   }, [isEmbed])
 
   // Load chatbot
-  const { chatbot, setChatbot, emulatorConfig, setEmulatorConfig } = useChatbotLoader({
+  const { chatbot, emulatorConfig } = useChatbotLoader({
     chatbotId,
     previewDeploymentType,
     isInIframe,
@@ -314,7 +308,6 @@ export default function ChatPage() {
   const {
     attachments,
     setAttachments,
-    fileInputRef,
     handleFileSelect,
     removeAttachment,
     clearAttachments,

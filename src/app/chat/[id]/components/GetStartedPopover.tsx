@@ -2,11 +2,11 @@
 
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import * as Icons from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { ArrowRight, MessageCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ChatbotConfig, ChatKitGetStarted, ChatKitTheme } from '../types'
 import { cn } from '@/lib/utils'
+import { loadIcon } from '@/lib/utils/icon-loader'
 
 interface GetStartedPopoverProps {
   chatbot: ChatbotConfig
@@ -26,8 +26,8 @@ export function GetStartedPopover({
   const getStarted = chatbot.chatkitOptions?.getStarted as ChatKitGetStarted
   if (!getStarted?.enabled) return null
 
-  const IconName = (getStarted.icon || 'MessageCircle') as keyof typeof Icons
-  const Icon = (Icons[IconName] || Icons.MessageCircle) as LucideIcon
+  const IconName = getStarted.icon || 'MessageCircle'
+  const LazyIcon = loadIcon(IconName)
 
   // Use primary color from theme or fallback
   const primaryColor = theme?.color?.accent?.primary || chatbot.primaryColor || '#000000'
@@ -57,7 +57,7 @@ export function GetStartedPopover({
             onClick={onClose}
             className="absolute top-2 right-2 p-1 hover:bg-black/5 rounded-full transition-colors z-10"
           >
-            <Icons.X className="h-4 w-4 opacity-50" />
+            <X className="h-4 w-4 opacity-50" />
           </button>
 
           <div className="p-6 flex flex-col items-start gap-4">
@@ -75,7 +75,13 @@ export function GetStartedPopover({
                 className="w-12 h-12 rounded-md flex items-center justify-center mb-2 shadow-lg"
                 style={{ backgroundColor: primaryColor }}
                 >
-                <Icon className="h-6 w-6 text-white" />
+                <React.Suspense fallback={<MessageCircle className="h-6 w-6 text-white" />}>
+                  {LazyIcon ? (
+                    <LazyIcon className="h-6 w-6 text-white" />
+                  ) : (
+                    <MessageCircle className="h-6 w-6 text-white" />
+                  )}
+                </React.Suspense>
                 </div>
             )}
 
@@ -110,7 +116,7 @@ export function GetStartedPopover({
               }}
             >
               {getStarted.buttonText || 'Start Chat'}
-              <Icons.ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </motion.div>

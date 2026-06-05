@@ -76,9 +76,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // next-themes' blocking script does NOT inject class="dark" or
   // style="color-scheme: dark;" into the iframe's <html> element.
   const isChatRoute = pathname?.startsWith('/chat/')
+  const appContent = (
+    <>
+      {children}
+      <ThemedToaster />
+    </>
+  )
 
   return (
-    <SessionProvider refetchInterval={60} refetchOnWindowFocus={true}>
+    <SessionProvider refetchInterval={0} refetchOnWindowFocus={false}>
       <NextThemeProvider
         attribute="class"
         defaultTheme="system"
@@ -88,12 +94,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableColorScheme={false}
       >
         <ThemeProvider>
-          <SessionTimeoutWatcher />
+          {!isChatRoute && <SessionTimeoutWatcher />}
           <QueryProvider>
-            <NotificationProvider>
-              {children}
-              <ThemedToaster />
-            </NotificationProvider>
+            {isChatRoute ? appContent : (
+              <NotificationProvider>
+                {appContent}
+              </NotificationProvider>
+            )}
           </QueryProvider>
         </ThemeProvider>
       </NextThemeProvider>

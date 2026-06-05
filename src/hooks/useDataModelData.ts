@@ -6,6 +6,8 @@ import { showError } from '@/lib/toast-utils'
 interface DataModelDataOptions {
   interval?: number
   enabled?: boolean
+  transport?: 'polling' | 'websocket' | 'hybrid'
+  websocketUrl?: string
   onDataUpdate?: (data: any) => void
   onError?: (error: Error) => void
   filters?: any[]
@@ -32,12 +34,16 @@ export function useDataModelData(
   const {
     interval = 30000, // 30 seconds default
     enabled = true,
+    transport = 'polling',
+    websocketUrl,
     onDataUpdate,
     onError,
     filters = [],
     limit,
     offset = 0
   } = options
+  const shouldUsePolling = transport === 'polling' || transport === 'hybrid'
+  const shouldUseWebSocket = transport === 'websocket' || transport === 'hybrid'
 
   const [state, setState] = useState<DataModelDataState>({
     data: [],
@@ -111,9 +117,10 @@ export function useDataModelData(
 
   const connectWebSocket = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return
+    if (!websocketUrl) return
 
     try {
-      const wsUrl = `ws://localhost:3001/api/realtime/${dataModelId}`
+      const wsUrl = websocketUrl
       const ws = new WebSocket(wsUrl)
 
       ws.onopen = () => {
@@ -178,7 +185,7 @@ export function useDataModelData(
       console.error('Error creating WebSocket connection:', error)
       setState(prev => ({ ...prev, error: 'Failed to create WebSocket connection' }))
     }
-  }, [dataModelId, customQuery, filters, onDataUpdate, onError])
+  }, [dataModelId, customQuery, filters, websocketUrl, onDataUpdate, onError])
 
   const disconnectWebSocket = useCallback(() => {
     if (wsRef.current) {
@@ -234,7 +241,7 @@ export function useDataModelData(
 
   // Effect to handle polling
   useEffect(() => {
-    if (enabled && dataModelId) {
+    if (enabled && shouldUsePolling && dataModelId) {
       startPolling()
     } else {
       stopPolling()
@@ -243,11 +250,11 @@ export function useDataModelData(
     return () => {
       stopPolling()
     }
-  }, [enabled, dataModelId, startPolling, stopPolling])
+  }, [enabled, shouldUsePolling, dataModelId, startPolling, stopPolling])
 
   // Effect to handle WebSocket connection
   useEffect(() => {
-    if (enabled && dataModelId) {
+    if (enabled && shouldUseWebSocket && dataModelId) {
       connectWebSocket()
     } else {
       disconnectWebSocket()
@@ -256,7 +263,7 @@ export function useDataModelData(
     return () => {
       disconnectWebSocket()
     }
-  }, [enabled, dataModelId, connectWebSocket, disconnectWebSocket])
+  }, [enabled, shouldUseWebSocket, dataModelId, connectWebSocket, disconnectWebSocket])
 
   // Cleanup on unmount
   useEffect(() => {

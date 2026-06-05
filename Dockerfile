@@ -52,6 +52,13 @@ RUN NEXTAUTH_SECRET="dummy_secret_at_least_32_characters_long_for_build" \
     NODE_OPTIONS="--max-old-space-size=${BUILD_MEMORY_LIMIT} --max-semi-space-size=64" \
     npx prisma@6.17.1 generate && npm run build:docker
 
+# Keep dynamic runtime requires available while dropping dev-only packages from
+# the final image.
+FROM deps AS prod-deps
+ENV NODE_ENV=production
+ENV PRISMA_SKIP_POSTINSTALL_GENERATE=true
+RUN npm prune --omit=dev --legacy-peer-deps && npm cache clean --force
+
 # Production image
 FROM node:20-alpine AS runner
 RUN apk add --no-cache libc6-compat
@@ -76,7 +83,7 @@ RUN apk add --no-cache postgresql-client dos2unix openssl && \
 
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=prod-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma

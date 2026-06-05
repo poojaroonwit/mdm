@@ -6,6 +6,8 @@ import { showError } from '@/lib/toast-utils'
 interface RealtimeDataOptions {
   interval?: number
   enabled?: boolean
+  transport?: 'polling' | 'websocket' | 'hybrid'
+  websocketUrl?: string
   onDataUpdate?: (data: any) => void
   onError?: (error: Error) => void
 }
@@ -27,9 +29,13 @@ export function useRealtimeData(
   const {
     interval = 30000, // 30 seconds default
     enabled = true,
+    transport = 'polling',
+    websocketUrl,
     onDataUpdate,
     onError
   } = options
+  const shouldUsePolling = transport === 'polling' || transport === 'hybrid'
+  const shouldUseWebSocket = transport === 'websocket' || transport === 'hybrid'
 
   const [state, setState] = useState<RealtimeDataState>({
     data: null,
@@ -95,9 +101,10 @@ export function useRealtimeData(
 
   const connectWebSocket = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return
+    if (!websocketUrl) return
 
     try {
-      const wsUrl = `ws://localhost:3001/api/realtime/${dataSourceId}`
+      const wsUrl = websocketUrl
       const ws = new WebSocket(wsUrl)
 
       ws.onopen = () => {
@@ -161,7 +168,7 @@ export function useRealtimeData(
       console.error('Error creating WebSocket connection:', error)
       setState(prev => ({ ...prev, error: 'Failed to create WebSocket connection' }))
     }
-  }, [dataSourceId, query, onDataUpdate, onError])
+  }, [dataSourceId, query, websocketUrl, onDataUpdate, onError])
 
   const disconnectWebSocket = useCallback(() => {
     if (wsRef.current) {
@@ -215,7 +222,7 @@ export function useRealtimeData(
 
   // Effect to handle polling
   useEffect(() => {
-    if (enabled && dataSourceId && query) {
+    if (enabled && shouldUsePolling && dataSourceId && query) {
       startPolling()
     } else {
       stopPolling()
@@ -224,11 +231,11 @@ export function useRealtimeData(
     return () => {
       stopPolling()
     }
-  }, [enabled, dataSourceId, query, startPolling, stopPolling])
+  }, [enabled, shouldUsePolling, dataSourceId, query, startPolling, stopPolling])
 
   // Effect to handle WebSocket connection
   useEffect(() => {
-    if (enabled && dataSourceId && query) {
+    if (enabled && shouldUseWebSocket && dataSourceId && query) {
       connectWebSocket()
     } else {
       disconnectWebSocket()
@@ -237,7 +244,7 @@ export function useRealtimeData(
     return () => {
       disconnectWebSocket()
     }
-  }, [enabled, dataSourceId, query, connectWebSocket, disconnectWebSocket])
+  }, [enabled, shouldUseWebSocket, dataSourceId, query, connectWebSocket, disconnectWebSocket])
 
   // Cleanup on unmount
   useEffect(() => {
