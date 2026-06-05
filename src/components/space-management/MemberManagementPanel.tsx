@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { RoleBadge } from '@/components/ui/role-badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -153,15 +154,6 @@ export function MemberManagementPanel({
     a.download = `space-members-${new Date().toISOString().split('T')[0]}.csv`
     a.click()
     window.URL.revokeObjectURL(url)
-  }
-
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'owner': return 'bg-destructive/10 text-destructive'
-      case 'admin': return 'bg-primary/10 text-primary'
-      case 'member': return 'bg-muted text-muted-foreground'
-      default: return 'bg-muted text-muted-foreground'
-    }
   }
 
   const getStatusIcon = (member: Member) => {
@@ -410,9 +402,7 @@ export function MemberManagementPanel({
                               </SelectContent>
                             </Select>
                           ) : (
-                            <Badge className={getRoleColor(member.role)}>
-                              {member.role}
-                            </Badge>
+                            <RoleBadge role={member.role} />
                           )}
                         </td>
                         <td className="p-4">

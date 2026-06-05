@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { RoleBadge } from '@/components/ui/role-badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -188,17 +189,6 @@ export default function SpacesManager() {
     }
   }
 
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case 'owner':
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Owner</Badge>
-      case 'admin':
-        return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Admin</Badge>
-      default:
-        return <Badge variant="outline">Member</Badge>
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -309,7 +299,7 @@ export default function SpacesManager() {
                 </div>
                 <div className="flex items-center space-x-2">
                   {getRoleIcon(space.user_role || 'member')}
-                  {getRoleBadge(space.user_role || 'member')}
+                  <RoleBadge role={space.user_role || 'member'} />
                 </div>
               </div>
             </CardHeader>
@@ -590,7 +580,7 @@ export default function SpacesManager() {
                                 </SelectContent>
                               </Select>
                             ) : (
-                              <Badge variant="outline">{m.role}</Badge>
+                              <RoleBadge role={m.role} />
                             )}
                           </div>
                           <div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
@@ -101,20 +102,6 @@ export function SyncMonitoringDashboard({ spaceId }: SyncMonitoringDashboardProp
       default:
         return <Clock className="h-4 w-4 text-gray-600" />
     }
-  }
-
-  const getSeverityBadge = (severity: string) => {
-    const colors = {
-      critical: 'bg-red-100 text-red-800 border-red-300',
-      error: 'bg-orange-100 text-orange-800 border-orange-300',
-      warning: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-      info: 'bg-blue-100 text-blue-800 border-blue-300'
-    }
-    return (
-      <Badge className={colors[severity as keyof typeof colors] || colors.info}>
-        {severity.toUpperCase()}
-      </Badge>
-    )
   }
 
   if (loading) {
@@ -220,7 +207,7 @@ export function SyncMonitoringDashboard({ spaceId }: SyncMonitoringDashboardProp
             <div className="space-y-2">
               {criticalAlerts.slice(0, 3).map((alert) => (
                 <div key={alert.id} className="flex items-start gap-3 p-3 bg-white rounded border border-red-200">
-                  {getSeverityBadge(alert.severity)}
+                  <StatusBadge status={alert.severity} label={alert.severity.toUpperCase()} />
                   <div className="flex-1">
                     <p className="font-medium text-sm">{alert.schedule_name}</p>
                     <p className="text-sm text-muted-foreground">{alert.message}</p>
@@ -318,7 +305,7 @@ export function SyncMonitoringDashboard({ spaceId }: SyncMonitoringDashboardProp
               <div className="space-y-3">
                 {unacknowledgedAlerts.map((alert) => (
                   <div key={alert.id} className="flex items-start gap-4 p-4 border rounded-lg">
-                    {getSeverityBadge(alert.severity)}
+                    <StatusBadge status={alert.severity} label={alert.severity.toUpperCase()} />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="font-medium">{alert.schedule_name}</p>

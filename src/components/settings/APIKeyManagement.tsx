@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { 
   Key, 
   Plus, 
@@ -327,41 +328,41 @@ export function APIKeyManagement() {
   const getStatusBadge = (status: string, isConfigured: boolean) => {
     if (!isConfigured) {
       return (
-        <Badge variant="outline" className="bg-muted text-muted-foreground">
+        <StatusBadge status="not-configured">
           <AlertCircle className="h-3 w-3 mr-1" />
           Not Configured
-        </Badge>
+        </StatusBadge>
       )
     }
 
     switch (status) {
       case 'active':
         return (
-          <Badge variant="default" className="bg-green-100 text-green-700">
+          <StatusBadge status={status}>
             <CheckCircle className="h-3 w-3 mr-1" />
             Active
-          </Badge>
+          </StatusBadge>
         )
       case 'error':
         return (
-          <Badge variant="destructive">
+          <StatusBadge status={status}>
             <XCircle className="h-3 w-3 mr-1" />
             Error
-          </Badge>
+          </StatusBadge>
         )
       case 'pending':
         return (
-          <Badge variant="outline" className="bg-yellow-100 text-yellow-700">
+          <StatusBadge status={status}>
             <AlertCircle className="h-3 w-3 mr-1" />
             Pending
-          </Badge>
+          </StatusBadge>
         )
       default:
         return (
-          <Badge variant="outline" className="bg-muted text-muted-foreground">
+          <StatusBadge status="inactive">
             <AlertCircle className="h-3 w-3 mr-1" />
             Inactive
-          </Badge>
+          </StatusBadge>
         )
     }
   }

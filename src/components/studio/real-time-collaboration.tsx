@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { RoleBadge } from '@/components/ui/role-badge'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -174,16 +175,6 @@ export function RealTimeCollaboration({
       case 'busy': return 'bg-destructive'
       case 'offline': return 'bg-muted'
       default: return 'bg-muted'
-    }
-  }, [])
-
-  const getRoleColor = useCallback((role: Collaborator['role']) => {
-    switch (role) {
-      case 'owner': return 'bg-primary/10 text-primary'
-      case 'editor': return 'bg-primary/10 text-primary'
-      case 'viewer': return 'bg-primary/10 text-primary'
-      case 'commenter': return 'bg-warning/20 text-warning'
-      default: return 'bg-muted text-muted-foreground'
     }
   }, [])
 
@@ -406,9 +397,7 @@ export function RealTimeCollaboration({
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className={getRoleColor(collaborator.role)}>
-                        {collaborator.role}
-                      </Badge>
+                      <RoleBadge role={collaborator.role} />
                       <Select
                         value={collaborator.role}
                         onValueChange={(value: any) => onUpdateCollaboratorRole(collaborator.id, value)}

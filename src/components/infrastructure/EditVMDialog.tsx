@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
   DropdownMenu,
@@ -125,19 +126,6 @@ export function EditVMDialog({ open, onOpenChange, vm, onSuccess }: EditVMDialog
     } catch (error) {
       console.error('Error removing service:', error)
       showError('Failed to remove service')
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'running':
-        return 'default'
-      case 'stopped':
-        return 'secondary'
-      case 'error':
-        return 'destructive'
-      default:
-        return 'outline'
     }
   }
 
@@ -411,9 +399,7 @@ export function EditVMDialog({ open, onOpenChange, vm, onSuccess }: EditVMDialog
                           <Badge variant="outline">{service.type}</Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={getStatusColor(service.status)}>
-                            {service.status}
-                          </Badge>
+                          <StatusBadge status={service.status} />
                         </TableCell>
                         <TableCell>
                           {service.managementPluginId ? (

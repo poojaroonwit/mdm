@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
@@ -52,7 +53,6 @@ import { IngestionManagement } from './IngestionManagement'
 import { WebhooksAlerts } from './WebhooksAlerts'
 import {
   getAssetTypeIcon,
-  getQualityStatusColor,
   getClassificationColor,
   calculateGovernanceMetrics,
   formatFQN,
@@ -502,10 +502,10 @@ export function DataGovernance() {
                         </div>
                       </div>
                       {compliant && (
-                        <Badge className="bg-green-100 text-green-800">
+                        <StatusBadge status="compliant">
                           <CheckCircle className="h-3 w-3 mr-1" />
                           Compliant
-                        </Badge>
+                        </StatusBadge>
                       )}
                     </div>
                   </CardHeader>
@@ -522,11 +522,10 @@ export function DataGovernance() {
                       {asset.quality && (
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">Quality Score:</span>
-                          <Badge className={getQualityStatusColor(
-                            asset.quality.score >= 80 ? 'passed' : asset.quality.score >= 60 ? 'warning' : 'failed'
-                          )}>
-                            {asset.quality.score}%
-                          </Badge>
+                          <StatusBadge
+                            status={asset.quality.score >= 80 ? 'passed' : asset.quality.score >= 60 ? 'warning' : 'failed'}
+                            label={`${asset.quality.score}%`}
+                          />
                         </div>
                       )}
                       {asset.tags.length > 0 && (

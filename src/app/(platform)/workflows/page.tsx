@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -342,16 +342,6 @@ export default function WorkflowsPage() {
     setActions(actions.filter((_, i) => i !== index))
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'ACTIVE': return 'default'
-      case 'INACTIVE': return 'secondary'
-      case 'PAUSED': return 'outline'
-      case 'ERROR': return 'destructive'
-      default: return 'secondary'
-    }
-  }
-
   const getTriggerIcon = (trigger: string) => {
     switch (trigger) {
       case 'SCHEDULED': return <Clock className="h-4 w-4" />
@@ -461,9 +451,7 @@ export default function WorkflowsPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={getStatusColor(workflow.status)}>
-                        {workflow.status}
-                      </Badge>
+                      <StatusBadge status={workflow.status} label={workflow.status} />
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">

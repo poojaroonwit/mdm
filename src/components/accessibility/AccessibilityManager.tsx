@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -224,10 +224,10 @@ export function AccessibilityManager({ onSettingsChange }: AccessibilityManagerP
       <AlertTriangle className="h-4 w-4 text-red-500" />
   }
 
-  const getTestResultColor = (test: string) => {
+  const getTestResultStatus = (test: string) => {
     const result = testResults[test]
-    if (result === undefined) return 'bg-gray-100 text-gray-800'
-    return result ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+    if (result === undefined) return { status: 'pending', label: 'Pending' }
+    return result ? { status: 'passed', label: 'Pass' } : { status: 'failed', label: 'Fail' }
   }
 
   const getTestName = (test: string) => {
@@ -681,9 +681,7 @@ export function AccessibilityManager({ onSettingsChange }: AccessibilityManagerP
                           {getTestResultIcon(test)}
                           <span className="font-medium">{getTestName(test)}</span>
                         </div>
-                        <Badge className={getTestResultColor(test)}>
-                          {testResults[test] ? 'Pass' : 'Fail'}
-                        </Badge>
+                        <StatusBadge {...getTestResultStatus(test)} />
                       </div>
                     ))}
                   </div>

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { RoleBadge } from '@/components/ui/role-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { 
@@ -203,7 +204,7 @@ export function MemberPermissionsPanel({
                         <div className="font-medium truncate">{member.user_name}</div>
                         <div className="text-sm text-muted-foreground truncate">{member.user_email}</div>
                       </div>
-                      <Badge variant="outline">{member.role}</Badge>
+                      <RoleBadge role={member.role} />
                     </div>
                   </div>
                 ))}

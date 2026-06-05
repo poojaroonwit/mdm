@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Switch } from '@/components/ui/switch'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -256,24 +257,6 @@ export function BackupRecoverySystem({ spaceId }: BackupRecoverySystemProps) {
     }, 1000)
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-      case 'available':
-        return 'bg-green-100 text-green-800'
-      case 'running':
-        return 'bg-blue-100 text-blue-800'
-      case 'failed':
-      case 'corrupted':
-        return 'bg-red-100 text-red-800'
-      case 'idle':
-      case 'pending':
-        return 'bg-gray-100 text-gray-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
@@ -352,9 +335,7 @@ export function BackupRecoverySystem({ spaceId }: BackupRecoverySystemProps) {
                       </div>
                       <div className="flex items-center gap-2">
                         {getStatusIcon(job.status)}
-                        <Badge className={getStatusColor(job.status)}>
-                          {job.status}
-                        </Badge>
+                        <StatusBadge status={job.status} />
                       </div>
                     </div>
                   </CardHeader>
@@ -414,9 +395,7 @@ export function BackupRecoverySystem({ spaceId }: BackupRecoverySystemProps) {
                 <CardTitle className="flex items-center justify-between">
                   {selectedJob.name}
                   <div className="flex items-center gap-2">
-                    <Badge className={getStatusColor(selectedJob.status)}>
-                      {selectedJob.status}
-                    </Badge>
+                    <StatusBadge status={selectedJob.status} />
                     <Button size="sm" variant="outline">
                       <Settings className="h-4 w-4" />
                     </Button>
@@ -620,9 +599,7 @@ export function BackupRecoverySystem({ spaceId }: BackupRecoverySystemProps) {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className={getStatusColor(file.status)}>
-                        {file.status}
-                      </Badge>
+                      <StatusBadge status={file.status} />
                       <Badge variant="outline">
                         {file.type}
                       </Badge>
@@ -653,9 +630,7 @@ export function BackupRecoverySystem({ spaceId }: BackupRecoverySystemProps) {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className={getStatusColor(job.status)}>
-                        {job.status}
-                      </Badge>
+                      <StatusBadge status={job.status} />
                       <div className="w-20">
                         <Progress value={job.progress} />
                       </div>

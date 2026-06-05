@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
@@ -109,14 +110,6 @@ export function AccessibilityManager({
       case 'error': return <XCircle className="h-4 w-4 text-destructive" />
       case 'warning': return <AlertTriangle className="h-4 w-4 text-warning" />
       case 'info': return <CheckCircle className="h-4 w-4 text-primary" />
-    }
-  }, [])
-
-  const getSeverityColor = useCallback((severity: AccessibilityIssue['severity']) => {
-    switch (severity) {
-      case 'high': return 'bg-destructive/10 text-destructive'
-      case 'medium': return 'bg-warning/20 text-warning'
-      case 'low': return 'bg-primary/10 text-primary'
     }
   }, [])
 
@@ -433,9 +426,7 @@ export function AccessibilityManager({
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-medium">{issue.title}</h3>
-                        <Badge className={getSeverityColor(issue.severity)}>
-                          {issue.severity}
-                        </Badge>
+                        <StatusBadge status={issue.severity} />
                         <Badge variant="outline">
                           {issue.category}
                         </Badge>
@@ -727,21 +718,21 @@ export function AccessibilityManager({
                     <CheckCircle className="h-5 w-5 text-primary" />
                     <span>Keyboard Navigation</span>
                   </div>
-                  <Badge className="bg-primary/10 text-primary">Passed</Badge>
+                  <StatusBadge status="passed" label="Passed" />
                 </div>
                 <div className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-5 w-5 text-warning" />
                     <span>Screen Reader Compatibility</span>
                   </div>
-                  <Badge className="bg-warning/20 text-warning">Warning</Badge>
+                  <StatusBadge status="warning" label="Warning" />
                 </div>
                 <div className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-2">
                     <XCircle className="h-5 w-5 text-destructive" />
                     <span>Color Contrast</span>
                   </div>
-                  <Badge className="bg-destructive/10 text-destructive">Failed</Badge>
+                  <StatusBadge status="failed" label="Failed" />
                 </div>
               </div>
             </CardContent>

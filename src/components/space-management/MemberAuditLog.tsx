@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
+import { ActionBadge } from '@/components/ui/action-badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { formatTimestamp } from '@/lib/date-formatters'
 import { 
@@ -54,17 +54,6 @@ const ACTION_ICONS = {
   'invitation_accepted': <UserPlus className="h-4 w-4 text-primary" />,
   'space_accessed': <Clock className="h-4 w-4 text-muted-foreground" />,
   'default': <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-}
-
-const ACTION_COLORS = {
-  'member_added': 'bg-primary/10 text-primary',
-  'member_removed': 'bg-destructive/10 text-destructive',
-  'role_changed': 'bg-primary/10 text-primary',
-  'permissions_updated': 'bg-primary/10 text-primary',
-  'invitation_sent': 'bg-warning/20 text-warning',
-  'invitation_accepted': 'bg-primary/10 text-primary',
-  'space_accessed': 'bg-muted text-muted-foreground',
-  'default': 'bg-muted text-muted-foreground'
 }
 
 export function MemberAuditLog({
@@ -129,10 +118,6 @@ export function MemberAuditLog({
 
   const getActionIcon = (action: string) => {
     return ACTION_ICONS[action as keyof typeof ACTION_ICONS] || ACTION_ICONS.default
-  }
-
-  const getActionColor = (action: string) => {
-    return ACTION_COLORS[action as keyof typeof ACTION_COLORS] || ACTION_COLORS.default
   }
 
   return (
@@ -220,9 +205,7 @@ export function MemberAuditLog({
                         </AvatarFallback>
                       </Avatar>
                       <span className="font-medium text-sm">{log.user_name}</span>
-                      <Badge className={getActionColor(log.action)}>
-                        {log.action.replace('_', ' ')}
-                      </Badge>
+                      <ActionBadge action={log.action} label={log.action.replace('_', ' ')} />
                     </div>
                     <p className="text-sm text-muted-foreground mb-2">
                       {log.description}

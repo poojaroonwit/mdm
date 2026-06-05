@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
@@ -138,17 +139,6 @@ export default function ProjectsPage() {
       project.description?.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesSearch
   })
-
-  const getStatusColor = (status: ProjectStatus) => {
-    switch (status) {
-      case 'PLANNING': return 'bg-blue-100 text-blue-700'
-      case 'ACTIVE': return 'bg-green-100 text-green-700'
-      case 'ON_HOLD': return 'bg-yellow-100 text-yellow-700'
-      case 'COMPLETED': return 'bg-muted text-muted-foreground'
-      case 'CANCELLED': return 'bg-red-100 text-red-700'
-      default: return 'bg-muted text-muted-foreground'
-    }
-  }
 
   // Show project detail view
   if (viewType === 'detail' && selectedProjectId) {
@@ -389,9 +379,11 @@ export default function ProjectsPage() {
                       </div>
                       <div>
                         <CardTitle className="text-base">{project.name}</CardTitle>
-                        <Badge className={`${getStatusColor(project.status)} mt-1`}>
-                          {PROJECT_STATUSES.find(s => s.value === project.status)?.label}
-                        </Badge>
+                        <StatusBadge
+                          status={project.status}
+                          label={PROJECT_STATUSES.find(s => s.value === project.status)?.label}
+                          className="mt-1"
+                        />
                       </div>
                     </div>
                   </div>
@@ -451,9 +443,10 @@ export default function ProjectsPage() {
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="font-medium">{project.name}</h3>
-                          <Badge className={getStatusColor(project.status)}>
-                            {PROJECT_STATUSES.find(s => s.value === project.status)?.label}
-                          </Badge>
+                          <StatusBadge
+                            status={project.status}
+                            label={PROJECT_STATUSES.find(s => s.value === project.status)?.label}
+                          />
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {project.description || 'No description'}

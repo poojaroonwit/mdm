@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { RoleBadge } from '@/components/ui/role-badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -217,17 +218,6 @@ export default function SpaceMembersPage() {
     }
   }
 
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case 'owner':
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Owner</Badge>
-      case 'admin':
-        return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Admin</Badge>
-      default:
-        return <Badge variant="outline">Member</Badge>
-    }
-  }
-
   const canManageMembers = space?.user_role === 'owner' || space?.user_role === 'admin'
 
   if (isLoading) {
@@ -420,7 +410,7 @@ export default function SpaceMembersPage() {
                           </SelectContent>
                         </Select>
                       ) : (
-                        getRoleBadge(member.role)
+                        <RoleBadge role={member.role} />
                       )}
                     </TableCell>
                     <TableCell>

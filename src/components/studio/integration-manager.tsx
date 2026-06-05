@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
@@ -176,15 +177,6 @@ export function IntegrationManager({
       case 'inactive': return <Pause className="h-4 w-4 text-muted-foreground" />
       case 'error': return <XCircle className="h-4 w-4 text-destructive" />
       case 'pending': return <Loader className="h-4 w-4 text-warning animate-spin" />
-    }
-  }, [])
-
-  const getStatusColor = useCallback((status: Integration['status']) => {
-    switch (status) {
-      case 'active': return 'bg-primary/10 text-primary'
-      case 'inactive': return 'bg-muted text-muted-foreground'
-      case 'error': return 'bg-destructive/10 text-destructive'
-      case 'pending': return 'bg-warning/20 text-warning'
     }
   }, [])
 
@@ -535,9 +527,7 @@ export function IntegrationManager({
                     <div>
                       <CardTitle className="flex items-center gap-2">
                         {integration.name}
-                        <Badge className={getStatusColor(integration.status)}>
-                          {integration.status}
-                        </Badge>
+                        <StatusBadge status={integration.status} />
                         <Badge variant="outline">
                           {integration.type}
                         </Badge>

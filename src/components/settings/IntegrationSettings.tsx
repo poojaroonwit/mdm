@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Mail, Shield, HardDrive, Save, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
@@ -90,13 +90,14 @@ function GenericIntegrationSettings({ type, title, description, icon: Icon, defa
             </CardTitle>
             <CardDescription>{description}</CardDescription>
           </div>
-          <Badge variant={isEnabled ? "default" : "secondary"} className={isEnabled ? "bg-green-100 text-green-700" : ""}>
+          <StatusBadge status={isEnabled ? 'enabled' : 'disabled'}>
             {isEnabled ? (
-              <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3" /> Enabled</span>
+              <CheckCircle className="h-3 w-3 mr-1" />
             ) : (
-              <span className="flex items-center gap-1"><AlertCircle className="h-3 w-3" /> Disabled</span>
+              <AlertCircle className="h-3 w-3 mr-1" />
             )}
-          </Badge>
+            {isEnabled ? 'Enabled' : 'Disabled'}
+          </StatusBadge>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">

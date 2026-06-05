@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
@@ -262,26 +262,6 @@ export function WorkflowEngine({ spaceId }: WorkflowEngineProps) {
     }, 3000)
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'draft': return 'bg-gray-100 text-gray-800'
-      case 'active': return 'bg-green-100 text-green-800'
-      case 'paused': return 'bg-yellow-100 text-yellow-800'
-      case 'archived': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  const getExecutionStatusColor = (status: string) => {
-    switch (status) {
-      case 'running': return 'bg-blue-100 text-blue-800'
-      case 'completed': return 'bg-green-100 text-green-800'
-      case 'failed': return 'bg-red-100 text-red-800'
-      case 'paused': return 'bg-yellow-100 text-yellow-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -320,9 +300,7 @@ export function WorkflowEngine({ spaceId }: WorkflowEngineProps) {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">{workflow.name}</CardTitle>
-                    <Badge className={getStatusColor(workflow.status)}>
-                      {workflow.status}
-                    </Badge>
+                    <StatusBadge status={workflow.status} />
                   </div>
                   <CardDescription>{workflow.description}</CardDescription>
                 </CardHeader>
@@ -370,9 +348,7 @@ export function WorkflowEngine({ spaceId }: WorkflowEngineProps) {
                 <CardTitle className="flex items-center justify-between">
                   {selectedWorkflow.name}
                   <div className="flex items-center gap-2">
-                    <Badge className={getStatusColor(selectedWorkflow.status)}>
-                      {selectedWorkflow.status}
-                    </Badge>
+                    <StatusBadge status={selectedWorkflow.status} />
                     <Button size="sm" variant="outline">
                       <Settings className="h-4 w-4" />
                     </Button>
@@ -520,9 +496,7 @@ export function WorkflowEngine({ spaceId }: WorkflowEngineProps) {
                         {execution.status === 'failed' && <AlertTriangle className="h-4 w-4 text-red-500" />}
                         <span className="font-medium">Execution {execution.id}</span>
                       </div>
-                      <Badge className={getExecutionStatusColor(execution.status)}>
-                        {execution.status}
-                      </Badge>
+                      <StatusBadge status={execution.status} />
                     </div>
                     <div className="text-sm text-muted-foreground">
                       Started: {execution.started_at.toLocaleString()}

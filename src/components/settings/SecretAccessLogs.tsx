@@ -21,6 +21,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { ActionBadge } from '@/components/ui/action-badge'
 import { CalendarIcon, Download, Filter, RefreshCw, Search } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
@@ -151,19 +152,6 @@ export function SecretAccessLogs({ className }: SecretAccessLogsProps) {
     a.click()
     document.body.removeChild(a)
     window.URL.revokeObjectURL(url)
-  }
-
-  const getActionBadgeVariant = (action: string) => {
-    switch (action) {
-      case 'READ':
-        return 'default'
-      case 'CREATE':
-        return 'default'
-      case 'DELETE':
-        return 'destructive'
-      default:
-        return 'secondary'
-    }
   }
 
   const formatSecretPath = (path: string) => {
@@ -323,9 +311,7 @@ export function SecretAccessLogs({ className }: SecretAccessLogsProps) {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getActionBadgeVariant(log.action) as any}>
-                          {log.action}
-                        </Badge>
+                        <ActionBadge action={log.action} label={log.action} className="uppercase" />
                       </TableCell>
                       <TableCell className="font-mono text-xs">
                         {formatSecretPath(log.secretPath)}

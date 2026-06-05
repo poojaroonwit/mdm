@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { RoleBadge } from '@/components/ui/role-badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -265,16 +266,6 @@ export function DashboardCollaboration({
     }
   }
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'owner': return 'bg-purple-100 text-purple-800'
-      case 'editor': return 'bg-blue-100 text-blue-800'
-      case 'viewer': return 'bg-muted text-foreground'
-      default: return 'bg-muted text-foreground'
-    }
-  }
-
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -354,9 +345,7 @@ export function DashboardCollaboration({
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Badge className={getRoleColor(collaborator.role)}>
-                        {collaborator.role}
-                      </Badge>
+                      <RoleBadge role={collaborator.role} />
                       {currentUser.role === 'owner' && collaborator.id !== currentUser.id && (
                         <Button
                           variant="ghost"

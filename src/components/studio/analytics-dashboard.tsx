@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
 import { 
@@ -148,7 +149,7 @@ export function AnalyticsDashboard({
     }
   }, [])
 
-  const getPerformanceStatusColor = useCallback((status: PerformanceMetric['status']) => {
+  const getPerformanceStatusSurfaceColor = useCallback((status: PerformanceMetric['status']) => {
     switch (status) {
       case 'good': return 'bg-primary/10 text-primary'
       case 'warning': return 'bg-warning/20 text-warning'
@@ -289,7 +290,7 @@ export function AnalyticsDashboard({
                 {metrics.map(metric => (
                   <div key={metric.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${getPerformanceStatusColor(metric.status)}`}>
+                      <div className={`p-2 rounded-lg ${getPerformanceStatusSurfaceColor(metric.status)}`}>
                         {metric.status === 'good' && <CheckCircle className="h-4 w-4" />}
                         {metric.status === 'warning' && <AlertTriangle className="h-4 w-4" />}
                         {metric.status === 'critical' && <XCircle className="h-4 w-4" />}
@@ -327,9 +328,7 @@ export function AnalyticsDashboard({
                   <div key={metric.id} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">{metric.name}</span>
-                      <Badge className={getPerformanceStatusColor(metric.status)}>
-                        {metric.status}
-                      </Badge>
+                      <StatusBadge status={metric.status} />
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex-1 bg-muted rounded-full h-2">
@@ -367,9 +366,7 @@ export function AnalyticsDashboard({
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-sm text-muted-foreground">{metric.name}</div>
-                    <Badge className={getPerformanceStatusColor(metric.status)}>
-                      {metric.status}
-                    </Badge>
+                    <StatusBadge status={metric.status} />
                   </div>
                   <div className="text-2xl font-bold mb-1">
                     {metric.value} {metric.unit}

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { TaxonomyBadge } from '@/components/ui/taxonomy-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
 import { Progress } from '@/components/ui/progress'
@@ -282,19 +283,6 @@ export function BackupRecovery() {
     }
   }
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'full':
-        return 'bg-blue-100 text-blue-800'
-      case 'incremental':
-        return 'bg-green-100 text-green-800'
-      case 'differential':
-        return 'bg-yellow-100 text-yellow-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 Bytes'
     const k = 1024
@@ -451,9 +439,7 @@ export function BackupRecovery() {
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between text-sm">
                       <span>Type:</span>
-                      <Badge className={getTypeColor(backup.type)}>
-                        {backup.type}
-                      </Badge>
+                      <TaxonomyBadge taxonomy="backup" value={backup.type} />
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span>Size:</span>

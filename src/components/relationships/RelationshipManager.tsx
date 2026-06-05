@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { TaxonomyBadge } from '@/components/ui/taxonomy-badge'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
@@ -521,9 +522,11 @@ export function RelationshipManager({
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">Type:</span>
-                          <Badge className={getRelationshipTypeInfo(selectedRelationship.type).color}>
-                            {getRelationshipTypeInfo(selectedRelationship.type).name}
-                          </Badge>
+                          <TaxonomyBadge
+                            taxonomy="relationship"
+                            value={selectedRelationship.type}
+                            label={getRelationshipTypeInfo(selectedRelationship.type).name}
+                          />
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">Source:</span>

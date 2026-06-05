@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -356,11 +357,6 @@ export function ProjectDetailPage({ projectId, spaceId, onViewChange }: ProjectD
     }
   }
 
-  const getStatusColor = (status: ProjectStatus) => {
-    const statusConfig = PROJECT_STATUSES.find(s => s.value === status)
-    return statusConfig?.color || 'gray'
-  }
-
   if (loading) {
     return <ProjectDetailSkeleton />
   }
@@ -393,9 +389,10 @@ export function ProjectDetailPage({ projectId, spaceId, onViewChange }: ProjectD
                 <h1 className="text-xl font-semibold">{project.name}</h1>
               )}
               <div className="flex items-center gap-2 mt-1">
-                <Badge variant="outline" className={`bg-${getStatusColor(project.status)}-100 text-${getStatusColor(project.status)}-700`}>
-                  {PROJECT_STATUSES.find(s => s.value === project.status)?.label}
-                </Badge>
+                <StatusBadge
+                  status={project.status}
+                  label={PROJECT_STATUSES.find(s => s.value === project.status)?.label}
+                />
                 {project.space && (
                   <span className="text-sm text-muted-foreground">
                     in {project.space.name}

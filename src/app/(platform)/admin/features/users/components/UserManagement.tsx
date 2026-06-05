@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { RoleBadge } from '@/components/ui/role-badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
@@ -477,21 +478,6 @@ export function UserManagement() {
     }
   }
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'SUPER_ADMIN':
-        return 'border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-400'
-      case 'ADMIN':
-        return 'border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-400'
-      case 'MANAGER':
-        return 'border-sky-200 bg-sky-50 text-sky-600 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-400'
-      case 'USER':
-        return 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400'
-      default:
-        return 'border-zinc-200 bg-zinc-50 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-400'
-    }
-  }
-
   const getStatusIcon = (isActive: boolean) => {
     return isActive ? (
       <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
@@ -806,12 +792,11 @@ export function UserManagement() {
                         </div>
                       </TableCell>
                       <TableCell className="h-16">
-                        <Badge 
-                          variant="outline" 
-                          className={cn("text-[10px] font-black uppercase tracking-widest h-5", getRoleColor(user.role))}
-                        >
-                          {user.role.replace('_', ' ')}
-                        </Badge>
+                        <RoleBadge
+                          role={user.role}
+                          label={user.role.replace('_', ' ')}
+                          className="text-[10px] font-black uppercase tracking-widest h-5"
+                        />
                       </TableCell>
                       <TableCell className="h-16">
                         <div className="flex flex-col">
@@ -1726,9 +1711,7 @@ export function UserManagement() {
                         <p className="text-muted-foreground">{selectedUser.email}</p>
                         <div className="flex items-center gap-2 mt-2">
                           {getStatusIcon(selectedUser.isActive)}
-                          <Badge className={getRoleColor(selectedUser.role)}>
-                            {selectedUser.role}
-                          </Badge>
+                          <RoleBadge role={selectedUser.role} label={selectedUser.role} />
                         </div>
                       </div>
                     </div>
@@ -1780,7 +1763,7 @@ export function UserManagement() {
                           {selectedUser.spaces.map((space, idx) => (
                             <div key={idx} className="flex items-center justify-between p-3 border rounded">
                               <span className="text-sm font-medium">{space.spaceName}</span>
-                              <Badge variant="outline">{space.role}</Badge>
+                              <RoleBadge role={space.role} label={space.role} />
                             </div>
                           ))}
                         </div>

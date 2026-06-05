@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
+import { TaxonomyBadge } from '@/components/ui/taxonomy-badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
@@ -125,30 +127,7 @@ export function TicketRelationshipsPanel({
     }
   }
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      'BACKLOG': 'bg-gray-100 text-gray-800',
-      'TODO': 'bg-blue-100 text-blue-800',
-      'IN_PROGRESS': 'bg-yellow-100 text-yellow-800',
-      'IN_REVIEW': 'bg-purple-100 text-purple-800',
-      'DONE': 'bg-green-100 text-green-800',
-      'CANCELLED': 'bg-red-100 text-red-800'
-    }
-    return colors[status] || 'bg-gray-100 text-gray-800'
-  }
-
-  const getTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      'BLOCKS': 'bg-red-100 text-red-800',
-      'BLOCKED_BY': 'bg-orange-100 text-orange-800',
-      'RELATES_TO': 'bg-blue-100 text-blue-800',
-      'PARENT': 'bg-purple-100 text-purple-800',
-      'CHILD': 'bg-green-100 text-green-800',
-      'DUPLICATE': 'bg-yellow-100 text-yellow-800',
-      'CLONES': 'bg-gray-100 text-gray-800'
-    }
-    return colors[type] || 'bg-gray-100 text-gray-800'
-  }
+  const formatStatus = (status: string) => status.replace(/_/g, ' ')
 
   if (loading) {
     return (
@@ -238,7 +217,7 @@ export function TicketRelationshipsPanel({
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <Badge className={getTypeColor(dep.type)}>{dep.type}</Badge>
+                        <TaxonomyBadge taxonomy="ticket-relationship" value={dep.type} label={dep.type} className="uppercase" />
                         <span
                           className="font-medium cursor-pointer hover:underline"
                           onClick={() => onViewTicket?.(dep.relatedTicket.id)}
@@ -247,9 +226,7 @@ export function TicketRelationshipsPanel({
                         </span>
                       </div>
                       <div className="flex gap-2 mt-1">
-                        <Badge variant="outline" className={getStatusColor(dep.relatedTicket.status)}>
-                          {dep.relatedTicket.status}
-                        </Badge>
+                        <StatusBadge status={dep.relatedTicket.status} label={formatStatus(dep.relatedTicket.status)} />
                         <Badge variant="outline">{dep.relatedTicket.priority}</Badge>
                       </div>
                     </div>
@@ -287,7 +264,7 @@ export function TicketRelationshipsPanel({
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <Badge className={getTypeColor(dep.type)}>{dep.type}</Badge>
+                        <TaxonomyBadge taxonomy="ticket-relationship" value={dep.type} label={dep.type} className="uppercase" />
                         <span
                           className="font-medium cursor-pointer hover:underline"
                           onClick={() => onViewTicket?.(dep.relatedTicket.id)}
@@ -296,9 +273,7 @@ export function TicketRelationshipsPanel({
                         </span>
                       </div>
                       <div className="flex gap-2 mt-1">
-                        <Badge variant="outline" className={getStatusColor(dep.relatedTicket.status)}>
-                          {dep.relatedTicket.status}
-                        </Badge>
+                        <StatusBadge status={dep.relatedTicket.status} label={formatStatus(dep.relatedTicket.status)} />
                         <Badge variant="outline">{dep.relatedTicket.priority}</Badge>
                       </div>
                     </div>
@@ -333,9 +308,7 @@ export function TicketRelationshipsPanel({
                     {relationships.parent.title}
                   </span>
                   <div className="flex gap-2 mt-1">
-                    <Badge variant="outline" className={getStatusColor(relationships.parent.status)}>
-                      {relationships.parent.status}
-                    </Badge>
+                    <StatusBadge status={relationships.parent.status} label={formatStatus(relationships.parent.status)} />
                     <Badge variant="outline">{relationships.parent.priority}</Badge>
                   </div>
                 </div>
@@ -377,9 +350,7 @@ export function TicketRelationshipsPanel({
                         {child.title}
                       </span>
                       <div className="flex gap-2 mt-1">
-                        <Badge variant="outline" className={getStatusColor(child.status)}>
-                          {child.status}
-                        </Badge>
+                        <StatusBadge status={child.status} label={formatStatus(child.status)} />
                         <Badge variant="outline">{child.priority}</Badge>
                       </div>
                     </div>
@@ -408,7 +379,7 @@ export function TicketRelationshipsPanel({
               <div className="flex items-center justify-between">
                 <div>
                   <span className="font-medium">{relationships.project.name}</span>
-                  <Badge variant="outline" className="ml-2">{relationships.project.status}</Badge>
+                  <StatusBadge status={relationships.project.status} label={formatStatus(relationships.project.status)} className="ml-2" />
                 </div>
                 <Button
                   variant="ghost"
@@ -433,7 +404,7 @@ export function TicketRelationshipsPanel({
               <div className="flex items-center justify-between">
                 <div>
                   <span className="font-medium">{relationships.milestone.name}</span>
-                  <Badge variant="outline" className="ml-2">{relationships.milestone.status}</Badge>
+                  <StatusBadge status={relationships.milestone.status} label={formatStatus(relationships.milestone.status)} className="ml-2" />
                 </div>
                 <Button
                   variant="ghost"
@@ -461,7 +432,7 @@ export function TicketRelationshipsPanel({
                   {relationships.release.version && (
                     <Badge variant="outline" className="ml-2">v{relationships.release.version}</Badge>
                   )}
-                  <Badge variant="outline" className="ml-2">{relationships.release.status}</Badge>
+                  <StatusBadge status={relationships.release.status} label={formatStatus(relationships.release.status)} className="ml-2" />
                 </div>
                 <Button
                   variant="ghost"

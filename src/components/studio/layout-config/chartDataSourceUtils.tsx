@@ -1,7 +1,7 @@
 import { Calendar as CalendarIcon, Hash, Type as TypeIcon } from 'lucide-react'
 import { Attribute } from './chartDataSourceTypes'
 
-export const getTypeBadgeClass = (type?: string) => {
+export const getAttributeTypeOptionClass = (type?: string) => {
   const t = (type || '').toLowerCase()
   if (t.includes('int') || t.includes('num') || t.includes('dec') || t.includes('float') || t.includes('double')) {
     return 'bg-warning/20 text-warning'

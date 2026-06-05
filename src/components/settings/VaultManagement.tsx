@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { 
   Key, 
   Database, 
@@ -133,17 +134,14 @@ export function VaultManagement() {
                   </div>
                 </div>
               </div>
-              {status.healthy ? (
-                <Badge variant="default" className="bg-green-100 text-green-700">
+              <StatusBadge status={status.healthy ? 'healthy' : 'unhealthy'}>
+                {status.healthy ? (
                   <CheckCircle className="h-3 w-3 mr-1" />
-                  Healthy
-                </Badge>
-              ) : (
-                <Badge variant="destructive">
+                ) : (
                   <XCircle className="h-3 w-3 mr-1" />
-                  Unhealthy
-                </Badge>
-              )}
+                )}
+                {status.healthy ? 'Healthy' : 'Unhealthy'}
+              </StatusBadge>
             </div>
 
             {/* Vault Status Details */}

@@ -11,7 +11,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { StatusBadge } from '@/components/ui/status-badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollableContainer } from '@/components/ui/scrollable-container';
 import { Separator } from '@/components/ui/separator';
@@ -50,21 +50,6 @@ export function NotificationList({
         return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
       default:
         return <Info className="h-4 w-4 text-blue-500" />;
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'URGENT':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'HIGH':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'MEDIUM':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'LOW':
-        return 'bg-muted text-muted-foreground border-border';
-      default:
-        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -184,12 +169,7 @@ export function NotificationList({
                         <h4 className="text-sm font-medium text-foreground">
                           {notification.title}
                         </h4>
-                        <Badge 
-                          variant="outline" 
-                          className={`text-xs ${getPriorityColor(notification.priority)}`}
-                        >
-                          {notification.priority}
-                        </Badge>
+                        <StatusBadge status={notification.priority} label={notification.priority} size="sm" className="text-xs" />
                         {notification.status === 'UNREAD' && (
                           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                         )}

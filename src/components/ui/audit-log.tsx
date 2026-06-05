@@ -6,7 +6,7 @@ import { Button } from './button'
 import { Input } from './input'
 import { Label } from './label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
-import { Badge } from './badge'
+import { ActionBadge } from './action-badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table'
 import { formatDateTime } from '@/lib/date-formatters'
 import { 
@@ -129,17 +129,6 @@ export function AuditLogs({ className }: AuditLogsProps) {
       default: return <FileText className="h-3.5 w-3.5 text-zinc-500" />
     }
   }
-
-  const getActionColor = (action: string) => {
-    switch (action) {
-      case 'CREATE': return 'bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border-emerald-100/50 dark:border-emerald-900/30'
-      case 'UPDATE': return 'bg-zinc-100/50 dark:bg-zinc-800/20 text-zinc-700 dark:text-zinc-300 border-zinc-200/50 dark:border-zinc-700/30'
-      case 'DELETE': return 'bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 border-rose-100/50 dark:border-rose-900/30'
-      case 'LOGIN': return 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
-      default: return 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
-    }
-  }
-
 
   const exportLogs = async () => {
     try {
@@ -269,9 +258,7 @@ export function AuditLogs({ className }: AuditLogsProps) {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {getActionIcon(log.action)}
-                          <Badge className={getActionColor(log.action)}>
-                            {log.action}
-                          </Badge>
+                          <ActionBadge action={log.action} label={log.action} />
                         </div>
                       </TableCell>
                       <TableCell>
@@ -363,9 +350,7 @@ export function AuditLogs({ className }: AuditLogsProps) {
                   <Label className="text-sm font-medium">Action</Label>
                   <div className="flex items-center gap-2 mt-1">
                     {getActionIcon(selectedLog.action)}
-                    <Badge className={getActionColor(selectedLog.action)}>
-                      {selectedLog.action}
-                    </Badge>
+                    <ActionBadge action={selectedLog.action} label={selectedLog.action} />
                   </div>
                 </div>
                 <div>

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   RefreshCw, Plus, Edit, Trash2, Play, Clock, Database, Globe, 
@@ -280,15 +280,15 @@ export function DataSyncManagement({ spaceId, dataModelId }: DataSyncManagementP
   const getStatusBadge = (schedule: SyncSchedule) => {
     const status = schedule.last_run_status
     if (status === 'RUNNING') {
-      return <Badge variant="outline" className="bg-blue-50 text-blue-700"><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Running</Badge>
+      return <StatusBadge status={status}><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Running</StatusBadge>
     }
     if (status === 'COMPLETED') {
-      return <Badge variant="outline" className="bg-green-50 text-green-700"><CheckCircle2 className="h-3 w-3 mr-1" /> Completed</Badge>
+      return <StatusBadge status={status}><CheckCircle2 className="h-3 w-3 mr-1" /> Completed</StatusBadge>
     }
     if (status === 'FAILED') {
-      return <Badge variant="outline" className="bg-red-50 text-red-700"><XCircle className="h-3 w-3 mr-1" /> Failed</Badge>
+      return <StatusBadge status={status}><XCircle className="h-3 w-3 mr-1" /> Failed</StatusBadge>
     }
-    return <Badge variant="outline"><Clock className="h-3 w-3 mr-1" /> Pending</Badge>
+    return <StatusBadge status="pending"><Clock className="h-3 w-3 mr-1" /> Pending</StatusBadge>
   }
 
   return (
@@ -344,7 +344,7 @@ export function DataSyncManagement({ spaceId, dataModelId }: DataSyncManagementP
                       <CardTitle className="text-base">{schedule.name}</CardTitle>
                       {getStatusBadge(schedule)}
                       {!schedule.is_active && (
-                        <Badge variant="outline">Inactive</Badge>
+                        <StatusBadge status="inactive" />
                       )}
                     </div>
                     {schedule.description && (

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { TaxonomyBadge } from '@/components/ui/taxonomy-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CrudDialog } from "@/components/ui/crud-dialog"
 import { Switch } from '@/components/ui/switch'
@@ -232,21 +233,6 @@ export function NotificationCenter() {
     }
   }
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'email':
-        return 'bg-blue-100 text-blue-800'
-      case 'push':
-        return 'bg-green-100 text-green-800'
-      case 'sms':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'webhook':
-        return 'bg-purple-100 text-purple-800'
-      default:
-        return 'bg-muted text-foreground'
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -383,9 +369,7 @@ export function NotificationCenter() {
                       {getTypeIcon(template.type)}
                       {template.name}
                     </CardTitle>
-                    <Badge className={getTypeColor(template.type)}>
-                      {template.type}
-                    </Badge>
+                    <TaxonomyBadge taxonomy="notification" value={template.type} />
                   </div>
                   <CardDescription>
                     {template.variables.length} variables

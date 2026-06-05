@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
+import { TaxonomyBadge } from '@/components/ui/taxonomy-badge'
 import { Textarea } from '@/components/ui/textarea'
 import { CheckCircle2, AlertCircle, XCircle, Code, Settings, List } from 'lucide-react'
 import { CodeEditor } from '@/components/ui/code-editor'
@@ -76,31 +78,6 @@ export function SQLLinting() {
     }
   }
 
-  const getSeverityBadge = (severity: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      error: 'destructive',
-      warning: 'default',
-      info: 'secondary'
-    }
-
-    return (
-      <Badge variant={variants[severity] || 'secondary'}>
-        {severity.toUpperCase()}
-      </Badge>
-    )
-  }
-
-  const getCategoryBadge = (category: string) => {
-    const colors: Record<string, string> = {
-      security: 'bg-red-100 text-red-800',
-      performance: 'bg-yellow-100 text-yellow-800',
-      'best-practice': 'bg-blue-100 text-blue-800',
-      style: 'bg-gray-100 text-gray-800',
-      safety: 'bg-purple-100 text-purple-800'
-    }
-    return colors[category] || 'bg-gray-100 text-gray-800'
-  }
-
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -152,14 +129,15 @@ export function SQLLinting() {
               {lintResult ? (
                 <div className="flex items-center gap-2 mt-2">
                   <span>Score: </span>
-                  <Badge variant={lintResult.score >= 80 ? 'default' : lintResult.score >= 50 ? 'secondary' : 'destructive'}>
-                    {lintResult.score}/100
-                  </Badge>
+                  <StatusBadge
+                    status={lintResult.score >= 80 ? 'passed' : lintResult.score >= 50 ? 'warning' : 'failed'}
+                    label={`${lintResult.score}/100`}
+                  />
                   {lintResult.valid && (
-                    <Badge variant="default" className="bg-green-500">
+                    <StatusBadge status="valid">
                       <CheckCircle2 className="w-3 h-3 mr-1" />
                       Valid
-                    </Badge>
+                    </StatusBadge>
                   )}
                 </div>
               ) : (
@@ -183,7 +161,7 @@ export function SQLLinting() {
                           {getSeverityIcon(issue.severity)}
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              {getSeverityBadge(issue.severity)}
+                              <StatusBadge status={issue.severity} label={issue.severity.toUpperCase()} />
                               {issue.rule && (
                                 <span className="text-xs text-muted-foreground">({issue.rule})</span>
                               )}
@@ -234,17 +212,9 @@ export function SQLLinting() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="font-medium">{rule.name}</span>
-                            <Badge className={getCategoryBadge(rule.category)}>
-                              {rule.category}
-                            </Badge>
-                            <Badge variant={rule.severity === 'error' ? 'destructive' : rule.severity === 'warning' ? 'default' : 'secondary'}>
-                              {rule.severity}
-                            </Badge>
-                            {rule.enabled ? (
-                              <Badge variant="default" className="bg-green-500">Enabled</Badge>
-                            ) : (
-                              <Badge variant="secondary">Disabled</Badge>
-                            )}
+                            <TaxonomyBadge taxonomy="sql" value={rule.category} />
+                            <StatusBadge status={rule.severity} label={rule.severity} />
+                            <StatusBadge status={rule.enabled ? 'enabled' : 'disabled'} />
                           </div>
                           <p className="text-sm text-muted-foreground">{rule.description}</p>
                         </div>

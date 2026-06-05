@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { RoleBadge } from '@/components/ui/role-badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -221,25 +223,6 @@ export function EnhancedUserManagement() {
     }
   }
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'SUPER_ADMIN': return 'bg-red-100 text-red-800'
-      case 'ADMIN': return 'bg-orange-100 text-orange-800'
-      case 'MANAGER': return 'bg-blue-100 text-blue-800'
-      case 'USER': return 'bg-muted text-foreground'
-      default: return 'bg-muted text-foreground'
-    }
-  }
-
-  const getSpaceRoleColor = (role: string) => {
-    switch (role) {
-      case 'owner': return 'bg-purple-100 text-purple-800'
-      case 'admin': return 'bg-orange-100 text-orange-800'
-      case 'member': return 'bg-green-100 text-green-800'
-      default: return 'bg-muted text-foreground'
-    }
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -374,12 +357,8 @@ export function EnhancedUserManagement() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2 mb-2">
                             <h3 className="text-lg font-semibold truncate">{user.name}</h3>
-                            <Badge className={getRoleColor(user.role)}>
-                              {user.role}
-                            </Badge>
-                            <Badge variant={user.is_active ? "default" : "secondary"}>
-                              {user.is_active ? "Active" : "Inactive"}
-                            </Badge>
+                            <RoleBadge role={user.role} label={user.role} />
+                            <StatusBadge status={user.is_active ? 'active' : 'inactive'} />
                           </div>
                           
                           <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-3">
@@ -408,12 +387,7 @@ export function EnhancedUserManagement() {
                                 {user.spaces.map((space) => (
                                   <div key={space.id} className="flex items-center space-x-1 bg-muted/50 px-2 py-1 rounded-md">
                                     <span className="text-sm font-medium">{space.space_name}</span>
-                                    <Badge 
-                                      variant="outline" 
-                                      className={`text-xs ${getSpaceRoleColor(space.role)}`}
-                                    >
-                                      {space.role}
-                                    </Badge>
+                                    <RoleBadge role={space.role} size="sm" className="text-xs" />
                                   </div>
                                 ))}
                               </div>
@@ -522,12 +496,8 @@ export function EnhancedUserManagement() {
                   <h3 className="text-xl font-semibold">{selectedUser.name}</h3>
                   <p className="text-muted-foreground">{selectedUser.email}</p>
                   <div className="flex items-center space-x-2 mt-2">
-                    <Badge className={getRoleColor(selectedUser.role)}>
-                      {selectedUser.role}
-                    </Badge>
-                    <Badge variant={selectedUser.is_active ? "default" : "secondary"}>
-                      {selectedUser.is_active ? "Active" : "Inactive"}
-                    </Badge>
+                    <RoleBadge role={selectedUser.role} label={selectedUser.role} />
+                    <StatusBadge status={selectedUser.is_active ? 'active' : 'inactive'} />
                   </div>
                 </div>
               </div>
@@ -558,9 +528,7 @@ export function EnhancedUserManagement() {
                           <p className="text-sm text-muted-foreground">{space.space_description}</p>
                         )}
                       </div>
-                      <Badge className={getSpaceRoleColor(space.role)}>
-                        {space.role}
-                      </Badge>
+                      <RoleBadge role={space.role} />
                     </div>
                   ))}
                 </div>

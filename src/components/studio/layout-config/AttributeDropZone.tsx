@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input'
 import { Calendar as CalendarIcon, Hash, Type as TypeIcon } from 'lucide-react'
 import { Attribute } from './chartDataSourceTypes'
-import { getAttributeIcon, getTypeBadgeClass, getEffectiveType } from './chartDataSourceUtils'
+import { getAttributeIcon, getAttributeTypeOptionClass, getEffectiveType } from './chartDataSourceUtils'
 import { AggregationType } from './ChartDataSourceConfig'
 import { ColorInput } from './ColorInput'
 import { Z_INDEX } from '@/lib/z-index'
@@ -492,7 +492,7 @@ function TypeBadgePopover({
           ].map(opt => (
             <button
               key={opt.key}
-              className={`flex items-center gap-2 w-full text-left px-2 py-1 rounded hover:bg-accent hover:text-accent-foreground text-xs ${getTypeBadgeClass(opt.key)}`}
+              className={`flex items-center gap-2 w-full text-left px-2 py-1 rounded hover:bg-accent hover:text-accent-foreground text-xs ${getAttributeTypeOptionClass(opt.key)}`}
               onClick={() => onSelect(opt.key as any)}
             >
               <opt.Icon className="h-3.5 w-3.5" />

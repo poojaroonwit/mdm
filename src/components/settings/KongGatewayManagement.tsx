@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { Switch } from '@/components/ui/switch'
 import {
   Dialog,
@@ -221,24 +221,24 @@ export function KongGatewayManagement() {
     switch (status) {
       case 'connected':
         return (
-          <Badge variant="default" className="bg-green-100 text-green-700">
+          <StatusBadge status={status}>
             <CheckCircle className="h-3 w-3 mr-1" />
             Connected
-          </Badge>
+          </StatusBadge>
         )
       case 'error':
         return (
-          <Badge variant="destructive">
+          <StatusBadge status={status}>
             <XCircle className="h-3 w-3 mr-1" />
             Error
-          </Badge>
+          </StatusBadge>
         )
       default:
         return (
-          <Badge variant="outline">
+          <StatusBadge status="disconnected">
             <AlertCircle className="h-3 w-3 mr-1" />
             Disconnected
-          </Badge>
+          </StatusBadge>
         )
     }
   }
@@ -307,9 +307,7 @@ export function KongGatewayManagement() {
                       </div>
                       {getStatusBadge(instance.status)}
                       {!instance.isActive && (
-                        <Badge variant="outline" className="ml-2">
-                          Inactive
-                        </Badge>
+                        <StatusBadge status="inactive" className="ml-2" />
                       )}
                     </div>
 
