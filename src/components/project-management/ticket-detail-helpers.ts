@@ -3,7 +3,7 @@ import type { SearchableSelectOption } from './SearchableSelect'
 
 export const NONE_SELECT_OPTION: SearchableSelectOption = { value: '__none__', label: 'None' }
 
-export const ATTRIBUTE_INPUT_CLASS = 'h-9 rounded-md border-0 bg-muted/70 shadow-none focus-visible:ring-1 focus-visible:ring-ring'
+export const ATTRIBUTE_INPUT_CLASS = 'h-9 rounded-md border-0 bg-muted/70 text-foreground shadow-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring dark:bg-zinc-800/80 dark:text-zinc-50 dark:placeholder:text-zinc-400'
 export const ATTRIBUTE_GROUP_CLASS = 'space-y-4'
 export const ATTRIBUTE_FIELD_CLASS = 'space-y-1.5'
 

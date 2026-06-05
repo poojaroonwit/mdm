@@ -833,7 +833,7 @@ export function TicketDetailModalEnhanced({
           value={editTitle}
           onChange={(e) => setEditTitle(e.target.value)}
           placeholder="Ticket title"
-          className="h-11 rounded-md border-transparent bg-transparent px-0 text-xl font-semibold tracking-tight shadow-none focus-visible:ring-0"
+          className="h-11 rounded-md border-transparent bg-transparent px-0 text-xl font-semibold tracking-tight text-foreground shadow-none focus-visible:ring-0 dark:text-zinc-50"
         />
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <Badge variant="outline" className="rounded-md">{isNew ? 'New ticket' : ticket.id.slice(0, 8)}</Badge>
@@ -845,7 +845,7 @@ export function TicketDetailModalEnhanced({
   )
 
   const customFieldsPanel = (
-    <div className="space-y-6 rounded-md border border-border bg-background p-4">
+    <div className="space-y-6 text-foreground dark:text-zinc-50">
       <div className={ATTRIBUTE_GROUP_CLASS}>
         <h3 className="text-sm font-medium">Details</h3>
         <div className="grid gap-3">
@@ -989,7 +989,7 @@ export function TicketDetailModalEnhanced({
         </div>
       </div>
 
-      <div className={`${ATTRIBUTE_GROUP_CLASS} border-t border-border pt-5`}>
+      <div className={`${ATTRIBUTE_GROUP_CLASS} border-t border-border pt-5 dark:border-zinc-800`}>
         <h3 className="text-sm font-medium">Project attributes</h3>
         {!selectedProject ? (
           <div className="rounded-md border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
@@ -1017,15 +1017,15 @@ export function TicketDetailModalEnhanced({
   )
 
   const ticketDetailsFields = (
-    <div className="space-y-5">
-      <div className="rounded-md bg-white">
+    <div className="space-y-5 text-foreground dark:text-zinc-50">
+      <div className="min-h-[220px]">
         <RichMarkdownEditor
           content={editDescription}
           onChange={setEditDescription}
           placeholder='Add description, or type "/" for tools...'
           editable
           showToolbar={false}
-          className="bg-white [&_.ProseMirror]:min-h-[220px] [&_.ProseMirror]:p-0 [&_.ProseMirror_p]:my-2"
+          className="bg-transparent text-foreground dark:text-zinc-50 [&_.ProseMirror]:min-h-[220px] [&_.ProseMirror]:p-0 [&_.ProseMirror]:text-foreground dark:[&_.ProseMirror]:text-zinc-50 [&_.ProseMirror_p]:my-2"
         />
       </div>
 
@@ -1048,7 +1048,7 @@ export function TicketDetailModalEnhanced({
   )
 
   const detailsLayout = (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(340px,0.8fr)]">
+    <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(280px,320px)] xl:grid-cols-[minmax(0,1fr)_340px]">
       <div className="min-w-0">
         {ticketDetailsFields}
       </div>
@@ -1059,7 +1059,7 @@ export function TicketDetailModalEnhanced({
   )
 
   const createTicketBodyContent = (
-    <div className="mt-4 flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto">
       <div className="pb-2">
         {detailsLayout}
       </div>
@@ -1120,7 +1120,7 @@ export function TicketDetailModalEnhanced({
 
   // Body content — simple form for new, full tabs for existing
   const bodyContent = (
-    <div className="mt-4 flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto text-foreground dark:text-zinc-50">
       {isNew ? (
         // Simple create form — same fields, no inapplicable tabs
         <div className="space-y-4">
@@ -1922,7 +1922,7 @@ export function TicketDetailModalEnhanced({
   if (isDrawer) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-[96vw] sm:max-w-[1100px] overflow-y-auto flex flex-col gap-0 bg-white p-0 text-zinc-950">
+        <SheetContent side="right" className="w-[96vw] sm:max-w-[1100px] overflow-y-auto flex flex-col gap-0 bg-background p-0 text-foreground dark:bg-zinc-950 dark:text-zinc-50">
           <SheetHeader className="px-6 py-4 border-b">
             <SheetTitle className="sr-only">Ticket</SheetTitle>
             {headerContent}
@@ -1940,11 +1940,11 @@ export function TicketDetailModalEnhanced({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col bg-white text-zinc-950">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col bg-background text-foreground dark:bg-zinc-950 dark:text-zinc-50">
         <DialogHeader className="flex-shrink-0">
           {headerContent}
         </DialogHeader>
-        <DialogBody className="flex-1 overflow-y-auto min-h-0 pt-4">
+        <DialogBody className="flex-1 overflow-y-auto min-h-0 pt-0">
           {isNew ? createTicketBodyContent : bodyContent}
         </DialogBody>
         <DialogFooter className="flex-shrink-0 mt-0 pt-0 border-t-0">

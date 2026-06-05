@@ -1,19 +1,14 @@
-import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from '@/lib/api-middleware'
-import { requireSpaceAccess } from '@/lib/space-access'
+import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
-import { getSecretsManager } from '@/lib/secrets-manager'
-import { decryptApiKey } from '@/lib/encryption'
 import { ManageEngineServiceDeskService } from '@/lib/manageengine-servicedesk'
 import { db } from '@/lib/db'
 import { checkServiceDeskRateLimit, getServiceDeskRateLimitConfig } from '@/lib/servicedesk-rate-limiter'
-import { createAuditLog } from '@/lib/audit'
 import { validateTicketData, sanitizeTicketData } from '@/lib/servicedesk-validator'
+import { getServiceDeskConfig } from '@/lib/manageengine-servicedesk-helper'
 
 // Push ticket to ServiceDesk
 async function postHandler(request: NextRequest) {
-  const startTime = Date.now()
-  
   const authResult = await requireAuthWithId()
   if (!authResult.success) return authResult.response
   const { session } = authResult
@@ -23,7 +18,7 @@ async function postHandler(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { ticket_id, space_id, requesterEmail, category, subcategory, group, technician, syncComments, syncAttachments, syncTimeLogs } = body
+  const { ticket_id, space_id, requesterEmail, category, subcategory, group, technician, syncComments } = body
 
   if (!ticket_id || !space_id) {
     return NextResponse.json(
@@ -89,46 +84,12 @@ async function postHandler(request: NextRequest) {
     return NextResponse.json({ error: 'Ticket not found' }, { status: 404 })
   }
 
-  // Get ServiceDesk configuration
-  const { rows: configRows } = await query(
-    `SELECT id, api_url, api_auth_apikey_value
-     FROM public.external_connections 
-     WHERE space_id = $1::uuid 
-       AND connection_type = 'api'
-       AND name LIKE '%ServiceDesk%'
-       AND deleted_at IS NULL
-       AND is_active = true
-     LIMIT 1`,
-    [space_id]
-  )
+  const config = await getServiceDeskConfig()
 
-  if (configRows.length === 0) {
+  if (!config || !config.isActive) {
     return NextResponse.json(
       { error: 'ServiceDesk integration not configured for this space' },
       { status: 400 }
-    )
-  }
-
-  const config = configRows[0]
-  
-  // Get API key from Vault or decrypt
-  const secretsManager = getSecretsManager()
-  const useVault = secretsManager.getBackend() === 'vault'
-  
-  let apiKey: string
-  if (useVault && config.api_auth_apikey_value?.startsWith('vault://')) {
-    const vaultPath = config.api_auth_apikey_value.replace('vault://', '')
-    const connectionId = vaultPath.split('/')[0]
-    const creds = await secretsManager.getSecret(`servicedesk-integrations/${connectionId}/credentials`)
-    apiKey = creds?.apiKey || ''
-  } else {
-    apiKey = decryptApiKey(config.api_auth_apikey_value) || ''
-  }
-
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: 'Failed to retrieve API key' },
-      { status: 500 }
     )
   }
 
@@ -158,8 +119,9 @@ async function postHandler(request: NextRequest) {
 
   // Initialize ServiceDesk service
   const service = new ManageEngineServiceDeskService({
-    baseUrl: config.api_url,
-    apiKey
+    baseUrl: config.baseUrl,
+    apiKey: config.apiKey,
+    technicianKey: config.technicianKey,
   })
 
   // Map our ticket to ServiceDesk format
@@ -205,8 +167,8 @@ async function postHandler(request: NextRequest) {
 
     // Sync additional data if requested
     let syncedComments = 0
-    let syncedAttachments = 0
-    let syncedTimeLogs = 0
+    const syncedAttachments = 0
+    const syncedTimeLogs = 0
 
     if (syncComments && requestId) {
       try {

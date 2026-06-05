@@ -1,7 +1,7 @@
-import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from '@/lib/api-middleware'
-import { requireSpaceAccess } from '@/lib/space-access'
+import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
+import { getServiceDeskConfig } from '@/lib/manageengine-servicedesk-helper'
 
 // Export ServiceDesk configuration
 async function getHandler(request: NextRequest) {
@@ -25,17 +25,7 @@ async function getHandler(request: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  // Get configuration (without sensitive data)
-  const { rows: configRows } = await query(
-    `SELECT id, name, api_url, api_auth_type, is_active, created_at, updated_at
-     FROM public.external_connections 
-     WHERE space_id = $1::uuid 
-       AND connection_type = 'api'
-       AND name LIKE '%ServiceDesk%'
-       AND deleted_at IS NULL
-     LIMIT 1`,
-    [space_id]
-  )
+  const config = await getServiceDeskConfig()
 
   // Get field mappings
   const { rows: mappingRows } = await query(
@@ -66,10 +56,10 @@ async function getHandler(request: NextRequest) {
     version: '1.0',
     exported_at: new Date().toISOString(),
     space_id,
-    config: configRows[0] ? {
-      name: configRows[0].name,
-      baseUrl: configRows[0].api_url,
-      isActive: configRows[0].is_active
+    config: config ? {
+      name: config.name,
+      baseUrl: config.baseUrl,
+      isActive: config.isActive
     } : null,
     field_mappings: mappingRows,
     templates: templateRows,

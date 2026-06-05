@@ -1,11 +1,11 @@
-import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from '@/lib/api-middleware'
-import { requireSpaceAccess } from '@/lib/space-access'
+import { requireAuth, requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 import { getSecretsManager } from '@/lib/secrets-manager'
-import { encryptApiKey, decryptApiKey } from '@/lib/encryption'
+import { encryptApiKey } from '@/lib/encryption'
 import { ManageEngineServiceDeskService } from '@/lib/manageengine-servicedesk'
 import { createAuditContext } from '@/lib/audit-context-helper'
+import { getServiceDeskConfig } from '@/lib/manageengine-servicedesk-helper'
 
 // Get ServiceDesk configuration for a space
 async function getHandler(request: NextRequest) {
@@ -32,43 +32,21 @@ async function getHandler(request: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  let rows: any[] = []
+  const config = await getServiceDeskConfig()
 
-  try {
-    // Get configuration from external_connections table
-    const result = await query(
-      `SELECT id, name, api_url, api_auth_type, api_auth_apikey_name,
-              is_active, created_at, updated_at
-       FROM public.external_connections
-       WHERE space_id::text = $1
-         AND connection_type = 'api'
-         AND name LIKE '%ServiceDesk%'
-         AND deleted_at IS NULL
-       ORDER BY created_at DESC
-       LIMIT 1`,
-      [spaceId]
-    )
-    rows = result.rows
-  } catch (error) {
-    console.warn('ServiceDesk configuration lookup failed:', error)
+  if (!config) {
     return NextResponse.json({ config: null })
   }
-
-  if (rows.length === 0) {
-    return NextResponse.json({ config: null })
-  }
-
-  const config = rows[0]
   
   return NextResponse.json({
     config: {
       id: config.id,
       name: config.name,
-      baseUrl: config.api_url,
-      isActive: config.is_active,
+      baseUrl: config.baseUrl,
+      isActive: config.isActive,
       isConfigured: true,
-      createdAt: config.created_at,
-      updatedAt: config.updated_at
+      createdAt: config.createdAt,
+      updatedAt: config.updatedAt
     }
   })
 }
@@ -118,6 +96,7 @@ async function postHandler(request: NextRequest) {
   const useVault = secretsManager.getBackend() === 'vault'
   
   let storedApiKey = apiKey
+  let storedTechnicianKey = technicianKey || null
   
   if (useVault) {
     const connectionId = `temp-${Date.now()}`
@@ -132,54 +111,55 @@ async function postHandler(request: NextRequest) {
       auditContext
     )
     storedApiKey = `vault://${connectionId}/apiKey`
+    storedTechnicianKey = technicianKey ? `vault://${connectionId}/technicianKey` : null
   } else {
     storedApiKey = encryptApiKey(apiKey)
+    storedTechnicianKey = technicianKey ? encryptApiKey(technicianKey) : null
   }
 
   // Check if configuration already exists
   const { rows: existing } = await query(
-    `SELECT id FROM public.external_connections 
-     WHERE space_id::text = $1
-       AND connection_type = 'api'
-       AND name LIKE '%ServiceDesk%'
+    `SELECT id FROM public.platform_integrations
+     WHERE type = 'servicedesk'
        AND deleted_at IS NULL
      LIMIT 1`,
-    [space_id]
+    []
   )
 
   let connectionId: string
+  const configPayload = {
+    baseUrl,
+    apiKey: storedApiKey,
+    ...(storedTechnicianKey ? { technicianKey: storedTechnicianKey } : {}),
+  }
+
   if (existing.length > 0) {
     // Update existing
     connectionId = existing[0].id
     await query(
-      `UPDATE public.external_connections SET
-       api_url = $1,
-       api_auth_type = $2,
-       api_auth_apikey_name = $3,
-       api_auth_apikey_value = $4,
+      `UPDATE public.platform_integrations SET
+       name = $1,
+       config = $2,
+       status = 'active',
+       is_enabled = true,
        updated_at = NOW()
-       WHERE id::text = $5`,
-      [baseUrl, 'apikey', 'TECHNICIAN_KEY', storedApiKey, connectionId]
+       WHERE id::text = $3`,
+      [name || 'ManageEngine ServiceDesk', JSON.stringify(configPayload), connectionId]
     )
   } else {
     // Create new
     const { rows } = await query(
-      `INSERT INTO public.external_connections
-       (space_id, name, connection_type, db_type, api_url, api_method, api_auth_type, 
-        api_auth_apikey_name, api_auth_apikey_value, is_active)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `INSERT INTO public.platform_integrations
+       (name, type, config, status, is_enabled, created_by, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
        RETURNING id`,
       [
-        space_id,
         name || 'ManageEngine ServiceDesk',
-        'api',
-        'api',
-        baseUrl,
-        'POST',
-        'apikey',
-        'TECHNICIAN_KEY',
-        storedApiKey,
-        true
+        'servicedesk',
+        JSON.stringify(configPayload),
+        'active',
+        true,
+        session.user.id
       ]
     )
     connectionId = rows[0].id
@@ -203,6 +183,26 @@ async function postHandler(request: NextRequest) {
           await secretsManager.deleteSecret(`servicedesk-integrations/${tempId}/credentials`)
         } catch (error) {
           // Ignore if already deleted
+        }
+        if (technicianKey) {
+          await query(
+            `UPDATE public.platform_integrations
+             SET config = jsonb_set(
+                   jsonb_set(config::jsonb, '{apiKey}', to_jsonb($1::text), true),
+                   '{technicianKey}', to_jsonb($2::text), true
+                 ),
+                 updated_at = NOW()
+             WHERE id::text = $3`,
+            [`vault://${connectionId}/apiKey`, `vault://${connectionId}/technicianKey`, connectionId]
+          )
+        } else {
+          await query(
+            `UPDATE public.platform_integrations
+             SET config = jsonb_set(config::jsonb, '{apiKey}', to_jsonb($1::text), true),
+                 updated_at = NOW()
+             WHERE id::text = $2`,
+            [`vault://${connectionId}/apiKey`, connectionId]
+          )
         }
       }
     }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
-import { getServiceDeskService } from '@/lib/manageengine-servicedesk-helper'
+import { getServiceDeskConfig, getServiceDeskService } from '@/lib/manageengine-servicedesk-helper'
 
 interface HealthStatus {
   healthy: boolean
@@ -39,28 +39,17 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Check configuration
-    const { rows: configRows } = await query(
-      `SELECT id, api_url, api_auth_apikey_value, is_active
-       FROM public.external_connections 
-       WHERE space_id = $1::uuid 
-         AND connection_type = 'api'
-         AND name LIKE '%ServiceDesk%'
-         AND deleted_at IS NULL
-       LIMIT 1`,
-      [spaceId]
-    )
+    const config = await getServiceDeskConfig()
 
-    if (configRows.length === 0) {
+    if (!config) {
       healthStatus.error = 'ServiceDesk integration not configured'
       healthStatus.details!.connection = false
       return NextResponse.json(healthStatus)
     }
 
-    const config = configRows[0]
     healthStatus.details!.connection = true
 
-    if (!config.is_active) {
+    if (!config.isActive) {
       healthStatus.status = 'degraded'
       healthStatus.error = 'ServiceDesk integration is inactive'
       return NextResponse.json(healthStatus)

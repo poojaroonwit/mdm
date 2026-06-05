@@ -1,62 +1,107 @@
 import { query } from './db'
 import { getSecretsManager } from './secrets-manager'
 import { decryptApiKey } from './encryption'
-import { ManageEngineServiceDeskService, ManageEngineServiceDeskConfig } from './manageengine-servicedesk'
+import { ManageEngineServiceDeskService } from './manageengine-servicedesk'
+
+export interface ServiceDeskIntegrationConfig {
+  id: string
+  name: string
+  baseUrl: string
+  apiKey: string
+  technicianKey?: string
+  isActive: boolean
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+}
+
+function parseConfig(config: unknown): Record<string, unknown> {
+  if (!config) return {}
+  if (typeof config === 'string') {
+    try {
+      return JSON.parse(config)
+    } catch {
+      return {}
+    }
+  }
+  return typeof config === 'object' ? config as Record<string, unknown> : {}
+}
+
+async function resolveCredential(value: unknown, integrationId: string, key: 'apiKey' | 'technicianKey') {
+  if (typeof value !== 'string' || !value) return null
+
+  if (value.startsWith('vault://')) {
+    const vaultPath = value.replace('vault://', '')
+    const connectionId = vaultPath.split('/')[0] || integrationId
+    const secretsManager = getSecretsManager()
+    const creds = await secretsManager.getSecret(`servicedesk-integrations/${connectionId}/credentials`)
+    return typeof creds?.[key] === 'string' ? creds[key] : null
+  }
+
+  return decryptApiKey(value)
+}
 
 /**
- * Get ServiceDesk service instance for a space
+ * Get normalized ServiceDesk configuration.
+ *
+ * ServiceDesk is configured through platform_integrations.config. Older code
+ * queried external_connections.api_url, but the current schema stores external
+ * DB connections there and has no API URL columns.
  */
-export async function getServiceDeskService(spaceId: string): Promise<ManageEngineServiceDeskService | null> {
+export async function getServiceDeskConfig(): Promise<ServiceDeskIntegrationConfig | null> {
+  const { rows } = await query(
+    `SELECT id, name, status, is_enabled, config, created_at, updated_at
+     FROM public.platform_integrations
+     WHERE type = 'servicedesk'
+       AND deleted_at IS NULL
+     ORDER BY updated_at DESC NULLS LAST, created_at DESC NULLS LAST
+     LIMIT 1`,
+    []
+  )
+
+  if (rows.length === 0) return null
+
+  const row = rows[0]
+  const config = parseConfig(row.config)
+  const baseUrl = typeof config.baseUrl === 'string'
+    ? config.baseUrl
+    : typeof config.apiUrl === 'string'
+      ? config.apiUrl
+      : ''
+  const apiKey = await resolveCredential(config.apiKey, row.id, 'apiKey')
+  const technicianKey = await resolveCredential(config.technicianKey, row.id, 'technicianKey')
+
+  if (!baseUrl || !apiKey) return null
+
+  return {
+    id: row.id,
+    name: row.name,
+    baseUrl,
+    apiKey,
+    technicianKey: technicianKey || undefined,
+    isActive: row.is_enabled !== false && row.status !== 'inactive',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+/**
+ * Get ServiceDesk service instance for a space.
+ */
+export async function getServiceDeskService(_spaceId: string): Promise<ManageEngineServiceDeskService | null> {
   try {
-    // Get configuration
-    const { rows: configRows } = await query(
-      `SELECT id, api_url, api_auth_apikey_value
-       FROM public.external_connections 
-       WHERE space_id::text = $1
-         AND connection_type = 'api'
-         AND name LIKE '%ServiceDesk%'
-         AND deleted_at IS NULL
-         AND is_active = true
-       LIMIT 1`,
-      [spaceId]
-    )
+    const config = await getServiceDeskConfig()
 
-    if (configRows.length === 0) {
+    if (!config || !config.isActive) {
       return null
     }
 
-    const config = configRows[0]
-    
-    // Get API key from Vault or decrypt
-    const secretsManager = getSecretsManager()
-    const useVault = secretsManager.getBackend() === 'vault'
-    
-    let apiKey: string | null = null
-    let technicianKey: string | null = null
-
-    if (useVault && config.api_auth_apikey_value?.startsWith('vault://')) {
-      const vaultPath = config.api_auth_apikey_value.replace('vault://', '')
-      const connectionId = vaultPath.split('/')[0]
-      const creds = await secretsManager.getSecret(`servicedesk-integrations/${connectionId}/credentials`)
-      apiKey = creds?.apiKey || null
-      technicianKey = creds?.technicianKey || null
-    } else {
-      apiKey = decryptApiKey(config.api_auth_apikey_value)
-    }
-
-    if (!apiKey) {
-      return null
-    }
-
-    // Create and return service instance
     return new ManageEngineServiceDeskService({
-      baseUrl: config.api_url,
-      apiKey,
-      technicianKey: technicianKey || undefined
+      baseUrl: config.baseUrl,
+      apiKey: config.apiKey,
+      technicianKey: config.technicianKey,
     })
   } catch (error) {
     console.error('Error getting ServiceDesk service:', error)
     return null
   }
 }
-

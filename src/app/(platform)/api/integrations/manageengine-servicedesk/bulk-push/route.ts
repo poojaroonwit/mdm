@@ -1,14 +1,9 @@
-import { requireAuth, requireAuthWithId, requireAdmin, withErrorHandling } from '@/lib/api-middleware'
-import { requireSpaceAccess } from '@/lib/space-access'
+import { requireAuthWithId, withErrorHandling } from '@/lib/api-middleware'
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
-import { getSecretsManager } from '@/lib/secrets-manager'
-import { decryptApiKey } from '@/lib/encryption'
 import { ManageEngineServiceDeskService } from '@/lib/manageengine-servicedesk'
 import { db } from '@/lib/db'
-import { createServiceDeskJob } from '@/lib/servicedesk-job-queue'
-import { checkServiceDeskRateLimit, getServiceDeskRateLimitConfig } from '@/lib/servicedesk-rate-limiter'
-import { createAuditLog } from '@/lib/audit'
+import { getServiceDeskConfig } from '@/lib/manageengine-servicedesk-helper'
 
 // Bulk push multiple tickets to ServiceDesk
 async function postHandler(request: NextRequest) {
@@ -42,50 +37,19 @@ async function postHandler(request: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  // Get ServiceDesk configuration
-  const { rows: configRows } = await query(
-    `SELECT id, api_url, api_auth_apikey_value
-     FROM public.external_connections 
-     WHERE space_id = $1::uuid 
-       AND connection_type = 'api'
-       AND name LIKE '%ServiceDesk%'
-       AND deleted_at IS NULL
-       AND is_active = true
-     LIMIT 1`,
-    [space_id]
-  )
+  const config = await getServiceDeskConfig()
 
-  if (configRows.length === 0) {
+  if (!config || !config.isActive) {
     return NextResponse.json(
       { error: 'ServiceDesk integration not configured for this space' },
       { status: 400 }
     )
   }
 
-  const config = configRows[0]
-  const secretsManager = getSecretsManager()
-  const useVault = secretsManager.getBackend() === 'vault'
-  
-  let apiKey: string
-  if (useVault && config.api_auth_apikey_value?.startsWith('vault://')) {
-    const vaultPath = config.api_auth_apikey_value.replace('vault://', '')
-    const connectionId = vaultPath.split('/')[0]
-    const creds = await secretsManager.getSecret(`servicedesk-integrations/${connectionId}/credentials`)
-    apiKey = creds?.apiKey || ''
-  } else {
-    apiKey = decryptApiKey(config.api_auth_apikey_value) || ''
-  }
-
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: 'Failed to retrieve API key' },
-      { status: 500 }
-    )
-  }
-
   const service = new ManageEngineServiceDeskService({
-    baseUrl: config.api_url,
-    apiKey
+    baseUrl: config.baseUrl,
+    apiKey: config.apiKey,
+    technicianKey: config.technicianKey,
   })
 
   const results = {
@@ -168,7 +132,7 @@ async function postHandler(request: NextRequest) {
             })
 
             // Sync comments, attachments, time logs if requested
-            let synced = { comments: 0, attachments: 0, timeLogs: 0 }
+            const synced = { comments: 0, attachments: 0, timeLogs: 0 }
             
             if (syncComments) {
               try {
