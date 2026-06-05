@@ -1,5 +1,5 @@
 import { PluginDefinition, PluginStatus } from '../types'
-import { marketplacePlugins } from '@plugins/index'
+import { marketplacePlugins } from '@/features/plugin-adapters/marketplace-plugins'
 
 /**
  * Plugin Registry - Manages plugin registration and discovery

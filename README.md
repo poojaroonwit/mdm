@@ -1,259 +1,105 @@
-# Master Data Management (MDM) System
+# Customer Data Management Platform
 
-A comprehensive web application for event organizations to store and manage customer data, built with PostgreSQL and PostgREST as the primary backend. **Now featuring a flexible EAV (Entity-Attribute-Value) system for dynamic data modeling.**
+A configuration-first Unified Data Platform for managing spaces, dynamic data models, storage, reports, projects, plugins, and AI/chatbot experiences.
 
-## 🚀 **Tech Stack**
+## Stack
 
-- **Frontend:** Next.js 14, React, TypeScript, Tailwind CSS
-- **Backend:** PostgreSQL with PostgREST API
-- **Authentication:** NextAuth.js with OAuth providers
-- **Real-time:** Server-Sent Events for live updates
-- **Storage:** MinIO (S3-compatible) for file management
-- **Deployment:** Docker, Docker Compose
-- **UI Components:** Radix UI, Lucide React Icons
+- **Framework:** Next.js 16 App Router, React 19, TypeScript 5
+- **Database:** PostgreSQL with Prisma 6 and selected raw SQL helpers
+- **Auth:** NextAuth.js 4 with credentials, Google OAuth, Azure AD, 2FA, and account lockout
+- **Storage:** MinIO and S3-compatible providers
+- **AI:** OpenAI API, ChatKit, OpenAI Agent SDK, Dify integration
+- **UI:** Tailwind CSS 4, local Shadcn/Radix-style primitives, Lucide React
+- **Plugin ecosystem:** `plugin-hub/` as a separate app/service
 
-## ✨ **Features**
-
-### **Core Functionality**
-- **EAV System:** Flexible Entity-Attribute-Value data modeling for dynamic schemas
-- **Customer Management:** Complete CRUD operations for customer data
-- **Assignment System:** Kanban-style task management with drag-and-drop
-- **Dynamic Data Entry:** Manage any type of entity with configurable attributes
-- **Import/Export:** Excel/CSV file processing with progress tracking
-- **Settings:** Configurable system settings and user preferences
-
-### **Advanced Features**
-- **EAV Data Modeling:** Create any entity type with custom attributes dynamically
-- **Real-time Updates:** Live data synchronization using Server-Sent Events
-- **Role-based Access Control:** Granular permissions with database-level security
-- **Audit Trail:** Complete activity logging and value history tracking
-- **Search & Filtering:** Advanced search capabilities across all entity types
-- **Responsive Design:** Mobile-first, modern UI with glass morphism
-- **Dark/Light Theme:** Automatic theme switching
-- **Thai Font Support:** Full Unicode and Thai language support
-- **File Storage:** MinIO (S3-compatible) for file uploads
-
-## 🏗️ **Architecture**
-
-### **EAV System Architecture**
-- **Entity Types:** Define different types of entities (Customer, Product, Order, etc.)
-- **Attributes:** Define fields and properties for each entity type
-- **Entities:** Individual instances of entity types
-- **Values:** Actual data stored for entity attributes
-- **Dynamic Schema:** No hardcoded tables - everything is configurable
-- **Type Safety:** Strong typing with enum-based data types
-- **Audit Trail:** Complete value history tracking
-
-### **Frontend Architecture**
-- **Pages:** Dashboard, Customer Management, Assignments, Data Entry, Settings, EAV Management
-- **Components:** Reusable UI components with Radix UI, EAV-specific components
-- **Layout:** Responsive sidebar navigation with header
-- **State Management:** React hooks and PostgREST client
-- **Styling:** Tailwind CSS with custom design system
-
-### **Backend Architecture**
-- **Database:** PostgreSQL with EAV schema and direct connection
-- **Authentication:** NextAuth.js with multiple OAuth providers
-- **Real-time:** Server-Sent Events for live updates
-- **Storage:** MinIO (S3-compatible) for file management
-- **API:** PostgREST for database operations and Next.js API routes
-- **EAV API:** Dedicated endpoints for entity types, attributes, entities, and values
-
-## 🚀 **Quick Start**
-
-### **Prerequisites**
-- Node.js 18+
-- Docker and Docker Compose (optional, for database)
-
-### **Build & Run**
-
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-2. **Set up environment:**
-   ```bash
-   cp env.example .env.local
-   # Edit .env.local with your configuration
-   ```
-
-3. **Start development:**
-   ```bash
-   npm run dev
-   ```
-   Opens at [http://localhost:3000](http://localhost:3000)
-
-4. **Build for production:**
-   ```bash
-   npm run build
-   npm start
-   ```
-
-## 🐳 **Docker Deployment**
+## Quick Start
 
 ```bash
-docker-compose up -d
+npm install
+cp env.example .env.local
+npm run dev
 ```
 
-## 📁 **Project Structure**
+The app runs on the Next.js dev server with webpack. Turbopack is intentionally disabled.
 
-```
-customer-data-management/
-├── src/
-│   ├── app/                    # Next.js app directory
-│   │   ├── api/               # API routes
-│   │   ├── auth/              # Authentication pages
-│   │   ├── dashboard/         # Dashboard page
-│   │   ├── customers/         # Customer management
-│   │   ├── assignments/       # Assignment kanban
-│   │   ├── data/              # Data entry pages
-│   │   ├── settings/          # Settings page
-│   │   └── import-export/     # Import/Export page
-│   ├── components/            # Reusable components
-│   │   ├── ui/               # Base UI components
-│   │   └── layout/           # Layout components
-│   ├── lib/                  # Utility libraries
-│   │   └── database.js       # Database connection utilities
-│   └── types/                # TypeScript type definitions
-├── prisma/                   # Database schema and migrations
-│   └── schema.prisma         # Prisma schema definition
-├── docs/                     # Documentation
-├── docker-compose.yml        # Production Docker setup
-└── Dockerfile               # Application container
-```
+## Common Commands
 
-## 🔧 **Configuration**
-
-### **Environment Variables**
-See `env.example` for all required environment variables:
-
-- **Database:** PostgreSQL connection string
-- **PostgREST:** External REST API configuration
-- **Application:** App-specific settings and configuration
-
-### **Database Schema**
-The application uses a comprehensive PostgreSQL database schema with:
-- **Users & Authentication:** NextAuth.js integration
-- **Customer Data:** Complete customer information
-- **Assignment System:** Task and workflow management
-- **Data Models:** Flexible data structure system
-- **Audit Trail:** Activity logging and tracking
-- **Row Level Security:** Database-level access control (PostgreSQL RLS)
-
-## 📊 **API Documentation**
-
-### **Core Endpoints**
-- `GET/POST /api/customers` - Customer management
-- `GET/POST /api/assignments` - Assignment operations
-- `GET/POST /api/companies` - Company data
-- `GET/POST /api/import-export/import` - File import
-- `GET/POST /api/import-export/export` - Data export
-- `GET /api/sse` - Real-time updates via Server-Sent Events
-
-### **Authentication**
-- NextAuth.js handles all authentication
-- OAuth providers: Google, Azure AD, Email
-- Automatic session management
-
-## 🎨 **Design System**
-
-### **Color Palette**
-- **Primary:** Blue (#1e40af)
-- **Secondary:** Slate (#64748b)
-- **Success:** Green (#059669)
-- **Warning:** Amber (#d97706)
-- **Error:** Red (#dc2626)
-
-### **Typography**
-- **Font Family:** Inter (Latin), Noto Sans Thai (Thai)
-- **Font Weights:** 400, 500, 600, 700
-- **Responsive:** Mobile-first approach
-
-### **Components**
-- **Glass Morphism:** Modern, translucent design elements
-- **Rounded Corners:** Consistent border radius
-- **Shadows:** Subtle depth and elevation
-- **Animations:** Smooth transitions and micro-interactions
-
-## 🔒 **Security**
-
-### **Authentication & Authorization**
-- **NextAuth.js:** Secure authentication with multiple providers
-- **Row Level Security:** Database-level access control (PostgreSQL RLS)
-- **Session Management:** Automatic token handling
-- **OAuth Integration:** Google, Azure AD support
-
-### **Data Protection**
-- **Row Level Security:** Database-level access control
-- **Input Validation:** Comprehensive data validation
-- **SQL Injection Prevention:** Prisma ORM and parameterized queries
-- **XSS Protection:** Content Security Policy
-
-## 📈 **Performance**
-
-### **Optimization Strategies**
-- **Server-side Rendering:** Next.js SSR for better SEO
-- **Image Optimization:** Next.js Image component
-- **Code Splitting:** Automatic bundle optimization
-- **Database Caching:** Query result caching
-- **Database Indexing:** Optimized query performance
-
-### **Real-time Features**
-- **Server-Sent Events:** Live data synchronization
-- **Connection Management:** Automatic reconnection
-- **Event Streaming:** Real-time updates for data changes
-
-## 🧪 **Testing**
-
-### **Test Coverage**
-- **Unit Tests:** Component and utility testing
-- **Integration Tests:** API endpoint testing
-- **E2E Tests:** Full user journey testing
-- **Performance Tests:** Load and stress testing
-
-### **Test Commands**
 ```bash
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run tests with coverage
-npm run test:coverage
+npm run dev              # Start local dev server
+npm run build            # Generate Prisma client and build production app
+npm start                # Start production server
+npm run lint             # ESLint
+npm run lint:fix         # ESLint autofix
+npm run type-check       # TypeScript no-emit check
+npm test                 # Jest tests
+npx playwright test      # E2E tests
+npx prisma generate      # Regenerate Prisma client
 ```
 
-## 📚 **Documentation**
+For direct Next.js commands, always pass `--webpack`.
 
-- **[Complete System Guide](docs/COMPLETE_SYSTEM_GUIDE.md)** - Comprehensive system overview and setup
-- **[API Documentation](docs/api/)** - Complete API reference for EAV system
-- **[Database Setup Guide](docs/DATABASE_SETUP_GUIDE.md)** - Database configuration and migration
-- **[Environment Setup](docs/ENVIRONMENT_SETUP.md)** - Environment variables and configuration
-- **[Documentation Index](docs/README.md)** - All available documentation
-- **[Software Requirements Specification (SRS)](docs/SRS.md)**
-- **[Business Requirements Document (BRD)](docs/BRD.md)**
-- **[Test Cases](docs/TEST_CASES.md)**
+## Project Structure
 
-## 🤝 **Contributing**
+```text
+src/
+  app/
+    (platform)/           Authenticated platform pages and API routes
+    [space]/              Space-scoped runtime routes
+    chat/[id]/            Public chatbot/widget runtime
+  components/
+    ui/                   Local UI primitives
+    layout/               Shared layout/navigation
+  features/               Feature packages shared outside route folders
+  contexts/               React context providers
+  hooks/                  Shared hooks
+  lib/                    Core database, auth, API, AI, and integration utilities
+  shared/                 Cross-feature server utilities
+  types/                  Shared TypeScript contracts
+plugin-hub/               Separate plugin ecosystem app/source tree
+prisma/schema.prisma      Database schema and Prisma model source of truth
+docs/                     Architecture and domain docs
+scripts/                  Operational scripts
+```
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## Architecture Notes
 
-## 📄 **License**
+The platform has two active dynamic modeling systems:
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- `DataModel / Attribute / DataRecord / DataRecordValue`
+- `EntityType / EavAttribute / EavEntity / EavValue`
 
-## 🆘 **Support**
+New features should choose one explicitly and avoid introducing a third modeling pattern.
 
-For support and questions:
-- **Documentation:** Check the docs folder
-- **Issues:** Create a GitHub issue
-- **Email:** Contact the development team
+Most backend behavior lives in Next.js route handlers under `src/app/(platform)/api`. Prisma is preferred for schema-backed operations; the `query()` helper in `src/lib/db.ts` is used for dynamic or legacy SQL.
 
----
+For UUID comparisons in raw SQL, cast the column:
 
-**Built with ❤️ for event organizations worldwide**
+```sql
+WHERE id::text = $1
+```
+
+## Plugin Boundary
+
+`plugin-hub/` is intended to be separate from the main app. Main-app routes should import plugin-backed UI through `src/features/plugin-adapters/`, while longer-term plugin work should move toward metadata/API/dynamic loading instead of source-level coupling.
+
+## Documentation
+
+- [High-Level Architecture](docs/HIGH_LEVEL_ARCHITECTURE.md)
+- [Chat Embed Guide](docs/CHAT_EMBED_GUIDE.md)
+- [Attributes](docs/attributes.md)
+- [Entity Types](docs/entity-types.md)
+- [Entities](docs/entities.md)
+- [Values](docs/values.md)
+- [Mobile Content API](docs/mobile-content-api.md)
+
+## Verification
+
+Run the full gate before merging broad refactors:
+
+```bash
+npm run lint
+npm run type-check
+npm run build
+```
+
+On Windows, if Prisma generation fails with `EPERM` while renaming `query_engine-windows.dll.node`, stop processes that may be holding the Prisma engine file and rerun the build.

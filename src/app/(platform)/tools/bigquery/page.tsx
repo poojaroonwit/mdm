@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { BigQueryInterface } from '@plugins/sql-query/src/components/BigQueryInterface'
-import { BreadcrumbActions } from '@plugins/sql-query/src/components/BreadcrumbActions'
+import { BigQueryInterface, BreadcrumbActions } from '@/features/plugin-adapters/sql-query'
 import { useSpaces } from '@/hooks'
 import { useBreadcrumbActions } from '../hooks'
 

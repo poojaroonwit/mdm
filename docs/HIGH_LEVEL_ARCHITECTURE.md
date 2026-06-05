@@ -1,186 +1,139 @@
-# High-Level Architecture Documentation
+# High-Level Architecture
 
-## Introduction
-The Master Data Management (MDM) System is a Unified Data Platform designed for event organizations. it provides a centralized, flexible environment for managing customer profiles, task assignments, and dynamic data models.
+## Purpose
 
-## Technology Stack
+This repository contains a Unified Data Platform for technical operators and developers. It combines master-data management, dynamic data modeling, multi-tenant spaces, storage, project management, AI/chatbot tooling, reporting, and a plugin ecosystem in one Next.js application.
 
-### Frontend
-- **Framework:** Next.js 14 (App Router)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **UI Components:** Radix UI, Lucide React
-- **Authentication:** NextAuth.js
-- **State Management:** React Context, Hooks
+The product is configuration-first: users should be able to understand and adjust platform behavior quickly without moving through a heavy enterprise console.
 
-### Backend & API
-- **Database:** PostgreSQL
-- **ORM:** Prisma
-- **API Engine:** PostgREST (Automatic REST API from DB schema)
-- **Real-time:** Server-Sent Events (SSE)
-- **External API Interaction:** Direct SQL queries and PostgREST fetches
+## Current Stack
 
-### Storage & Infrastructure
-- **File Storage:** MinIO (S3-Compatible)
-- **Secrets:** HashiCorp Vault
-- **Cache:** Redis
-- **Gateway:** Kong API Gateway (Optional/Integrated)
-- **Containerization:** Docker & Docker Compose
+- **Framework:** Next.js 16 App Router, React 19, TypeScript 5
+- **Database:** PostgreSQL through Prisma 6 and selected raw SQL helpers
+- **Auth:** NextAuth.js 4 with credentials, Google OAuth, Azure AD, 2FA, account lockout, and dynamic SSO config
+- **Storage:** MinIO and S3-compatible providers
+- **AI:** OpenAI API, ChatKit, OpenAI Agent SDK, Dify integration
+- **UI:** Tailwind CSS 4, local Shadcn/Radix-style primitives, Lucide React
+- **Server state:** TanStack React Query where feature code has adopted it
+- **Observability:** SigNoz and Langfuse hooks, intended to fail silently when not configured
+- **Plugin ecosystem:** `plugin-hub/` is a separate app/service; main-app source imports are centralized through plugin adapters
 
----
+## Source Layout
 
-## System Architecture
+```text
+src/
+  app/                       Next.js App Router routes
+    (platform)/              Authenticated platform pages and API routes
+    [space]/                 Space-scoped runtime routes
+    chat/[id]/               Public chatbot/widget runtime
+  components/                Shared application components
+    ui/                      Local UI primitives
+    layout/                  Shared navigation/layout
+  features/                  Feature packages used outside route folders
+  contexts/                  React context providers
+  hooks/                     Shared hooks
+  lib/                       Core server/client utilities
+  shared/                    Cross-feature server utilities
+  types/                     Shared TypeScript contracts
+plugin-hub/                  Separate plugin ecosystem app/source tree
+prisma/schema.prisma         Database schema and Prisma model source of truth
+docs/                        Architecture and domain documentation
+scripts/                     Operational scripts
+```
 
-### Granular System Interaction
-The following diagram provides a detailed view of how the various services interact, including internal components like API Proxy and Database RLS.
+## Runtime Architecture
 
 ```mermaid
 graph TD
-    subgraph "Client Layer"
-        User((User))
-        Browser[Web Browser / PWA]
-    end
-    
-    subgraph "Frontend Service (Next.js)"
-        UI[React Components]
-        API_Proxy[API Proxy Layer /src/app/api]
-        Auth_Edge[NextAuth Middleware]
-        SSE_Manager[SSE Event Manager]
-    end
-    
-    subgraph "Backend Services"
-        PRG[PostgREST Engine]
-        HUB[Plugin Hub]
-        Job_Worker[Background Workers]
-    end
-    
-    subgraph "Data & Infra Layer"
-        subgraph "PostgreSQL Cluster"
-            DB[(Primary DB)]
-            RLS[Row Level Security Policy]
-            Schemas[[Public / EAV Schemas]]
-        end
-        MinIO[(MinIO Object Storage)]
-        Redis[(Redis Cache)]
-        Vault[Vault Secret Mgmt]
-    end
-    
-    User -->|Interaction| Browser
-    Browser -->|HTTPS/WS| Auth_Edge
-    Auth_Edge -->|Authorized| UI
-    UI -->|Next.js Proxy| API_Proxy
-    API_Proxy -->|REST| PRG
-    API_Proxy -->|gRPC/REST| HUB
-    API_Proxy -->|Get Secrets| Vault
-    API_Proxy -->|Cache Keys| Redis
-    
-    PRG -->|SQL| RLS
-    RLS -->|Filtered Access| Schemas
-    Schemas -->|Data| DB
-    
-    UI -->|Direct Upload| MinIO
-    SSE_Manager -->|Live Updates| Browser
+  Browser["Browser / PWA"] --> Next["Next.js 16 App"]
+  Next --> Pages["App Router pages"]
+  Next --> Api["Route handlers in src/app/(platform)/api"]
+  Api --> Auth["NextAuth session and RBAC helpers"]
+  Api --> Prisma["Prisma client"]
+  Api --> RawSql["query() raw SQL helper"]
+  Prisma --> Postgres["PostgreSQL"]
+  RawSql --> Postgres
+  Api --> MinIO["MinIO / S3 storage"]
+  Api --> OpenAI["OpenAI / ChatKit / Agent SDK"]
+  Api --> Integrations["External systems"]
+  Next --> PluginHub["Plugin Hub service"]
 ```
-
----
 
 ## Data Architecture
 
-### EAV Data Flow
-The MDM system uses a dynamic EAV (Entity-Attribute-Value) model. Here is how data is resolved from the flexible schema into a usable object in the UI.
+The app currently has two data modeling systems:
 
-```mermaid
-sequenceDiagram
-    participant UI as Frontend UI
-    participant API as Next.js API
-    participant PRG as PostgREST
-    participant DB as PostgreSQL (EAV Tables)
+1. **DataModel / Attribute / DataRecord / DataRecordValue**  
+   A structured dynamic model system with defined attributes.
 
-    UI->>API: GET /api/data/entity/[id]
-    API->>PRG: GET /entity_types?select=attributes(...)
-    PRG->>DB: Fetch Schema Definition
-    DB-->>PRG: Attribute Metadata
-    
-    API->>PRG: GET /eav_values?entity_id=[id]
-    PRG->>DB: Query eav_values Table
-    DB-->>PRG: Raw Rows (AttrID, Value)
-    
-    Note over API: Transformation Logic:<br/>Map Raw Values to Attribute Names
-    
-    API-->>UI: JSON Object { name: 'John', custom_field: 'Value' }
+2. **EAV System: EntityType / EavAttribute / EavEntity / EavValue**  
+   A more flexible entity-attribute-value system for arbitrary schemas.
+
+Both systems are active. New work should make an explicit choice rather than adding a third modeling path.
+
+## API Architecture
+
+Most active backend behavior lives in Next.js route handlers under `src/app/(platform)/api`. Prisma is the preferred ORM for schema-backed operations. Raw SQL is used where dynamic schemas, compatibility, or legacy table names require it.
+
+When writing raw SQL with UUID comparisons, cast the column to text:
+
+```sql
+WHERE id::text = $1
 ```
 
----
+Do not cast the parameter to UUID in raw SQL through Prisma-bound parameters.
 
-## Security & Authorization Flow
+## Plugin Boundary
 
-The system employs a multi-layered security approach, ensuring data is protected at the edge, the application, and the database level.
+`plugin-hub/` is intended to be a separate app/service. The desired boundary is:
 
-```mermaid
-graph LR
-    Request[Incoming Request] -->|1. Edge| Nginx[Nginx/Kong Gateway]
-    Nginx -->|2. App Auth| NextAuth[NextAuth.js Session]
-    NextAuth -->|3. Route Guard| Middleware[Next.js Middleware]
-    Middleware -->|4. Database Access| RLS[PostgreSQL RLS]
-    
-    subgraph "Database Isolation"
-        RLS -->|Check app.current_user_id| Records[Tenant-Specific Records]
-    end
-    
-    subgraph "Secrets"
-        Vault[HashiCorp Vault] -.->|Inject Keys| NextAuth
-    end
+- Main app reads plugin metadata from manifests or plugin hub APIs.
+- Main app renders plugin UI through stable component registration or dynamic loading.
+- Main app does not import arbitrary plugin source from route pages.
+
+Current technical debt: the adapter layer still re-exports plugin source, so plugin internals can still affect the main build. This is cleaner than route-level imports, but the longer-term target is manifest/API/dynamic registration.
+
+## Quality Hotspots
+
+The codebase has several large components that should be split before adding major behavior:
+
+- `src/components/project-management/TicketDetailModalEnhanced.tsx`
+- `src/components/studio/layout-config/ChartConfigurationSection.tsx`
+- `src/app/(platform)/admin/features/data/components/DatabaseDataModelMerged.tsx`
+- `src/app/(platform)/admin/features/users/components/UserManagement.tsx`
+- `src/app/[space]/settings/page.tsx`
+- `src/app/(platform)/admin/features/storage/components/StorageManagement.tsx`
+
+Recommended split pattern:
+
+- `types.ts` for local contracts
+- `constants.ts` for static options
+- `api.ts` or `service.ts` for fetch/data access
+- `useXyz.ts` for state orchestration
+- `components/` for focused presentational pieces
+
+## Refactor Rules
+
+- Keep route handlers thin.
+- Keep feature-owned logic close to the feature.
+- Put shared contracts in `src/types` only when more than one feature uses them.
+- Prefer Prisma for schema-backed data and `query()` for dynamic/legacy SQL.
+- Avoid adding new `any` outside plugin/dynamic integration boundaries.
+- Avoid adding direct `@plugins/*` imports from app routes.
+- Keep UI primitives stable; if many call sites need a prop, update the primitive once.
+
+## Verification Gates
+
+Use these gates after architecture or refactor work:
+
+```bash
+npm run lint
+npm run type-check
+npm run build
 ```
 
-### Core Components
-1. **MDM App (Next.js):** The main entry point. Handles routing, UI rendering, and server-side logic (SSE, Proxy, Auth).
-2. **PostgREST API:** Provides a standardized REST API directly over the PostgreSQL schema, significantly reducing backend boilerplate.
-3. **Plugin Hub:** A microservice designed to manage and serve external plugins, allowing for modular extensibility.
-4. **PostgreSQL:** The source of truth for all structured data, utilizing Row Level Security (RLS) for data isolation.
-5. **MinIO:** Handles binary data storage (attachments, logos, etc.) via S3-compliant protocol.
+If disk space or locked Prisma binaries block `npm run build` on Windows, run TypeScript directly without incremental cache writes:
 
----
-
-## Data Architecture
-
-### Entity-Attribute-Value (EAV) System
-The MDM system implements a flexible **EAV model** to support dynamic data schemas without requiring database migrations for every new field.
-
-- **Entity Types:** Definitions for high-level objects (Customer, Product, etc.).
-- **Attributes:** Metadata defining what fields an entity has (Name, Email, Custom Field X).
-- **Entities:** Specific instances of an Entity Type.
-- **Values:** The actual data stored for a specific entity-attribute pair.
-
-### Prisma Schema
-Prisma is used as the primary ORM for internal application logic (especially for complex relations and migrations). It maps directly to the PostgreSQL schema and is used by the Next.js API routes for operations that require multi-table orchestration beyond what PostgREST provides.
-
----
-
-## Security
-
-1. **Authentication:** Integrated via NextAuth.js with support for OAuth (Google, Azure AD) and traditional credentials.
-2. **Authorization:** 
-    - **App Level:** Middleware and route-level protection based on session data.
-    - **Database Level:** PostgreSQL Row Level Security (RLS) ensures that users can only access data within their assigned "Spaces".
-3. **Secret Management:** Sensitive configurations and keys are managed via **HashiCorp Vault** rather than hardcoded environment variables in production.
-
----
-
-## Performance & Scalability
-
-The MDM system is designed for high-concurrency environments, with a target performance of **1,000+ simultaneous users** as specified in the business requirements.
-
-### Key Scaling Strategies
-1.  **Stateless API (PostgREST)**: Unlike traditional monolithic backends, PostgREST is an extremely lean and stateless engine. It can be horizontally scaled across multiple containers to handle massive traffic with minimal overhead.
-2.  **Redis Caching**: Frequently accessed metadata (Entity Type definitions, Chatbot configs) are cached in Redis, drastically reducing the load on the primary PostgreSQL database.
-3.  **Connection Pooling**: The system uses connection pooling for both direct Prisma connections and PostgREST, ensuring efficient database resource utilization during peak loads.
-4.  **Offloaded ChatKit Processing**: For chatbots using the ChatKit engine, the heavy lifting of message streaming and complex UI rendering is partially offloaded to the **OpenAI Infrastructure** (via the ChatKit SDK), reducing the compute burden on the MDM server.
-5.  **Rate Limiting**: Integrated Redis-based rate limiting prevents individual users or malicious actors from monopolizing system resources.
-
----
-
-## Deployment & Orchestration
-
-The application is fully containerized using **Docker**.
-- **Local Dev:** Orchestrated via `docker-compose.yml`.
-- **Production:** Deployable to **Kubernetes** clusters, leveraging standard CI/CD pipelines (GitLab/GitHub actions).
+```bash
+.\node_modules\.bin\tsc.cmd --noEmit --incremental false --pretty false
+```

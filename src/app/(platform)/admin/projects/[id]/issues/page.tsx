@@ -1,4 +1,4 @@
-import { TicketsList } from '@plugins/project-management/src/tickets/components/TicketsList'
+import { TicketsList } from '@/features/plugin-adapters/project-management'
 
 interface PageProps {
     params: Promise<{

@@ -44,7 +44,7 @@ import { addRecentItem, getRecentItems, clearRecentItems, getRelativeTimeString,
 import { usePageTracking } from '@/hooks/usePageTracking'
 import { PlatformLayout } from '@/components/platform/PlatformLayout'
 import { BigQueryInterface } from './admin/features/business-intelligence'
-import { OutlineKnowledgeBase } from '@plugins/knowledge-base/src/components/OutlineKnowledgeBase'
+import { OutlineKnowledgeBase } from '@/features/plugin-adapters/knowledge-base'
 import { MarketplaceHome } from '@/features/marketplace'
 import { InfrastructureOverview } from '@/features/infrastructure'
 import { NotificationCenter } from './admin/features/system'

@@ -1,6 +1,6 @@
 'use client'
 
-import { OutlineKnowledgeBase } from '@plugins/knowledge-base/src/components/OutlineKnowledgeBase'
+import { OutlineKnowledgeBase } from '@/features/plugin-adapters/knowledge-base'
 import { useParams } from 'next/navigation'
 
 export default function SpaceKnowledgePage() {

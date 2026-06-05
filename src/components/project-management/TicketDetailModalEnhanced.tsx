@@ -30,82 +30,86 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
 import {
-  Clock, Plus, MessageSquare, Paperclip,
-  ListChecks, GitBranch, Trash2, Edit, Download, ExternalLink, Loader, Network,
+  Clock, MessageSquare, Paperclip,
+  ListChecks, GitBranch, Trash2, Edit, ExternalLink, Loader, Network,
   AlignLeft
 } from 'lucide-react'
-import { TicketRelationshipGraph } from './TicketRelationshipGraph'
-import { TicketRelationshipsPanel } from './TicketRelationshipsPanel'
 import { RichMarkdownEditor } from '@/components/knowledge-base/RichMarkdownEditor'
 import { format } from 'date-fns'
 import { toDateInputValue } from '@/lib/date-formatters'
 import { showError, showSuccess, showInfo } from '@/lib/toast-utils'
-import { DEFAULT_PROJECT_STATUSES, ProjectFieldOption, ProjectStatusDefinition, normalizeProjectMetadata } from './project-config'
+import { DEFAULT_PROJECT_STATUSES, ProjectStatusDefinition, normalizeProjectMetadata } from './project-config'
 import { SearchableSelect } from './SearchableSelect'
-
-interface TicketDetailModalProps {
-  ticket: {
-    id: string
-    title: string
-    description?: string | null
-    status: string
-    priority: string
-    dueDate?: string | null
-    estimate?: number | null
-    assignees?: Array<{
-      user: {
-        id: string
-        name: string
-        avatar?: string | null
-        email?: string
-      }
-    }>
-    tags?: Array<{
-      id: string
-      name: string
-      color?: string | null
-    }>
-    spaces?: Array<{
-      spaceId: string
-      space?: {
-        id: string
-        name: string
-      }
-    }>
-    creator?: {
-      email?: string
-    }
-    attributes?: Array<{
-      name: string
-      value?: string | null
-      jsonValue?: any
-    }>
-  } | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSave?: (ticket: any) => void
-  onDelete?: (ticketId: string) => void
-  displayMode?: 'modal' | 'drawer'
-}
-
-interface ProjectCustomFieldDefinition {
-  name: string
-  displayName: string
-  type: string
-  isRequired?: boolean
-  options?: ProjectFieldOption[]
-  attributeType?: 'system' | 'project'
-  sharing?: {
-    mode: 'individual' | 'shared'
-    projectIds?: string[]
-  }
-}
-
-interface ProjectOption {
-  id: string
-  name: string
-  metadata?: Record<string, any> | null
-}
+import type {
+  GitLabRepository,
+  IntegrationConfig,
+  ProjectChildOption,
+  ProjectCustomFieldDefinition,
+  ProjectOption,
+  ServiceDeskAttachment,
+  ServiceDeskComment,
+  ServiceDeskTimeLog,
+  TicketAttachment,
+  TicketComment,
+  TicketDependencies,
+  TicketSubtask,
+  TicketTimeLog,
+  TicketAttribute,
+  TicketCustomField,
+  TicketDetailModalProps,
+} from './ticket-detail-types'
+import {
+  addServiceDeskComment,
+  addTicketComment,
+  addTicketSubtask,
+  addTicketTimeLog,
+  checkServiceDeskConflicts,
+  deleteServiceDeskTicket,
+  fetchActiveGitLabIntegration,
+  fetchGitLabRepositories,
+  fetchProjectChildren,
+  fetchProjects,
+  fetchServiceDeskConfig,
+  fetchServiceDeskData,
+  fetchTicketActivity,
+  linkServiceDeskTickets,
+  logServiceDeskTime,
+  pushTicketToGitLab,
+  pushTicketToServiceDesk,
+  resolveServiceDeskConflicts,
+  searchServiceDeskTickets,
+  setServiceDeskResolution,
+  syncTicketFromServiceDesk,
+  updateServiceDeskTicket,
+  updateTicketStatus,
+  uploadServiceDeskAttachment,
+  uploadTicketAttachment,
+} from './ticket-detail-api'
+import {
+  ATTRIBUTE_FIELD_CLASS,
+  ATTRIBUTE_GROUP_CLASS,
+  ATTRIBUTE_INPUT_CLASS,
+  NONE_SELECT_OPTION,
+  PRIORITY_OPTIONS,
+  SERVICE_DESK_TICKET_TYPE_OPTIONS,
+  getTicketSpaceId,
+} from './ticket-detail-helpers'
+import {
+  buildServiceDeskUpdates,
+  buildTicketSavePayload,
+  getTicketIntegrationMetadata,
+  getTicketRepositoryFromMetadata,
+  getTicketType,
+  normalizeTicketAttributes,
+} from './ticket-detail-mappers'
+import {
+  AttachmentsTab,
+  CommentsTab,
+  DependenciesTab,
+  RelationshipsTab,
+  SubtasksTab,
+  TimeTab,
+} from './ticket-detail-activity-tabs'
 
 export function TicketDetailModalEnhanced({
   ticket,
@@ -122,37 +126,24 @@ export function TicketDetailModalEnhanced({
   const [editDueDate, setEditDueDate] = useState('')
   const [editStartDate, setEditStartDate] = useState('')
   const [editEstimate, setEditEstimate] = useState('')
-  const [customFields, setCustomFields] = useState<Array<{
-    id?: string
-    name: string
-    displayName: string
-    type: string
-    value?: string | null
-    isRequired?: boolean
-    options?: ProjectFieldOption[]
-    attributeType?: 'system' | 'project'
-    sharing?: {
-      mode: 'individual' | 'shared'
-      projectIds?: string[]
-    }
-  }>>([])
+  const [customFields, setCustomFields] = useState<TicketCustomField[]>([])
 
   const [activeTab, setActiveTab] = useState('details')
-  const [comments, setComments] = useState<any[]>([])
-  const [attachments, setAttachments] = useState<any[]>([])
-  const [subtasks, setSubtasks] = useState<any[]>([])
-  const [dependencies, setDependencies] = useState<{ dependencies: any[], dependents: any[] }>({ dependencies: [], dependents: [] })
-  const [timeLogs, setTimeLogs] = useState<any[]>([])
+  const [comments, setComments] = useState<TicketComment[]>([])
+  const [attachments, setAttachments] = useState<TicketAttachment[]>([])
+  const [subtasks, setSubtasks] = useState<TicketSubtask[]>([])
+  const [dependencies, setDependencies] = useState<TicketDependencies>({ dependencies: [], dependents: [] })
+  const [timeLogs, setTimeLogs] = useState<TicketTimeLog[]>([])
   const [newComment, setNewComment] = useState('')
   const [newSubtask, setNewSubtask] = useState({ title: '', status: 'BACKLOG' })
   const [newTimeLog, setNewTimeLog] = useState({ hours: '', description: '', loggedAt: format(new Date(), 'yyyy-MM-dd') })
   const [pushingToServiceDesk, setPushingToServiceDesk] = useState(false)
-  const [serviceDeskConfig, setServiceDeskConfig] = useState<any>(null)
+  const [serviceDeskConfig, setServiceDeskConfig] = useState<IntegrationConfig | null>(null)
   const [ticketType, setTicketType] = useState<string>('')
   const [serviceDeskRequestId, setServiceDeskRequestId] = useState<string | null>(null)
-  const [serviceDeskComments, setServiceDeskComments] = useState<any[]>([])
-  const [serviceDeskAttachments, setServiceDeskAttachments] = useState<any[]>([])
-  const [serviceDeskTimeLogs, setServiceDeskTimeLogs] = useState<any[]>([])
+  const [serviceDeskComments, setServiceDeskComments] = useState<ServiceDeskComment[]>([])
+  const [serviceDeskAttachments, setServiceDeskAttachments] = useState<ServiceDeskAttachment[]>([])
+  const [serviceDeskTimeLogs, setServiceDeskTimeLogs] = useState<ServiceDeskTimeLog[]>([])
   const [syncingFromServiceDesk, setSyncingFromServiceDesk] = useState(false)
   const [newServiceDeskComment, setNewServiceDeskComment] = useState('')
   const [newServiceDeskResolution, setNewServiceDeskResolution] = useState('')
@@ -161,20 +152,20 @@ export function TicketDetailModalEnhanced({
   const [updatingServiceDesk, setUpdatingServiceDesk] = useState(false)
   const [deletingServiceDesk, setDeletingServiceDesk] = useState(false)
   const [pushingToGitLab, setPushingToGitLab] = useState(false)
-  const [gitLabConfig, setGitLabConfig] = useState<any>(null)
+  const [gitLabConfig, setGitLabConfig] = useState<IntegrationConfig | null>(null)
   const [gitLabIssueUrl, setGitLabIssueUrl] = useState<string | null>(null)
-  const [gitLabRepositories, setGitLabRepositories] = useState<Array<{id: number, projectId: string, name: string, path: string}>>([])
+  const [gitLabRepositories, setGitLabRepositories] = useState<GitLabRepository[]>([])
   const [selectedRepository, setSelectedRepository] = useState<string>('')
   const [loadingRepositories, setLoadingRepositories] = useState(false)
   const [projects, setProjects] = useState<ProjectOption[]>([])
   const [selectedProject, setSelectedProject] = useState<string>('')
   const [projectStatuses, setProjectStatuses] = useState<ProjectStatusDefinition[]>(DEFAULT_PROJECT_STATUSES)
   const [, setProjectCustomFields] = useState<ProjectCustomFieldDefinition[]>([])
-  const [modules, setModules] = useState<Array<{id: string, name: string, projectId: string}>>([])
+  const [modules, setModules] = useState<ProjectChildOption[]>([])
   const [selectedModule, setSelectedModule] = useState<string>('')
-  const [milestones, setMilestones] = useState<Array<{id: string, name: string, projectId: string}>>([])
+  const [milestones, setMilestones] = useState<ProjectChildOption[]>([])
   const [selectedMilestone, setSelectedMilestone] = useState<string>('')
-  const [releases, setReleases] = useState<Array<{id: string, name: string, projectId: string}>>([])
+  const [releases, setReleases] = useState<ProjectChildOption[]>([])
   const [selectedRelease, setSelectedRelease] = useState<string>('')
 
   const normalizedDescription = useMemo(() => {
@@ -185,7 +176,7 @@ export function TicketDetailModalEnhanced({
   const applyProjectFieldDefinitions = (
     projectId: string,
     availableProjects: ProjectOption[],
-    sourceAttributes?: Array<{ name: string; value?: string | null; displayName?: string; type?: string; isRequired?: boolean }>
+    sourceAttributes?: TicketAttribute[]
   ) => {
     const project = availableProjects.find((item) => item.id === projectId)
     const metadata = normalizeProjectMetadata(project?.metadata)
@@ -229,21 +220,10 @@ export function TicketDetailModalEnhanced({
       setEditDescription(ticket.description || '')
       setEditStatus(ticket.status || 'BACKLOG')
       setEditPriority(ticket.priority || 'MEDIUM')
-      setEditDueDate(toDateInputValue((ticket as any).dueDate))
-      setEditStartDate(toDateInputValue((ticket as any).startDate))
-      setEditEstimate((ticket as any).estimate?.toString() || '')
-      setCustomFields(
-        (ticket.attributes || []).map((attribute: any) => ({
-          id: attribute.id,
-          name: attribute.name,
-          displayName: attribute.displayName || attribute.name,
-          type: attribute.type || 'TEXT',
-          value: attribute.type === 'DATE' ? toDateInputValue(attribute.value) : attribute.value || '',
-          isRequired: attribute.isRequired || false,
-          attributeType: attribute.attributeType || 'project',
-          sharing: attribute.sharing || { mode: 'individual', projectIds: [] },
-        }))
-      )
+      setEditDueDate(toDateInputValue(ticket.dueDate))
+      setEditStartDate(toDateInputValue(ticket.startDate))
+      setEditEstimate(ticket.estimate?.toString() || '')
+      setCustomFields(normalizeTicketAttributes(ticket.attributes))
     }
   }, [ticket, open])
 
@@ -252,70 +232,43 @@ export function TicketDetailModalEnhanced({
       loadAllData()
       checkServiceDeskConfig()
       checkGitLabConfig()
-      loadProjectsAndModules((ticket as any).projectId || '')
-      // Load ticket type from attributes
-      const typeAttr = ticket.attributes?.find(attr => 
-        attr.name.toLowerCase() === 'ticket type' || 
-        attr.name.toLowerCase() === 'type' ||
-        attr.name.toLowerCase() === 'tickettype'
-      )
-      if (typeAttr) {
-        setTicketType(String(typeAttr.value || ''))
-      } else {
-        // Check tags for ticket type
-        const typeTags = ['Request', 'Change', 'Change Request', 'Issue', 'Problem', 'Incident']
-        const foundTypeTag = ticket.tags?.find(tag => 
-          typeTags.some(type => tag.name.toLowerCase().includes(type.toLowerCase()))
-        )
-        if (foundTypeTag) {
-          setTicketType(foundTypeTag.name)
-        } else {
-          setTicketType('')
-        }
-      }
-      // Load ServiceDesk request ID from metadata
-      const metadata = (ticket as any).metadata
+      loadProjectsAndModules(ticket.projectId || '')
+      setTicketType(getTicketType(ticket))
+
+      const metadata = getTicketIntegrationMetadata(ticket)
       if (metadata?.serviceDeskRequestId) {
         setServiceDeskRequestId(metadata.serviceDeskRequestId)
         loadServiceDeskData(metadata.serviceDeskRequestId)
       }
-      // Load GitLab issue URL and repository from metadata
+
       if (metadata?.gitlabIssueUrl) {
         setGitLabIssueUrl(metadata.gitlabIssueUrl)
       }
-      if (metadata?.gitlabRepository || metadata?.gitlabProjectId) {
-        setSelectedRepository(metadata.gitlabRepository || metadata.gitlabProjectId)
+      const repository = getTicketRepositoryFromMetadata(metadata)
+      if (repository) {
+        setSelectedRepository(repository)
       }
-      // Load project/module/milestone/release from ticket
-      if ((ticket as any).projectId) {
-        setSelectedProject((ticket as any).projectId)
+      if (ticket.projectId) {
+        setSelectedProject(ticket.projectId)
       }
-      if ((ticket as any).moduleId) {
-        setSelectedModule((ticket as any).moduleId)
+      if (ticket.moduleId) {
+        setSelectedModule(ticket.moduleId)
       }
-      if ((ticket as any).milestoneId) {
-        setSelectedMilestone((ticket as any).milestoneId)
+      if (ticket.milestoneId) {
+        setSelectedMilestone(ticket.milestoneId)
       }
-      if ((ticket as any).releaseId) {
-        setSelectedRelease((ticket as any).releaseId)
+      if (ticket.releaseId) {
+        setSelectedRelease(ticket.releaseId)
       }
     }
   }, [ticket?.id, open, ticket?.attributes, ticket?.tags])
 
   const checkServiceDeskConfig = async () => {
-    if (!ticket?.spaces || ticket.spaces.length === 0) return
-    
-    const spaceId = ticket.spaces[0].spaceId || ticket.spaces[0].space?.id
+    const spaceId = getTicketSpaceId(ticket)
     if (!spaceId) return
 
     try {
-      const response = await fetch(`/api/integrations/manageengine-servicedesk?space_id=${spaceId}`)
-      if (response.ok) {
-        const data = await response.json()
-        setServiceDeskConfig(data.config)
-      } else {
-        setServiceDeskConfig(null)
-      }
+      setServiceDeskConfig(await fetchServiceDeskConfig(spaceId))
     } catch (error) {
       console.error('Failed to check ServiceDesk config:', error)
     }
@@ -323,17 +276,10 @@ export function TicketDetailModalEnhanced({
 
   const checkGitLabConfig = async () => {
     try {
-      const response = await fetch('/api/admin/integrations/list')
-      if (response.ok) {
-        const data = await response.json()
-        const gitlabIntegration = data.integrations?.find((i: any) => 
-          i.type?.toLowerCase() === 'gitlab' && i.status === 'active' && i.isEnabled
-        )
-        if (gitlabIntegration) {
-          setGitLabConfig({ isConfigured: true, ...gitlabIntegration })
-          // Load repositories
-          loadGitLabRepositories()
-        }
+      const gitlabIntegration = await fetchActiveGitLabIntegration()
+      if (gitlabIntegration) {
+        setGitLabConfig(gitlabIntegration)
+        loadGitLabRepositories()
       }
     } catch (error) {
       console.error('Failed to check GitLab config:', error)
@@ -343,13 +289,7 @@ export function TicketDetailModalEnhanced({
   const loadGitLabRepositories = async () => {
     setLoadingRepositories(true)
     try {
-      const response = await fetch('/api/integrations/gitlab/repositories')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success && data.repositories) {
-          setGitLabRepositories(data.repositories)
-        }
-      }
+      setGitLabRepositories(await fetchGitLabRepositories())
     } catch (error) {
       console.error('Failed to load GitLab repositories:', error)
     } finally {
@@ -358,44 +298,26 @@ export function TicketDetailModalEnhanced({
   }
 
   const loadProjectsAndModules = async (projectIdOverride?: string) => {
-    if (!ticket?.spaces || ticket.spaces.length === 0) return
-    const spaceId = ticket.spaces[0].spaceId || ticket.spaces[0].space?.id
-    if (!spaceId) return
-    const targetProjectId = projectIdOverride ?? selectedProject ?? (ticket as any).projectId ?? ''
+    const spaceId = getTicketSpaceId(ticket)
+    if (!ticket || !spaceId) return
+    const targetProjectId = projectIdOverride ?? selectedProject ?? ticket.projectId ?? ''
 
     try {
-      const projectsRes = await fetch(`/api/projects?space_id=${spaceId}`)
-      if (projectsRes.ok) {
-        const projectsData = await projectsRes.json()
-        const availableProjects = projectsData.projects || []
-        setProjects(availableProjects)
-        if (targetProjectId) {
-          applyProjectFieldDefinitions(targetProjectId, availableProjects, ticket.attributes as any)
-        } else {
-          setProjectCustomFields([])
-          setCustomFields([])
-          setProjectStatuses(DEFAULT_PROJECT_STATUSES)
-        }
+      const availableProjects = await fetchProjects(spaceId)
+      setProjects(availableProjects)
+      if (targetProjectId) {
+          applyProjectFieldDefinitions(targetProjectId, availableProjects, ticket.attributes)
+      } else {
+        setProjectCustomFields([])
+        setCustomFields([])
+        setProjectStatuses(DEFAULT_PROJECT_STATUSES)
       }
 
       if (targetProjectId) {
-        const modulesRes = await fetch(`/api/modules?project_id=${targetProjectId}`)
-        if (modulesRes.ok) {
-          const modulesData = await modulesRes.json()
-          setModules(modulesData.modules || [])
-        }
-
-        const milestonesRes = await fetch(`/api/milestones?projectId=${targetProjectId}`)
-        if (milestonesRes.ok) {
-          const milestonesData = await milestonesRes.json()
-          setMilestones(milestonesData.milestones || [])
-        }
-
-        const releasesRes = await fetch(`/api/releases?projectId=${targetProjectId}`)
-        if (releasesRes.ok) {
-          const releasesData = await releasesRes.json()
-          setReleases(releasesData.releases || [])
-        }
+        const children = await fetchProjectChildren(targetProjectId)
+        setModules(children.modules)
+        setMilestones(children.milestones)
+        setReleases(children.releases)
       } else {
         setModules([])
         setMilestones([])
@@ -408,38 +330,24 @@ export function TicketDetailModalEnhanced({
 
   useEffect(() => {
     if (open && ticket) {
-      loadProjectsAndModules(selectedProject || (ticket as any).projectId || '')
+      loadProjectsAndModules(selectedProject || ticket.projectId || '')
     }
   }, [selectedProject])
 
   const handlePushToGitLab = async () => {
-    if (!ticket?.spaces || ticket.spaces.length === 0) {
-      showError('Unable to determine space')
-      return
-    }
-
-    const spaceId = ticket.spaces[0].spaceId || ticket.spaces[0].space?.id
-    if (!spaceId) {
+    const spaceId = getTicketSpaceId(ticket)
+    if (!ticket || !spaceId) {
       showError('Unable to determine space')
       return
     }
 
     setPushingToGitLab(true)
     try {
-      const response = await fetch('/api/integrations/gitlab/push', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ticket_id: ticket.id,
-          space_id: spaceId,
-          syncComments: true,
-          syncAttachments: false,
-          repository: selectedRepository || undefined,
-          projectId: selectedRepository || undefined
-        })
+      const result = await pushTicketToGitLab({
+        ticketId: ticket.id,
+        spaceId,
+        repository: selectedRepository,
       })
-
-      const result = await response.json()
 
       if (result.success) {
         if (result.data?.issueUrl) {
@@ -461,65 +369,36 @@ export function TicketDetailModalEnhanced({
   }
 
   const loadServiceDeskData = async (requestId: string) => {
-    if (!ticket?.spaces || ticket.spaces.length === 0) return
-    const spaceId = ticket.spaces[0].spaceId || ticket.spaces[0].space?.id
+    const spaceId = getTicketSpaceId(ticket)
     if (!spaceId) return
 
     try {
-      const [commentsRes, attachmentsRes, timeLogsRes] = await Promise.all([
-        fetch(`/api/integrations/manageengine-servicedesk/comments?space_id=${spaceId}&request_id=${requestId}`),
-        fetch(`/api/integrations/manageengine-servicedesk/attachments?space_id=${spaceId}&request_id=${requestId}`),
-        fetch(`/api/integrations/manageengine-servicedesk/time-logs?space_id=${spaceId}&request_id=${requestId}`)
-      ])
-
-      if (commentsRes.ok) {
-        const data = await commentsRes.json()
-        setServiceDeskComments(data.comments || [])
-      }
-      if (attachmentsRes.ok) {
-        const data = await attachmentsRes.json()
-        setServiceDeskAttachments(data.attachments || [])
-      }
-      if (timeLogsRes.ok) {
-        const data = await timeLogsRes.json()
-        setServiceDeskTimeLogs(data.timeLogs || [])
-      }
+      const data = await fetchServiceDeskData(spaceId, requestId)
+      setServiceDeskComments(data.comments)
+      setServiceDeskAttachments(data.attachments)
+      setServiceDeskTimeLogs(data.timeLogs)
     } catch (error) {
       console.error('Error loading ServiceDesk data:', error)
     }
   }
 
   const handlePushToServiceDesk = async () => {
-    if (!ticket?.spaces || ticket.spaces.length === 0) {
+    const spaceId = getTicketSpaceId(ticket)
+    if (!ticket || !spaceId) {
       showError('Ticket must belong to a space')
-      return
-    }
-
-    const spaceId = ticket.spaces[0].spaceId || ticket.spaces[0].space?.id
-    if (!spaceId) {
-      showError('Unable to determine space')
       return
     }
 
     setPushingToServiceDesk(true)
     try {
-      const response = await fetch('/api/integrations/manageengine-servicedesk/push', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ticket_id: ticket.id,
-          space_id: spaceId,
-          requesterEmail: ticket.creator?.email,
-          syncComments: true,
-          syncAttachments: true,
-          syncTimeLogs: true
-        })
+      const result = await pushTicketToServiceDesk({
+        ticketId: ticket.id,
+        spaceId,
+        requesterEmail: ticket.creator?.email,
       })
 
-      const result = await response.json()
-
       if (result.success) {
-        setServiceDeskRequestId(result.requestId)
+        setServiceDeskRequestId(result.requestId || null)
         if (result.requestId) {
           await loadServiceDeskData(result.requestId)
         }
@@ -535,47 +414,24 @@ export function TicketDetailModalEnhanced({
   }
 
   const handleSyncFromServiceDesk = async () => {
-    if (!ticket?.spaces || ticket.spaces.length === 0 || !serviceDeskRequestId) return
-    const spaceId = ticket.spaces[0].spaceId || ticket.spaces[0].space?.id
-    if (!spaceId) return
+    if (!serviceDeskRequestId) return
+    const spaceId = getTicketSpaceId(ticket)
+    if (!ticket || !spaceId) return
 
     setSyncingFromServiceDesk(true)
     try {
-      // Check for conflicts first
-      const conflictResponse = await fetch('/api/integrations/manageengine-servicedesk/conflict-resolution', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ticket_id: ticket.id,
-          space_id: spaceId,
-          request_id: serviceDeskRequestId
-        })
-      })
+      const conflictData = await checkServiceDeskConflicts(ticket.id, spaceId, serviceDeskRequestId)
+      const conflicts = conflictData.conflicts || []
 
-      const conflictData = await conflictResponse.json()
-
-      if (conflictData.has_conflicts && conflictData.conflicts.length > 0) {
-        // Show conflict resolution dialog
-        const resolution: any = {}
-        for (const conflict of conflictData.conflicts) {
+      if (conflictData.has_conflicts && conflicts.length > 0) {
+        const resolution: Record<string, string> = {}
+        for (const conflict of conflicts) {
           // For now, default to keeping ServiceDesk version
           // In a full implementation, you'd show a dialog to let user choose
           resolution[conflict.field] = 'keep_servicedesk'
         }
 
-        // Resolve conflicts
-        const resolveResponse = await fetch('/api/integrations/manageengine-servicedesk/conflict-resolution', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ticket_id: ticket.id,
-            space_id: spaceId,
-            request_id: serviceDeskRequestId,
-            resolution
-          })
-        })
-
-        const resolveResult = await resolveResponse.json()
+        const resolveResult = await resolveServiceDeskConflicts(ticket.id, spaceId, serviceDeskRequestId, resolution)
         if (!resolveResult.success) {
           showError(resolveResult.error || 'Failed to resolve conflicts')
           setSyncingFromServiceDesk(false)
@@ -583,18 +439,7 @@ export function TicketDetailModalEnhanced({
         }
       }
 
-      // Proceed with sync
-      const response = await fetch('/api/integrations/manageengine-servicedesk/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ticket_id: ticket.id,
-          space_id: spaceId,
-          request_id: serviceDeskRequestId
-        })
-      })
-
-      const result = await response.json()
+      const result = await syncTicketFromServiceDesk(ticket.id, spaceId, serviceDeskRequestId)
 
       if (result.success) {
         await loadServiceDeskData(serviceDeskRequestId)
@@ -613,24 +458,17 @@ export function TicketDetailModalEnhanced({
   }
 
   const handleAddServiceDeskComment = async () => {
-    if (!newServiceDeskComment.trim() || !ticket?.spaces || ticket.spaces.length === 0 || !serviceDeskRequestId) return
-    const spaceId = ticket.spaces[0].spaceId || ticket.spaces[0].space?.id
-    if (!spaceId) return
+    if (!newServiceDeskComment.trim() || !serviceDeskRequestId) return
+    const spaceId = getTicketSpaceId(ticket)
+    if (!ticket || !spaceId) return
 
     try {
-      const response = await fetch('/api/integrations/manageengine-servicedesk/comments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ticket_id: ticket.id,
-          space_id: spaceId,
-          request_id: serviceDeskRequestId,
-          content: newServiceDeskComment,
-          isPublic: true
-        })
+      const result = await addServiceDeskComment({
+        ticketId: ticket.id,
+        spaceId,
+        requestId: serviceDeskRequestId,
+        content: newServiceDeskComment,
       })
-
-      const result = await response.json()
 
       if (result.success) {
         setNewServiceDeskComment('')
@@ -645,22 +483,12 @@ export function TicketDetailModalEnhanced({
   }
 
   const handleSetServiceDeskResolution = async () => {
-    if (!newServiceDeskResolution.trim() || !ticket?.spaces || ticket.spaces.length === 0 || !serviceDeskRequestId) return
-    const spaceId = ticket.spaces[0].spaceId || ticket.spaces[0].space?.id
+    if (!newServiceDeskResolution.trim() || !serviceDeskRequestId) return
+    const spaceId = getTicketSpaceId(ticket)
     if (!spaceId) return
 
     try {
-      const response = await fetch('/api/integrations/manageengine-servicedesk/resolution', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          space_id: spaceId,
-          request_id: serviceDeskRequestId,
-          resolution: newServiceDeskResolution
-        })
-      })
-
-      const result = await response.json()
+      const result = await setServiceDeskResolution(spaceId, serviceDeskRequestId, newServiceDeskResolution)
 
       if (result.success) {
         setNewServiceDeskResolution('')
@@ -674,24 +502,18 @@ export function TicketDetailModalEnhanced({
   }
 
   const handleLogServiceDeskTime = async () => {
-    if (!newServiceDeskTimeLog.hours || !ticket?.spaces || ticket.spaces.length === 0 || !serviceDeskRequestId) return
-    const spaceId = ticket.spaces[0].spaceId || ticket.spaces[0].space?.id
+    if (!newServiceDeskTimeLog.hours || !serviceDeskRequestId) return
+    const spaceId = getTicketSpaceId(ticket)
     if (!spaceId) return
 
     try {
-      const response = await fetch('/api/integrations/manageengine-servicedesk/time-logs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          space_id: spaceId,
-          request_id: serviceDeskRequestId,
-          hours: parseFloat(newServiceDeskTimeLog.hours),
-          minutes: newServiceDeskTimeLog.minutes ? parseInt(newServiceDeskTimeLog.minutes) : undefined,
-          description: newServiceDeskTimeLog.description || undefined
-        })
+      const result = await logServiceDeskTime({
+        spaceId,
+        requestId: serviceDeskRequestId,
+        hours: parseFloat(newServiceDeskTimeLog.hours),
+        minutes: newServiceDeskTimeLog.minutes ? parseInt(newServiceDeskTimeLog.minutes) : undefined,
+        description: newServiceDeskTimeLog.description || undefined,
       })
-
-      const result = await response.json()
 
       if (result.success) {
         setNewServiceDeskTimeLog({ hours: '', minutes: '', description: '' })
@@ -706,23 +528,17 @@ export function TicketDetailModalEnhanced({
   }
 
   const handleLinkServiceDeskTickets = async () => {
-    if (!newServiceDeskLink.requestId || !ticket?.spaces || ticket.spaces.length === 0 || !serviceDeskRequestId) return
-    const spaceId = ticket.spaces[0].spaceId || ticket.spaces[0].space?.id
+    if (!newServiceDeskLink.requestId || !serviceDeskRequestId) return
+    const spaceId = getTicketSpaceId(ticket)
     if (!spaceId) return
 
     try {
-      const response = await fetch('/api/integrations/manageengine-servicedesk/link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          space_id: spaceId,
-          request_id: serviceDeskRequestId,
-          linked_request_id: newServiceDeskLink.requestId,
-          link_type: newServiceDeskLink.linkType
-        })
+      const result = await linkServiceDeskTickets({
+        spaceId,
+        requestId: serviceDeskRequestId,
+        linkedRequestId: newServiceDeskLink.requestId,
+        linkType: newServiceDeskLink.linkType,
       })
-
-      const result = await response.json()
 
       if (result.success) {
         setNewServiceDeskLink({ requestId: '', linkType: 'relates_to' })
@@ -737,23 +553,17 @@ export function TicketDetailModalEnhanced({
 
   const handleUploadServiceDeskAttachment = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file || !ticket?.spaces || ticket.spaces.length === 0 || !serviceDeskRequestId) return
-    const spaceId = ticket.spaces[0].spaceId || ticket.spaces[0].space?.id
-    if (!spaceId) return
+    if (!file || !serviceDeskRequestId) return
+    const spaceId = getTicketSpaceId(ticket)
+    if (!ticket || !spaceId) return
 
     try {
-      const formData = new FormData()
-      formData.append('space_id', spaceId)
-      formData.append('request_id', serviceDeskRequestId)
-      formData.append('file', file)
-      formData.append('description', `Uploaded from internal ticket ${ticket.id}`)
-
-      const response = await fetch('/api/integrations/manageengine-servicedesk/attachments', {
-        method: 'POST',
-        body: formData
+      const result = await uploadServiceDeskAttachment({
+        spaceId,
+        requestId: serviceDeskRequestId,
+        ticketId: ticket.id,
+        file,
       })
-
-      const result = await response.json()
 
       if (result.success) {
         await loadServiceDeskData(serviceDeskRequestId)
@@ -767,61 +577,14 @@ export function TicketDetailModalEnhanced({
   }
 
   const handleUpdateServiceDeskTicket = async () => {
-    if (!ticket?.spaces || ticket.spaces.length === 0 || !serviceDeskRequestId) return
-    const spaceId = ticket.spaces[0].spaceId || ticket.spaces[0].space?.id
-    if (!spaceId) return
+    if (!serviceDeskRequestId) return
+    const spaceId = getTicketSpaceId(ticket)
+    if (!ticket || !spaceId) return
 
     setUpdatingServiceDesk(true)
     try {
-      // Map our ticket status to ServiceDesk status
-      const statusMap: Record<string, string> = {
-        'BACKLOG': 'Open',
-        'TODO': 'Open',
-        'IN_PROGRESS': 'In Progress',
-        'IN_REVIEW': 'In Progress',
-        'DONE': 'Resolved',
-        'CLOSED': 'Closed'
-      }
-
-      // Map our priority to ServiceDesk priority
-      const priorityMap: Record<string, string> = {
-        'LOW': 'Low',
-        'MEDIUM': 'Medium',
-        'HIGH': 'High',
-        'URGENT': 'Critical'
-      }
-
-      const updates: any = {}
-      
-      if (ticket.title) {
-        updates.subject = ticket.title
-      }
-      if (ticket.description) {
-        updates.description = ticket.description
-      }
-      if (ticket.status) {
-        updates.status = statusMap[ticket.status] || 'Open'
-      }
-      if (ticket.priority) {
-        updates.priority = priorityMap[ticket.priority] || 'Medium'
-      }
-      if (ticket.dueDate) {
-        updates.dueDate = ticket.dueDate && typeof ticket.dueDate === 'object' && 'toISOString' in ticket.dueDate
-          ? (ticket.dueDate as Date).toISOString() 
-          : new Date(ticket.dueDate as string).toISOString()
-      }
-
-      const response = await fetch('/api/integrations/manageengine-servicedesk/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          space_id: spaceId,
-          request_id: serviceDeskRequestId,
-          updates
-        })
-      })
-
-      const result = await response.json()
+      const updates = buildServiceDeskUpdates(ticket)
+      const result = await updateServiceDeskTicket(spaceId, serviceDeskRequestId, updates)
 
       if (result.success) {
         showSuccess('Ticket updated in ServiceDesk successfully')
@@ -836,9 +599,9 @@ export function TicketDetailModalEnhanced({
   }
 
   const handleDeleteServiceDeskTicket = async () => {
-    if (!ticket?.spaces || ticket.spaces.length === 0 || !serviceDeskRequestId) return
-    const spaceId = ticket.spaces[0].spaceId || ticket.spaces[0].space?.id
-    if (!spaceId) return
+    if (!serviceDeskRequestId) return
+    const spaceId = getTicketSpaceId(ticket)
+    if (!ticket || !spaceId) return
 
     if (!confirm(`Are you sure you want to delete ticket ${serviceDeskRequestId} from ServiceDesk? This action cannot be undone.`)) {
       return
@@ -846,17 +609,7 @@ export function TicketDetailModalEnhanced({
 
     setDeletingServiceDesk(true)
     try {
-      const response = await fetch('/api/integrations/manageengine-servicedesk/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          space_id: spaceId,
-          request_id: serviceDeskRequestId,
-          ticket_id: ticket.id
-        })
-      })
-
-      const result = await response.json()
+      const result = await deleteServiceDeskTicket(spaceId, serviceDeskRequestId, ticket.id)
 
       if (result.success) {
         setServiceDeskRequestId(null)
@@ -881,34 +634,12 @@ export function TicketDetailModalEnhanced({
     if (!ticket?.id) return
 
     try {
-      const [commentsRes, attachmentsRes, subtasksRes, depsRes, timeLogsRes] = await Promise.all([
-        fetch(`/api/tickets/${ticket.id}/comments`),
-        fetch(`/api/tickets/${ticket.id}/attachments`),
-        fetch(`/api/tickets/${ticket.id}/subtasks`),
-        fetch(`/api/tickets/${ticket.id}/dependencies`),
-        fetch(`/api/tickets/${ticket.id}/time-logs`)
-      ])
-
-      if (commentsRes.ok) {
-        const data = await commentsRes.json()
-        setComments(data.comments || [])
-      }
-      if (attachmentsRes.ok) {
-        const data = await attachmentsRes.json()
-        setAttachments(data.attachments || [])
-      }
-      if (subtasksRes.ok) {
-        const data = await subtasksRes.json()
-        setSubtasks(data.subtasks || [])
-      }
-      if (depsRes.ok) {
-        const data = await depsRes.json()
-        setDependencies(data)
-      }
-      if (timeLogsRes.ok) {
-        const data = await timeLogsRes.json()
-        setTimeLogs(data.timeLogs || [])
-      }
+      const data = await fetchTicketActivity(ticket.id)
+      setComments(data.comments)
+      setAttachments(data.attachments)
+      setSubtasks(data.subtasks)
+      setDependencies(data.dependencies)
+      setTimeLogs(data.timeLogs)
     } catch (error) {
       console.error('Error loading ticket data:', error)
     }
@@ -918,13 +649,8 @@ export function TicketDetailModalEnhanced({
     if (!newComment.trim() || !ticket?.id) return
 
     try {
-      const res = await fetch(`/api/tickets/${ticket.id}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newComment })
-      })
-      if (res.ok) {
-        const comment = await res.json()
+      const comment = await addTicketComment(ticket.id, newComment)
+      if (comment) {
         setComments([...comments, comment])
         setNewComment('')
       }
@@ -938,15 +664,8 @@ export function TicketDetailModalEnhanced({
     if (!file || !ticket?.id) return
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-
-      const res = await fetch(`/api/tickets/${ticket.id}/attachments`, {
-        method: 'POST',
-        body: formData
-      })
-      if (res.ok) {
-        const attachment = await res.json()
+      const attachment = await uploadTicketAttachment(ticket.id, file)
+      if (attachment) {
         setAttachments([...attachments, attachment])
       }
     } catch (error) {
@@ -958,13 +677,8 @@ export function TicketDetailModalEnhanced({
     if (!newSubtask.title.trim() || !ticket?.id) return
 
     try {
-      const res = await fetch(`/api/tickets/${ticket.id}/subtasks`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newSubtask)
-      })
-      if (res.ok) {
-        const subtask = await res.json()
+      const subtask = await addTicketSubtask(ticket.id, newSubtask)
+      if (subtask) {
         setSubtasks([...subtasks, subtask])
         setNewSubtask({ title: '', status: 'BACKLOG' })
       }
@@ -973,21 +687,31 @@ export function TicketDetailModalEnhanced({
     }
   }
 
+  const handleToggleSubtaskStatus = async (subtask: TicketSubtask) => {
+    const isCompleted = subtask.status === 'DONE' || subtask.status === 'CANCELLED'
+    const newStatus = isCompleted ? 'TODO' : 'DONE'
+
+    try {
+      if (await updateTicketStatus(subtask.id, newStatus)) {
+        loadAllData()
+        showSuccess(`Subtask ${newStatus === 'DONE' ? 'completed' : 'reopened'}`)
+      }
+    } catch (error) {
+      showError('Failed to update subtask')
+    }
+  }
+
   const handleAddTimeLog = async () => {
     if (!newTimeLog.hours || !ticket?.id) return
 
     try {
-      const res = await fetch(`/api/tickets/${ticket.id}/time-logs`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          hours: parseFloat(newTimeLog.hours),
-          description: newTimeLog.description,
-          loggedAt: newTimeLog.loggedAt
-        })
+      const timeLog = await addTicketTimeLog({
+        ticketId: ticket.id,
+        hours: parseFloat(newTimeLog.hours),
+        description: newTimeLog.description,
+        loggedAt: newTimeLog.loggedAt,
       })
-      if (res.ok) {
-        const timeLog = await res.json()
+      if (timeLog) {
         setTimeLogs([...timeLogs, timeLog])
         setNewTimeLog({ hours: '', description: '', loggedAt: format(new Date(), 'yyyy-MM-dd') })
       }
@@ -998,78 +722,43 @@ export function TicketDetailModalEnhanced({
 
   if (!ticket) return null
 
-  const isNew = !(ticket as any).id
+  const isNew = !ticket.id
   const isDrawer = displayMode === 'drawer'
   const ticketAssignees = ticket.assignees || []
   const totalHours = timeLogs.reduce((sum, log) => sum + Number(log.hours), 0)
 
   const handleSave = async () => {
-    const nextAttributes = customFields.filter((field) => field.name.trim())
-    const normalizedTicketType = ticketType.trim()
-    const attributeList = normalizedTicketType
-      ? [
-          ...nextAttributes.filter(
-            (field) => !['ticket type', 'type', 'tickettype'].includes(field.name.toLowerCase())
-          ),
-          {
-            name: 'Ticket Type',
-            displayName: 'Ticket Type',
-            type: 'SELECT',
-            value: normalizedTicketType,
-            attributeType: 'system',
-            sharing: { mode: 'individual', projectIds: [] },
-          },
-        ]
-      : nextAttributes
-
-    const updatedTicket = {
-      ...ticket,
-      title: editTitle.trim(),
+    onSave?.(buildTicketSavePayload(ticket, {
+      title: editTitle,
       description: normalizedDescription,
       status: editStatus,
       priority: editPriority,
-      dueDate: editDueDate || null,
-      startDate: editStartDate || null,
-      estimate: editEstimate ? Number(editEstimate) : null,
-      projectId: selectedProject || null,
-      moduleId: selectedModule || null,
-      milestoneId: selectedMilestone || null,
-      releaseId: selectedRelease || null,
-      attributes: attributeList,
-    }
-
-    onSave?.(updatedTicket)
+      dueDate: editDueDate,
+      startDate: editStartDate,
+      estimate: editEstimate,
+      projectId: selectedProject,
+      moduleId: selectedModule,
+      milestoneId: selectedMilestone,
+      releaseId: selectedRelease,
+      ticketType,
+      customFields,
+    }))
   }
 
-  const attributeInputClass = 'h-9 rounded-md border-0 bg-muted/70 shadow-none focus-visible:ring-1 focus-visible:ring-ring'
-  const priorityOptions = [
-    { value: 'LOW', label: 'Low' },
-    { value: 'MEDIUM', label: 'Medium' },
-    { value: 'HIGH', label: 'High' },
-    { value: 'URGENT', label: 'Urgent' },
-  ]
-  const ticketTypeOptions = [
-    { value: '', label: 'None' },
-    { value: 'Request', label: 'Request' },
-    { value: 'Change Request', label: 'Change Request' },
-    { value: 'Issue', label: 'Issue' },
-    { value: 'Problem', label: 'Problem' },
-    { value: 'Incident', label: 'Incident' },
-  ]
   const projectOptions = [
-    { value: '__none__', label: 'None' },
+    NONE_SELECT_OPTION,
     ...projects.map((project) => ({ value: project.id, label: project.name })),
   ]
   const moduleOptions = [
-    { value: '__none__', label: 'None' },
+    NONE_SELECT_OPTION,
     ...modules.map((module) => ({ value: module.id, label: module.name })),
   ]
   const milestoneOptions = [
-    { value: '__none__', label: 'None' },
+    NONE_SELECT_OPTION,
     ...milestones.map((milestone) => ({ value: milestone.id, label: milestone.name })),
   ]
   const releaseOptions = [
-    { value: '__none__', label: 'None' },
+    NONE_SELECT_OPTION,
     ...releases.map((release) => ({ value: release.id, label: release.name })),
   ]
 
@@ -1080,7 +769,7 @@ export function TicketDetailModalEnhanced({
       type: string
       value?: string | null
       isRequired?: boolean
-      options?: ProjectFieldOption[]
+      options?: TicketCustomField['options']
     },
     index: number
   ) => {
@@ -1106,25 +795,23 @@ export function TicketDetailModalEnhanced({
           ]}
           placeholder="Select value"
           searchPlaceholder={`Search ${field.displayName.toLowerCase()}...`}
-          className={attributeInputClass}
+          className={ATTRIBUTE_INPUT_CLASS}
         />
       )
     }
 
     if (field.type === 'DATE') {
-      return <Input type="date" value={toDateInputValue(field.value)} onChange={(e) => updateField(e.target.value)} className={attributeInputClass} />
+      return <Input type="date" value={toDateInputValue(field.value)} onChange={(e) => updateField(e.target.value)} className={ATTRIBUTE_INPUT_CLASS} />
     }
 
     if (field.type === 'NUMBER') {
-      return <Input type="number" value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" className={attributeInputClass} />
+      return <Input type="number" value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" className={ATTRIBUTE_INPUT_CLASS} />
     }
 
-    return <Input value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" className={attributeInputClass} />
+    return <Input value={field.value || ''} onChange={(e) => updateField(e.target.value)} placeholder="Value" className={ATTRIBUTE_INPUT_CLASS} />
   }
 
   const projectFields = customFields.filter((field) => field.attributeType !== 'system')
-  const attributeGroupClass = 'space-y-4'
-  const attributeFieldClass = 'space-y-1.5'
 
   // Common header content
   const headerContent = (
@@ -1146,10 +833,10 @@ export function TicketDetailModalEnhanced({
 
   const customFieldsPanel = (
     <div className="space-y-6 rounded-md border border-border bg-background p-4">
-      <div className={attributeGroupClass}>
+      <div className={ATTRIBUTE_GROUP_CLASS}>
         <h3 className="text-sm font-medium">Details</h3>
         <div className="grid gap-3">
-          <div className={attributeFieldClass}>
+          <div className={ATTRIBUTE_FIELD_CLASS}>
             <Label>Status</Label>
             <SearchableSelect
               value={editStatus}
@@ -1157,44 +844,44 @@ export function TicketDetailModalEnhanced({
               options={projectStatuses.map((status) => ({ value: status.value, label: status.label }))}
               placeholder="Select status"
               searchPlaceholder="Search statuses..."
-              className={attributeInputClass}
+              className={ATTRIBUTE_INPUT_CLASS}
             />
           </div>
 
-          <div className={attributeFieldClass}>
+          <div className={ATTRIBUTE_FIELD_CLASS}>
             <Label>Priority</Label>
             <SearchableSelect
               value={editPriority}
               onValueChange={setEditPriority}
-              options={priorityOptions}
+              options={PRIORITY_OPTIONS}
               placeholder="Select priority"
               searchPlaceholder="Search priorities..."
-              className={attributeInputClass}
+              className={ATTRIBUTE_INPUT_CLASS}
             />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-            <div className={attributeFieldClass}>
+            <div className={ATTRIBUTE_FIELD_CLASS}>
               <Label>Start Date</Label>
               <Input
                 type="date"
                 value={editStartDate}
                 onChange={(e) => setEditStartDate(e.target.value)}
-                className={attributeInputClass}
+                className={ATTRIBUTE_INPUT_CLASS}
               />
             </div>
-            <div className={attributeFieldClass}>
+            <div className={ATTRIBUTE_FIELD_CLASS}>
               <Label>Due Date</Label>
               <Input
                 type="date"
                 value={editDueDate}
                 onChange={(e) => setEditDueDate(e.target.value)}
-                className={attributeInputClass}
+                className={ATTRIBUTE_INPUT_CLASS}
               />
             </div>
           </div>
 
-          <div className={attributeFieldClass}>
+          <div className={ATTRIBUTE_FIELD_CLASS}>
             <Label>Estimate (hours)</Label>
             <Input
               type="number"
@@ -1203,26 +890,26 @@ export function TicketDetailModalEnhanced({
               placeholder="0"
               value={editEstimate}
               onChange={(e) => setEditEstimate(e.target.value)}
-              className={attributeInputClass}
+              className={ATTRIBUTE_INPUT_CLASS}
             />
           </div>
 
           {!isNew && (
-            <div className={attributeFieldClass}>
+            <div className={ATTRIBUTE_FIELD_CLASS}>
               <Label htmlFor="ticketType">Ticket Type</Label>
               <SearchableSelect
                 id="ticketType"
                 value={ticketType}
                 onValueChange={setTicketType}
-                options={ticketTypeOptions}
+                options={SERVICE_DESK_TICKET_TYPE_OPTIONS}
                 placeholder="Select ticket type"
                 searchPlaceholder="Search ticket types..."
-                className={attributeInputClass}
+                className={ATTRIBUTE_INPUT_CLASS}
               />
             </div>
           )}
 
-          <div className={attributeFieldClass}>
+          <div className={ATTRIBUTE_FIELD_CLASS}>
             <Label htmlFor={isNew ? 'project-create' : 'project'}>Project</Label>
             <SearchableSelect
               id={isNew ? 'project-create' : 'project'}
@@ -1238,13 +925,13 @@ export function TicketDetailModalEnhanced({
               options={projectOptions}
               placeholder="Select project"
               searchPlaceholder="Search projects..."
-              className={attributeInputClass}
+              className={ATTRIBUTE_INPUT_CLASS}
             />
           </div>
 
           {selectedProject && (
             <>
-              <div className={attributeFieldClass}>
+              <div className={ATTRIBUTE_FIELD_CLASS}>
                 <Label htmlFor={isNew ? 'module-create' : 'module'}>Module</Label>
                 <SearchableSelect
                   id={isNew ? 'module-create' : 'module'}
@@ -1253,12 +940,12 @@ export function TicketDetailModalEnhanced({
                   options={moduleOptions}
                   placeholder="Select module"
                   searchPlaceholder="Search modules..."
-                  className={attributeInputClass}
+                  className={ATTRIBUTE_INPUT_CLASS}
                 />
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-                <div className={attributeFieldClass}>
+                <div className={ATTRIBUTE_FIELD_CLASS}>
                   <Label htmlFor={isNew ? 'milestone-create' : 'milestone'}>Milestone</Label>
                   <SearchableSelect
                     id={isNew ? 'milestone-create' : 'milestone'}
@@ -1267,11 +954,11 @@ export function TicketDetailModalEnhanced({
                     options={milestoneOptions}
                     placeholder="Select milestone"
                     searchPlaceholder="Search milestones..."
-                    className={attributeInputClass}
+                    className={ATTRIBUTE_INPUT_CLASS}
                   />
                 </div>
 
-                <div className={attributeFieldClass}>
+                <div className={ATTRIBUTE_FIELD_CLASS}>
                   <Label htmlFor={isNew ? 'release-create' : 'release'}>Release</Label>
                   <SearchableSelect
                     id={isNew ? 'release-create' : 'release'}
@@ -1280,7 +967,7 @@ export function TicketDetailModalEnhanced({
                     options={releaseOptions}
                     placeholder="Select release"
                     searchPlaceholder="Search releases..."
-                    className={attributeInputClass}
+                    className={ATTRIBUTE_INPUT_CLASS}
                   />
                 </div>
               </div>
@@ -1289,7 +976,7 @@ export function TicketDetailModalEnhanced({
         </div>
       </div>
 
-      <div className={`${attributeGroupClass} border-t border-border pt-5`}>
+      <div className={`${ATTRIBUTE_GROUP_CLASS} border-t border-border pt-5`}>
         <h3 className="text-sm font-medium">Project attributes</h3>
         {!selectedProject ? (
           <div className="rounded-md border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
@@ -1304,7 +991,7 @@ export function TicketDetailModalEnhanced({
             {projectFields.map((field) => {
               const index = customFields.findIndex((item) => item.name === field.name)
               return (
-                <div key={field.name} className={attributeFieldClass}>
+                <div key={field.name} className={ATTRIBUTE_FIELD_CLASS}>
                   <Label>{field.displayName}</Label>
                   {renderFieldInput(field, index)}
                 </div>
@@ -1404,7 +1091,7 @@ export function TicketDetailModalEnhanced({
           </Button>
         )}
         {onDelete && !isNew && (
-          <Button variant="destructive" onClick={() => onDelete((ticket as any).id)}>
+          <Button variant="destructive" onClick={() => onDelete(ticket.id)}>
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
           </Button>
@@ -1913,272 +1600,42 @@ export function TicketDetailModalEnhanced({
             )}
           </TabsContent>
 
-          <TabsContent value="comments" className="space-y-4 mt-4">
-            <div className="space-y-4">
-              {comments.map((comment) => (
-                <Card key={comment.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={comment.author?.avatar || undefined} />
-                        <AvatarFallback>
-                          {comment.author?.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-sm">{comment.author?.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {format(new Date(comment.createdAt), 'MMM d, yyyy HH:mm')}
-                          </span>
-                        </div>
-                        <p className="text-sm">{comment.content}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              <div className="flex gap-2">
-                <Textarea
-                  placeholder="Add a comment..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="flex-1"
-                />
-                <Button onClick={handleAddComment} disabled={!newComment.trim()}>
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Comment
-                </Button>
-              </div>
-            </div>
-          </TabsContent>
+          <CommentsTab
+            comments={comments}
+            newComment={newComment}
+            setNewComment={setNewComment}
+            onAddComment={handleAddComment}
+          />
 
-          <TabsContent value="attachments" className="space-y-4 mt-4">
-            <div className="space-y-2">
-              {attachments.map((attachment) => (
-                <Card key={attachment.id}>
-                  <CardContent className="p-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Paperclip className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <div className="font-medium text-sm">{attachment.fileName}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {(attachment.fileSize / 1024).toFixed(2)} KB
-                        </div>
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="icon">
-                      <Download className="h-4 w-4" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-              <div>
-                <Input
-                  type="file"
-                  onChange={handleUploadAttachment}
-                  className="cursor-pointer"
-                />
-              </div>
-            </div>
-          </TabsContent>
+          <AttachmentsTab
+            attachments={attachments}
+            onUploadAttachment={handleUploadAttachment}
+          />
 
-          <TabsContent value="subtasks" className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <div className="text-sm text-muted-foreground mb-2">
-                Todo List / Subtasks ({subtasks.length})
-              </div>
-              {subtasks.map((subtask) => {
-                const subtaskMetadata = (subtask as any).metadata || {}
-                const isCompleted = subtask.status === 'DONE' || subtask.status === 'CANCELLED'
-                return (
-                  <Card key={subtask.id} className={isCompleted ? 'opacity-60' : ''}>
-                    <CardContent className="p-3 flex items-center justify-between">
-                      <div className="flex items-center gap-3 flex-1">
-                        <input 
-                          type="checkbox" 
-                          className="rounded" 
-                          checked={isCompleted}
-                          onChange={async () => {
-                            // Toggle subtask status
-                            const newStatus = isCompleted ? 'TODO' : 'DONE'
-                            try {
-                              const response = await fetch(`/api/tickets/${subtask.id}`, {
-                                method: 'PUT',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ status: newStatus })
-                              })
-                              if (response.ok) {
-                                loadAllData()
-                                showSuccess(`Subtask ${newStatus === 'DONE' ? 'completed' : 'reopened'}`)
-                              }
-                            } catch (error) {
-                              showError('Failed to update subtask')
-                            }
-                          }}
-                        />
-                        <div className="flex-1">
-                          <span className={`text-sm ${isCompleted ? 'line-through' : ''}`}>
-                            {subtask.title}
-                          </span>
-                          {subtaskMetadata?.gitlabRepository && (
-                            <Badge variant="outline" className="text-xs ml-2">
-                              <GitBranch className="h-3 w-3 mr-1" />
-                              {subtaskMetadata.gitlabRepository.split('/').pop()}
-                            </Badge>
-                          )}
-                        </div>
-                        <Badge variant="outline" className="text-xs">{subtask.status}</Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Subtask title"
-                  value={newSubtask.title}
-                  onChange={(e) => setNewSubtask({ ...newSubtask, title: e.target.value })}
-                  className="flex-1"
-                />
-                <Button onClick={handleAddSubtask} disabled={!newSubtask.title.trim()}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add
-                </Button>
-              </div>
-            </div>
-          </TabsContent>
+          <SubtasksTab
+            subtasks={subtasks}
+            newSubtask={newSubtask}
+            setNewSubtask={setNewSubtask}
+            onAddSubtask={handleAddSubtask}
+            onToggleSubtaskStatus={handleToggleSubtaskStatus}
+          />
 
-          <TabsContent value="dependencies" className="space-y-4 mt-4">
-            <div className="space-y-4">
-              {dependencies.dependencies.length > 0 && (
-                <div>
-                  <Label className="mb-2 block">Depends On</Label>
-                  {dependencies.dependencies.map((dep) => (
-                    <Card key={dep.id} className="mb-2">
-                      <CardContent className="p-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm">{dep.dependsOn?.title}</span>
-                          <Badge variant="outline">{dep.type}</Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-              {dependencies.dependents.length > 0 && (
-                <div>
-                  <Label className="mb-2 block">Blocks</Label>
-                  {dependencies.dependents.map((dep) => (
-                    <Card key={dep.id} className="mb-2">
-                      <CardContent className="p-3">
-                        <span className="text-sm">{dep.ticket?.title}</span>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
-          </TabsContent>
+          <DependenciesTab dependencies={dependencies} />
 
-          <TabsContent value="relationships" className="space-y-4 mt-4">
-            <div className="space-y-6">
-              <TicketRelationshipGraph
-                ticketId={ticket.id}
-                onNodeClick={(nodeId, nodeType) => {
-                  if (nodeType === 'ticket') {
-                    // Could open ticket detail modal
-                    console.log('Clicked ticket:', nodeId)
-                  }
-                }}
-                onNodeDoubleClick={(nodeId, nodeType) => {
-                  if (nodeType === 'ticket') {
-                    // Could open ticket detail modal
-                    console.log('Double-clicked ticket:', nodeId)
-                  }
-                }}
-              />
-              <TicketRelationshipsPanel
-                ticketId={ticket.id}
-                onAddRelationship={() => {
-                  // Could open a dialog to add relationship
-                  showInfo('Feature to add relationships coming soon')
-                }}
-                onViewTicket={(ticketId) => {
-                  // Could open ticket detail modal
-                  console.log('View ticket:', ticketId)
-                }}
-              />
-            </div>
-          </TabsContent>
+          <RelationshipsTab
+            ticketId={ticket.id}
+            onAddRelationship={() => showInfo('Feature to add relationships coming soon')}
+            onViewTicket={() => showInfo('Feature to view related tickets coming soon')}
+          />
 
-          <TabsContent value="time" className="space-y-4 mt-4">
-            <div className="space-y-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <div className="text-sm text-muted-foreground">Total Time</div>
-                      <div className="text-2xl font-bold">{totalHours.toFixed(2)}h</div>
-                    </div>
-                    {ticket.estimate && (
-                      <div>
-                        <div className="text-sm text-muted-foreground">Estimated</div>
-                        <div className="text-2xl font-bold">{ticket.estimate}h</div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-              <div className="space-y-2">
-                {timeLogs.map((log) => (
-                  <Card key={log.id}>
-                    <CardContent className="p-3 flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{Number(log.hours).toFixed(2)}h</span>
-                          <span className="text-xs text-muted-foreground">
-                            {format(new Date(log.loggedAt), 'MMM d, yyyy')}
-                          </span>
-                        </div>
-                        {log.description && (
-                          <p className="text-sm text-muted-foreground mt-1">{log.description}</p>
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground">{log.user?.name}</div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-              <div className="space-y-2 border-t pt-4">
-                <Input
-                  type="date"
-                  value={newTimeLog.loggedAt}
-                  onChange={(e) => setNewTimeLog({ ...newTimeLog, loggedAt: e.target.value })}
-                />
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    step="0.25"
-                    placeholder="Hours"
-                    value={newTimeLog.hours}
-                    onChange={(e) => setNewTimeLog({ ...newTimeLog, hours: e.target.value })}
-                    className="w-24"
-                  />
-                  <Input
-                    placeholder="Description (optional)"
-                    value={newTimeLog.description}
-                    onChange={(e) => setNewTimeLog({ ...newTimeLog, description: e.target.value })}
-                    className="flex-1"
-                  />
-                  <Button onClick={handleAddTimeLog} disabled={!newTimeLog.hours}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Log Time
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
+          <TimeTab
+            ticket={ticket}
+            timeLogs={timeLogs}
+            totalHours={totalHours}
+            newTimeLog={newTimeLog}
+            setNewTimeLog={setNewTimeLog}
+            onAddTimeLog={handleAddTimeLog}
+          />
 
           {serviceDeskConfig?.isConfigured && (
             <TabsContent value="servicedesk" className="space-y-4 mt-4">
@@ -2242,7 +1699,7 @@ export function TicketDetailModalEnhanced({
                       <div>
                         <Label className="mb-2 block">ServiceDesk Comments</Label>
                         <div className="space-y-2 mb-4">
-                          {serviceDeskComments.map((comment: any, idx: number) => (
+                          {serviceDeskComments.map((comment, idx) => (
                             <Card key={idx}>
                               <CardContent className="p-3">
                                 <div className="text-sm">{comment.content || comment.description}</div>
@@ -2271,7 +1728,7 @@ export function TicketDetailModalEnhanced({
                       <div>
                         <Label className="mb-2 block">ServiceDesk Attachments</Label>
                         <div className="space-y-2 mb-4">
-                          {serviceDeskAttachments.map((attachment: any, idx: number) => (
+                          {serviceDeskAttachments.map((attachment, idx) => (
                             <Card key={idx}>
                               <CardContent className="p-3 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -2299,7 +1756,7 @@ export function TicketDetailModalEnhanced({
                       <div>
                         <Label className="mb-2 block">ServiceDesk Time Logs</Label>
                         <div className="space-y-2 mb-4">
-                          {serviceDeskTimeLogs.map((log: any, idx: number) => (
+                          {serviceDeskTimeLogs.map((log, idx) => (
                             <Card key={idx}>
                               <CardContent className="p-3">
                                 <div className="flex items-center justify-between">
@@ -2400,18 +1857,13 @@ export function TicketDetailModalEnhanced({
                             className="flex-1"
                             onKeyDown={async (e) => {
                               if (e.key === 'Enter' && e.currentTarget.value) {
-                                const spaceId = ticket?.spaces?.[0]?.spaceId || ticket?.spaces?.[0]?.space?.id
+                                const spaceId = getTicketSpaceId(ticket)
                                 if (!spaceId) return
                                 
                                 try {
-                                  const response = await fetch(
-                                    `/api/integrations/manageengine-servicedesk/list?space_id=${spaceId}&search=${encodeURIComponent(e.currentTarget.value)}&row_count=10`
-                                  )
-                                  if (response.ok) {
-                                    const data = await response.json()
-                                    showInfo(`Found ${data.total || 0} ticket(s)`)
-                                    // In a full implementation, show results in a dialog
-                                  }
+                                  const data = await searchServiceDeskTickets(spaceId, e.currentTarget.value)
+                                  showInfo(`Found ${data.total || 0} ticket(s)`)
+                                  // In a full implementation, show results in a dialog
                                 } catch (error) {
                                   console.error('Search error:', error)
                                 }
