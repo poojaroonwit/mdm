@@ -22,13 +22,13 @@ async function addMemberToSpace() {
         await prisma.spaceMember.upsert({
             where: {
                 spaceId_userId: {
-                    spaceId: spaceId,
+                    spaceId,
                     userId: user.id
                 }
             },
             update: { role: 'member' },
             create: {
-                spaceId: spaceId,
+                spaceId,
                 userId: user.id,
                 role: 'member'
             }

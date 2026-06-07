@@ -49,7 +49,7 @@ async function getHandler(request: NextRequest) {
     }
 
     // Build query with space filtering
-    let whereConditions = ['r.deleted_at IS NULL']
+    const whereConditions = ['r.deleted_at IS NULL']
     const queryParams: any[] = []
     let paramIndex = 1
 

@@ -34,7 +34,7 @@ async function postHandler(request: NextRequest) {
 
     // Check if user already exists using Prisma
     const existing = await db.user.findUnique({
-      where: { email: email }
+      where: { email }
     })
     
     if (existing) {

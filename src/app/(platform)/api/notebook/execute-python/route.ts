@@ -156,7 +156,7 @@ with open('${outputFile.replace(/\\/g, '/')}', 'w') as f:
         const { stdout, stderr } = await Promise.race([
           execAsync(`python3 "${captureFile}"`, {
             cwd: tempDir,
-            timeout: timeout,
+            timeout,
             maxBuffer: 10 * 1024 * 1024, // 10MB
           }),
           new Promise<never>((_, reject) => {

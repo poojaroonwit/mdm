@@ -42,8 +42,8 @@ async function getHandler(request: NextRequest) {
     const offset = (page - 1) * limit
 
     // Build query with filters
-    let whereConditions = ['w.is_active = true']
-    let params: any[] = []
+    const whereConditions = ['w.is_active = true']
+    const params: any[] = []
     let paramIndex = 1
 
     if (dataModelId) {

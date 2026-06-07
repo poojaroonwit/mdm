@@ -309,8 +309,8 @@ export async function executeWorkflowCode(options: ExecuteWorkflowCodeOptions): 
           codeLength: replacedCode.length,
           wrappedCodeLength: wrappedCode.length,
           startIndexInCode: startIndex >= 0 ? startIndex : 'not found',
-          contextSnippet: contextSnippet,
-          wrappedContextSnippet: wrappedContextSnippet,
+          contextSnippet,
+          wrappedContextSnippet,
           first500Chars: replacedCode.substring(0, 500),
           last500Chars: replacedCode.substring(Math.max(0, replacedCode.length - 500)),
         })

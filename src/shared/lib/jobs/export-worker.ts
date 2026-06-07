@@ -29,7 +29,7 @@ export async function processExportJob(job: Job): Promise<void> {
       : exportJob.columns
 
     // Build query to fetch data
-    let whereConditions = ['dr.deleted_at IS NULL', 'dr.data_model_id = $1']
+    const whereConditions = ['dr.deleted_at IS NULL', 'dr.data_model_id = $1']
     const queryParams: any[] = [dataModelId]
     let paramIndex = 2
 

@@ -23,7 +23,11 @@ import { useMarketplacePlugins } from '@/features/marketplace/hooks/useMarketpla
 import { useMenuConfig } from '@/hooks/useMenuConfig'
 import { useUserPermissions } from '@/hooks/use-permission'
 import { useSystemSettingsSafe } from '@/contexts/system-settings-context'
-import { getPlatformIcon, type PlatformSidebarProps } from './platformSidebarModel'
+import {
+  getPlatformIcon,
+  isPlatformMenuItemActive,
+  type PlatformSidebarProps
+} from './platformSidebarModel'
 
 export { getPlatformIcon } from './platformSidebarModel'
 
@@ -35,8 +39,6 @@ export function PlatformSidebar({
   collapsed = false,
   selectedGroup,
   onGroupSelect,
-  onGroupHover,
-  onGroupLeave,
   mode = 'primary',
   onToggleCollapse,
   searchQuery = '',
@@ -116,6 +118,7 @@ export function PlatformSidebar({
           href: item.href,
           section: item.section,
           priority: item.priority,
+          description: item.description,
           requiredRoles: item.requiredRoles,
         }))
       }
@@ -203,19 +206,11 @@ export function PlatformSidebar({
 
   const handleGroupClick = useCallback((groupName: string) => {
     const tabs = groupedTabs[groupName as keyof typeof groupedTabs]
-    if (groupName === 'data-management') {
-      if (onGroupSelect) onGroupSelect('')
-      if (tabs && tabs.length > 0) {
-        handleTabClick(tabs[0].id, (tabs[0] as any).href)
-      } else {
-        router.push('/admin/space-selection')
-      }
-      return
-    }
 
     if (groupName === 'infrastructure') {
       if (onGroupSelect) onGroupSelect(groupName)
-      if (activeTab !== 'infrastructure' && tabs && tabs.length > 0) {
+      const isGroupActive = tabs?.some((tab: any) => isPlatformMenuItemActive(tab, activeTab, pathname))
+      if (activeTab !== 'infrastructure' && !isGroupActive && tabs && tabs.length > 0) {
         handleTabClick(tabs[0].id, (tabs[0] as any).href)
       }
       return
@@ -228,10 +223,11 @@ export function PlatformSidebar({
     }
 
     if (onGroupSelect) onGroupSelect(groupName)
-    if (tabs && tabs.length > 0) {
+    const isGroupActive = tabs?.some((tab: any) => isPlatformMenuItemActive(tab, activeTab, pathname))
+    if (!isGroupActive && tabs && tabs.length > 0) {
       handleTabClick(tabs[0].id, (tabs[0] as any).href)
     }
-  }, [onGroupSelect, handleTabClick, activeTab, groupedTabs, router])
+  }, [onGroupSelect, handleTabClick, activeTab, groupedTabs, router, pathname])
 
   const filterTabs = useCallback((tabs: any[], query: string) => {
     if (!query || query.trim() === '') return tabs
@@ -244,6 +240,15 @@ export function PlatformSidebar({
 
   const sidebarBg = mode === 'primary' ? 'var(--sidebar-bg)' : 'var(--bg-surface)'
   const sidebarText = mode === 'primary' ? 'var(--text-primary)' : 'var(--text-secondary)'
+  const isGroupActive = useCallback((groupId: string) => {
+    const tabs = groupedTabs[groupId as keyof typeof groupedTabs] || []
+    return (
+      selectedGroup === groupId ||
+      tabs.some((tab: any) => isPlatformMenuItemActive(tab, activeTab, pathname)) ||
+      (groupId === 'overview' && pathname?.includes('/knowledge')) ||
+      (groupId === 'infrastructure' && activeTab === 'infrastructure')
+    )
+  }, [activeTab, groupedTabs, pathname, selectedGroup])
 
   return (
     <div
@@ -268,7 +273,7 @@ export function PlatformSidebar({
                 {Object.entries(groupMetadata).filter(([groupId]) => groupId !== 'system').map(([groupId, group], index) => {
                   const Icon = group.icon
                   const isDataManagement = groupId === 'data-management'
-                  const isActive = selectedGroup === groupId || (groupId === 'overview' && pathname?.includes('/knowledge')) || (isDataManagement && activeTab === 'space-selection') || (groupId === 'infrastructure' && activeTab === 'infrastructure')
+                  const isActive = isGroupActive(groupId)
 
                   return (
                     <div key={groupId}>
@@ -282,15 +287,6 @@ export function PlatformSidebar({
                           isActive ? "" : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
                         )}
                         onClick={() => handleGroupClick(groupId)}
-                        onMouseEnter={() => {
-                          const tabs = groupedTabs[groupId as keyof typeof groupedTabs]
-                          if (tabs && tabs.length > 0 && groupId !== 'data-management') {
-                            onGroupHover?.(groupId)
-                          }
-                        }}
-                        onMouseLeave={() => {
-                          if (selectedGroup !== groupId) onGroupLeave?.()
-                        }}
                         title={group.name}
                       >
                         
@@ -309,7 +305,7 @@ export function PlatformSidebar({
                 {Object.entries(groupMetadata).filter(([groupId]) => groupId !== 'system').map(([groupId, group], index) => {
                   const Icon = group.icon
                   const isDataManagement = groupId === 'data-management'
-                  const isActive = selectedGroup === groupId || (groupId === 'overview' && pathname?.includes('/knowledge')) || (isDataManagement && activeTab === 'space-selection') || (groupId === 'infrastructure' && activeTab === 'infrastructure')
+                  const isActive = isGroupActive(groupId)
 
                   return (
                     <div key={groupId}>
@@ -323,15 +319,6 @@ export function PlatformSidebar({
                             isActive ? "font-bold" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
                           )}
                         onClick={() => handleGroupClick(groupId)}
-                        onMouseEnter={() => {
-                          const tabs = groupedTabs[groupId as keyof typeof groupedTabs]
-                          if (tabs && tabs.length > 0 && groupId !== 'data-management') {
-                            onGroupHover?.(groupId)
-                          }
-                        }}
-                        onMouseLeave={() => {
-                          if (selectedGroup !== groupId) onGroupLeave?.()
-                        }}
                       >
                         <span className={cn(
                           "flex h-5 w-5 items-center justify-center transition-colors",
@@ -384,7 +371,7 @@ export function PlatformSidebar({
                         </div>
                         <div className="space-y-0.5">
                           {filteredItems.map((tab: any) => {
-                            const isActive = activeTab === tab.id
+                            const isActive = isPlatformMenuItemActive(tab, activeTab, pathname)
                             return (
                               <Button
                                 key={tab.id}

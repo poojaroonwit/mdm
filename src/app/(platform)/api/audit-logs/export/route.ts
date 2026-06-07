@@ -18,8 +18,8 @@ async function getHandler(request: NextRequest) {
     const search = searchParams.get('search')
     const userSearch = searchParams.get('userSearch')
 
-    let whereConditions = ['1=1']
-    let queryParams: any[] = []
+    const whereConditions = ['1=1']
+    const queryParams: any[] = []
     let paramIndex = 1
 
     if (entityType) {

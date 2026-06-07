@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     // Check if user has access to space
     const spaceMember = await prisma.spaceMember.findFirst({
         where: {
-            spaceId: spaceId,
+            spaceId,
             userId: session.user.id
         }
     });
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
     const profiles = await prisma.exportProfile.findMany({
       where: {
-        spaceId: spaceId,
+        spaceId,
         deletedAt: null,
       },
       orderBy: {
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       // Check if user has access to space
     const spaceMember = await prisma.spaceMember.findFirst({
         where: {
-            spaceId: spaceId,
+            spaceId,
             userId: session.user.id
         }
     });
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
         type,
         config: config || {},
         createdBy: session.user.id,
-        spaceId: spaceId,
+        spaceId,
       },
     });
 

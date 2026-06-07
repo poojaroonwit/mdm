@@ -186,7 +186,7 @@ export default function LayoutSelectionPage() {
 
   const handleCreateNewLayout = () => {
     // Open name dialog with a default proposal
-    ;(async () => {
+    (async () => {
       const cfg = await SpacesEditorManager.getLayoutConfig(spaceSlug)
       let base = 'Customer Layout'
       let num = 1

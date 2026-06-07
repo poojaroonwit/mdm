@@ -54,7 +54,7 @@ export async function getSmtpSettings(): Promise<SmtpConfig | null> {
         return acc
       }
 
-      ;(acc as Record<string, unknown>)[row.key] = parseMaybeJson(row.value)
+      (acc as Record<string, unknown>)[row.key] = parseMaybeJson(row.value)
       return acc
     }, {})
 

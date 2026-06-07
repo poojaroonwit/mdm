@@ -320,7 +320,7 @@ async function seedCrmSpaceV2() {
     const seedsConfig = {
       id: `config_${crmSpace.id}`,
       spaceId: crmSpace.id,
-      pages: pages,
+      pages,
       sidebarConfig: {
         items: [
            { id: 'dashboard', type: 'page', pageId: 'crm-dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },

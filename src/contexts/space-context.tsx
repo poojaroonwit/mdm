@@ -7,6 +7,9 @@ interface Space {
   id: string
   name: string
   description?: string
+  icon?: string
+  logo_url?: string
+  logoUrl?: string
   is_default: boolean
   is_active: boolean
   created_by: string

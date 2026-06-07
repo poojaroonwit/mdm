@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       metrics: {
-        totalUsers: totalUsers,
+        totalUsers,
         activeUsers: parseInt(metrics.active_users || '0'),
         storageUsed: totalStorageBytes,
         storageLimit: 10 * 1024 * 1024 * 1024, // 10GB Hardcoded limit for now

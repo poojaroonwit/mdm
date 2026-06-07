@@ -111,7 +111,7 @@ async function postHandler(
       data: {
         ticketId: id,
         userId: session.user.id,
-        hours: hours,
+        hours,
         description: description || null,
         loggedAt: loggedAt || new Date()
       },

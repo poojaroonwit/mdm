@@ -178,7 +178,7 @@ async function postHandler(request: NextRequest) {
       result = await gitlabService.updateIssue(existingIssueIid, {
         title: gitlabIssue.title,
         description: gitlabIssue.description,
-        stateEvent: stateEvent,
+        stateEvent,
         labels: gitlabIssue.labels,
         dueDate: gitlabIssue.dueDate,
         weight: gitlabIssue.weight

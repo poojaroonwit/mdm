@@ -54,7 +54,7 @@ async function getHandler(
         ...dm,
         spaces: dm.space_ids?.map((id: string, index: number) => ({
           space: {
-            id: id,
+            id,
             name: dm.space_names?.[index] || '',
             slug: dm.space_slugs?.[index] || ''
           }
@@ -104,7 +104,7 @@ async function getHandler(
         ...dm,
         spaces: dm.space_ids?.map((id: string, index: number) => ({
           space: {
-            id: id,
+            id,
             name: dm.space_names?.[index] || '',
             slug: dm.space_slugs?.[index] || ''
           }

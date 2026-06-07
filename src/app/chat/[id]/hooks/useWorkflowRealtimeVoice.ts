@@ -265,7 +265,7 @@ export function useWorkflowRealtimeVoice({
 
           ws.send(JSON.stringify({
             type: 'auth',
-            apiKey: apiKey,
+            apiKey,
             sessionConfig,
           }))
           

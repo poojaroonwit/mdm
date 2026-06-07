@@ -33,7 +33,7 @@ export async function generateViewport({ params }: { params: Promise<{ id: strin
     const themeColor = cb.pwaThemeColor || cb.primaryColor || '#1e40af'
 
     return {
-      themeColor: themeColor,
+      themeColor,
     }
   } catch (error) {
     return { themeColor: '#1e40af' }
@@ -92,7 +92,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
     return {
       title: appName,
-      description: description,
+      description,
       manifest: `/api/chat/${chatbotId}/manifest.json`,
       appleWebApp: {
         capable: true,
@@ -108,7 +108,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       },
       openGraph: {
         title: appName,
-        description: description,
+        description,
         type: 'website',
         images: iconUrl ? [{ url: iconUrl }] : undefined,
       },

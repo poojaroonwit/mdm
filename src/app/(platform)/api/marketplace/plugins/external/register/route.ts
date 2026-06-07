@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
           projectFolder: projectFolder || null,
           downloadUrl: downloadUrl || null,
           checksum: checksum || null,
-          installedPath: installedPath,
+          installedPath,
         }),
         null, // api_base_url
         null, // api_auth_type

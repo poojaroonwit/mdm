@@ -16,7 +16,7 @@ async function getHandler(request: NextRequest) {
   const spaceId = searchParams.get('spaceId')
   const serviceId = searchParams.get('serviceId')
 
-  let whereConditions = ['si.deleted_at IS NULL']
+  const whereConditions = ['si.deleted_at IS NULL']
   const queryParams: any[] = []
   let paramIndex = 1
 

@@ -25,7 +25,7 @@ async function getHandler(request: NextRequest) {
     hasSession: !!session,
     userRole: session?.user?.role || 'No role',
     userId: session?.user?.id || 'No ID',
-    dbUsers: dbUsers,
+    dbUsers,
     dbUserCount: dbUsers.length,
     debugInfo: {
       hasAuthOptions: true,

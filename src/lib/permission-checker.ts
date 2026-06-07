@@ -249,8 +249,8 @@ export async function getUserRoleContext(
   return {
     userId: session.user.id,
     globalRole: session.user.role || undefined,
-    spaceId: spaceId,
-    spaceRole: spaceRole
+    spaceId,
+    spaceRole
   }
 }
 

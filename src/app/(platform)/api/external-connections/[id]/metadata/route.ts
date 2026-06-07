@@ -78,7 +78,7 @@ async function getHandler(request: NextRequest, { params }: { params: Promise<{ 
                 port: connection.port,
                 database: connection.database,
                 username: connection.username,
-                password: password,
+                password,
                 options: connection.options ? JSON.parse(connection.options) : null
             })
 
@@ -122,7 +122,7 @@ async function getHandler(request: NextRequest, { params }: { params: Promise<{ 
 
                 // Otherwise fetch schemas/tables
                 let schemas: string[] = []
-                let tablesBySchema: Record<string, string[]> = {}
+                const tablesBySchema: Record<string, string[]> = {}
 
                 if (connection.db_type === 'postgres') {
                     const { rows: schemaRows } = await client.query(`SELECT schema_name FROM information_schema.schemata ORDER BY schema_name`)

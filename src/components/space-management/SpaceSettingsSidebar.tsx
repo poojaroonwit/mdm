@@ -64,7 +64,7 @@ interface SpaceSettingsSidebarProps {
   spaces?: Array<{ id: string; name: string; slug?: string }>
 }
 
-const SidebarItemComponent = memo(function SidebarItemComponent({ 
+const SidebarItemComponent = memo(({ 
   item, 
   isActive, 
   onClick,
@@ -76,7 +76,7 @@ const SidebarItemComponent = memo(function SidebarItemComponent({
   onClick: () => void
   className?: string
   sidebarText?: string
-}) {
+}) => {
   const Icon = item.icon
   
   return (
@@ -109,7 +109,7 @@ const SidebarItemComponent = memo(function SidebarItemComponent({
   )
 })
 
-export const SpaceSettingsSidebar = memo(function SpaceSettingsSidebar({ 
+export const SpaceSettingsSidebar = memo(({ 
   activeTab, 
   onTabChange,
   showAllTabs = true,
@@ -117,7 +117,7 @@ export const SpaceSettingsSidebar = memo(function SpaceSettingsSidebar({
   selectedSpaceId,
   onSpaceChange,
   spaces = []
-}: SpaceSettingsSidebarProps) {
+}: SpaceSettingsSidebarProps) => {
   // Use same styling as secondary platform sidebar
   const sidebarBg = 'var(--brand-secondary-sidebar-bg, hsl(var(--muted)))'
   const sidebarText = 'var(--brand-secondary-sidebar-text, hsl(var(--muted-foreground)))'
@@ -129,6 +129,8 @@ export const SpaceSettingsSidebar = memo(function SpaceSettingsSidebar({
   const visibleItems = showAllTabs 
     ? SIDEBAR_ITEMS 
     : SIDEBAR_ITEMS.filter(item => item.id !== 'danger')
+  const selectedSpace = spaces.find((space) => space.id === selectedSpaceId || space.slug === selectedSpaceId)
+  const selectedSpaceLabel = selectedSpace?.name || 'Select a space'
 
   return (
     <TooltipProvider>
@@ -152,7 +154,7 @@ export const SpaceSettingsSidebar = memo(function SpaceSettingsSidebar({
               }}
             >
               <SelectTrigger className="w-full h-9 text-sm">
-                <SelectValue placeholder="Select a space" />
+                <SelectValue placeholder="Select a space">{selectedSpaceLabel}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {spaces.length > 0 ? (

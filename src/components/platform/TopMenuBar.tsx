@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { LogOut, Bell, CheckCircle, AlertCircle, Info, AlertTriangle, ExternalLink, MoreHorizontal, ChevronDown, Settings } from 'lucide-react'
 import { Z_INDEX } from '@/lib/z-index'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { loadBrandingConfig } from '@/lib/branding'
 import { cn } from '@/lib/utils'
 import type { BrandingConfig } from '@/types/branding'
@@ -54,6 +54,7 @@ interface TopMenuBarProps {
   applicationName?: string
   logoUrl?: string
   spaceName?: string
+  spaceLogoUrl?: string | null
   showSpaceName?: boolean
 }
 
@@ -104,7 +105,14 @@ const getFeatureName = (activeTab: string): string => {
   return tabNames[activeTab] || activeTab.charAt(0).toUpperCase() + activeTab.slice(1).replace(/([A-Z])/g, ' $1')
 }
 
-export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform', logoUrl, spaceName, showSpaceName = false }: TopMenuBarProps) {
+export function TopMenuBar({
+  activeTab,
+  applicationName = 'Unified Data Platform',
+  logoUrl,
+  spaceName,
+  spaceLogoUrl,
+  showSpaceName = false
+}: TopMenuBarProps) {
   const { data: session } = useSession()
   const [branding, setBranding] = useState<BrandingConfig | null>(null)
   const [notificationPopoverOpen, setNotificationPopoverOpen] = useState(false)
@@ -132,6 +140,7 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
   }
 
   const featureName = getFeatureName(activeTab)
+  const shouldShowSpaceIdentity = showSpaceName && Boolean(spaceName)
   const userName = (session as any)?.user?.name || 'User'
   const userEmail = (session as any)?.user?.email || ''
   const userImage = (session as any)?.user?.image || (session as any)?.user?.avatar || ''
@@ -177,25 +186,44 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
 
   // Derive header background/text – prefer explicit brand colours from branding config,
   // fall back to CSS-variable-based defaults so the bar is always opaque.
-  const headerBg = (branding?.topMenuBackgroundColor &&
-    !branding.topMenuBackgroundColor.includes('var(--brand-top-menu-bg)'))
-    ? branding.topMenuBackgroundColor
-    : 'var(--brand-top-menu-bg, var(--bg-default-60))'
+  const hasCustomTopMenuBackground = Boolean(
+    branding?.topMenuBackgroundColor &&
+    !branding.topMenuBackgroundColor.includes('var(--brand-top-menu-bg')
+  )
+  const hasCustomTopMenuText = Boolean(
+    branding?.topMenuTextColor &&
+    !branding.topMenuTextColor.includes('var(--brand-top-menu-text')
+  )
 
-  const headerColor = (branding?.topMenuTextColor &&
-    !branding.topMenuTextColor.includes('var(--brand-top-menu-text)'))
+  // Prefer explicit brand colours. Defaults keep the top bar dark with white
+  // logo, text, and icon controls even before branding variables are defined.
+  const headerBg = hasCustomTopMenuBackground && branding
+    ? branding.topMenuBackgroundColor
+    : 'hsl(var(--brand-top-menu-bg, 222 47% 11%))'
+
+  const headerColor = hasCustomTopMenuText && branding
     ? branding.topMenuTextColor
-    : 'var(--brand-top-menu-text, hsl(var(--foreground)))'
+    : 'hsl(var(--brand-top-menu-text, 0 0% 100%))'
+
+  const headerMutedColor = headerColor
+  const headerHoverBg = `color-mix(in srgb, ${headerColor} 14%, transparent)`
+  const headerBorderColor = `color-mix(in srgb, ${headerColor} 18%, transparent)`
+  const headerStyle = {
+    zIndex: Z_INDEX.navigation,
+    backgroundColor: headerBg,
+    borderColor: headerBorderColor,
+    color: headerColor,
+    '--top-menu-text': headerColor,
+    '--top-menu-muted': headerMutedColor,
+    '--top-menu-hover-bg': headerHoverBg,
+    '--top-menu-border': headerBorderColor,
+  } as CSSProperties
 
   return (
     <header
       className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-sidebar-border px-4 lg:px-8 backdrop-blur-xl transition-all duration-300 shrink-0"
       data-component="top-menu-bar"
-      style={{
-        zIndex: Z_INDEX.navigation,
-        backgroundColor: headerBg,
-        color: headerColor,
-      }}
+      style={headerStyle}
     >
       {/* Left Section: Logo + Divider + Feature */}
       <div className="flex items-center space-x-6 min-w-0">
@@ -211,28 +239,54 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
               }}
             />
           ) : (
-            <div className="bg-gradient-to-br from-[var(--primary-light)] to-[var(--primary-blue)] text-primary-foreground w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-white text-sm shadow-lg mr-4 transition-all duration-300 overflow-hidden">
+            <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-[var(--top-menu-text)] text-sm shadow-lg mr-4 transition-all duration-300 overflow-hidden border border-[var(--top-menu-border)] bg-[var(--top-menu-hover-bg)]">
               <span>{displayName.substring(0, 1).toUpperCase()}</span>
             </div>
           )}
           
           <div className="hidden md:block overflow-hidden whitespace-nowrap">
-            <h1 className="font-bold text-foreground tracking-tight text-xl leading-none mb-0.5">
-              {displayName}
-            </h1>
-            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest leading-none">
-              {showSpaceName && spaceName ? spaceName : 'Platform'}
+            <div className="flex min-w-0 items-center gap-3">
+              <h1 className="font-bold text-[var(--top-menu-text)] tracking-tight text-xl leading-none">
+                {displayName}
+              </h1>
+              {shouldShowSpaceIdentity && (
+                <>
+                  <span className="text-[var(--top-menu-muted)] text-lg leading-none">|</span>
+                  <div className="flex min-w-0 items-center gap-2">
+                    {spaceLogoUrl ? (
+                      <img
+                        src={spaceLogoUrl}
+                        alt={spaceName}
+                        className="h-6 w-6 flex-shrink-0 rounded-md object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none'
+                        }}
+                      />
+                    ) : (
+                      <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border border-[var(--top-menu-border)] bg-[var(--top-menu-hover-bg)] text-[10px] font-bold text-[var(--top-menu-text)]">
+                        {spaceName?.substring(0, 1).toUpperCase()}
+                      </div>
+                    )}
+                    <span className="truncate text-sm font-semibold leading-none text-[var(--top-menu-text)]">
+                      {spaceName}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+            <p className="mt-1 text-[10px] text-[var(--top-menu-muted)] font-medium uppercase tracking-widest leading-none">
+              Platform
             </p>
           </div>
         </div>
 
-        {!showSpaceName && (
+        {!shouldShowSpaceIdentity && (
           <div className="hidden sm:flex items-center">
             {/* Vertical Divider */}
-            <div className="hidden lg:block h-8 w-px bg-gradient-to-b from-transparent via-sidebar-border to-transparent mx-6" />
+            <div className="hidden lg:block h-8 w-px bg-gradient-to-b from-transparent via-[var(--top-menu-border)] to-transparent mx-6" />
 
             {/* Page Title */}
-            <h2 className="text-sm font-semibold text-foreground">{featureName}</h2>
+            <h2 className="text-sm font-semibold text-[var(--top-menu-text)]">{featureName}</h2>
           </div>
         )}
       </div>
@@ -243,7 +297,7 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
         <Popover open={notificationPopoverOpen} onOpenChange={setNotificationPopoverOpen}>
           <PopoverTrigger asChild>
             <button
-              className="relative p-2.5 text-muted-foreground hover:text-foreground transition-all duration-200 hover:bg-muted rounded-xl group"
+              className="relative p-2.5 text-[var(--top-menu-muted)] hover:text-[var(--top-menu-text)] transition-all duration-200 hover:bg-[var(--top-menu-hover-bg)] rounded-xl group"
               aria-label="Notifications"
               title="Notifications"
             >
@@ -377,21 +431,21 @@ export function TopMenuBar({ activeTab, applicationName = 'Unified Data Platform
         {/* User Avatar with Popover */}
         <Popover open={profilePopoverOpen} onOpenChange={setProfilePopoverOpen}>
           <PopoverTrigger asChild>
-            <button className="flex items-center space-x-3 p-1.5 rounded-full hover:bg-muted transition-all duration-200 group outline-none">
+            <button className="flex items-center space-x-3 p-1.5 rounded-full hover:bg-[var(--top-menu-hover-bg)] transition-all duration-200 group outline-none">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--primary-light)] to-[var(--primary-blue)] text-primary-foreground flex items-center justify-center text-white font-bold text-sm shadow-lg transition-all duration-300 overflow-hidden">
                 {userImage ? (
                   <img src={userImage} alt={userName} className="h-full w-full object-cover" />
                 ) : userInitial}
               </div>
               <div className="hidden sm:block text-left pr-3">
-                <p className="text-sm font-semibold text-foreground leading-none capitalize">
+                <p className="text-sm font-semibold text-[var(--top-menu-text)] leading-none capitalize">
                   {userName}
                 </p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase mt-0.5 tracking-wider">
+                <p className="text-[10px] text-[var(--top-menu-muted)] font-medium uppercase mt-0.5 tracking-wider">
                   {userRole}
                 </p>
               </div>
-              <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors duration-200" />
+              <ChevronDown className="w-4 h-4 text-[var(--top-menu-muted)] group-hover:text-[var(--top-menu-text)] transition-colors duration-200" />
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-72 mt-2 origin-top-right divide-y divide-border rounded-2xl bg-popover/95 text-popover-foreground backdrop-blur-xl shadow-2xl ring-1 ring-black/5 dark:ring-white/5 focus:outline-none z-50 border border-border p-0 overflow-hidden" align="end">

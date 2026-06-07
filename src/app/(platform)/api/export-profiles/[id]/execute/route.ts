@@ -74,7 +74,7 @@ async function postHandler(
     }
 
     // Build the SQL query based on selected columns and filters
-    let selectClause = selectedColumns.map((col: any) => {
+    const selectClause = selectedColumns.map((col: any) => {
       const attr = attributes.find(a => a.name === col)
       return attr ? `${col} as "${attr.display_name || attr.name}"` : col
     }).join(', ')

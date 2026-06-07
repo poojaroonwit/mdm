@@ -92,8 +92,8 @@ async function getHandler(request: NextRequest) {
   if (!accessResult.success) return accessResult.response
 
   // Build the search query
-  let whereConditions = ['af.space_id = $1', 'af.deleted_at IS NULL']
-  let queryParams: any[] = [finalSpaceId]
+  const whereConditions = ['af.space_id = $1', 'af.deleted_at IS NULL']
+  const queryParams: any[] = [finalSpaceId]
   let paramIndex = 2
 
   // Text search

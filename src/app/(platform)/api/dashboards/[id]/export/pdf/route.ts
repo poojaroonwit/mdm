@@ -299,8 +299,8 @@ async function postHandler(
     return NextResponse.json({
       success: true,
       key: s3Key,
-      bucket: bucket,
-      filename: filename,
+      bucket,
+      filename,
       message: 'PDF generated and uploaded successfully'
     })
 }

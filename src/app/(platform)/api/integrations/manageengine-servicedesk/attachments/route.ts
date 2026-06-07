@@ -74,7 +74,7 @@ async function postHandler(request: NextRequest) {
       entityType: 'ServiceDeskIntegration',
       entityId: space_id,
       userId: session.user.id,
-      newValue: { request_id: request_id, fileName: file.name, fileSize: file.size },
+      newValue: { request_id, fileName: file.name, fileSize: file.size },
       ipAddress,
       userAgent
     })
@@ -108,7 +108,7 @@ async function postHandler(request: NextRequest) {
         entityId: space_id,
         userId: session.user.id,
         newValue: {
-          request_id: request_id,
+          request_id,
           fileName: file.name,
           fileSize: file.size,
           duration: Date.now() - startTime,

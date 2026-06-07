@@ -102,7 +102,7 @@ async function getHandler(
     })
     return NextResponse.json({ 
       path: defaultPath,
-      pageId: pageId
+      pageId
     })
   } catch (error: any) {
     const duration = Date.now() - startTime

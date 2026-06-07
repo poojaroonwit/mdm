@@ -146,7 +146,7 @@ async function seedPlatformMenu() {
             await prisma.menuItem.upsert({
                 where: { slug: item.slug },
                 update: {
-                    groupId: groupId,
+                    groupId,
                     name: item.name,
                     icon: item.icon,
                     href: item.href,
@@ -156,7 +156,7 @@ async function seedPlatformMenu() {
                     isVisible: true
                 },
                 create: {
-                    groupId: groupId,
+                    groupId,
                     name: item.name,
                     slug: item.slug,
                     icon: item.icon,

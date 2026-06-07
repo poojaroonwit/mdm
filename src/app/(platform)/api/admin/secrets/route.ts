@@ -35,7 +35,7 @@ async function getHandler(request: NextRequest) {
     paths: {
       aiProviders,
       databaseConnections: dbConnections,
-      externalConnections: externalConnections,
+      externalConnections,
     },
   })
 }

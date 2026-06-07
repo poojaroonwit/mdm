@@ -8,6 +8,7 @@ export interface MenuItemConfig {
     id: string
     slug: string
     name: string
+    description?: string
     icon: string
     href: string
     section: string | null

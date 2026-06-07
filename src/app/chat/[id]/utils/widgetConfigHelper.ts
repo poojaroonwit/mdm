@@ -211,7 +211,7 @@ export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any, baseUrl?: s
     const chatWindowBorderRadius = c.chatWindowBorderRadius || c.borderRadius || '8px'
 
     // Background (Complex Logic)
-    let chatWindowBackground = resolveUrl(c.messageBoxColor || '#ffffff');
+    const chatWindowBackground = resolveUrl(c.messageBoxColor || '#ffffff');
     const bgValue = chatWindowBackground;
     const bgAlpha = c.chatWindowBackgroundOpacity !== undefined ? c.chatWindowBackgroundOpacity : 100;
 

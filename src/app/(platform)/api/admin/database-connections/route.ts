@@ -90,11 +90,11 @@ async function postHandler(request: NextRequest) {
       await secretsManager.storeSecret(
         `database-connections/${connectionId}/credentials`,
         {
-          password: password,
-          username: username,
-          host: host,
+          password,
+          username,
+          host,
           port: port ? parseInt(port.toString()) : undefined,
-          database: database,
+          database,
         },
         undefined,
         auditContext,

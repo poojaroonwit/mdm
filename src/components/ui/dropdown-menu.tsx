@@ -166,7 +166,7 @@ const DropdownMenuContent = React.forwardRef<
         
         setPosition({
           top: triggerRect.bottom + sideOffset,
-          left: left,
+          left,
         })
       }
       

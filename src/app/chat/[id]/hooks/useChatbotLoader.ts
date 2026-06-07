@@ -54,7 +54,7 @@ export function useChatbotLoader({
     if (locale) {
       merged.chatkitOptions = {
         ...(merged.chatkitOptions || {}),
-        locale: locale
+        locale
       }
     }
 
@@ -65,7 +65,7 @@ export function useChatbotLoader({
       if (merged.chatkitOptions) {
         merged.chatkitOptions.startScreen = {
           ...(merged.chatkitOptions.startScreen || {}),
-          greeting: greeting
+          greeting
         }
       }
     }
@@ -75,7 +75,7 @@ export function useChatbotLoader({
       if (merged.chatkitOptions) {
         merged.chatkitOptions.composer = {
           ...(merged.chatkitOptions.composer || {}),
-          placeholder: placeholder
+          placeholder
         }
       }
     }
@@ -164,7 +164,7 @@ export function useChatbotLoader({
           if (locale) {
             updated.chatkitOptions = {
               ...(updated.chatkitOptions || {}),
-              locale: locale
+              locale
             }
           }
 
@@ -175,7 +175,7 @@ export function useChatbotLoader({
             if (updated.chatkitOptions) {
               updated.chatkitOptions.startScreen = {
                 ...(updated.chatkitOptions.startScreen || {}),
-                greeting: greeting
+                greeting
               }
             }
           }
@@ -185,7 +185,7 @@ export function useChatbotLoader({
             if (updated.chatkitOptions) {
               updated.chatkitOptions.composer = {
                 ...(updated.chatkitOptions.composer || {}),
-                placeholder: placeholder
+                placeholder
               }
             }
           }

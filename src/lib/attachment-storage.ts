@@ -131,8 +131,8 @@ export class AttachmentStorageService {
 
     const minioClient = new MinioClient({
       endPoint: endpoint.hostname,
-      port: port,
-      useSSL: useSSL,
+      port,
+      useSSL,
       accessKey: config.access_key,
       secretKey: config.secret_key,
       region: config.region
@@ -243,8 +243,8 @@ export class AttachmentStorageService {
 
     const minioClient = new MinioClient({
       endPoint: endpoint.hostname,
-      port: port,
-      useSSL: useSSL,
+      port,
+      useSSL,
       accessKey: config.access_key,
       secretKey: config.secret_key,
       region: config.region
@@ -329,8 +329,8 @@ export class AttachmentStorageService {
 
     const minioClient = new MinioClient({
       endPoint: endpoint.hostname,
-      port: port,
-      useSSL: useSSL,
+      port,
+      useSSL,
       accessKey: config.access_key,
       secretKey: config.secret_key,
       region: config.region
@@ -415,8 +415,8 @@ export class AttachmentStorageService {
 
     const minioClient = new MinioClient({
       endPoint: endpoint.hostname,
-      port: port,
-      useSSL: useSSL,
+      port,
+      useSSL,
       accessKey: config.access_key,
       secretKey: config.secret_key,
       region: config.region
@@ -518,8 +518,8 @@ export class AttachmentStorageService {
 
     const minioClient = new MinioClient({
       endPoint: endpoint.hostname,
-      port: port,
-      useSSL: useSSL,
+      port,
+      useSSL,
       accessKey: config.access_key,
       secretKey: config.secret_key,
       region: config.region

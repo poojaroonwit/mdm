@@ -6,14 +6,14 @@
 export function formatSQL(query: string): string {
   if (!query || !query.trim()) return query
 
-  let formatted = query.trim()
+  const formatted = query.trim()
   let indentLevel = 0
   const indentSize = 2
   const result: string[] = []
   let currentLine = ''
   let inString = false
   let stringChar = ''
-  let i = 0
+  const i = 0
 
   // SQL keywords that should be on new line
   const keywordsStartLine = ['SELECT', 'FROM', 'WHERE', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'FULL JOIN', 

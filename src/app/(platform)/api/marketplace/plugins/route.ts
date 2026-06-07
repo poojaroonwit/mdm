@@ -109,7 +109,7 @@ async function getHandler(request: NextRequest) {
       console.warn('Permission check error (continuing anyway):', permError)
     }
 
-    let whereConditions = ['sr.deleted_at IS NULL']
+    const whereConditions = ['sr.deleted_at IS NULL']
     const queryParams: any[] = []
     let paramIndex = 1
 
@@ -236,7 +236,7 @@ async function getHandler(request: NextRequest) {
         providerUrl: row.provider_url,
         category: row.category,
         status: row.status,
-        capabilities: capabilities,
+        capabilities,
         apiBaseUrl: row.api_base_url,
         apiAuthType: row.api_auth_type,
         apiAuthConfig: row.api_auth_config,

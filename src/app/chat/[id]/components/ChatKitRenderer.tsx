@@ -263,7 +263,7 @@ export function ChatKitRenderer({
     isInitializing,
     isMobile,
     previewDeploymentType,
-    agentId: agentId,
+    agentId,
     engineType: chatbot.engineType,
     timestamp: new Date().toISOString(),
     useChatKitInRegularStyle

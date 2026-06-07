@@ -72,7 +72,7 @@ async function postHandler(request: NextRequest) {
       entityType: 'ServiceDeskIntegration',
       entityId: space_id,
       userId: session.user.id,
-      newValue: { ticketId: ticket_id, request_id: request_id, contentLength: content?.length || 0 },
+      newValue: { ticketId: ticket_id, request_id, contentLength: content?.length || 0 },
       ipAddress,
       userAgent
     })

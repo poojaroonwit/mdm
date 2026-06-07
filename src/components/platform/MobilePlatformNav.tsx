@@ -16,7 +16,7 @@ import { useMarketplacePlugins } from '@/features/marketplace/hooks/useMarketpla
 import { useMenuConfig } from '@/hooks/useMenuConfig'
 import { useUserPermissions } from '@/hooks/use-permission'
 import { cn } from '@/lib/utils'
-import { getPlatformIcon } from './PlatformSidebar'
+import { getPlatformIcon, isPlatformMenuItemActive } from './platformSidebarModel'
 
 interface MobilePlatformNavProps {
   activeTab: string
@@ -91,6 +91,7 @@ export function MobilePlatformNav({
         href: item.href,
         section: item.section,
         priority: item.priority,
+        description: item.description,
       }))
     }
 
@@ -130,8 +131,10 @@ export function MobilePlatformNav({
   }, [menuConfig])
 
   const activeGroupId = useMemo(() => {
-    return groups.find((group) => groupedTabs[group.id]?.some((item) => item.id === activeTab))?.id || null
-  }, [activeTab, groupedTabs, groups])
+    return groups.find((group) =>
+      groupedTabs[group.id]?.some((item) => isPlatformMenuItemActive(item, activeTab, pathname))
+    )?.id || null
+  }, [activeTab, groupedTabs, groups, pathname])
 
   const currentGroup = groups.find((group) => group.id === openGroupId)
 
@@ -237,13 +240,19 @@ export function MobilePlatformNav({
                   <div className="space-y-2">
                     {items.map((item) => {
                       const Icon = item.icon
+                      const isActive = isPlatformMenuItemActive(item, activeTab, pathname)
 
                       return (
                         <button
                           key={item.id}
                           type="button"
                           onClick={() => navigateToItem(item)}
-                          className="flex w-full items-start gap-3 rounded-2xl border border-border/70 bg-card/80 px-4 py-4 text-left transition hover:border-primary/30 hover:bg-primary/5"
+                          className={cn(
+                            "flex w-full items-start gap-3 rounded-2xl border px-4 py-4 text-left transition hover:border-primary/30 hover:bg-primary/5",
+                            isActive
+                              ? "border-primary/40 bg-primary/5"
+                              : "border-border/70 bg-card/80"
+                          )}
                         >
                           <div className="mt-0.5 rounded-2xl bg-background p-2 text-primary shadow-lg">
                             <Icon className="h-5 w-5" />

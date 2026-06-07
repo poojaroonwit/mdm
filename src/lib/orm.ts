@@ -94,7 +94,7 @@ export class SpaceORM {
         deletedAt: null,
         members: {
           some: {
-            userId: userId
+            userId
           }
         }
       },
@@ -204,7 +204,7 @@ export class DataModelORM {
         deletedAt: null,
         spaces: {
           some: {
-            spaceId: spaceId
+            spaceId
           }
         }
       },

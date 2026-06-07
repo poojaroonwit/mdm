@@ -323,7 +323,7 @@ const DrawerContent = React.forwardRef<
           right: margin,
           bottom: margin,
           height: `calc(100vh - ${marginNum * 2}${marginUnit})`,
-          borderRadius: borderRadius,
+          borderRadius,
         }
       case 'floating':
         const floatingMarginNum = parseFloat(margin) || 20
@@ -335,7 +335,7 @@ const DrawerContent = React.forwardRef<
           bottom: margin,
           left: 'auto',
           height: `calc(100vh - ${floatingMarginNum * 2}${floatingMarginUnit})`,
-          borderRadius: borderRadius,
+          borderRadius,
         }
       case 'normal':
       default:

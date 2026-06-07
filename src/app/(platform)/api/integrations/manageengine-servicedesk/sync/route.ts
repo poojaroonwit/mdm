@@ -187,7 +187,7 @@ async function postHandler(request: NextRequest) {
   return NextResponse.json({
     success: true,
     message: 'Ticket synced from ServiceDesk successfully',
-    updated: updated,
+    updated,
     data: {
       ticket: serviceDeskTicket,
       comments: commentsResult.success ? (commentsResult.data?.notes || []) : []

@@ -41,14 +41,13 @@ export default function SignInPage() {
   const { data: session, status } = useSession()
   const searchParams = useSearchParams()
   const safeCallbackUrl = getSafeCallbackUrl(searchParams?.get('callbackUrl'), '/')
+  const sessionTimeoutNotice = searchParams?.get('reason') === 'session-expired'
   const [appName, setAppName] = useState(settings?.siteName || 'Unified Data Platform')
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
 
   const waitForSession = async () => {
-    console.log('[signin] Waiting for session to be established...')
     for (let attempt = 0; attempt < 15; attempt += 1) {
       const session = await getSession()
-      console.log(`[signin] Attempt ${attempt + 1}: Session active: ${!!session?.user}`)
       if (session?.user) {
         return true
       }
@@ -79,7 +78,7 @@ export default function SignInPage() {
 
       if (branding?.loginBackground) {
         const bg = branding.loginBackground
-        let style: React.CSSProperties = {}
+        const style: React.CSSProperties = {}
         let videoUrl: string | undefined
 
         if (bg.type === 'color' && bg.color) {
@@ -291,6 +290,16 @@ export default function SignInPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 px-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] md:px-12 md:pb-6">
+            {sessionTimeoutNotice && (
+              <Alert className="border-amber-500/60 bg-amber-50/80 text-amber-950 dark:bg-amber-950/30 dark:text-amber-100">
+                <AlertCircleIcon className="h-4 w-4" />
+                <AlertTitle>Session timed out</AlertTitle>
+                <AlertDescription>
+                  Your session expired for security. Please sign in again to continue.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {showTwoFactorInput ? (
                 <form onSubmit={handle2FASubmit} className="space-y-4">
                      <div className="flex flex-col items-center space-y-2 mb-4">

@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { name, type, format, includes, filters, profileId, spaceId } = body;
 
-    let jobData: any = {
+    const jobData: any = {
         name,
         type: type || 'custom',
         format: format || 'xlsx',

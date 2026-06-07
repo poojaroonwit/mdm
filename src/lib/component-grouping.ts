@@ -49,7 +49,7 @@ export function createGroup(
     if (selectedComponentIds.includes(component.id)) {
       return {
         ...component,
-        groupId: groupId
+        groupId
       }
     }
     return component

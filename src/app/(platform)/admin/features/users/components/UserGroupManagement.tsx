@@ -133,7 +133,7 @@ export function UserGroupManagement() {
     setFormData({
       name: '',
       description: '',
-      parentId: parentId,
+      parentId,
       sortOrder: 0
     })
     setShowCreateDialog(true)

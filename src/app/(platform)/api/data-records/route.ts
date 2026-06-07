@@ -200,8 +200,8 @@ async function getHandler(request: NextRequest) {
     }
 
     // INTERNAL: Build dynamic query with filters
-    let whereConditions = ['dr.data_model_id::text = $1', 'dr.is_active = TRUE']
-    let params: any[] = [dataModelId]
+    const whereConditions = ['dr.data_model_id::text = $1', 'dr.is_active = TRUE']
+    const params: any[] = [dataModelId]
     let paramIndex = 2
     
     // Add filter conditions

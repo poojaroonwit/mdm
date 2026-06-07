@@ -38,7 +38,7 @@ export async function retryWithBackoff<T>(
   }
 
   let lastError: any
-  let lastResult: T | null = null
+  const lastResult: T | null = null
   let delay = config.initialDelay
 
   for (let attempt = 0; attempt <= config.maxRetries; attempt++) {

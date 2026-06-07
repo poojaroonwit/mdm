@@ -83,6 +83,34 @@ const ICON_MAP: Record<string, any> = {
 
 const getIcon = (name: string) => ICON_MAP[name] || DocumentTextIcon
 
+const SYSTEM_GRID_DESCRIPTIONS: Record<string, string> = {
+  users: 'Manage user accounts, invitations, and platform access.',
+  roles: 'Define roles, permission sets, and access boundaries.',
+  'permission-tester': 'Test role and user permissions before changes go live.',
+  'change-requests': 'Review, approve, and track governed change workflows.',
+  settings: 'Configure global platform identity, appearance, and defaults.',
+  audit: 'Review security audit trails and user activity history.',
+  security: 'Manage sign-in protections and platform security controls.',
+  notifications: 'Configure notification templates, channels, and delivery rules.',
+  themes: 'Customize visual themes and shared interface styling.',
+  integrations: 'Connect external services, SSO, email, and platform integrations.',
+  'page-templates': 'Manage reusable page templates for spaces and content.',
+  'space-layouts': 'Configure reusable layouts for space experiences.',
+  api: 'Manage API access, keys, and developer-facing settings.',
+  performance: 'Inspect platform performance and operational health.',
+}
+
+const getItemDescription = (
+  item: { slug: string; name: string; description?: string },
+  groupSlug: string
+) => {
+  if (item.description) return item.description
+  if (groupSlug === 'system') {
+    return SYSTEM_GRID_DESCRIPTIONS[item.slug] || `Configure ${item.name.toLowerCase()} for the platform.`
+  }
+  return ''
+}
+
 interface SubmenuGridProps {
   groupId: string
 }
@@ -151,6 +179,7 @@ export function SubmenuGrid({ groupId }: SubmenuGridProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {items.map((item) => {
                 const Icon = getIcon(item.icon)
+                const description = getItemDescription(item, group.slug)
                 return (
                   <Card 
                     key={item.id}
@@ -167,9 +196,9 @@ export function SubmenuGrid({ groupId }: SubmenuGridProps) {
                       <CardTitle className="mt-4 text-lg font-medium group-hover:text-primary transition-colors">
                         {item.name}
                       </CardTitle>
-                      {item.description && (
+                      {description && (
                          <CardDescription className="line-clamp-2 mt-2">
-                           {item.description}
+                           {description}
                          </CardDescription>
                       )}
                     </CardHeader>

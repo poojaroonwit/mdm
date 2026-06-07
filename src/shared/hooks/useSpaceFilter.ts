@@ -29,7 +29,7 @@ export function useSpaceFilter(
     // If spaceId is explicitly provided (including null), use it
     if (spaceId !== undefined) {
       return {
-        spaceId: spaceId,
+        spaceId,
         isFiltered: spaceId !== null,
         isAllSpaces: spaceId === null && allowAll,
       }

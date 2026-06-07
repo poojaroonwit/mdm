@@ -85,7 +85,7 @@ async function putHandler(
       await db.dataModelSpace.createMany({
         data: space_ids.map(spaceId => ({
           dataModelId: id,
-          spaceId: spaceId
+          spaceId
         })),
         skipDuplicates: true
       })

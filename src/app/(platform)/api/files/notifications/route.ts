@@ -39,7 +39,7 @@ async function getHandler(request: NextRequest) {
     logger.apiRequest('GET', '/api/files/notifications', { userId, unreadOnly, limit, offset })
 
     let whereClause = 'WHERE user_id = $1'
-    let queryParams: any[] = [userId]
+    const queryParams: any[] = [userId]
 
     if (unreadOnly) {
       whereClause += ' AND is_read = false'

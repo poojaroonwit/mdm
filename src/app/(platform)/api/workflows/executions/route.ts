@@ -18,8 +18,8 @@ async function getHandler(request: NextRequest) {
     const offset = (page - 1) * limit
 
     // Build query with filters
-    let whereConditions = ['1=1']
-    let params: any[] = []
+    const whereConditions = ['1=1']
+    const params: any[] = []
     let paramIndex = 1
 
     if (workflowId) {

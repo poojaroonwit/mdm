@@ -98,7 +98,7 @@ export async function POST(
   // Test connection based on service type
   let success = false
   let message = ''
-  let details: any = {}
+  const details: any = {}
 
   switch (installation.slug) {
     case 'power-bi':

@@ -23,7 +23,7 @@ export interface OpenMetadataClientConfig {
   }
 }
 
-export class OpenMetadataClient {
+class OpenMetadataClientBase {
   private config: OpenMetadataClientConfig
   private baseUrl: string
 
@@ -65,7 +65,7 @@ export class OpenMetadataClient {
 
     return response.json()
   }
-  private buildQueryString(params?: Record<string, any>): string {
+  private buildQueryString(params?: Record<string, unknown>): string {
     if (!params || Object.keys(params).length === 0) return ''
     const query = new URLSearchParams()
     Object.entries(params).forEach(([key, value]) => {
@@ -81,6 +81,17 @@ export class OpenMetadataClient {
   }
 }
 
-export interface OpenMetadataClient extends OpenMetadataMethods1, OpenMetadataMethods2, OpenMetadataMethods3, OpenMetadataMethods4, OpenMetadataMethods5, OpenMetadataMethods6 {}
+export type OpenMetadataClient = OpenMetadataClientBase
+  & OpenMetadataMethods1
+  & OpenMetadataMethods2
+  & OpenMetadataMethods3
+  & OpenMetadataMethods4
+  & OpenMetadataMethods5
+  & OpenMetadataMethods6
+
+export const OpenMetadataClient = OpenMetadataClientBase as unknown as {
+  new (config: OpenMetadataClientConfig): OpenMetadataClient
+  prototype: OpenMetadataClient
+}
 
 Object.assign(OpenMetadataClient.prototype, openMetadataMethods1, openMetadataMethods2, openMetadataMethods3, openMetadataMethods4, openMetadataMethods5, openMetadataMethods6)

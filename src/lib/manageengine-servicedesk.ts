@@ -263,7 +263,7 @@ export class ManageEngineServiceDeskService {
 
         return {
           success: true,
-          requestId: requestId,
+          requestId,
           message: 'Ticket updated successfully',
           data: responseData
         }
@@ -314,7 +314,7 @@ export class ManageEngineServiceDeskService {
       if (response.ok) {
         const result: ServiceDeskResponse = {
           success: true,
-          requestId: requestId,
+          requestId,
           message: 'Ticket retrieved successfully',
           data: responseData
         }

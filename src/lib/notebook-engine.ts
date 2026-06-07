@@ -253,7 +253,7 @@ class NotebookExecutionEngine {
       
       return {
         stdout: 'JavaScript executed successfully',
-        result: result,
+        result,
         executionTime: 0,
         variables: { ...kernel.variables, 'js_result': result }
       }

@@ -65,7 +65,7 @@ async function getHandler(request: NextRequest) {
   }
 
   // Build query
-  let whereConditions = ['kd.deleted_at IS NULL', 'kd.collection_id::text = $1']
+  const whereConditions = ['kd.deleted_at IS NULL', 'kd.collection_id::text = $1']
   const queryParams: any[] = [collectionId]
   let paramIndex = 2
 

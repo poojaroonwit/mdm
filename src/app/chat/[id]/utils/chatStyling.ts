@@ -55,7 +55,7 @@ export function getPopoverPositionStyle(chatbot: ChatbotConfig, isEmbed: boolean
   if (pos.includes('right')) (style as any).right = offsetX
   if (pos.includes('left')) (style as any).left = offsetX
   if (pos.includes('center')) {
-    ; (style as any).left = '50%'
+     (style as any).left = '50%'
       ; (style as any).transform = 'translateX(-50%)'
   }
   return style
@@ -263,19 +263,19 @@ export function getContainerStyle(
 
       // Horizontal alignment matches widget position, with optional left/right margin
       if (pos.includes('right')) {
-        ; (popoverStyle as any).right = marginRightPx > 0 ? `calc(${offsetX} + ${marginRightPx}px)` : offsetX
+         (popoverStyle as any).right = marginRightPx > 0 ? `calc(${offsetX} + ${marginRightPx}px)` : offsetX
       } else if (pos.includes('left')) {
-        ; (popoverStyle as any).left = marginLeftPx > 0 ? `calc(${offsetX} + ${marginLeftPx}px)` : offsetX
+         (popoverStyle as any).left = marginLeftPx > 0 ? `calc(${offsetX} + ${marginLeftPx}px)` : offsetX
       } else if (pos.includes('center')) {
-        ; (popoverStyle as any).left = '50%'
+         (popoverStyle as any).left = '50%'
           ; (popoverStyle as any).transform = 'translateX(-50%)'
       }
     } else {
       // Position popover to the left/right of widget button (side-by-side)
       if (pos.includes('bottom')) {
-        ; (popoverStyle as any).bottom = offsetY
+         (popoverStyle as any).bottom = offsetY
       } else {
-        ; (popoverStyle as any).top = offsetY
+         (popoverStyle as any).top = offsetY
       }
 
       // Place popover beside the widget, with optional left/right margin
@@ -293,7 +293,7 @@ export function getContainerStyle(
           ; (popoverStyle as any).left = leftOffset
       } else if (pos.includes('center')) {
         // For center positions, place popover to the right of widget (default)
-        ; (popoverStyle as any).left = `calc(50% + ${widgetSizePx / 2}px + ${popoverMarginPx}px)`
+         (popoverStyle as any).left = `calc(50% + ${widgetSizePx / 2}px + ${popoverMarginPx}px)`
           ; (popoverStyle as any).transform = 'translateX(0)'
       }
     }

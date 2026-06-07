@@ -41,7 +41,7 @@ export async function GET(
       orientation: pwa.orientation || 'any',
       theme_color: pwa.themeColor || '#ffffff',
       background_color: pwa.bgColor || '#ffffff',
-      icons: icons,
+      icons,
       screenshots: pwa.screenshots ? pwa.screenshots.map(src => ({
           src,
           sizes: "1080x1920", // Approximate, browser usually ignores unless strictly enforced

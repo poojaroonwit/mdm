@@ -10,6 +10,8 @@ import type { InfrastructureInstance } from '@/features/infrastructure/types'
 import { useInfrastructureContext } from '@/contexts/infrastructure-context'
 import { useSpace } from '@/contexts/space-context'
 import { cn } from '@/lib/utils'
+import { useMenuConfig } from '@/hooks/useMenuConfig'
+import { getPlatformGroupForPath } from './platformSidebarModel'
 
 const VMCredentialsCard = dynamic(
   () => import('@/components/infrastructure/VMCredentialsCard').then(mod => mod.VMCredentialsCard),
@@ -78,19 +80,22 @@ interface PlatformLayoutProps {
   projectManagementProjectId?: string
 }
 
-const getGroupForTab = (tab: string): string | null => {
+const getFallbackGroupForTab = (tab: string, pathname?: string | null): string | null => {
   if (tab === 'infrastructure') return 'infrastructure'
+  if (pathname?.startsWith('/system')) return 'system'
+  if (pathname?.startsWith('/tools')) return 'tools'
+  if (pathname?.startsWith('/infrastructure')) return 'infrastructure'
 
   const groupedTabs: Record<string, string[]> = {
     overview: ['overview', 'analytics', 'knowledge-base', 'projects'],
-    tools: ['tools', 'bigquery', 'notebook', 'ai-analyst', 'ai-chat-ui', 'marketplace', 'bi', 'storage', 'data-governance'],
-    system: ['system', 'users', 'roles', 'permission-tester', 'space-layouts', 'space-settings', 'assets', 'data', 'attachments', 'kernels', 'logs', 'audit', 'database', 'change-requests', 'sql-linting', 'schema-migrations', 'data-masking', 'cache', 'backup', 'security', 'performance', 'settings', 'page-templates', 'notifications', 'themes', 'integrations', 'api'],
-    'data-management': ['space-selection']
+    tools: ['tools', 'project-management', 'bigquery', 'notebook', 'ai-analyst', 'ai-chat-ui', 'marketplace', 'bi', 'knowledge'],
+    infrastructure: ['infra-instances', 'infra-monitoring', 'storage', 'database', 'cache', 'backup', 'logs', 'kernels'],
+    system: ['system', 'users', 'roles', 'permission-tester', 'space-layouts', 'space-settings', 'change-requests', 'audit', 'security', 'settings', 'page-templates', 'notifications', 'themes', 'integrations', 'api'],
+    'data-management': ['space-selection', 'data', 'data-models', 'assets', 'attachments', 'import-export', 'data-governance', 'schema-migrations', 'sql-linting', 'data-masking', 'analytics']
   }
 
   for (const [group, tabs] of Object.entries(groupedTabs)) {
     if (tabs.includes(tab)) {
-      if (group === 'data-management') return null
       return group
     }
   }
@@ -124,6 +129,7 @@ export function PlatformLayout({
   const pathname = usePathname()
   const infrastructureContext = useInfrastructureContext()
   const { currentSpace, spaces } = useSpace()
+  const { menuConfig } = useMenuConfig()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
   const [secondarySidebarCollapsed, setSecondarySidebarCollapsed] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -133,26 +139,41 @@ export function PlatformLayout({
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [editingVm, setEditingVm] = useState<InfrastructureInstance | null>(null)
 
-  const isDataManagementRoute = useMemo(() => pathname?.startsWith('/data-management') ?? false, [pathname])
-
   const currentGroup = useMemo(() => {
     if (showSpaceSettingsSidebar || showProjectManagementSidebar) return null
-    if (isDataManagementRoute) return null
-    return getGroupForTab(activeTab)
-  }, [activeTab, isDataManagementRoute, showProjectManagementSidebar, showSpaceSettingsSidebar])
+    const fallbackGroup = getFallbackGroupForTab(activeTab, pathname)
+    const routeGroup = getPlatformGroupForPath(menuConfig?.groups, pathname)
+
+    if (fallbackGroup === 'data-management' && pathname?.startsWith('/admin')) {
+      return fallbackGroup
+    }
+
+    return routeGroup || fallbackGroup
+  }, [activeTab, menuConfig?.groups, pathname, showProjectManagementSidebar, showSpaceSettingsSidebar])
 
   const [selectedGroup, setSelectedGroup] = useState<string | null>(currentGroup)
-  const [hoveredGroup, setHoveredGroup] = useState<string | null>(null)
   const isGroupManuallySelected = useRef(false)
 
   const displayGroup = useMemo(() => {
     if (showSpaceSettingsSidebar || showProjectManagementSidebar) return null
-    if (hoveredGroup && hoveredGroup !== 'data-management') return hoveredGroup
     if (activeTab === currentGroup) return null
-    if (selectedGroup && selectedGroup !== 'data-management') return selectedGroup
-    if (currentGroup && currentGroup !== 'data-management') return currentGroup
+    if (selectedGroup) return selectedGroup
+    if (currentGroup) return currentGroup
     return null
-  }, [hoveredGroup, selectedGroup, currentGroup, showProjectManagementSidebar, showSpaceSettingsSidebar, activeTab])
+  }, [selectedGroup, currentGroup, showProjectManagementSidebar, showSpaceSettingsSidebar, activeTab])
+
+  const selectedSpaceInfo = useMemo(() => {
+    const spaceId = spaceSidebarSpaceId || selectedSpace || currentSpace?.id
+    if (!spaceId) return null
+    const matchedSpace = spaces.find(space => space.id === spaceId || space.slug === spaceId)
+    const resolvedSpace = matchedSpace || (currentSpace?.id === spaceId ? currentSpace : null)
+    if (!resolvedSpace) return null
+
+    return {
+      name: resolvedSpace.name,
+      logoUrl: resolvedSpace.logo_url || resolvedSpace.logoUrl || null,
+    }
+  }, [currentSpace, selectedSpace, spaceSidebarSpaceId, spaces])
 
   useEffect(() => {
     if (!isGroupManuallySelected.current) {
@@ -173,15 +194,6 @@ export function PlatformLayout({
     setSelectedGroup(group)
   }, [])
 
-  const handleGroupHover = useCallback((group: string | null) => {
-    if (group === 'data-management') {
-      setHoveredGroup(null)
-      return
-    }
-    setHoveredGroup(group)
-  }, [])
-
-  const handleGroupLeave = useCallback(() => setHoveredGroup(null), [])
   const handleToggleCollapse = useCallback(() => setSidebarCollapsed(prev => !prev), [])
   const handleToggleSecondaryCollapse = useCallback(() => setSecondarySidebarCollapsed(prev => !prev), [])
 
@@ -268,12 +280,9 @@ export function PlatformLayout({
     <div className="flex flex-col h-screen bg-background">
       <TopMenuBar
         activeTab={activeTab}
-        spaceName={
-          ((activeTab === 'space-selection' && selectedSpace) || activeTab === 'space-module' || showSpaceSidebar) && (spaceSidebarSpaceId || selectedSpace)
-            ? (currentSpace?.name || (selectedSpace && spaces.find(s => s.id === selectedSpace)?.name))
-            : undefined
-        }
-        showSpaceName={!!(((activeTab === 'space-selection' && selectedSpace) || activeTab === 'space-module' || showSpaceSidebar) && (spaceSidebarSpaceId || selectedSpace))}
+        spaceName={selectedSpaceInfo?.name}
+        spaceLogoUrl={selectedSpaceInfo?.logoUrl}
+        showSpaceName={!!(((activeTab === 'space-selection' && selectedSpace) || activeTab === 'space-module' || showSpaceSidebar) && selectedSpaceInfo?.name)}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -304,8 +313,6 @@ export function PlatformLayout({
               collapsed={sidebarCollapsed}
               selectedGroup={selectedGroup}
               onGroupSelect={handleGroupSelect}
-              onGroupHover={handleGroupHover}
-              onGroupLeave={handleGroupLeave}
               mode="primary"
               onToggleCollapse={handleToggleCollapse}
             />
@@ -375,8 +382,6 @@ export function PlatformLayout({
                 secondarySidebarCollapsed ? 'w-0' : 'w-53'
               )}
               style={{ position: 'relative', zIndex: Z_INDEX.sidebar, pointerEvents: 'auto', backgroundColor: 'var(--bg-surface)' }}
-              onMouseEnter={() => displayGroup && setHoveredGroup(displayGroup)}
-              onMouseLeave={() => selectedGroup !== displayGroup && handleGroupLeave()}
             >
               {!secondarySidebarCollapsed && (
                 <PlatformSidebar

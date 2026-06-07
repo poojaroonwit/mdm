@@ -19,14 +19,13 @@ export function SessionTimeoutWatcher() {
       timerRef.current = null
     }
 
-    if (status !== 'authenticated' || !(session as any)?.exp) return
+    if (status !== 'authenticated' || !session?.exp) return
 
-    const expMs = (session as any).exp * 1000
+    const expMs = session.exp * 1000
     const nowMs = Date.now()
     const msUntilExpiry = expMs - nowMs
-    const callbackUrl = pathname?.includes('/auth/signin')
-      ? '/auth/signin'
-      : `/auth/signin?callbackUrl=${encodeURIComponent(pathname || '/')}&reason=session-expired`
+    const signInPath = pathname?.includes('/auth/signin') ? (pathname || '/auth/signin') : '/auth/signin'
+    const callbackUrl = `${signInPath}?callbackUrl=${encodeURIComponent(pathname || '/')}&reason=session-expired`
 
     if (msUntilExpiry <= 0) {
       signOut({ callbackUrl })

@@ -58,7 +58,7 @@ export function GradientColorPicker({
               const [color, position] = match.split(' ')
               return {
                 id: (index + 1).toString(),
-                color: color,
+                color,
                 position: parseInt(position.replace('%', ''))
               }
             })
@@ -80,7 +80,7 @@ export function GradientColorPicker({
               const [color, position] = match.split(' ')
               return {
                 id: (index + 1).toString(),
-                color: color,
+                color,
                 position: parseInt(position.replace('%', ''))
               }
             })

@@ -527,7 +527,7 @@ export class GitLabProjectManagementService {
       description: description.trim() || undefined,
       labels: labels.length > 0 ? labels : undefined,
       weight: ticket.estimate || undefined,
-      dueDate: dueDate,
+      dueDate,
       milestoneId: ticket.milestoneId
     }
   }

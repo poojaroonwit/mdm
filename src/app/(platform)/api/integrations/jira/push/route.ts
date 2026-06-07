@@ -126,7 +126,7 @@ async function postHandler(request: NextRequest) {
       baseUrl: config.api_url,
       email,
       apiToken,
-      projectKey: projectKey
+      projectKey
     })
 
     // Check if ticket already has a Jira issue linked
@@ -162,7 +162,7 @@ async function postHandler(request: NextRequest) {
         status: ticket.status || undefined,
         assignees: ticket.assignees,
         tags: ticket.tags,
-        projectKey: projectKey,
+        projectKey,
         issueType: issueType || 'Task'
       })
 

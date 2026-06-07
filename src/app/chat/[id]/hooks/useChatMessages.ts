@@ -83,7 +83,7 @@ export function useChatMessages({
             return {
               id: msg.id || Date.now().toString(),
               role: msg.role === 'user' ? 'user' : 'assistant',
-              content: content,
+              content,
               timestamp: new Date((msg.created_at || Date.now()) * 1000),
               traceId: msg.traceId,
             }

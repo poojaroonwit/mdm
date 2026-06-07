@@ -18,7 +18,7 @@ async function getHandler(request: NextRequest) {
     }
 
     let whereClause = `WHERE u.is_active = true AND (u.name ILIKE $1 OR u.email ILIKE $1)`
-    let params = [`%${q}%`]
+    const params = [`%${q}%`]
     let paramIndex = 2
 
     // If spaceId is provided, exclude users who are already members of that space

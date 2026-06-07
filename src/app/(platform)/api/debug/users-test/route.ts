@@ -19,7 +19,7 @@ async function getHandler(request: NextRequest) {
   if (!userRole) {
     return NextResponse.json({
       error: 'No user role found',
-      session: session
+      session
     }, { status: 403 })
   }
   
@@ -33,7 +33,7 @@ async function getHandler(request: NextRequest) {
       user: session.user,
       expires: (session as any).expires
     },
-    userRole: userRole,
+    userRole,
     dbUsers: result.rows,
     debug: {
       hasAuthOptions: true,

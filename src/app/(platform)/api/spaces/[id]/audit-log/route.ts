@@ -24,8 +24,8 @@ async function getHandler(
 
     // Build query conditions
     // Note: audit_logs table doesn't have space_id column, so we filter by entity_id if it matches the space
-    let whereConditions: string[] = []
-    let queryParams: any[] = []
+    const whereConditions: string[] = []
+    const queryParams: any[] = []
     let paramIndex = 1
     
     // Filter by entity_id matching the space_id (assuming spaces are tracked as entityType='space')

@@ -91,12 +91,12 @@ export function Preview({
           // Lucide icon with prefix
           const iconName = customPage.icon.replace('lucide-', '')
           const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-            'LayoutDashboard': LayoutDashboard,
-            'ClipboardList': ClipboardList,
-            'Workflow': Workflow,
-            'Layers': Layers,
+            LayoutDashboard,
+            ClipboardList,
+            Workflow,
+            Layers,
             'File': FileIcon,
-            'Settings': Settings,
+            Settings,
             'FileText': FileIcon,
           }
           Icon = iconMap[iconName] || null
@@ -156,12 +156,12 @@ export function Preview({
         } else {
           // Legacy lucide icon name (without prefix)
           const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-            'LayoutDashboard': LayoutDashboard,
-            'ClipboardList': ClipboardList,
-            'Workflow': Workflow,
-            'Layers': Layers,
+            LayoutDashboard,
+            ClipboardList,
+            Workflow,
+            Layers,
             'File': FileIcon,
-            'Settings': Settings,
+            Settings,
             'FileText': FileIcon,
           }
           Icon = customPage.icon ? (iconMap[customPage.icon] || null) : null

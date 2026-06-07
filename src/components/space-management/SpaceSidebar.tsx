@@ -70,13 +70,13 @@ const SPACE_SETTINGS_ITEMS = [
   }
 ] as const
 
-export const SpaceSidebar = memo(function SpaceSidebar({ 
+export const SpaceSidebar = memo(({ 
   spaceId,
   spaceSlug,
   activePageId,
   editMode = false,
   onPageChange
-}: SpaceSidebarProps) {
+}: SpaceSidebarProps) => {
   const router = useRouter()
   const pathname = usePathname()
   const { spaces, currentSpace, setCurrentSpace } = useSpace()

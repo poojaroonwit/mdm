@@ -271,7 +271,7 @@ export function DragDropCanvas({
     const canvasHeight = canvasRef.current?.clientHeight || 600
 
     selectedComponents.forEach(comp => {
-      let newPosition = { ...comp.position }
+      const newPosition = { ...comp.position }
 
       switch (alignment) {
         case 'left':

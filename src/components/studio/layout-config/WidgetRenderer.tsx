@@ -17,7 +17,7 @@ interface WidgetRendererProps {
   spaceId?: string
 }
 
-export const WidgetRenderer = React.memo(function WidgetRenderer({ widget, isMobile = false, spaceId }: WidgetRendererProps) {
+export const WidgetRenderer = React.memo(({ widget, isMobile = false, spaceId }: WidgetRendererProps) => {
   const props = useMemo(
     () => ({
       ...getDefaultWidgetProperties(widget.type),
@@ -61,7 +61,7 @@ export const WidgetRenderer = React.memo(function WidgetRenderer({ widget, isMob
     sqlQuery: props.sqlQuery,
     dbConnection: props.dbConnection,
     dataModelId: props.dataModelId,
-    spaceId: spaceId,
+    spaceId,
     sampleData: props.sampleData || [],
     autoRefresh: shouldAutoRefresh, // Only true if explicitly enabled
     refreshInterval: props.refreshInterval || 0,
@@ -154,8 +154,8 @@ export const WidgetRenderer = React.memo(function WidgetRenderer({ widget, isMob
   }
   if (widget.type === 'time-series') {
     const chartDimensions = props.chartDimensions as Record<string, string | string[]> | undefined
-    let dimensions: string[] = []
-    let measures: string[] = []
+    const dimensions: string[] = []
+    const measures: string[] = []
     
     if (chartDimensions && typeof chartDimensions === 'object') {
       // Time series typically has time/date on x-axis and values on y-axis

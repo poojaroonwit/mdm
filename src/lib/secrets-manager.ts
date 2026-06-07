@@ -102,8 +102,8 @@ class SecretsManager {
       try {
         const vaultPath = `${this.secretMount}/data/${path}`
         await this.vaultClient.write(vaultPath, {
-          data: data,
-          metadata: metadata,
+          data,
+          metadata,
         })
         console.log(`✅ Secret stored in Vault: ${vaultPath}`)
 

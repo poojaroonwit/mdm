@@ -9,7 +9,7 @@ const getTabIdFromPath = (pathname: string): string => {
   if (!pathname) return 'overview'
   
   // Remove leading /admin/ and trailing /page or just /
-  let path = pathname.replace(/^\/admin\//, '').replace(/\/$/, '')
+  const path = pathname.replace(/^\/admin\//, '').replace(/\/$/, '')
   
   // If path is empty, 'admin', or still contains 'admin', return 'overview'
   if (!path || path === 'admin' || path.toLowerCase().includes('admin')) {

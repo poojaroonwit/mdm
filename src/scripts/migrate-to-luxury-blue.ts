@@ -61,7 +61,7 @@ async function main() {
   console.log(`Found ${versions.length} versions requiring configuration updates.`)
 
   for (const v of versions) {
-    let config = v.config as any
+    const config = v.config as any
     
     // Deeply update the config
     if (config.theme) {

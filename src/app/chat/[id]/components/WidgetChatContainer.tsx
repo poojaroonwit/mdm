@@ -120,12 +120,12 @@ export function WidgetChatContainer({
 
     const animationTransition = animType === 'spring' ? {
         type: 'spring' as const,
-        duration: duration,
+        duration,
         damping: 25,
         stiffness: 200,
     } : {
         type: 'tween' as const,
-        duration: duration,
+        duration,
         ease: "easeOut" as const
     }
 

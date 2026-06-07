@@ -49,7 +49,7 @@ async function getHandler(request: NextRequest) {
     }
 
     // Get usage statistics by resource type
-    let usageStats: any = {}
+    const usageStats: any = {}
 
     if (!resourceType || resourceType === 'tickets') {
       const ticketStats = await query(

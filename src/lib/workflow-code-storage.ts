@@ -39,10 +39,10 @@ async function getMinIOClient() {
 
   return new MinioClient({
     endPoint: endpointUrl.hostname,
-    port: port,
-    useSSL: useSSL,
-    accessKey: accessKey,
-    secretKey: secretKey,
+    port,
+    useSSL,
+    accessKey,
+    secretKey,
     region: process.env.MINIO_REGION || 'us-east-1'
   })
 }
@@ -168,7 +168,7 @@ export async function executeWorkflowCodeFromMinIO(
       throw new Error(`Failed to retrieve workflow code from MinIO: ${codeResult.error || 'Code not found'}`)
     }
 
-    let code = codeResult.code
+    const code = codeResult.code
 
     // Replace variables in code before writing
     let processedCode = code

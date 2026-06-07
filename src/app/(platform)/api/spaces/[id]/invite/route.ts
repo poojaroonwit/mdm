@@ -102,7 +102,7 @@ async function postHandler(
       return NextResponse.json({
         success: true,
         message: 'User added to space successfully',
-        user: user
+        user
       })
     }
 
@@ -127,7 +127,7 @@ async function postHandler(
     return NextResponse.json({
       success: true,
       message: 'Invitation sent successfully',
-      email: email
+      email
     })
 }
 

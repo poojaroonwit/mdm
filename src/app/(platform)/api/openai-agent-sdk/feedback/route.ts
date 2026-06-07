@@ -64,7 +64,7 @@ async function postHandler(request: NextRequest) {
           },
           body: JSON.stringify({
             message_id: messageId,
-            feedback: feedback,
+            feedback,
             message_content: messageContent,
             conversation_context: conversationContext
           }),

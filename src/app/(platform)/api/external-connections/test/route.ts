@@ -124,7 +124,7 @@ async function postHandler(request: NextRequest) {
     try {
       // Fetch schemas and tables
       let schemas: string[] = []
-      let tablesBySchema: Record<string, string[]> = {}
+      const tablesBySchema: Record<string, string[]> = {}
       if (db_type === 'postgres') {
         const { rows: schemaRows } = await client.query(`SELECT schema_name FROM information_schema.schemata ORDER BY schema_name`)
         schemas = schemaRows.map((r: any) => r.schema_name)

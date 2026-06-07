@@ -139,7 +139,7 @@ export async function GET(
     const baseUrl = `${protocol}://${host}`
 
     // Collect assets from all pages
-    let allAssets: AssetInfo[] = []
+    const allAssets: AssetInfo[] = []
     
     for (const page of config.pages || []) {
       if (page.components) {

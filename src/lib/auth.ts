@@ -50,7 +50,7 @@ export async function authenticate(req: NextRequest) {
   const authHeader = req.headers.get("authorization")
   const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null
   const cookieToken = req.cookies.get("appkit_token")?.value
-  let token = bearerToken || cookieToken
+  const token = bearerToken || cookieToken
 
   // Fallback to NextAuth token if appkit_token is missing
   if (!token) {
@@ -356,7 +356,7 @@ function createBaseAuthOptions(
       },
       async session({ session, token }) {
         if (token) {
-          ;(session.user as any).id = token.id
+          (session.user as any).id = token.id
           ;(session.user as any).role = token.role
           ;(session.user as any).permissions = token.permissions
           ;(session.user as any).avatarUrl = token.avatarUrl

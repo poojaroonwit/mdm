@@ -31,7 +31,7 @@ async function getHandler(
     try {
       const attributes = await db.attribute.findMany({
         where: {
-          dataModelId: dataModelId,
+          dataModelId,
           isActive: true,
           deletedAt: null
         },
@@ -228,7 +228,7 @@ async function postHandler(
     // Use Prisma ORM to create attribute - best practice, type-safe
     const attribute = await db.attribute.create({
       data: {
-        dataModelId: dataModelId,
+        dataModelId,
         name,
         displayName: display_name,
         type,

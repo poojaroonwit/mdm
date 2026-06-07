@@ -156,8 +156,8 @@ async function getHandler(request: NextRequest) {
   const offset = (page - 1) * limit
 
   // Build the query with filters
-  let whereConditions: string[] = []
-  let queryParams: any[] = []
+  const whereConditions: string[] = []
+  const queryParams: any[] = []
   let paramIndex = 1
 
   if (search) {

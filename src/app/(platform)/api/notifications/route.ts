@@ -40,8 +40,8 @@ async function getHandler(request: NextRequest) {
   };
 
   // Build the query
-  let whereConditions = ['user_id = $1::uuid'];
-  let queryParams: any[] = [session.user.id];
+  const whereConditions = ['user_id = $1::uuid'];
+  const queryParams: any[] = [session.user.id];
   let paramIndex = 2;
 
   if (filters.type) {

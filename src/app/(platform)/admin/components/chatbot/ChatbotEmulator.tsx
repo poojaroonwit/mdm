@@ -128,7 +128,7 @@ export function ChatbotEmulator({
             {
               type: 'emulator-config-update',
               id: selectedChatbot.id,
-              emulatorConfig: emulatorConfig,
+              emulatorConfig,
             },
             window.location.origin
           )
@@ -205,7 +205,7 @@ export function ChatbotEmulator({
           {
             type: 'emulator-config-update',
             id: selectedChatbot.id,
-            emulatorConfig: emulatorConfig,
+            emulatorConfig,
           },
           window.location.origin
         )

@@ -139,8 +139,8 @@ async function postHandler(
 
     if (hasFilters) {
       // Use raw SQL for JSONB filtering
-      let whereConditions: string[] = ['dr.data_model_id = $1::uuid', 'dr.deleted_at IS NULL']
-      let params: any[] = [dataModelId]
+      const whereConditions: string[] = ['dr.data_model_id = $1::uuid', 'dr.deleted_at IS NULL']
+      const params: any[] = [dataModelId]
       let paramIndex = 2
 
       // Build filter conditions for each attribute
@@ -278,7 +278,7 @@ async function postHandler(
       const dataRecords = await db.dataRecord.findMany({
         where: {
           id: { in: recordIds },
-          dataModelId: dataModelId,
+          dataModelId,
           deletedAt: null
         },
         include: {
@@ -339,11 +339,11 @@ async function postHandler(
 
     // Use Prisma ORM for standard queries without filters
     const whereClause: Prisma.DataRecordWhereInput = {
-      dataModelId: dataModelId,
+      dataModelId,
       deletedAt: null
     }
 
-    let dataRecords = await db.dataRecord.findMany({
+    const dataRecords = await db.dataRecord.findMany({
       where: whereClause,
       include: {
         values: {

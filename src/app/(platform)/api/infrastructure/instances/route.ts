@@ -39,7 +39,7 @@ async function getHandler(request: NextRequest) {
       )
     }
 
-    let whereConditions = ['ii.deleted_at IS NULL']
+    const whereConditions = ['ii.deleted_at IS NULL']
     const queryParams: any[] = []
     let paramIndex = 1
 

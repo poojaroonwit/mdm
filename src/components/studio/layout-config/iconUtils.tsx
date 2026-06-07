@@ -34,13 +34,13 @@ export function resolvePageIcon(
     // Lucide icon with prefix
     const iconName = page.icon.replace('lucide-', '')
     const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-      'LayoutDashboard': LayoutDashboard,
-      'ClipboardList': ClipboardList,
-      'Workflow': Workflow,
-      'Layers': Layers,
+      LayoutDashboard,
+      ClipboardList,
+      Workflow,
+      Layers,
       'File': FileIcon,
-      'Settings': Settings,
-      'FileText': FileText,
+      Settings,
+      FileText,
     }
     Icon = iconMap[iconName] || null
     
@@ -71,13 +71,13 @@ export function resolvePageIcon(
   } else {
     // Legacy lucide icon name (without prefix)
     const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-      'LayoutDashboard': LayoutDashboard,
-      'ClipboardList': ClipboardList,
-      'Workflow': Workflow,
-      'Layers': Layers,
+      LayoutDashboard,
+      ClipboardList,
+      Workflow,
+      Layers,
       'File': FileIcon,
-      'Settings': Settings,
-      'FileText': FileText,
+      Settings,
+      FileText,
     }
     Icon = iconMap[page.icon] || null
     

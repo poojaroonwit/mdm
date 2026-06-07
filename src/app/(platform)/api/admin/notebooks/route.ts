@@ -68,7 +68,7 @@ async function postHandler(request: NextRequest) {
     if (spaceId && spaceId !== 'all') {
       const spaceMember = await db.spaceMember.findFirst({
         where: {
-          spaceId: spaceId,
+          spaceId,
           userId: session.user.id,
         },
       })
@@ -87,8 +87,8 @@ async function postHandler(request: NextRequest) {
         description: description?.trim() || null,
         content: {},
         cells: [],
-        tags: tags,
-        isPublic: isPublic,
+        tags,
+        isPublic,
         author: session.user.id,
         spaceId: spaceId && spaceId !== 'all' ? spaceId : null,
       },

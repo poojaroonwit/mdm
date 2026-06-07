@@ -237,8 +237,8 @@ export async function getAuditLogs(filters: {
 
     const offset = (page - 1) * limit
 
-    let whereConditions = ['1=1']
-    let queryParams: any[] = []
+    const whereConditions = ['1=1']
+    const queryParams: any[] = []
     let paramIndex = 1
 
     if (entityType) {

@@ -12,8 +12,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Eye, EyeOff, Mail, Lock, AlertCircle, Layers, Smartphone, ArrowLeft } from 'lucide-react'
 import { loadBrandingConfig } from '@/lib/branding'
 import { getSafeCallbackUrl } from '@/lib/auth-callback'
+import type { LoginPageConfig } from '@/lib/login-page-config'
+import type { BrandingConfig } from '@/types/branding'
 
 type IconComponent = ComponentType<{ className?: string }>
+type SpaceLoginBrandingConfig = BrandingConfig & {
+  applicationDescription?: string
+}
 
 const EyeIcon = Eye as unknown as IconComponent
 const EyeOffIcon = EyeOff as unknown as IconComponent
@@ -31,6 +36,7 @@ export default function SpaceSignInPage() {
   const searchParams = useSearchParams()
   const fallbackCallbackUrl = `/${params.space}/dashboard`
   const safeCallbackUrl = getSafeCallbackUrl(searchParams?.get('callbackUrl'), fallbackCallbackUrl)
+  const sessionTimeoutNotice = searchParams?.get('reason') === 'session-expired'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -40,8 +46,8 @@ export default function SpaceSignInPage() {
   const [ssoProviders, setSsoProviders] = useState({ google: false, azure: false })
   const [showTwoFactorInput, setShowTwoFactorInput] = useState(false)
   const [totpCode, setTotpCode] = useState('')
-  const [loginPageConfig, setLoginPageConfig] = useState<any>(null)
-  const [branding, setBranding] = useState<any>(null)
+  const [loginPageConfig, setLoginPageConfig] = useState<Partial<LoginPageConfig> | null>(null)
+  const [branding, setBranding] = useState<SpaceLoginBrandingConfig | null>(null)
 
   const waitForSession = async () => {
     for (let attempt = 0; attempt < 10; attempt += 1) {
@@ -188,7 +194,7 @@ export default function SpaceSignInPage() {
   }
 
   // Get styling from config or use defaults
-  const config = loginPageConfig || {}
+  const config: Partial<LoginPageConfig> = loginPageConfig || {}
   const bgType = config.backgroundType
   const bgImage = config.backgroundImage || loginImageUrl
   const title = config.title || 'Sign in'
@@ -260,6 +266,16 @@ export default function SpaceSignInPage() {
             <CardDescription className="text-muted-foreground/80 text-lg">{description}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 px-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] md:px-12 md:pb-6">
+            {sessionTimeoutNotice && (
+              <Alert className="border-amber-500/60 bg-amber-50/80 text-amber-950 dark:bg-amber-950/30 dark:text-amber-100">
+                <AlertCircleIcon className="h-4 w-4" />
+                <AlertTitle>Session timed out</AlertTitle>
+                <AlertDescription>
+                  Your session expired for security. Please sign in again to continue.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {showTwoFactorInput ? (
                 <form onSubmit={handle2FASubmit} className="space-y-4">
                      <div className="flex flex-col items-center space-y-2 mb-4">

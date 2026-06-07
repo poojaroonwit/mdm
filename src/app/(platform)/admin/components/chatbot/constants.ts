@@ -269,7 +269,7 @@ function generateUUID(): string {
 export function createDefaultChatbot(name: string): Chatbot {
   return {
     id: generateUUID(),
-    name: name,
+    name,
     website: '',
     description: '',
     engineType: 'custom',

@@ -22,8 +22,8 @@ async function getHandler(request: NextRequest) {
 
     // Build the query with filters
     // Use space_attachment_storage table
-    let whereConditions = [] // DeletedAt not in schema
-    let queryParams: any[] = []
+    const whereConditions = [] // DeletedAt not in schema
+    const queryParams: any[] = []
     let paramIndex = 1
 
     if (spaceId !== 'all') {

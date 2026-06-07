@@ -135,7 +135,7 @@ async function postHandler(request: NextRequest) {
       const duration = Date.now() - startTime
       logger.apiResponse('POST', '/api/admin/execute-query', 200, duration, {
         rowCount: result.rows.length,
-        executionTime: executionTime,
+        executionTime,
       })
       return NextResponse.json({
         success: true,

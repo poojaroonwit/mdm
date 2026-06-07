@@ -214,7 +214,7 @@ async function postHandler(request: NextRequest) {
   const report = result.rows[0]
 
   // Log audit event
-  auditLogger.reportCreated(report.id, { source: source })
+  auditLogger.reportCreated(report.id, { source })
 
   // Associate with spaces
   if (final_space_ids && final_space_ids.length > 0) {

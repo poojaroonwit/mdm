@@ -102,7 +102,7 @@ export class RequestExecutor {
     const startTime = Date.now()
 
     try {
-      let url = this.resolveVariables(request.url, environmentVariables)
+      const url = this.resolveVariables(request.url, environmentVariables)
 
       // Validate URL protocol
       try {

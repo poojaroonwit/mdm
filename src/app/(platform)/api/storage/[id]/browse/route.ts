@@ -77,8 +77,8 @@ async function listMinioObjects(config: any, path: string): Promise<FileItem[]> 
 
     const minioClient = new MinioClient({
         endPoint: endpoint.hostname,
-        port: port,
-        useSSL: useSSL,
+        port,
+        useSSL,
         accessKey: config.access_key || config.accessKey,
         secretKey: config.secret_key || config.secretKey,
         region: config.region || 'us-east-1'

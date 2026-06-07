@@ -179,7 +179,7 @@ export function AddServiceDialog({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             ...serviceData,
-            spaceId: spaceId,
+            spaceId,
           }),
         })
       }

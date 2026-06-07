@@ -72,11 +72,16 @@ const SelectGroup = ({ children }: { children: React.ReactNode }) => {
   return <div role="group">{children}</div>
 }
 
+const looksLikeOpaqueId = (value: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+
 const SelectValue = ({ placeholder, children }: { placeholder?: string; children?: React.ReactNode }) => {
   const context = React.useContext(SelectContext)
   if (!context) return <span>{children || placeholder}</span>
   
-  const displayLabel = children || context.labels?.get(context.value) || context.value || placeholder
+  const registeredLabel = context.labels?.get(context.value)
+  const fallbackValue = context.value && !looksLikeOpaqueId(context.value) ? context.value : undefined
+  const displayLabel = children || registeredLabel || fallbackValue || placeholder || 'Select an item'
   return <span>{displayLabel}</span>
 }
 
@@ -195,7 +200,13 @@ const SelectContent = React.forwardRef<
     }
   }, [context?.open])
 
-  if (!context?.open || !positionState) return null
+  if (!context?.open || !positionState) {
+    return (
+      <div hidden aria-hidden="true">
+        {children}
+      </div>
+    )
+  }
 
   const content = (
     <div
