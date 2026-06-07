@@ -14,35 +14,22 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Progress } from '@/components/ui/progress'
-import { 
-  FileText, 
-  Search, 
-  Filter, 
-  Download, 
-  RefreshCw, 
-  Settings,
+import {
+  FileText,
+  Search,
+  Download,
+  RefreshCw,
   Trash2,
-  RotateCcw,
   Archive,
-  Eye,
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Info,
-  Database,
-  Server,
-  Globe,
-  Zap,
-  Activity,
-  BarChart3,
-  TrendingUp,
-  TrendingDown
+  BarChart3
 } from 'lucide-react'
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { LogEntry, LogStats, LogFilter, LogRetention } from '../types'
 import { Skeleton } from '@/components/ui/skeleton'
+import { LogAnalyticsTab } from './LogAnalyticsTab'
+import { LogDetailsDialog } from './LogDetailsDialog'
+import { LogSettingsTab } from './LogSettingsTab'
+import { LogStatsCards } from './LogStatsCards'
+import { formatDuration, getLevelIcon } from './log-management-utils'
 
 export function LogManagement() {
   const [logs, setLogs] = useState<LogEntry[]>([])
@@ -228,44 +215,6 @@ export function LogManagement() {
     }
   }
 
-  const getLevelIcon = (level: string) => {
-    switch (level) {
-      case 'DEBUG':
-        return <Info className="h-4 w-4 text-blue-500" />
-      case 'INFO':
-        return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'WARN':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />
-      case 'ERROR':
-        return <XCircle className="h-4 w-4 text-red-500" />
-      case 'FATAL':
-        return <XCircle className="h-4 w-4 text-red-600" />
-      default:
-        return <Info className="h-4 w-4 text-gray-500" />
-    }
-  }
-
-  const getServiceIcon = (service: string) => {
-    switch (service.toLowerCase()) {
-      case 'api':
-        return <Globe className="h-4 w-4" />
-      case 'database':
-        return <Database className="h-4 w-4" />
-      case 'auth':
-        return <Zap className="h-4 w-4" />
-      case 'cache':
-        return <Activity className="h-4 w-4" />
-      default:
-        return <Server className="h-4 w-4" />
-    }
-  }
-
-  const formatDuration = (ms?: number) => {
-    if (!ms) return '-'
-    if (ms < 1000) return `${ms}ms`
-    return `${(ms / 1000).toFixed(2)}s`
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -290,62 +239,7 @@ export function LogManagement() {
         </div>
       </div>
 
-      {/* Log Statistics */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Total Logs</CardTitle>
-              <FileText className="h-4 w-4 text-zinc-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground">
-                {stats.errorRate.toFixed(1)}% error rate
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Error Rate</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-zinc-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.errorRate.toFixed(1)}%</div>
-              <div className="text-xs text-muted-foreground">
-                {stats.byLevel.ERROR || 0} errors
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Avg Response</CardTitle>
-              <Clock className="h-4 w-4 text-zinc-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatDuration(stats.avgResponseTime)}</div>
-              <div className="text-xs text-muted-foreground">
-                Response time
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">Services</CardTitle>
-              <Server className="h-4 w-4 text-zinc-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{Object.keys(stats.byService).length}</div>
-              <div className="text-xs text-muted-foreground">
-                Active services
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {stats && <LogStatsCards stats={stats} />}
 
       <div className="w-full">
       <Tabs defaultValue="logs">
@@ -518,71 +412,7 @@ export function LogManagement() {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
-          <h3 className="text-lg font-semibold">Log Analytics</h3>
-          {stats && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Logs by Level</CardTitle>
-                  <CardDescription>Distribution of log levels</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={Object.entries(stats.byLevel).map(([level, count]) => ({ level, count }))}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
-                      <XAxis dataKey="level" fontSize={10} axisLine={false} tickLine={false} />
-                      <YAxis fontSize={10} axisLine={false} tickLine={false} />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: 'var(--zinc-50)', 
-                          borderColor: 'var(--zinc-200)',
-                          borderRadius: '12px',
-                          fontSize: '10px'
-                        }} 
-                      />
-                      <Bar dataKey="count" fill="#18181b" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Logs by Service</CardTitle>
-                  <CardDescription>Log volume by service</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={Object.entries(stats.byService).map(([service, count]) => ({ service, count }))}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="service" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="count" fill="#82ca9d" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>Logs Over Time</CardTitle>
-                  <CardDescription>Log volume by hour</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={stats.byHour}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="hour" />
-                      <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="count" stroke="#8884d8" strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+          <LogAnalyticsTab stats={stats} />
         </TabsContent>
 
         <TabsContent value="retention" className="space-y-6">
@@ -682,120 +512,12 @@ export function LogManagement() {
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">
-          <h3 className="text-lg font-semibold">Log Settings</h3>
-          <Card>
-            <CardHeader>
-              <CardTitle>Log Configuration</CardTitle>
-              <CardDescription>
-                Configure log collection and processing settings
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Switch id="log-collection" />
-                <Label htmlFor="log-collection">Enable Log Collection</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch id="log-aggregation" />
-                <Label htmlFor="log-aggregation">Enable Log Aggregation</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch id="log-indexing" />
-                <Label htmlFor="log-indexing">Enable Full-Text Indexing</Label>
-              </div>
-              <div>
-                <Label htmlFor="log-buffer">Log Buffer Size</Label>
-                <Input
-                  id="log-buffer"
-                  type="number"
-                  placeholder="1000"
-                />
-              </div>
-            </CardContent>
-          </Card>
+          <LogSettingsTab />
         </TabsContent>
       </Tabs>
       </div>
 
-      {/* Log Details Modal */}
-      {selectedLog && (
-        <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
-          <DialogContent className="max-w-4xl p-0 overflow-hidden">
-            <DialogHeader className="p-6 pb-2">
-              <DialogTitle className="flex items-center gap-2">
-                {getLevelIcon(selectedLog.level)}
-                Log Details
-              </DialogTitle>
-              <DialogDescription>
-                {selectedLog.service} • {selectedLog.timestamp.toLocaleString()}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogBody className="p-6 pt-2 pb-4">
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium">Level:</span> 
-                    <StatusBadge status={selectedLog.level} label={selectedLog.level} className="ml-2" />
-                  </div>
-                  <div>
-                    <span className="font-medium">Service:</span> {selectedLog.service}
-                  </div>
-                  <div>
-                    <span className="font-medium">Timestamp:</span> {selectedLog.timestamp.toLocaleString()}
-                  </div>
-                  <div>
-                    <span className="font-medium">Duration:</span> {formatDuration(selectedLog.duration)}
-                  </div>
-                  {selectedLog.userId && (
-                    <div>
-                      <span className="font-medium">User ID:</span> {selectedLog.userId}
-                    </div>
-                  )}
-                  {selectedLog.sessionId && (
-                    <div>
-                      <span className="font-medium">Session ID:</span> {selectedLog.sessionId}
-                    </div>
-                  )}
-                </div>
-                
-                <div>
-                  <span className="font-medium">Message:</span>
-                  <div className="text-sm text-muted-foreground mt-1 p-2 bg-muted rounded">
-                    {selectedLog.message}
-                  </div>
-                </div>
-
-                {Object.keys(selectedLog.context).length > 0 && (
-                  <div>
-                    <span className="font-medium">Context:</span>
-                    <div className="text-sm text-muted-foreground mt-1 p-2 bg-muted rounded">
-                      <pre>{JSON.stringify(selectedLog.context, null, 2)}</pre>
-                    </div>
-                  </div>
-                )}
-
-                {selectedLog.tags.length > 0 && (
-                  <div>
-                    <span className="font-medium">Tags:</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {selectedLog.tags.map(tag => (
-                        <Badge key={tag} variant="outline">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </DialogBody>
-            <DialogFooter className="p-6 pt-2">
-              <Button variant="outline" onClick={() => setSelectedLog(null)}>
-                Close
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      <LogDetailsDialog log={selectedLog} onClose={() => setSelectedLog(null)} />
     </div>
   )
 }

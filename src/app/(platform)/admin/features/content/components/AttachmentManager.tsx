@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -11,30 +10,16 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from '@/components/ui/dialog'
 import { 
   Cloud, 
-  Plus, 
-  Settings, 
   Upload, 
   Download, 
   Trash2, 
-  Edit, 
-  Key,
   Server,
-  Folder,
   File,
-  Image,
   FileText,
   Archive,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  RefreshCw,
-  Eye,
-  EyeOff,
   Database,
   Link,
   Paperclip,
-  Video,
-  Music,
   FileImage,
   FileVideo,
   FileAudio,
@@ -100,10 +85,9 @@ export function AttachmentManager() {
         spaceId: selectedSpace,
         search: searchTerm,
         type: filterType,
-        provider: filterProvider
-      })
-      
-      const response = await fetch(`/api/admin/attachments?${params}`)
+      provider: filterProvider
+    })
+    const response = await fetch(`/api/admin/attachments?${params}`)
       if (response.ok) {
         const data = await response.json()
         setAttachments(data.attachments || [])
@@ -381,7 +365,6 @@ export function AttachmentManager() {
         </CardContent>
       </Card>
 
-      {/* Attachments Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {isLoading ? (
           <div className="w-full space-y-3 p-4">
@@ -471,7 +454,6 @@ export function AttachmentManager() {
         )}
       </div>
 
-      {/* Attachment Details Modal */}
       {selectedAttachment && (
         <Dialog open={!!selectedAttachment} onOpenChange={() => setSelectedAttachment(null)}>
           <DialogContent className="max-w-2xl p-0 overflow-hidden">

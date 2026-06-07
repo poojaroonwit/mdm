@@ -12,32 +12,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { CentralizedDrawer } from '@/components/ui/centralized-drawer'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { ColorInput } from '@/components/studio/layout-config/ColorInput'
 import {
   Database,
   Type,
   Activity,
   Settings,
-  GripVertical,
   Plus,
   Trash2,
-  X,
-  Palette,
   AlertTriangle,
   BarChart3,
-  CheckCircle,
-  TrendingUp,
-  Target,
-  MoreVertical,
-  Eye,
-  EyeOff,
-  Edit,
-  Save
 } from 'lucide-react'
-import { Attribute, AttributeFormData } from '@/lib/attribute-management'
+import { Attribute } from '@/lib/attribute-management'
 import { useSpacePermissions } from '@/hooks/use-space-permissions'
 import toast from 'react-hot-toast'
+import { AttributeActivityTab } from './AttributeActivityTab'
+import { AttributeOptionsTab } from './AttributeOptionsTab'
+import { AttributeQualityTab } from './AttributeQualityTab'
 
 interface AttributeOption {
   value: string
@@ -80,14 +70,6 @@ export function EnhancedAttributeDetailDrawer({
   })
   const [qualityStats, setQualityStats] = useState<any>(null)
   const [loadingQuality, setLoadingQuality] = useState(false)
-  const [editingOption, setEditingOption] = useState<number | null>(null)
-  const [editingOptionData, setEditingOptionData] = useState({ value: '', label: '', color: '#1e40af' })
-
-  const colorOptions = [
-    '#1e40af', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
-    '#06B6D4', '#84CC16', '#F97316', '#EC4899', '#6B7280'
-  ]
-
   useEffect(() => {
     if (attribute) {
       setEditForm(attribute)
@@ -147,75 +129,6 @@ export function EnhancedAttributeDetailDrawer({
   const handleAddNewOption = () => {
     setShowNewOption(true)
     setNewOption({ value: '', label: '', color: '#1e40af' })
-  }
-
-  const handleSaveNewOption = async () => {
-    if (!newOption.value || !newOption.label) return
-
-    try {
-      const updatedOptions = [...options, { ...newOption, order: options.length }]
-      setOptions(updatedOptions)
-
-      // Update the attribute with new options
-      if (!attribute) return
-      const response = await fetch(`/api/data-models/attributes/${attribute.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ options: updatedOptions })
-      })
-
-      if (response.ok) {
-        setShowNewOption(false)
-        setNewOption({ value: '', label: '', color: '#1e40af' })
-        // Refresh the attribute data
-        if (onSave) {
-          onSave({ ...attribute, options: updatedOptions })
-        }
-      }
-    } catch (error) {
-      console.error('Error saving new option:', error)
-    }
-  }
-
-  const handleCancelNewOption = () => {
-    setShowNewOption(false)
-    setNewOption({ value: '', label: '', color: '#1e40af' })
-  }
-
-  const handleEditOption = (index: number, option: any) => {
-    setEditingOption(index)
-    setEditingOptionData({ ...option })
-  }
-
-  const handleSaveOption = async (index: number) => {
-    if (!editingOptionData.value || !editingOptionData.label) return
-
-    try {
-      const updatedOptions = [...options]
-      updatedOptions[index] = { ...editingOptionData, order: options[index]?.order ?? index }
-      setOptions(updatedOptions)
-
-      if (!attribute) return
-      const response = await fetch(`/api/data-models/attributes/${attribute.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ options: updatedOptions })
-      })
-
-      if (response.ok) {
-        setEditingOption(null)
-        if (onSave) {
-          onSave({ ...attribute, options: updatedOptions })
-        }
-      }
-    } catch (error) {
-      console.error('Error saving option:', error)
-    }
-  }
-
-  const handleCancelEditOption = () => {
-    setEditingOption(null)
-    setEditingOptionData({ value: '', label: '', color: '#1e40af' })
   }
 
   const handleRemoveOption = async (index: number) => {
@@ -279,22 +192,6 @@ export function EnhancedAttributeDetailDrawer({
     setNewOption({ value: '', label: '', color: '#1e40af' })
   }
 
-
-  const handleOptionDragEnd = (result: any) => {
-    if (!result.destination) return
-
-    const items = Array.from(options)
-    const [reorderedItem] = items.splice(result.source.index, 1)
-    items.splice(result.destination.index, 0, reorderedItem)
-
-    // Update order indices
-    const reorderedOptions = items.map((item, index) => ({
-      ...item,
-      order: index
-    }))
-
-    setOptions(reorderedOptions)
-  }
 
   const handleOptionChange = (index: number, field: keyof AttributeOption, value: string) => {
     const newOptions = [...options]
@@ -609,294 +506,27 @@ export function EnhancedAttributeDetailDrawer({
 
             {isSelectType && (
               <TabsContent value="options" className="flex-1 overflow-y-auto">
-                <div className="space-y-6">
-
-                  {/* Attribute Options */}
-                  <Card>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle className="flex items-center gap-2">
-                            <Settings className="h-5 w-5" />
-                            Attribute Options
-                          </CardTitle>
-                          <CardDescription>
-                            Manage the available options for this {attribute.type} field. Drag and drop to reorder.
-                          </CardDescription>
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={handleAddNewOption}
-                          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                        >
-                          <Plus className="h-4 w-4" />
-                          Create New Attribute Option
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        {options.map((option, index) => (
-                          <div key={index} className="flex items-center gap-3 p-3 border border-border rounded-lg">
-                            {/* Color Swatch */}
-                            <div className="flex items-center gap-2">
-                              <ColorInput
-                                value={option.color || '#1e40af'}
-                                onChange={(color) => handleOptionChange(index, 'color', color)}
-                                allowImageVideo={false}
-                                disabled={!permissions.canEdit}
-                                className="relative"
-                                placeholder="#1e40af"
-                                inputClassName="h-8 text-xs pl-7"
-                              />
-                            </div>
-
-                            {/* Attribute Code */}
-                            <div className="flex-1 min-w-0">
-                              <Input
-                                value={option.value}
-                                onChange={(e) => handleOptionChange(index, 'value', e.target.value)}
-                                placeholder="Option value"
-                                className="h-8"
-                                disabled={!permissions.canEdit}
-                              />
-                            </div>
-
-                            {/* Attribute Label */}
-                            <div className="flex-1 min-w-0">
-                              <Input
-                                value={option.label}
-                                onChange={(e) => handleOptionChange(index, 'label', e.target.value)}
-                                placeholder="Option label"
-                                className="h-8"
-                                disabled={!permissions.canEdit}
-                              />
-                            </div>
-
-                            {/* Remove Button */}
-                            {permissions.canEdit && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleRemoveOption(index)}
-                                disabled={options.length === 1}
-                                className="h-8"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
-
-                        {permissions.canEdit && showNewOption && (
-                          <div className="p-4 border-2 border-dashed border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <div className="flex items-center gap-3">
-                              {/* Color Swatch */}
-                              <div className="flex items-center gap-2">
-                                <ColorInput
-                                  value={newOption.color}
-                                  onChange={(color) => setNewOption({ ...newOption, color })}
-                                  allowImageVideo={false}
-                                  className="relative"
-                                  placeholder="#1e40af"
-                                  inputClassName="h-8 text-xs pl-7"
-                                />
-                              </div>
-
-                              {/* Attribute Code */}
-                              <div className="flex-1 min-w-0">
-                                <Input
-                                  value={newOption.value}
-                                  onChange={(e) => setNewOption({ ...newOption, value: e.target.value })}
-                                  placeholder="Option value"
-                                  className="h-8"
-                                />
-                              </div>
-
-                              {/* Attribute Label */}
-                              <div className="flex-1 min-w-0">
-                                <Input
-                                  value={newOption.label}
-                                  onChange={(e) => setNewOption({ ...newOption, label: e.target.value })}
-                                  placeholder="Option label"
-                                  className="h-8"
-                                />
-                              </div>
-
-                              {/* Add Button */}
-                              <Button
-                                onClick={handleAddOption}
-                                disabled={!newOption.value.trim() || !newOption.label.trim()}
-                                className="h-8"
-                              >
-                                <Plus className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-
-                        {options.length === 0 && !showNewOption && (
-                          <div className="text-center py-8 text-muted-foreground">
-                            <Settings className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                            <p className="text-lg font-medium">No options yet</p>
-                            <p className="text-sm">Add options for this {attribute.type} field</p>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                <AttributeOptionsTab
+                  attributeType={attribute.type}
+                  canEdit={permissions.canEdit}
+                  newOption={newOption}
+                  options={options}
+                  showNewOption={showNewOption}
+                  handleAddNewOption={handleAddNewOption}
+                  handleAddOption={handleAddOption}
+                  handleOptionChange={handleOptionChange}
+                  handleRemoveOption={handleRemoveOption}
+                  setNewOption={setNewOption}
+                />
               </TabsContent>
             )}
 
             <TabsContent value="quality" className="flex-1 overflow-y-auto">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Data Quality Statistics</CardTitle>
-                    <CardDescription>
-                      Overview of data quality metrics for this attribute
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {loadingQuality ? (
-                      <div className="flex items-center justify-center py-8">
-                        <div className="text-sm text-muted-foreground">Loading quality statistics...</div>
-                      </div>
-                    ) : qualityStats ? (
-                      <div className="space-y-4">
-                        {/* Statistics Grid - Minimal Style */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          <div className="p-3 border border-border rounded-lg">
-                            <div className="text-2xl font-semibold text-gray-900">
-                              {qualityStats.statistics.totalRecords.toLocaleString()}
-                            </div>
-                            <div className="text-sm text-gray-600">Total Records</div>
-                          </div>
-                          <div className="p-3 border border-border rounded-lg">
-                            <div className="text-2xl font-semibold text-gray-900">
-                              {qualityStats.statistics.completionRate}%
-                            </div>
-                            <div className="text-sm text-gray-600">Completion Rate</div>
-                          </div>
-                          <div className="p-3 border border-border rounded-lg">
-                            <div className="text-2xl font-semibold text-gray-900">
-                              {qualityStats.statistics.uniqueCount.toLocaleString()}
-                            </div>
-                            <div className="text-sm text-gray-600">Unique Values</div>
-                          </div>
-                          <div className="p-3 border border-border rounded-lg">
-                            <div className="text-2xl font-semibold text-gray-900">
-                              {qualityStats.statistics.recentChanges}
-                            </div>
-                            <div className="text-sm text-gray-600">Recent Changes</div>
-                          </div>
-                        </div>
-
-                        {/* Quality Issues - Minimal Style */}
-                        {qualityStats.qualityIssues && qualityStats.qualityIssues.length > 0 && (
-                          <div className="space-y-2">
-                            <h4 className="text-sm font-medium text-gray-900">Quality Issues</h4>
-                            <div className="space-y-1">
-                              {qualityStats.qualityIssues.map((issue: any, index: number) => (
-                                <div key={index} className="flex items-center justify-between p-2 border border-border rounded text-sm">
-                                  <div className="flex items-center gap-2">
-                                    <div className={`w-2 h-2 rounded-full ${issue.severity === 'error' ? 'bg-red-500' :
-                                      issue.severity === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
-                                      }`} />
-                                    <span className="text-gray-700">{issue.message}</span>
-                                  </div>
-                                  <span className="text-gray-500">{issue.count}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Data Summary */}
-                        <div className="pt-4 border-t">
-                          <div className="grid grid-cols-3 gap-4 text-sm">
-                            <div>
-                              <div className="text-gray-600">Non-null values</div>
-                              <div className="font-medium">{qualityStats.statistics.nonNullCount.toLocaleString()}</div>
-                            </div>
-                            <div>
-                              <div className="text-gray-600">Missing values</div>
-                              <div className="font-medium">{qualityStats.statistics.missingValues.toLocaleString()}</div>
-                            </div>
-                            <div>
-                              <div className="text-gray-600">Data type</div>
-                              <div className="font-medium">{qualityStats.attribute.type}</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center py-8">
-                        <div className="text-center">
-                          <BarChart3 className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground">No quality data available</p>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+              <AttributeQualityTab loadingQuality={loadingQuality} qualityStats={qualityStats} />
             </TabsContent>
 
             <TabsContent value="activity" className="flex-1 overflow-y-auto">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Attribute Activity</CardTitle>
-                    <CardDescription>
-                      Track changes and usage of this attribute
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <h4 className="font-medium">Recent Activity</h4>
-                        {loadingActivity ? (
-                          <div className="flex items-center justify-center py-8">
-                            <div className="text-sm text-muted-foreground">Loading activity...</div>
-                          </div>
-                        ) : activityData.length > 0 ? (
-                          <div className="space-y-1">
-                            {activityData.map((activity) => (
-                              <div key={activity.id} className="flex items-center gap-3 py-2 px-3 hover:bg-gray-50 rounded">
-                                <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-medium text-sm">{activity.action}</span>
-                                    <Badge variant="outline" className="text-xs">
-                                      {activity.user}
-                                    </Badge>
-                                  </div>
-                                  <p className="text-xs text-muted-foreground truncate">
-                                    {activity.details}
-                                  </p>
-                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                    {new Date(activity.timestamp).toLocaleString()}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-center py-8">
-                            <div className="text-center">
-                              <Activity className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                              <p className="text-sm text-muted-foreground">No activity recorded for this attribute</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+              <AttributeActivityTab activityData={activityData} loadingActivity={loadingActivity} />
             </TabsContent>
           </Tabs>
         </div>

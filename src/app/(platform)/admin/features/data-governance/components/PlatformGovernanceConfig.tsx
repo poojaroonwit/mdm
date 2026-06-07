@@ -3,42 +3,25 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Switch } from '@/components/ui/switch'
-import { Textarea } from '@/components/ui/textarea'
 import { 
   Shield, 
   FolderTree,
   Tag,
-  Clock,
-  Lock,
-  User,
   BookOpen,
   Plus,
   Edit,
   Trash2,
   Save,
-  X,
-  CheckCircle,
-  AlertTriangle
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { 
   DataDomain,
-  ClassificationScheme,
-  QualityRule,
-  RetentionPolicy,
-  AccessControlRule,
-  DataSteward,
-  BusinessGlossaryTerm,
   PlatformGovernanceConfig as PlatformGovernanceConfigType
 } from '../types'
+import { DataDomainDialog } from './DataDomainDialog'
 
 export function PlatformGovernanceConfig() {
   const [config, setConfig] = useState<PlatformGovernanceConfigType>({
@@ -57,7 +40,6 @@ export function PlatformGovernanceConfig() {
   const [showQualityRuleDialog, setShowQualityRuleDialog] = useState(false)
   const [showRetentionDialog, setShowRetentionDialog] = useState(false)
   const [showAccessControlDialog, setShowAccessControlDialog] = useState(false)
-  const [showStewardDialog, setShowStewardDialog] = useState(false)
   const [showGlossaryDialog, setShowGlossaryDialog] = useState(false)
   const [editingItem, setEditingItem] = useState<any>(null)
 
@@ -67,33 +49,6 @@ export function PlatformGovernanceConfig() {
     tags: [],
     assets: [],
     policies: []
-  })
-
-  const [newClassification, setNewClassification] = useState<Partial<ClassificationScheme>>({
-    name: '',
-    categories: [],
-    isDefault: false
-  })
-
-  const [newQualityRule, setNewQualityRule] = useState<Partial<QualityRule>>({
-    name: '',
-    description: '',
-    type: 'completeness',
-    condition: '',
-    threshold: 100,
-    severity: 'error',
-    appliesTo: [],
-    isActive: true
-  })
-
-  const [newRetentionPolicy, setNewRetentionPolicy] = useState<Partial<RetentionPolicy>>({
-    name: '',
-    description: '',
-    retentionPeriod: 365,
-    retentionUnit: 'days',
-    action: 'archive',
-    appliesTo: [],
-    isActive: true
   })
 
   useEffect(() => {
@@ -316,7 +271,6 @@ export function PlatformGovernanceConfig() {
                       variant="ghost"
                       onClick={() => {
                         setEditingItem(scheme)
-                        setNewClassification(scheme)
                         setShowClassificationDialog(true)
                       }}
                     >
@@ -360,7 +314,6 @@ export function PlatformGovernanceConfig() {
                         variant="ghost"
                         onClick={() => {
                           setEditingItem(rule)
-                          setNewQualityRule(rule)
                           setShowQualityRuleDialog(true)
                         }}
                       >
@@ -522,50 +475,19 @@ export function PlatformGovernanceConfig() {
       </Tabs>
       </div>
 
-      {/* Create Domain Dialog */}
-      <Dialog open={showDomainDialog} onOpenChange={setShowDomainDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingItem ? 'Edit' : 'Create'} Data Domain</DialogTitle>
-            <DialogDescription>
-              Organize data assets into logical domains for better governance
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="domain-name">Domain Name</Label>
-              <Input
-                id="domain-name"
-                value={newDomain.name || ''}
-                onChange={(e) => setNewDomain({ ...newDomain, name: e.target.value })}
-                placeholder="e.g., Finance, HR, Sales"
-              />
-            </div>
-            <div>
-              <Label htmlFor="domain-description">Description</Label>
-              <Textarea
-                id="domain-description"
-                value={newDomain.description || ''}
-                onChange={(e) => setNewDomain({ ...newDomain, description: e.target.value })}
-                placeholder="Describe the purpose of this domain"
-                rows={3}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setShowDomainDialog(false)
-              setEditingItem(null)
-              setNewDomain({ name: '', description: '', tags: [], assets: [], policies: [] })
-            }}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreateDomain}>
-              {editingItem ? 'Update' : 'Create'} Domain
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DataDomainDialog
+        open={showDomainDialog}
+        editingItem={editingItem}
+        domain={newDomain}
+        onOpenChange={setShowDomainDialog}
+        onDomainChange={setNewDomain}
+        onSave={handleCreateDomain}
+        onCancel={() => {
+          setShowDomainDialog(false)
+          setEditingItem(null)
+          setNewDomain({ name: '', description: '', tags: [], assets: [], policies: [] })
+        }}
+      />
     </div>
   )
 }

@@ -1,26 +1,21 @@
 'use client'
-
 import { Skeleton } from '@/components/ui/skeleton'
 import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogBody, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Search, ChevronRight, Database, ExternalLink, CheckCircle2, ChevronLeft, Link as LinkIcon, RefreshCw } from 'lucide-react'
+import { ChevronRight, Database, ExternalLink, CheckCircle2, ChevronLeft } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import toast from 'react-hot-toast'
-
 export type ExternalConnectionType = 'database' | 'api'
 export type DatabaseType = 'postgres' | 'mysql'
-
 interface ExternalConnectionWizardProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     onSubmit: (data: any) => Promise<void>
     spaceId: string
 }
-
 export function ExternalConnectionWizard({
     open,
     onOpenChange,
@@ -34,7 +29,6 @@ export function ExternalConnectionWizard({
     const [existingConnections, setExistingConnections] = useState<any[]>([])
     const [selectedConnectionId, setSelectedConnectionId] = useState<string>('')
     const [isLoadingConnections, setIsLoadingConnections] = useState(false)
-
     // Form State
     const [formData, setFormData] = useState({
         name: '',
@@ -53,7 +47,6 @@ export function ExternalConnectionWizard({
         testing: false,
         testResult: null as any
     })
-
     useEffect(() => {
         if (open) {
             loadConnections()
@@ -146,26 +139,6 @@ export function ExternalConnectionWizard({
 
         setFormData(prev => ({ ...prev, testing: true, testResult: null }))
         try {
-            // For existing connections, we might need a different test endpoint or pass the ID
-            // Since /api/external-connections/test expects raw params, we'll try to use the stored values
-            // BUT for security, we might not have the password client-side.
-            // Ideally we should have an endpoint like /api/external-connections/${id}/test
-            // For now, let's assume we can use the same logic if we fill the form? No, that's insecure.
-            // Let's rely on the fact that if it's saved, it was valid.
-            // We just need to fetch schema/tables.
-
-            // Actually, for "Select Existing", we probably want to create a Data Model FROM it.
-            // So we need to list tables.
-
-            // Let's try to use the GET endpoint of /api/external-connections/test?space_id=...&...
-            // But that requires query params.
-            // Let's try to invoke a test using the connection ID if supported, or fallback to manual.
-
-            // Simplify: If selecting existing, just list tables using a new endpoint or reused logic?
-            // Let's assume for now we just want to SELECT it to create a model.
-
-            // If we are reusing a connection, we just need to know which TABLE to pick if it's a DB.
-            // We need to fetch metadata for this connection.
             const res = await fetch(`/api/external-connections/${selectedConnectionId}/metadata?space_id=${spaceId}`)
             if (res.ok) {
                 const json = await res.json()
@@ -263,8 +236,7 @@ export function ExternalConnectionWizard({
                                 </div>
                             )}
 
-                            {/* If metadata loaded, show table selection */}
-                            {selectedConnectionId && formData.testResult?.schemas && (
+            {selectedConnectionId && formData.testResult?.schemas && (
                                 <div className="space-y-4 pt-4">
                                     <div className="space-y-2">
                                         <Label>Name for Data Model</Label>
@@ -425,7 +397,6 @@ export function ExternalConnectionWizard({
                 </div>
             )}
 
-            {/* Test Connection Result UI */}
             <div className="flex items-center gap-2 pt-2">
                 <Button
                     type="button"
@@ -443,7 +414,6 @@ export function ExternalConnectionWizard({
                 )}
             </div>
 
-            {/* If success, show schema/table selection for DB */}
             {connectionType === 'database' && (formData.testResult?.schemas || formData.testResult?.tablesBySchema) && (
                 <div className="space-y-4 pt-4 border-t">
                     {dbType === 'postgres' && (

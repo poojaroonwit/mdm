@@ -4,37 +4,27 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/ui/status-badge'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Switch } from '@/components/ui/switch'
-import { Textarea } from '@/components/ui/textarea'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
   Building, 
-  Plus, 
   Edit, 
   Trash2, 
   Users, 
   Database, 
   Settings,
   Search,
-  Filter,
-  MoreHorizontal,
-  Eye,
   Lock,
   Unlock,
   Star,
-  Archive,
   RefreshCw,
   Grid3X3,
   List
 } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { NewSpaceForm, SpaceManagementDialogs } from './SpaceManagementDialogs'
 
-interface Space {
+export interface Space {
   id: string
   name: string
   description: string
@@ -62,7 +52,7 @@ export function SpaceManagement() {
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
 
-  const [newSpace, setNewSpace] = useState({
+  const [newSpace, setNewSpace] = useState<NewSpaceForm>({
     name: '',
     description: '',
     slug: '',
@@ -222,76 +212,18 @@ export function SpaceManagement() {
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Space
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Space</DialogTitle>
-                <DialogDescription>
-                  Create a new workspace for your team
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="space-name">Space Name</Label>
-                  <Input
-                    id="space-name"
-                    value={newSpace.name}
-                    onChange={(e) => setNewSpace({ ...newSpace, name: e.target.value })}
-                    placeholder="My Workspace"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="space-description">Description</Label>
-                  <Textarea
-                    id="space-description"
-                    value={newSpace.description}
-                    onChange={(e) => setNewSpace({ ...newSpace, description: e.target.value })}
-                    placeholder="Workspace description"
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="space-slug">Slug</Label>
-                  <Input
-                    id="space-slug"
-                    value={newSpace.slug}
-                    onChange={(e) => setNewSpace({ ...newSpace, slug: e.target.value })}
-                    placeholder="my-workspace"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="space-icon">Icon (Emoji)</Label>
-                  <Input
-                    id="space-icon"
-                    value={newSpace.icon}
-                    onChange={(e) => setNewSpace({ ...newSpace, icon: e.target.value })}
-                    placeholder="🏢"
-                  />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch 
-                    checked={newSpace.isDefault} 
-                    onCheckedChange={(checked) => setNewSpace({ ...newSpace, isDefault: checked })}
-                  />
-                  <Label>Set as Default Space</Label>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={createSpace} disabled={!newSpace.name || !newSpace.slug}>
-                  Create Space
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <SpaceManagementDialogs
+            showCreateDialog={showCreateDialog}
+            showEditDialog={showEditDialog}
+            newSpace={newSpace}
+            selectedSpace={selectedSpace}
+            onCreateOpenChange={setShowCreateDialog}
+            onEditOpenChange={setShowEditDialog}
+            onNewSpaceChange={setNewSpace}
+            onSelectedSpaceChange={setSelectedSpace}
+            onCreate={createSpace}
+            onUpdate={() => selectedSpace && updateSpace(selectedSpace.id, selectedSpace)}
+          />
         </div>
       </div>
 
@@ -503,64 +435,6 @@ export function SpaceManagement() {
         </div>
       )}
 
-      {/* Edit Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Space</DialogTitle>
-            <DialogDescription>
-              Update space settings and configuration
-            </DialogDescription>
-          </DialogHeader>
-          {selectedSpace && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="edit-name">Space Name</Label>
-                <Input
-                  id="edit-name"
-                  value={selectedSpace.name}
-                  onChange={(e) => setSelectedSpace({ ...selectedSpace, name: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-description">Description</Label>
-                <Textarea
-                  id="edit-description"
-                  value={selectedSpace.description}
-                  onChange={(e) => setSelectedSpace({ ...selectedSpace, description: e.target.value })}
-                  rows={3}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-slug">Slug</Label>
-                <Input
-                  id="edit-slug"
-                  value={selectedSpace.slug}
-                  onChange={(e) => setSelectedSpace({ ...selectedSpace, slug: e.target.value })}
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  checked={selectedSpace.isActive} 
-                  onCheckedChange={(checked) => setSelectedSpace({ ...selectedSpace, isActive: checked })}
-                />
-                <Label>Active</Label>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={() => selectedSpace && updateSpace(selectedSpace.id, selectedSpace)}
-              disabled={!selectedSpace?.name || !selectedSpace?.slug}
-            >
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

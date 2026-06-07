@@ -4,10 +4,7 @@ import { memo, useCallback, useState, useEffect, useMemo, useRef, useContext } f
 import { useRouter, usePathname } from 'next/navigation'
 import { TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Building2, Layout, Users as UsersIcon, Database, FolderPlus, Archive, AlertTriangle, ChevronDown, ChevronRight, Settings, Plus, MoreVertical, Trash2, Pencil, FileIcon, Search, Lock } from 'lucide-react'
+import { Building2, Layout, Users as UsersIcon, Database, FolderPlus, Archive, AlertTriangle, ChevronDown, ChevronRight, Settings, Plus } from 'lucide-react'
 import { SpacesEditorManager, SpacesEditorPage } from '@/lib/space-studio-manager'
 import { PermissionsDialog } from '@/components/studio/layout-config/PermissionsDialog'
 import { useSpace } from '@/contexts/space-context'
@@ -15,11 +12,10 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Z_INDEX } from '@/lib/z-index'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
-import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import toast from 'react-hot-toast'
-import { IconPicker } from '@/components/ui/icon-picker'
-import * as LucideIcons from 'lucide-react'
+import { SortablePageItem } from './SpaceSidebarPageItem'
+import { SpaceSidebarRenameDialog } from './SpaceSidebarRenameDialog'
 
 interface SpaceSidebarProps {
   spaceId: string
@@ -73,158 +69,6 @@ const SPACE_SETTINGS_ITEMS = [
     path: '/settings?tab=danger'
   }
 ] as const
-
-// Sortable Page Item Component
-interface SortablePageItemProps {
-  page: SpacesEditorPage
-  isActive: boolean
-  editMode: boolean
-  onPageClick: (page: SpacesEditorPage) => void
-  onDelete: (pageId: string) => void
-  onRename: (page: SpacesEditorPage) => void
-  onPermissions: (page: SpacesEditorPage) => void
-  menuOpen: string | null
-  onMenuOpenChange: (pageId: string | null) => void
-}
-
-function SortablePageItem({
-  page,
-  isActive,
-  editMode,
-  onPageClick,
-  onDelete,
-  onRename,
-  onPermissions,
-  menuOpen,
-  onMenuOpenChange
-}: SortablePageItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: page.id })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  }
-
-  // Resolve icon from page.icon string
-  const IconComponent = useMemo(() => {
-    if (!page.icon) return FileIcon
-    // If icon is stored as "lucide-IconName", extract the name
-    const iconName = page.icon.startsWith('lucide-') 
-      ? page.icon.replace('lucide-', '') 
-      : page.icon
-    const Icon = (LucideIcons as any)[iconName] as React.ComponentType<{ className?: string }>
-    return Icon || FileIcon
-  }, [page.icon])
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={isDragging ? 'z-50' : ''}
-    >
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="relative flex items-center w-full">
-            <Button
-              variant="ghost"
-              onClick={() => onPageClick(page)}
-              {...(editMode ? { ...attributes, ...listeners } : {})}
-              className={cn(
-                "platform-sidebar-menu-button w-full justify-center text-[13px] font-medium h-[32px] px-4 transition-colors duration-150 cursor-pointer text-foreground hover:!bg-transparent hover:!text-foreground rounded-none gap-3",
-                editMode ? 'cursor-grab active:cursor-grabbing' : '',
-                isActive
-                  ? "bg-[var(--primary-light)]/10 text-[var(--primary-light)] font-bold rounded-sm shadow-sm"
-                  : ""
-              )}
-              style={{ 
-                pointerEvents: 'auto', 
-                position: 'relative', 
-                zIndex: Z_INDEX.sidebar + 1
-              }}
-            >
-              <IconComponent className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">{page.displayName || page.name || 'Untitled Page'}</span>
-              {editMode && <div className="h-8 w-8 flex-shrink-0" />}
-            </Button>
-            {editMode && (
-              <Popover open={menuOpen === page.id} onOpenChange={(open) => onMenuOpenChange(open ? page.id : null)}>
-                <PopoverTrigger asChild>
-                  <a
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                    }}
-                    onMouseDown={(e) => {
-                      e.stopPropagation()
-                    }}
-                    className="h-8  p-2 absolute right-1 flex items-center justify-center bg-transparent border-0 hover:bg-transparent p-0"
-                    style={{ 
-                      color: 'hsl(var(--primary))',
-                      zIndex: Z_INDEX.dropdown,
-                    }}
-                  >
-                    <MoreVertical className="h-4 w-4" />
-                  </a>
-                </PopoverTrigger>
-                <PopoverContent 
-                  className="w-40 bg-popover" 
-                  align="start" 
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex flex-col">
-                    <button
-                      onClick={() => {
-                        onRename(page)
-                        onMenuOpenChange(null)
-                      }}
-                      className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <Pencil className="h-4 w-4 mr-2 flex-shrink-0" />
-                      <span className="truncate">Rename</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        onPermissions(page)
-                        onMenuOpenChange(null)
-                      }}
-                      className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <Lock className="h-4 w-4 mr-2 flex-shrink-0" />
-                      <span className="truncate">Permissions</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (confirm('Are you sure you want to delete this page?')) {
-                          onDelete(page.id)
-                        }
-                        onMenuOpenChange(null)
-                      }}
-                      className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-destructive focus:bg-accent focus:text-destructive text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2 flex-shrink-0" />
-                      <span className="truncate">Delete</span>
-                    </button>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            )}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{page.displayName || page.name || 'Untitled Page'}</p>
-        </TooltipContent>
-      </Tooltip>
-    </div>
-  )
-}
 
 export const SpaceSidebar = memo(function SpaceSidebar({ 
   spaceId,
@@ -631,58 +475,17 @@ export const SpaceSidebar = memo(function SpaceSidebar({
         </nav>
       </div>
 
-      {/* Rename Page Dialog */}
-      <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Edit Page</DialogTitle>
-            <DialogDescription>
-              Update the name and icon for this page.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Page Name</label>
-              <Input
-                value={renameValue}
-                onChange={(e) => setRenameValue(e.target.value)}
-                placeholder="Page name"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleRenamePage()
-                  }
-                }}
-                autoFocus
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Icon</label>
-              <IconPicker
-                value={selectedIcon}
-                onChange={setSelectedIcon}
-                placeholder="Search icons..."
-                grouped={true}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setRenameDialogOpen(false)
-                setPageToRename(null)
-                setRenameValue('')
-                setSelectedIcon('')
-              }}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleRenamePage} disabled={!renameValue.trim()}>
-              Save
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <SpaceSidebarRenameDialog
+        open={renameDialogOpen}
+        onOpenChange={setRenameDialogOpen}
+        pageToRename={pageToRename}
+        setPageToRename={setPageToRename}
+        renameValue={renameValue}
+        setRenameValue={setRenameValue}
+        selectedIcon={selectedIcon}
+        setSelectedIcon={setSelectedIcon}
+        handleRenamePage={handleRenamePage}
+      />
       
       {spaceId && (
         <PermissionsDialog

@@ -33,6 +33,8 @@ import {
   Server
 } from 'lucide-react'
 import { useSpacePermissions } from '@/hooks/use-space-permissions'
+import { BackupJobDetailCard } from './BackupJobDetailCard'
+import { CreateBackupJobDialog } from './CreateBackupJobDialog'
 
 interface BackupJob {
   id: string
@@ -390,196 +392,13 @@ export function BackupRecoverySystem({ spaceId }: BackupRecoverySystemProps) {
           </div>
 
           {selectedJob && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  {selectedJob.name}
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={selectedJob.status} />
-                    <Button size="sm" variant="outline">
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardTitle>
-                <CardDescription>{selectedJob.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="w-full">
-                <Tabs defaultValue="config">
-                  <TabsList>
-                    <TabsTrigger value="config">Configuration</TabsTrigger>
-                    <TabsTrigger value="schedule">Schedule</TabsTrigger>
-                    <TabsTrigger value="options">Options</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="config" className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="job-name">Job Name</Label>
-                        <Input
-                          id="job-name"
-                          value={selectedJob.name}
-                          onChange={(e) => updateBackupJob(selectedJob.id, { name: e.target.value })}
-                          disabled={!canEditBackup}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="job-type">Backup Type</Label>
-                        <Select
-                          value={selectedJob.type}
-                          onValueChange={(type) => updateBackupJob(selectedJob.id, { type: type as any })}
-                        >
-                          <SelectTrigger disabled={!canEditBackup}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {BACKUP_TYPES.map((type) => (
-                              <SelectItem key={type.type} value={type.type}>
-                                <div className="flex items-center gap-2">
-                                  <div className={`p-1 rounded ${type.color} text-white text-xs`}>
-                                    {type.icon}
-                                  </div>
-                                  <div>
-                                    <div className="font-medium">{type.name}</div>
-                                    <div className="text-xs text-muted-foreground">{type.description}</div>
-                                  </div>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="job-description">Description</Label>
-                      <Textarea
-                        id="job-description"
-                        value={selectedJob.description}
-                        onChange={(e) => updateBackupJob(selectedJob.id, { description: e.target.value })}
-                        disabled={!canEditBackup}
-                        rows={3}
-                      />
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="schedule" className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="job-schedule">Schedule</Label>
-                        <Select
-                          value={selectedJob.schedule}
-                          onValueChange={(schedule) => updateBackupJob(selectedJob.id, { schedule: schedule as any })}
-                        >
-                          <SelectTrigger disabled={!canEditBackup}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {SCHEDULE_OPTIONS.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                <div>
-                                  <div className="font-medium">{option.label}</div>
-                                  <div className="text-xs text-muted-foreground">{option.description}</div>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="job-retention">Retention (days)</Label>
-                        <Input
-                          id="job-retention"
-                          type="number"
-                          value={selectedJob.retention}
-                          onChange={(e) => updateBackupJob(selectedJob.id, { retention: parseInt(e.target.value) || 30 })}
-                          disabled={!canEditBackup}
-                        />
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="options" className="space-y-4">
-                    <div className="space-y-4">
-                      <h4 className="font-medium">Backup Options</h4>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Label htmlFor="compression">Compression</Label>
-                            <p className="text-sm text-muted-foreground">
-                              Compress backup files to save space
-                            </p>
-                          </div>
-                          <Switch
-                            id="compression"
-                            checked={selectedJob.compression}
-                            onCheckedChange={(compression) => updateBackupJob(selectedJob.id, { compression })}
-                            disabled={!canEditBackup}
-                          />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Label htmlFor="encryption">Encryption</Label>
-                            <p className="text-sm text-muted-foreground">
-                              Encrypt backup files for security
-                            </p>
-                          </div>
-                          <Switch
-                            id="encryption"
-                            checked={selectedJob.encryption}
-                            onCheckedChange={(encryption) => updateBackupJob(selectedJob.id, { encryption })}
-                            disabled={!canEditBackup}
-                          />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Label htmlFor="include-data">Include Data</Label>
-                            <p className="text-sm text-muted-foreground">
-                              Include actual data records in backup
-                            </p>
-                          </div>
-                          <Switch
-                            id="include-data"
-                            checked={selectedJob.includeData}
-                            onCheckedChange={(includeData) => updateBackupJob(selectedJob.id, { includeData })}
-                            disabled={!canEditBackup}
-                          />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Label htmlFor="include-schema">Include Schema</Label>
-                            <p className="text-sm text-muted-foreground">
-                              Include database schema in backup
-                            </p>
-                          </div>
-                          <Switch
-                            id="include-schema"
-                            checked={selectedJob.includeSchema}
-                            onCheckedChange={(includeSchema) => updateBackupJob(selectedJob.id, { includeSchema })}
-                            disabled={!canEditBackup}
-                          />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Label htmlFor="include-users">Include Users</Label>
-                            <p className="text-sm text-muted-foreground">
-                              Include user accounts and permissions
-                            </p>
-                          </div>
-                          <Switch
-                            id="include-users"
-                            checked={selectedJob.includeUsers}
-                            onCheckedChange={(includeUsers) => updateBackupJob(selectedJob.id, { includeUsers })}
-                            disabled={!canEditBackup}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-                </div>
-              </CardContent>
-            </Card>
+            <BackupJobDetailCard
+              selectedJob={selectedJob}
+              backupTypes={BACKUP_TYPES}
+              scheduleOptions={SCHEDULE_OPTIONS}
+              canEditBackup={canEditBackup}
+              onUpdateBackupJob={updateBackupJob}
+            />
           )}
         </TabsContent>
 
@@ -674,109 +493,14 @@ export function BackupRecoverySystem({ spaceId }: BackupRecoverySystemProps) {
       )}
 
       {showCreateDialog && (
-        <Card className="fixed inset-0 z-50 m-4 max-w-2xl">
-          <CardHeader>
-            <CardTitle>Create Backup Job</CardTitle>
-            <CardDescription>
-              Set up a new automated backup job
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="new-job-name">Job Name</Label>
-                <Input
-                  id="new-job-name"
-                  value={newJob.name}
-                  onChange={(e) => setNewJob({ ...newJob, name: e.target.value })}
-                  placeholder="Enter job name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-job-type">Backup Type</Label>
-                <Select
-                  value={newJob.type}
-                  onValueChange={(type) => setNewJob({ ...newJob, type })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BACKUP_TYPES.map((type) => (
-                      <SelectItem key={type.type} value={type.type}>
-                        <div className="flex items-center gap-2">
-                          <div className={`p-1 rounded ${type.color} text-white text-xs`}>
-                            {type.icon}
-                          </div>
-                          <div>
-                            <div className="font-medium">{type.name}</div>
-                            <div className="text-xs text-muted-foreground">{type.description}</div>
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="new-job-description">Description</Label>
-              <Textarea
-                id="new-job-description"
-                value={newJob.description}
-                onChange={(e) => setNewJob({ ...newJob, description: e.target.value })}
-                placeholder="Enter job description"
-                rows={3}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="new-job-schedule">Schedule</Label>
-                <Select
-                  value={newJob.schedule}
-                  onValueChange={(schedule) => setNewJob({ ...newJob, schedule })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SCHEDULE_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        <div>
-                          <div className="font-medium">{option.label}</div>
-                          <div className="text-xs text-muted-foreground">{option.description}</div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-job-retention">Retention (days)</Label>
-                <Input
-                  id="new-job-retention"
-                  type="number"
-                  value={newJob.retention}
-                  onChange={(e) => setNewJob({ ...newJob, retention: parseInt(e.target.value) || 30 })}
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button 
-                onClick={createBackupJob} 
-                disabled={!newJob.name.trim()}
-              >
-                Create Backup Job
-              </Button>
-              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <CreateBackupJobDialog
+          newJob={newJob}
+          backupTypes={BACKUP_TYPES}
+          scheduleOptions={SCHEDULE_OPTIONS}
+          setNewJob={setNewJob}
+          onCreateBackupJob={createBackupJob}
+          onClose={() => setShowCreateDialog(false)}
+        />
       )}
     </div>
   )

@@ -1,29 +1,20 @@
 'use client'
-
 import { useState, useCallback } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Plus, 
   Trash2, 
-  Settings, 
   Eye, 
   Download,
   BarChart3,
   Table,
-  PieChart,
-  TrendingUp,
-  Filter,
-  Database,
   FileText,
   Image
 } from 'lucide-react'
-
 interface ReportSection {
   id: string
   type: 'chart' | 'table' | 'text' | 'image'
@@ -33,13 +24,11 @@ interface ReportSection {
   filters: FilterConfig[]
   position: number
 }
-
 interface FilterConfig {
   field: string
   operator: 'equals' | 'contains' | 'greater_than' | 'less_than' | 'between'
   value: any
 }
-
 interface ReportBuilderProps {
   reportId?: string
   spaceId: string

@@ -4,10 +4,6 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { 
@@ -19,59 +15,10 @@ import {
   Edit, 
   Trash2, 
   Eye, 
-  EyeOff,
-  ChevronDown,
-  ChevronRight
+  EyeOff
 } from 'lucide-react'
-
-interface EavEntity {
-  id: string
-  entityTypeId: string
-  externalId?: string
-  isActive: boolean
-  metadata?: any
-  createdBy?: string
-  createdAt: string
-  updatedAt: string
-  values?: Record<string, any>
-}
-
-interface EavAttribute {
-  id: string
-  name: string
-  displayName: string
-  dataType: string
-  isRequired: boolean
-  isUnique: boolean
-  defaultValue?: string
-  options?: any
-  validationRules?: any
-  sortOrder: number
-  isVisible: boolean
-  isEditable: boolean
-  helpText?: string
-  placeholder?: string
-  attributeGroupId?: string
-}
-
-interface EntityType {
-  id: string
-  name: string
-  displayName: string
-  description?: string
-  isActive: boolean
-  sortOrder: number
-}
-
-interface AttributeGroup {
-  id: string
-  name: string
-  displayName: string
-  description?: string
-  sortOrder: number
-  isCollapsible: boolean
-  isRequired: boolean
-}
+import { EavEntityFields } from './EavEntityFields'
+import { getValueFieldName, type AttributeGroup, type EavAttribute, type EavEntity, type EntityType } from './eavEntityManagerModel'
 
 interface EavEntityManagerProps {
   entityTypeId: string
@@ -243,216 +190,6 @@ export function EavEntityManager({
     }
   }
 
-  const getValueFieldName = (dataType: string): string => {
-    switch (dataType.toUpperCase()) {
-      case 'NUMBER':
-      case 'CURRENCY':
-      case 'PERCENTAGE':
-        return 'numberValue'
-      case 'BOOLEAN':
-        return 'booleanValue'
-      case 'DATE':
-        return 'dateValue'
-      case 'DATETIME':
-      case 'TIMESTAMP':
-        return 'datetimeValue'
-      case 'JSON':
-        return 'jsonValue'
-      case 'BLOB':
-      case 'FILE':
-        return 'blobValue'
-      default:
-        return 'textValue'
-    }
-  }
-
-  const renderAttributeInput = (attribute: EavAttribute) => {
-    const value = formData[attribute.name] || selectedEntity?.values?.[attribute.name] || attribute.defaultValue || ''
-
-    switch (attribute.dataType.toUpperCase()) {
-      case 'TEXT':
-      case 'EMAIL':
-      case 'PHONE':
-      case 'URL':
-        return (
-          <Input
-            type={attribute.dataType.toLowerCase() === 'email' ? 'email' : 'text'}
-            value={value}
-            onChange={(e) => setFormData(prev => ({ ...prev, [attribute.name]: e.target.value }))}
-            placeholder={attribute.placeholder}
-          />
-        )
-      
-      case 'TEXTAREA':
-        return (
-          <Textarea
-            value={value}
-            onChange={(e) => setFormData(prev => ({ ...prev, [attribute.name]: e.target.value }))}
-            placeholder={attribute.placeholder}
-          />
-        )
-      
-      case 'NUMBER':
-      case 'CURRENCY':
-      case 'PERCENTAGE':
-        return (
-          <Input
-            type="number"
-            value={value}
-            onChange={(e) => setFormData(prev => ({ ...prev, [attribute.name]: parseFloat(e.target.value) || 0 }))}
-            placeholder={attribute.placeholder}
-          />
-        )
-      
-      case 'BOOLEAN':
-        return (
-          <Select
-            value={value ? 'true' : 'false'}
-            onValueChange={(val) => setFormData(prev => ({ ...prev, [attribute.name]: val === 'true' }))}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="true">Yes</SelectItem>
-              <SelectItem value="false">No</SelectItem>
-            </SelectContent>
-          </Select>
-        )
-      
-      case 'DATE':
-        return (
-          <Input
-            type="date"
-            value={value}
-            onChange={(e) => setFormData(prev => ({ ...prev, [attribute.name]: e.target.value }))}
-          />
-        )
-      
-      case 'DATETIME':
-      case 'TIMESTAMP':
-        return (
-          <Input
-            type="datetime-local"
-            value={value}
-            onChange={(e) => setFormData(prev => ({ ...prev, [attribute.name]: e.target.value }))}
-          />
-        )
-      
-      case 'SELECT':
-        return (
-          <Select
-            value={value}
-            onValueChange={(val) => setFormData(prev => ({ ...prev, [attribute.name]: val }))}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={attribute.placeholder} />
-            </SelectTrigger>
-            <SelectContent>
-              {attribute.options?.choices
-                ?.map((choice: any) => {
-                  const choiceValue = String(choice.value ?? '')
-                  return { choiceValue, choice }
-                })
-                .filter(({ choiceValue }: { choiceValue: string; choice: any }) => choiceValue !== '')
-                .map(({ choiceValue, choice }: { choiceValue: string; choice: any }) => (
-                  <SelectItem key={choiceValue} value={choiceValue}>
-                    {choice.label}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        )
-      
-      case 'MULTI_SELECT':
-        return (
-          <div className="space-y-2">
-            {attribute.options?.choices?.map((choice: any) => (
-              <label key={choice.value} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={Array.isArray(value) ? value.includes(choice.value) : false}
-                  onChange={(e) => {
-                    const currentValues = Array.isArray(value) ? value : []
-                    const newValues = e.target.checked
-                      ? [...currentValues, choice.value]
-                      : currentValues.filter((v: any) => v !== choice.value)
-                    setFormData(prev => ({ ...prev, [attribute.name]: newValues }))
-                  }}
-                />
-                <span>{choice.label}</span>
-              </label>
-            ))}
-          </div>
-        )
-      
-      default:
-        return (
-          <Input
-            type="text"
-            value={value}
-            onChange={(e) => setFormData(prev => ({ ...prev, [attribute.name]: e.target.value }))}
-            placeholder={attribute.placeholder}
-          />
-        )
-    }
-  }
-
-  const renderAttributeGroup = (group: AttributeGroup) => {
-    const groupAttributes = attributes.filter(attr => attr.attributeGroupId === group.id)
-    const isExpanded = expandedGroups.has(group.id)
-
-    return (
-      <Card key={group.id} className="mb-4">
-        <CardHeader 
-          className="cursor-pointer"
-          onClick={() => {
-            setExpandedGroups(prev => {
-              const newSet = new Set(prev)
-              if (newSet.has(group.id)) {
-                newSet.delete(group.id)
-              } else {
-                newSet.add(group.id)
-              }
-              return newSet
-            })
-          }}
-        >
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center space-x-2">
-              {group.isCollapsible && (
-                isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />
-              )}
-              <span>{group.displayName}</span>
-              {group.isRequired && <Badge variant="destructive">Required</Badge>}
-            </CardTitle>
-            {group.description && (
-              <p className="text-sm text-muted-foreground">{group.description}</p>
-            )}
-          </div>
-        </CardHeader>
-        
-        {(!group.isCollapsible || isExpanded) && (
-          <CardContent className="space-y-4">
-            {groupAttributes.map(attribute => (
-              <div key={attribute.id} className="space-y-2">
-                <Label className="flex items-center space-x-2">
-                  <span>{attribute.displayName}</span>
-                  {attribute.isRequired && <Badge variant="destructive" className="text-xs">Required</Badge>}
-                  {attribute.isUnique && <Badge variant="outline" className="text-xs">Unique</Badge>}
-                </Label>
-                {renderAttributeInput(attribute)}
-                {attribute.helpText && (
-                  <p className="text-sm text-muted-foreground">{attribute.helpText}</p>
-                )}
-              </div>
-            ))}
-          </CardContent>
-        )}
-      </Card>
-    )
-  }
-
   if (loading) {
     return <div className="flex items-center justify-center p-8">Loading...</div>
   }
@@ -585,43 +322,20 @@ export function EavEntityManager({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {attributeGroups.length > 0 ? (
-                attributeGroups
-                  .sort((a, b) => a.sortOrder - b.sortOrder)
-                  .map(group => renderAttributeGroup(group))
-              ) : (
-                <div className="space-y-4">
-                  {attributes
-                    .filter(attr => attr.isVisible)
-                    .sort((a, b) => a.sortOrder - b.sortOrder)
-                    .map(attribute => (
-                      <div key={attribute.id} className="space-y-2">
-                        <Label className="flex items-center space-x-2">
-                          <span>{attribute.displayName}</span>
-                          {attribute.isRequired && <Badge variant="destructive" className="text-xs">Required</Badge>}
-                          {attribute.isUnique && <Badge variant="outline" className="text-xs">Unique</Badge>}
-                        </Label>
-                        {renderAttributeInput(attribute)}
-                        {attribute.helpText && (
-                          <p className="text-sm text-muted-foreground">{attribute.helpText}</p>
-                        )}
-                      </div>
-                    ))}
-                </div>
-              )}
-
-              <div className="flex items-center space-x-2">
-                <Button onClick={isCreating ? handleCreateEntity : handleUpdateEntity}>
-                  {isCreating ? 'Create Entity' : 'Update Entity'}
-                </Button>
-                <Button variant="outline" onClick={() => {
-                  setIsCreating(false)
-                  setSelectedEntity(null)
-                  setFormData({})
-                }}>
-                  Cancel
-                </Button>
-              </div>
+              <EavEntityFields
+                attributeGroups={attributeGroups}
+                attributes={attributes}
+                expandedGroups={expandedGroups}
+                formData={formData}
+                isCreating={isCreating}
+                selectedEntity={selectedEntity}
+                handleCreateEntity={handleCreateEntity}
+                handleUpdateEntity={handleUpdateEntity}
+                setExpandedGroups={setExpandedGroups}
+                setFormData={setFormData}
+                setIsCreating={setIsCreating}
+                setSelectedEntity={setSelectedEntity}
+              />
             </CardContent>
           </Card>
         </TabsContent>

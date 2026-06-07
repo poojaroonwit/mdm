@@ -1,108 +1,38 @@
 'use client'
-
 import { useState, useEffect, useMemo } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { RoleBadge } from '@/components/ui/role-badge'
-import { StatusBadge } from '@/components/ui/status-badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogBody } from '@/components/ui/dialog'
-import { Switch } from '@/components/ui/switch'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { AvatarUpload } from '@/components/ui/avatar-upload'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Skeleton } from '@/components/ui/skeleton'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
-  Users,
-  Plus,
-  Filter,
-  Trash2,
-  Key,
-  Shield,
-  CheckCircle,
-  XCircle,
-  MoreHorizontal,
-  Settings,
-  Folder,
-  User as UserIcon,
-  ChevronUp,
-  X,
-  FolderTree,
-  Smartphone,
-  Edit,
-  UserPlus,
-  UserMinus,
-  Globe,
-  Mail,
-  Calendar,
-  AlertCircle
-} from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Space, User, UserGroup } from '../types'
-import { formatLoginMethod } from '../utils'
-import { cn } from '@/lib/utils'
-import {
-  AllowedLoginMethodsSelector,
-  CreateSpaceAccessSelector,
-  GroupMembershipSelector,
-  SpaceAssociationsEditor,
-} from './UserFormSections'
 import { UserManagementToolbar } from './UserManagementToolbar'
 import { UserPagination } from './UserPagination'
 import { UserDetailsDialog } from './UserDetailsDialog'
 import { UserImportDialog } from './UserImportDialog'
 import { UserSyncSettingsDialog } from './UserSyncSettingsDialog'
 import { UserResetPasswordDialog } from './UserResetPasswordDialog'
-
+import { UserBulkActionsDialog } from './UserBulkActionsDialog'
+import { UserCreateDialog, type UserCreateFormState } from './UserCreateDialog'
+import { UserDirectoryTable } from './UserDirectoryTable'
+import { UserEditDialog, type UserEditFormState } from './UserEditDialog'
 export function UserManagement() {
   const [users, setUsers] = useState<User[]>([])
   const [spaces, setSpaces] = useState<Space[]>([])
   const [groups, setGroups] = useState<UserGroup[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  // Pagination
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(20)
   const [total, setTotal] = useState(0)
-
-  // Filters
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
   const [activeFilter, setActiveFilter] = useState('all')
   const [spaceFilter, setSpaceFilter] = useState('all')
-
-  // User management
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [showUserDetails, setShowUserDetails] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [editDialogTab, setEditDialogTab] = useState('basic')
-  const [editForm, setEditForm] = useState({
-    name: '',
-    email: '',
-    role: 'USER',
-    isActive: true,
-    defaultSpaceId: '',
-    spaces: [] as Array<{ spaceId: string; role: string }>,
-    allowedLoginMethods: [] as string[],
-    groupIds: [] as string[]
-  })
-  const [createForm, setCreateForm] = useState({
+  const [editForm, setEditForm] = useState<UserEditFormState>({ name: '', email: '', role: 'USER', isActive: true, defaultSpaceId: '', spaces: [], allowedLoginMethods: [], groupIds: [] })
+  const [createForm, setCreateForm] = useState<UserCreateFormState>({
     name: '',
     email: '',
     password: '',
@@ -114,28 +44,15 @@ export function UserManagement() {
     groupIds: [] as string[]
   })
   const [creatingUser, setCreatingUser] = useState(false)
-
-  // Reset password
   const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false)
   const [resetPasswordUser, setResetPasswordUser] = useState<User | null>(null)
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [resettingPassword, setResettingPassword] = useState(false)
-
-  // Bulk operations
   const [showBulkDialog, setShowBulkDialog] = useState(false)
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([])
-  const [bulkOperation, setBulkOperation] = useState<'role' | 'space' | 'activate' | 'deactivate' | 'delete' | null>(null)
-  const [bulkRole, setBulkRole] = useState('')
-  const [bulkSpaceId, setBulkSpaceId] = useState('')
-  const [bulkSpaceRole, setBulkSpaceRole] = useState('')
-  const [bulkProcessing, setBulkProcessing] = useState(false)
-
-  // Import
   const [showImportDialog, setShowImportDialog] = useState(false)
-  
   const [isSyncing, setIsSyncing] = useState(false)
-
   const handleSyncAd = async () => {
     setIsSyncing(true)
     try {
@@ -151,34 +68,26 @@ export function UserManagement() {
       setIsSyncing(false)
     }
   }
-
-  // Sync Schedule
   const [showSyncSettingsDialog, setShowSyncSettingsDialog] = useState(false)
-
   const [ssoConfig, setSsoConfig] = useState<{ google: boolean; azure: boolean }>({ google: false, azure: false })
-
   useEffect(() => {
     fetch('/api/auth/sso-providers')
       .then(res => res.json())
       .then(data => setSsoConfig(data))
       .catch(err => console.error(err))
   }, [])
-
   const getAvailableLoginMethods = () => {
     const methods = ['email']
     if (ssoConfig.azure) methods.push('azure-ad')
     if (ssoConfig.google) methods.push('google')
     return methods
   }
-
   const pages = useMemo(() => Math.ceil(total / limit), [total, limit])
-
   useEffect(() => {
     loadUsers()
     loadSpaces()
     loadGroups()
   }, [page, limit, roleFilter, activeFilter, spaceFilter, search])
-
   const loadUsers = async () => {
     setLoading(true)
     try {
@@ -190,14 +99,12 @@ export function UserManagement() {
         active: activeFilter === 'all' ? '' : activeFilter,
         spaceId: spaceFilter === 'all' ? '' : spaceFilter
       })
-
       const response = await fetch(`/api/admin/users?${params}`)
       if (response.ok) {
         const data = await response.json()
-        // Transform the data to match the component's interface
         const transformedUsers = data.users?.map((user: any) => ({
           ...user,
-          isActive: user.isActive, // Matches API alias
+          isActive: user.isActive,
           isTwoFactorEnabled: user.isTwoFactorEnabled,
           lastLoginAt: user.lastLoginAt ? new Date(user.lastLoginAt) : undefined,
           defaultSpaceId: user.defaultSpaceId,
@@ -227,7 +134,6 @@ export function UserManagement() {
       setLoading(false)
     }
   }
-
   const loadSpaces = async () => {
     try {
       const response = await fetch('/api/spaces')
@@ -239,7 +145,6 @@ export function UserManagement() {
       console.error('Error loading spaces:', error)
     }
   }
-
   const loadGroups = async () => {
     try {
       const response = await fetch('/api/admin/user-groups?flat=true')
@@ -251,7 +156,6 @@ export function UserManagement() {
       console.error('Error loading groups:', error)
     }
   }
-
   const openCreateDialog = () => {
     setCreateForm({
       name: '',
@@ -266,7 +170,6 @@ export function UserManagement() {
     })
     setShowCreateDialog(true)
   }
-
   const openEditDialog = (user: User) => {
     setEditingUser(user)
     setEditForm({
@@ -282,13 +185,11 @@ export function UserManagement() {
     setEditDialogTab('basic')
     setShowEditDialog(true)
   }
-
   const createUser = async () => {
     if (!createForm.email || !createForm.name || !createForm.password) {
       toast.error('Please fill in all required fields')
       return
     }
-
     setCreatingUser(true)
     try {
       const response = await fetch('/api/admin/users', {
@@ -307,7 +208,6 @@ export function UserManagement() {
           allowedLoginMethods: createForm.allowedLoginMethods
         }),
       })
-
       if (response.ok) {
         toast.success('User created successfully')
         setShowCreateDialog(false)
@@ -334,7 +234,6 @@ export function UserManagement() {
       setCreatingUser(false)
     }
   }
-
   const saveUser = async () => {
     if (!editingUser) return
 
@@ -385,6 +284,22 @@ export function UserManagement() {
     } catch (error) {
       console.error('Error deleting user:', error)
       toast.error('Failed to delete user')
+    }
+  }
+
+  const resetTwoFactor = async (user: User) => {
+    if (!confirm(`Are you sure you want to disable 2FA for ${user.name}?`)) return
+
+    try {
+      const res = await fetch(`/api/admin/users/${user.id}/reset-2fa`, { method: 'POST' })
+      if (res.ok) {
+        toast.success('2FA disabled successfully')
+        loadUsers()
+      } else {
+        toast.error('Failed to disable 2FA')
+      }
+    } catch {
+      toast.error('Failed to disable 2FA')
     }
   }
 
@@ -451,16 +366,14 @@ export function UserManagement() {
     }
   }
 
-  const getStatusIcon = (isActive: boolean) => {
-    return isActive ? (
-      <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
-    ) : (
-      <XCircle className="h-3.5 w-3.5 text-rose-500" />
-    )
-  }
+  const handleEditAvatarChange = (avatarUrl: string | null) => {
+    if (!editingUser) return
 
-  const activeUsersCount = useMemo(() => users.filter(u => u.isActive).length, [users])
-  const inactiveUsersCount = useMemo(() => users.filter(u => !u.isActive).length, [users])
+    setUsers(users.map((user) =>
+      user.id === editingUser.id ? { ...user, avatar: avatarUrl || undefined } : user
+    ))
+    setEditingUser({ ...editingUser, avatar: avatarUrl || undefined })
+  }
 
   return (
     <div className="bg-background">
@@ -490,290 +403,31 @@ export function UserManagement() {
           onSyncSettings={() => setShowSyncSettingsDialog(true)}
         />
 
-        {/* Users Table - Supabase Style */}
-        <div className="bg-white/50 dark:bg-zinc-950/20 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl overflow-hidden backdrop-blur-xl shadow-lg">
-          <div className="px-6 py-4 border-b border-zinc-200/60 dark:border-zinc-800/60 bg-zinc-50/30 dark:bg-zinc-900/20">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <h2 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">User Directory</h2>
-                {selectedUserIds.length > 0 && (
-                  <Badge variant="secondary" className="text-[10px] font-black bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-zinc-900 h-5">
-                    {selectedUserIds.length} SELECTED
-                  </Badge>
-                )}
-              </div>
-              <span className="text-[10px] font-bold text-zinc-400">
-                {users.length} OF {total} TOTAL
-              </span>
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="w-full space-y-1">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-4 px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 animate-pulse">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <Skeleton className="h-8 w-8 rounded-full" />
-                    <div className="space-y-1.5 flex-1">
-                      <Skeleton className="h-4 w-1/3" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </div>
-                  </div>
-                  <Skeleton className="h-5 w-24 hidden md:block" />
-                  <Skeleton className="h-5 w-24 hidden lg:block" />
-                  <Skeleton className="h-5 w-20 rounded-full" />
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="h-8 w-8 rounded-md" />
-                    <Skeleton className="h-8 w-8 rounded-md" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : error ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <AlertCircle className="h-10 w-10 text-destructive mb-3" />
-              <p className="text-sm font-medium text-destructive mb-4">{error}</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={loadUsers}
-              >
-                Try Again
-              </Button>
-            </div>
-          ) : users.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <Users className="h-12 w-12 text-muted-foreground mb-3 opacity-50" />
-              <p className="text-sm font-medium text-foreground mb-1">No users found</p>
-              <p className="text-xs text-muted-foreground mb-4">
-                {search || roleFilter !== 'all' || activeFilter !== 'all' || spaceFilter !== 'all'
-                  ? 'Try adjusting your filters'
-                  : 'Get started by adding your first user'}
-              </p>
-              {(!search && roleFilter === 'all' && activeFilter === 'all' && spaceFilter === 'all') && (
-                <Button onClick={openCreateDialog} size="sm">
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Add User
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-b border-zinc-200/60 dark:border-zinc-800/60 hover:bg-transparent">
-                    <TableHead className="w-12 h-12">
-                      <input
-                        type="checkbox"
-                        checked={selectedUserIds.length === users.length && users.length > 0}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedUserIds(users.map(u => u.id))
-                          } else {
-                            setSelectedUserIds([])
-                          }
-                        }}
-                        className="rounded-md border-zinc-300 dark:border-zinc-700 cursor-pointer"
-                      />
-                    </TableHead>
-                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Profile</TableHead>
-                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Email Address</TableHead>
-                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Global Role</TableHead>
-                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Demographics</TableHead>
-                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account Status</TableHead>
-                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Security</TableHead>
-                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Spaces</TableHead>
-                    <TableHead className="h-12 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Pulse</TableHead>
-                    <TableHead className="h-12 w-[80px] text-right text-[10px] font-black text-zinc-400 uppercase tracking-widest">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((user, index) => (
-                    <TableRow
-                      key={user.id}
-                      className={cn(
-                        "border-b border-zinc-100/60 dark:border-zinc-800/60 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-all duration-300 group/row",
-                        selectedUserIds.includes(user.id) && "bg-zinc-100/50 dark:bg-zinc-800/30",
-                        index === users.length - 1 && "border-b-0"
-                      )}
-                    >
-                      <TableCell className="h-16">
-                        <input
-                          type="checkbox"
-                          checked={selectedUserIds.includes(user.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedUserIds([...selectedUserIds, user.id])
-                            } else {
-                              setSelectedUserIds(selectedUserIds.filter(id => id !== user.id))
-                            }
-                          }}
-                          className="rounded-md border-zinc-300 dark:border-zinc-700 cursor-pointer"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </TableCell>
-                      <TableCell className="h-16">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-9 w-9 border border-zinc-100 dark:border-zinc-800">
-                            <AvatarImage src={user.avatar} />
-                            <AvatarFallback className="text-[10px] font-black">
-                              {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{user.name}</div>
-                            <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 tracking-tight">
-                              Joined {new Date(user.createdAt).toLocaleDateString()}
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="h-16">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{user.email}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="h-16">
-                        <RoleBadge
-                          role={user.role}
-                          label={user.role.replace('_', ' ')}
-                          className="text-[10px] font-black uppercase tracking-widest h-5"
-                        />
-                      </TableCell>
-                      <TableCell className="h-16">
-                        <div className="flex flex-col">
-                           <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300">{user.department || '-'}</span>
-                           <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">{user.jobTitle || ''}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="h-16">
-                        <div className="flex items-center gap-2">
-                          {getStatusIcon(user.isActive)}
-                          <span className={cn(
-                            "text-[10px] font-black uppercase tracking-widest",
-                            user.isActive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
-                          )}>
-                            {user.isActive ? 'Active' : 'Inactive'}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="h-16">
-                        <div className="flex flex-wrap items-center gap-2">
-                           <StatusBadge status={user.isTwoFactorEnabled ? 'on' : 'off'} className="gap-1 pr-2">
-                               <Smartphone className="h-3 w-3" />
-                               {user.isTwoFactorEnabled ? 'On' : 'Off'}
-                           </StatusBadge>
-                           {(user.allowedLoginMethods && user.allowedLoginMethods.length > 0 ? user.allowedLoginMethods : ['all']).map((method) => (
-                             <Badge
-                               key={method}
-                               variant="outline"
-                               className="border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900 dark:bg-sky-950 dark:text-sky-300 gap-1 pr-2"
-                             >
-                               <Shield className="h-3 w-3" />
-                               {method === 'all' ? 'All Methods' : formatLoginMethod(method)}
-                             </Badge>
-                           ))}
-                        </div>
-                      </TableCell>
-                      <TableCell className="h-16">
-                        {user.spaces && user.spaces.length > 0 ? (
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            {user.spaces.slice(0, 2).map((space, idx) => (
-                              <Badge key={idx} variant="outline" className="text-[10px] font-black uppercase tracking-widest border-zinc-200 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-900/30 text-zinc-500 h-5">
-                                {space.spaceName}
-                              </Badge>
-                            ))}
-                            {user.spaces.length > 2 && (
-                              <Badge variant="outline" className="text-[10px] font-black uppercase border-zinc-200 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-900/30 text-zinc-400 h-5">
-                                +{user.spaces.length - 2}
-                              </Badge>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="h-16">
-                        {user.lastLoginAt ? (
-                          <div className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-500 dark:text-zinc-400">
-                            {new Date(user.lastLoginAt).toLocaleDateString()}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="h-16">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 w-8 p-0 border-zinc-200/60 dark:border-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-all"
-                            onClick={() => openEditDialog(user)}
-                            title="Edit User"
-                          >
-                            <Edit className="h-3.5 w-3.5 text-zinc-500" />
-                          </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem onClick={() => {
-                                setSelectedUser(user)
-                                setShowUserDetails(true)
-                              }}>
-                                <Settings className="h-4 w-4 mr-2" />
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => openEditDialog(user)}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit User
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => {
-                                setResetPasswordUser(user)
-                                setShowResetPasswordDialog(true)
-                              }}>
-                                <Key className="h-4 w-4 mr-2" />
-                                Reset Password
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={async () => {
-                                  if (!confirm(`Are you sure you want to disable 2FA for ${user.name}?`)) return
-                                  try {
-                                      const res = await fetch(`/api/admin/users/${user.id}/reset-2fa`, { method: 'POST' });
-                                      if (res.ok) {
-                                          toast.success('2FA disabled successfully');
-                                          loadUsers();
-                                      } else {
-                                          toast.error('Failed to disable 2FA');
-                                      }
-                                  } catch (e) {
-                                      toast.error('Failed to disable 2FA');
-                                  }
-                              }} className="text-xs font-medium opacity-70">
-                                <Smartphone className="h-3.5 w-3.5 mr-2" />
-                                Reset 2FA
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => deleteUser(user.id)}
-                                className="text-destructive focus:text-destructive"
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete User
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </div>
+        <UserDirectoryTable
+          activeFilter={activeFilter}
+          error={error}
+          loading={loading}
+          roleFilter={roleFilter}
+          search={search}
+          selectedUserIds={selectedUserIds}
+          spaceFilter={spaceFilter}
+          total={total}
+          users={users}
+          onCreateUser={openCreateDialog}
+          onDeleteUser={deleteUser}
+          onEditUser={openEditDialog}
+          onRetry={loadUsers}
+          onResetPassword={(user) => {
+            setResetPasswordUser(user)
+            setShowResetPasswordDialog(true)
+          }}
+          onResetTwoFactor={resetTwoFactor}
+          onSelectedUserIdsChange={setSelectedUserIds}
+          onViewUser={(user) => {
+            setSelectedUser(user)
+            setShowUserDetails(true)
+          }}
+        />
 
         <UserPagination
           limit={limit}
@@ -783,468 +437,42 @@ export function UserManagement() {
           onPageChange={setPage}
         />
 
-        {/* Edit User Dialog */}
-        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-          <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-            <DialogHeader className="flex-shrink-0">
-              <DialogTitle>Edit User</DialogTitle>
-              <DialogDescription>
-                Update user information and permissions
-              </DialogDescription>
-            </DialogHeader>
+        <UserEditDialog
+          activeTab={editDialogTab}
+          editingUser={editingUser}
+          form={editForm}
+          groups={groups}
+          loginMethods={getAvailableLoginMethods()}
+          open={showEditDialog}
+          spaces={spaces}
+          setActiveTab={setEditDialogTab}
+          setForm={setEditForm}
+          onAvatarChange={handleEditAvatarChange}
+          onOpenChange={setShowEditDialog}
+          onSave={saveUser}
+        />
 
-            <DialogBody className="flex-1 overflow-y-auto min-h-0 p-6 pt-2 pb-4">
+        <UserCreateDialog
+          creatingUser={creatingUser}
+          form={createForm}
+          loginMethods={getAvailableLoginMethods()}
+          open={showCreateDialog}
+          spaces={spaces}
+          setForm={setCreateForm}
+          onCreateUser={createUser}
+          onOpenChange={setShowCreateDialog}
+        />
 
-            <div className="w-full">
-              <Tabs value={editDialogTab} onValueChange={setEditDialogTab}>
-                <TabsList className="w-full flex justify-start gap-2">
-                    <TabsTrigger value="basic" className="flex items-center gap-2">
-                    <UserIcon className="h-4 w-4" />
-                    Basic Info
-                  </TabsTrigger>
-                  <TabsTrigger value="roles" className="flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    Roles & Permissions
-                  </TabsTrigger>
-                  <TabsTrigger value="spaces" className="flex items-center gap-2">
-                    <Folder className="h-4 w-4" />
-                    Space Associations
-                  </TabsTrigger>
-                  <TabsTrigger value="groups" className="flex items-center gap-2">
-                    <FolderTree className="h-4 w-4" />
-                    Groups
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="basic" className="space-y-4 mt-4">
-                  {/* Avatar Upload */}
-                  {editingUser && (
-                    <div className="space-y-2">
-                      <Label>Profile Picture</Label>
-                      <AvatarUpload
-                        userId={editingUser.id}
-                        currentAvatar={editingUser.avatar}
-                        userName={editForm.name}
-                        userEmail={editForm.email}
-                        onAvatarChange={(avatarUrl) => {
-                          // Update the user in the list
-                          setUsers(users.map(u =>
-                            u.id === editingUser.id ? { ...u, avatar: avatarUrl || undefined } : u
-                          ))
-                          // Update editing user
-                          setEditingUser({ ...editingUser, avatar: avatarUrl || undefined })
-                        }}
-                        size="lg"
-                      />
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="edit-name">Name</Label>
-                      <Input
-                        id="edit-name"
-                        value={editForm.name}
-                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-email">Email</Label>
-                      <Input
-                        id="edit-email"
-                        type="email"
-                        value={editForm.email}
-                        onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                      />
-                    </div>
-                  </div>
-
-                  <AllowedLoginMethodsSelector
-                    methods={getAvailableLoginMethods()}
-                    selectedMethods={editForm.allowedLoginMethods || []}
-                    onToggleMethod={(method) => {
-                      setEditForm(prev => {
-                        const current = prev.allowedLoginMethods || []
-                        return {
-                          ...prev,
-                          allowedLoginMethods: current.includes(method)
-                            ? current.filter(m => m !== method)
-                            : [...current, method],
-                        }
-                      })
-                    }}
-                  />
-
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="edit-active"
-                      checked={editForm.isActive}
-                      onCheckedChange={(checked) => setEditForm({ ...editForm, isActive: checked })}
-                    />
-                    <Label htmlFor="edit-active">Active</Label>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="roles" className="space-y-4 mt-4">
-                  <div>
-                    <Label className="text-base font-semibold flex items-center gap-2">
-                      <Globe className="h-4 w-4" />
-                      Global Role (System-wide)
-                    </Label>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      This role applies across all spaces and controls system-level access
-                    </p>
-                    <Select value={editForm.role} onValueChange={(value) => setEditForm({ ...editForm, role: value })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="USER">User</SelectItem>
-                        <SelectItem value="MANAGER">Manager</SelectItem>
-                        <SelectItem value="ADMIN">Admin</SelectItem>
-                        <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="edit-default-space">Default Space</Label>
-                    <Select value={editForm.defaultSpaceId} onValueChange={(value) => setEditForm({ ...editForm, defaultSpaceId: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select default space" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No default space</SelectItem>
-                        {spaces.map(space => (
-                          <SelectItem key={space.id} value={space.id}>
-                            {space.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="spaces" className="space-y-4 mt-4">
-                  <SpaceAssociationsEditor
-                    formSpaces={editForm.spaces}
-                    spaces={spaces}
-                    onChange={(nextSpaces) => setEditForm({ ...editForm, spaces: nextSpaces })}
-                  />
-                </TabsContent>
-
-                <TabsContent value="groups" className="space-y-4 mt-4">
-                  <GroupMembershipSelector
-                    groups={groups}
-                    selectedGroupIds={editForm.groupIds}
-                    onChange={(groupIds) => setEditForm({ ...editForm, groupIds })}
-                  />
-                </TabsContent>
-              </Tabs>
-            </div>
-          </DialogBody>
-
-            <DialogFooter className="flex-shrink-0 border-t-0 p-6 pt-2">
-              <Button variant="outline" onClick={() => setShowEditDialog(false)} className="px-6 h-11 rounded-xl">
-                Cancel
-              </Button>
-              <Button onClick={saveUser} className="px-8 h-11 rounded-xl bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 font-bold">
-                Save Changes
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Create User Dialog */}
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogContent className="max-w-2xl flex flex-col p-0 overflow-hidden">
-            <DialogHeader className="flex-shrink-0">
-              <DialogTitle>Create New User</DialogTitle>
-              <DialogDescription>
-                Add a new user to the system
-              </DialogDescription>
-            </DialogHeader>
-            <DialogBody className="flex-1 overflow-y-auto p-6 pt-2 pb-4">
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="create-name">Name *</Label>
-                  <Input
-                    id="create-name"
-                    value={createForm.name}
-                    onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                    placeholder="Enter full name"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="create-email">Email *</Label>
-                  <Input
-                    id="create-email"
-                    type="email"
-                    value={createForm.email}
-                    onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                    placeholder="Enter email address"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="create-password">Password *</Label>
-                <Input
-                  id="create-password"
-                  type="password"
-                  value={createForm.password}
-                  onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                  placeholder="Enter password"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="create-role">Role</Label>
-                  <Select value={createForm.role} onValueChange={(value) => setCreateForm({ ...createForm, role: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="USER">User</SelectItem>
-                      <SelectItem value="MANAGER">Manager</SelectItem>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
-                      <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="create-default-space">Default Space</Label>
-                  <Select value={createForm.defaultSpaceId} onValueChange={(value) => setCreateForm({ ...createForm, defaultSpaceId: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select default space" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No default space</SelectItem>
-                      {spaces.map(space => (
-                        <SelectItem key={space.id} value={space.id}>
-                          {space.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <AllowedLoginMethodsSelector
-                methods={getAvailableLoginMethods()}
-                selectedMethods={createForm.allowedLoginMethods}
-                onToggleMethod={(method) => {
-                  setCreateForm(prev => {
-                    const current = prev.allowedLoginMethods
-                    return {
-                      ...prev,
-                      allowedLoginMethods: current.includes(method)
-                        ? current.filter(m => m !== method)
-                        : [...current, method],
-                    }
-                  })
-                }}
-              />
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="create-active"
-                  checked={createForm.isActive}
-                  onCheckedChange={(checked) => setCreateForm({ ...createForm, isActive: checked })}
-                />
-                <Label htmlFor="create-active">Active</Label>
-              </div>
-
-              <CreateSpaceAccessSelector
-                formSpaces={createForm.spaces}
-                spaces={spaces}
-                onChange={(nextSpaces) => setCreateForm({ ...createForm, spaces: nextSpaces })}
-              />
-            </div>
-          </DialogBody>
-            <DialogFooter className="flex-shrink-0 border-t-0 p-6 pt-2">
-              <Button variant="outline" onClick={() => setShowCreateDialog(false)} className="px-6 h-11 rounded-xl">
-                Cancel
-              </Button>
-              <Button onClick={createUser} disabled={creatingUser} className="px-8 h-11 rounded-xl bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 font-bold">
-                {creatingUser ? 'Creating...' : 'Create User'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Bulk Operations Dialog */}
-        <Dialog open={showBulkDialog} onOpenChange={setShowBulkDialog}>
-          <DialogContent className="max-w-2xl p-0 overflow-hidden">
-            <DialogHeader>
-              <DialogTitle>Bulk Actions</DialogTitle>
-              <DialogDescription>
-                Apply actions to {selectedUserIds.length} selected user(s)
-              </DialogDescription>
-            </DialogHeader>
-            <DialogBody className="space-y-4 p-6 pt-2 pb-4">
-              <div>
-                <Label>Operation Type</Label>
-                <Select value={bulkOperation || ''} onValueChange={(value) => setBulkOperation(value as 'role' | 'space' | 'activate' | 'deactivate' | 'delete' | null)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select operation" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="role">Update Global Role</SelectItem>
-                    <SelectItem value="space">Assign to Space</SelectItem>
-                    <SelectItem value="activate">Activate Users</SelectItem>
-                    <SelectItem value="deactivate">Deactivate Users</SelectItem>
-                    <SelectItem value="delete">Delete Users</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {bulkOperation === 'role' && (
-                <div>
-                  <Label>Global Role</Label>
-                  <Select value={bulkRole} onValueChange={setBulkRole}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="USER">User</SelectItem>
-                      <SelectItem value="MANAGER">Manager</SelectItem>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
-                      <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {bulkOperation === 'space' && (
-                <div className="space-y-4">
-                  <div>
-                    <Label>Space</Label>
-                    <Select value={bulkSpaceId} onValueChange={setBulkSpaceId}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select space" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {spaces.map(space => (
-                          <SelectItem key={space.id} value={space.id}>
-                            {space.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Space Role</Label>
-                    <Select value={bulkSpaceRole} onValueChange={setBulkSpaceRole}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="member">Member</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="owner">Owner</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
-
-              {(bulkOperation === 'activate' || bulkOperation === 'deactivate') && (
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                  <p className="text-sm text-blue-900 dark:text-blue-200">
-                    This will {bulkOperation === 'activate' ? 'activate' : 'deactivate'} {selectedUserIds.length} selected user(s).
-                    {bulkOperation === 'deactivate' && ' Deactivated users will not be able to log in.'}
-                  </p>
-                </div>
-              )}
-
-              {bulkOperation === 'delete' && (
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-md">
-                  <p className="text-sm text-red-900 dark:text-red-200 font-semibold">
-                    ⚠️ Warning: This action cannot be undone. This will permanently delete {selectedUserIds.length} user(s) and all their associated data.
-                  </p>
-                </div>
-              )}
-            </DialogBody>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => {
-                setShowBulkDialog(false)
-                setBulkOperation(null)
-                setBulkRole('')
-                setBulkSpaceId('')
-                setBulkSpaceRole('')
-              }}>
-                Cancel
-              </Button>
-              <Button
-                onClick={async () => {
-                  if (!bulkOperation) {
-                    toast.error('Please select an operation')
-                    return
-                  }
-                  if (bulkOperation === 'role' && !bulkRole) {
-                    toast.error('Please select a role')
-                    return
-                  }
-                  if (bulkOperation === 'space' && (!bulkSpaceId || !bulkSpaceRole)) {
-                    toast.error('Please select space and role')
-                    return
-                  }
-                  if (bulkOperation === 'delete') {
-                    if (!confirm(`Are you sure you want to permanently delete ${selectedUserIds.length} user(s)? This action cannot be undone.`)) {
-                      return
-                    }
-                  }
-
-                  setBulkProcessing(true)
-                  try {
-                    const response = await fetch('/api/admin/users/bulk', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        userIds: selectedUserIds,
-                        operation: ['activate', 'deactivate', 'delete'].includes(bulkOperation) ? bulkOperation : undefined,
-                        role: bulkOperation === 'role' ? bulkRole : undefined,
-                        spaceId: bulkOperation === 'space' ? bulkSpaceId : undefined,
-                        spaceRole: bulkOperation === 'space' ? bulkSpaceRole : undefined
-                      })
-                    })
-
-                    if (response.ok) {
-                      const data = await response.json()
-                      const actionName = bulkOperation === 'delete' ? 'deleted' : bulkOperation === 'activate' ? 'activated' : bulkOperation === 'deactivate' ? 'deactivated' : 'updated'
-                      toast.success(`Successfully ${actionName} ${data.results.success.length} user(s)`)
-                      if (data.results.failed.length > 0) {
-                        toast.error(`${data.results.failed.length} user(s) failed: ${data.results.failed.map((f: any) => f.error).join(', ')}`)
-                      }
-                      setShowBulkDialog(false)
-                      setSelectedUserIds([])
-                      setBulkOperation(null)
-                      setBulkRole('')
-                      setBulkSpaceId('')
-                      setBulkSpaceRole('')
-                      loadUsers()
-                    } else {
-                      const error = await response.json()
-                      toast.error(error.error || 'Bulk operation failed')
-                    }
-                  } catch (error) {
-                    console.error('Error in bulk operation:', error)
-                    toast.error('Bulk operation failed')
-                  } finally {
-                    setBulkProcessing(false)
-                  }
-                }}
-                disabled={bulkProcessing || !bulkOperation || (bulkOperation === 'role' && !bulkRole) || (bulkOperation === 'space' && (!bulkSpaceId || !bulkSpaceRole))}
-                variant={bulkOperation === 'delete' ? 'destructive' : 'default'}
-              >
-                {bulkProcessing ? 'Processing...' : bulkOperation === 'delete' ? 'Delete Users' : 'Apply'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <UserBulkActionsDialog
+          open={showBulkDialog}
+          selectedUserIds={selectedUserIds}
+          spaces={spaces}
+          onCompleted={() => {
+            setSelectedUserIds([])
+            loadUsers()
+          }}
+          onOpenChange={setShowBulkDialog}
+        />
 
         <UserDetailsDialog
           open={showUserDetails}
@@ -1265,7 +493,7 @@ export function UserManagement() {
           open={showSyncSettingsDialog}
           onOpenChange={setShowSyncSettingsDialog}
         />
-      
+
         <UserImportDialog
           open={showImportDialog}
           onOpenChange={setShowImportDialog}

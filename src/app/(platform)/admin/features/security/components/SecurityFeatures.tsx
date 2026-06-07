@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CrudDialog } from '@/components/ui/crud-dialog'
@@ -16,71 +15,28 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
   Shield, 
   Lock, 
-  Eye, 
-  EyeOff,
   Key,
-  User,
   Globe,
   AlertTriangle,
   CheckCircle,
   XCircle,
   Clock,
-  Settings,
   Plus,
   Edit,
   Trash2,
-  Download,
-  Upload,
   RefreshCw,
   Activity,
-  Database,
-  Server,
-  Zap
 } from 'lucide-react'
-import toast from 'react-hot-toast'
 import { SecurityPolicy, SecurityEvent, IPWhitelist } from '../types'
 import { runApiAction } from '@/lib/api-action'
-
-interface SecuritySettings {
-  passwordPolicy: {
-    minLength: number
-    requireUppercase: boolean
-    requireLowercase: boolean
-    requireNumbers: boolean
-    requireSymbols: boolean
-    maxAge: number
-    preventReuse: number
-  }
-  sessionPolicy: {
-    timeout: number
-    maxConcurrent: number
-    requireReauth: boolean
-  }
-  twoFactor: {
-    enabled: boolean
-    required: boolean
-    backupCodes: number
-  }
-  ipWhitelist: {
-    enabled: boolean
-    allowedIPs: string[]
-  }
-  rateLimiting: {
-    enabled: boolean
-    maxAttempts: number
-    windowMinutes: number
-  }
-}
 
 export function SecurityFeatures() {
   const [policies, setPolicies] = useState<SecurityPolicy[]>([])
   const [events, setEvents] = useState<SecurityEvent[]>([])
   const [whitelist, setWhitelist] = useState<IPWhitelist[]>([])
-  const [settings, setSettings] = useState<SecuritySettings | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [showCreatePolicy, setShowCreatePolicy] = useState(false)
   const [showCreateIP, setShowCreateIP] = useState(false)
-  const [selectedEvent, setSelectedEvent] = useState<SecurityEvent | null>(null)
 
   const [newPolicy, setNewPolicy] = useState({
     name: '',
@@ -98,7 +54,6 @@ export function SecurityFeatures() {
     loadPolicies()
     loadEvents()
     loadWhitelist()
-    loadSettings()
   }, [])
 
   const loadPolicies = async () => {
@@ -147,18 +102,6 @@ export function SecurityFeatures() {
       }
     } catch (error) {
       console.error('Error loading whitelist:', error)
-    }
-  }
-
-  const loadSettings = async () => {
-    try {
-      const response = await fetch('/api/admin/security-settings')
-      if (response.ok) {
-        const data = await response.json()
-        setSettings(data.settings)
-      }
-    } catch (error) {
-      console.error('Error loading settings:', error)
     }
   }
 

@@ -14,86 +14,25 @@ import {
   Users,
   UserPlus,
   UserMinus,
-  MessageCircle,
-  Bell,
-  BellOff,
-  Eye,
-  Edit,
-  Lock,
-  Unlock,
-  Share,
-  Copy,
   Settings,
   Activity,
-  Zap,
   Wifi,
   WifiOff,
-  AlertCircle,
   CheckCircle,
-  Clock,
   Send,
   Mic,
   MicOff,
   Video,
-  VideoOff,
-  Phone,
-  PhoneOff
+  VideoOff
 } from 'lucide-react'
-
-interface Collaborator {
-  id: string
-  name: string
-  email: string
-  avatar?: string
-  role: 'owner' | 'editor' | 'viewer' | 'commenter'
-  status: 'online' | 'offline' | 'away' | 'busy'
-  lastSeen?: string
-  currentPage?: string
-  cursor?: {
-    x: number
-    y: number
-    componentId?: string
-  }
-  permissions: {
-    canEdit: boolean
-    canComment: boolean
-    canInvite: boolean
-    canPublish: boolean
-  }
-}
-
-interface CollaborationSession {
-  id: string
-  pageId: string
-  pageName: string
-  collaborators: Collaborator[]
-  isActive: boolean
-  startedAt: string
-  lastActivity: string
-  settings: {
-    allowComments: boolean
-    allowVoiceChat: boolean
-    allowVideoChat: boolean
-    requireApproval: boolean
-    autoSave: boolean
-    conflictResolution: 'last-write-wins' | 'manual' | 'merge'
-  }
-}
-
-interface Comment {
-  id: string
-  pageId: string
-  componentId?: string
-  content: string
-  author: Collaborator
-  createdAt: string
-  resolved: boolean
-  replies: Comment[]
-  position?: {
-    x: number
-    y: number
-  }
-}
+import { CollaborationSummaryTabs } from './CollaborationSummaryTabs'
+import {
+  getCollaboratorStatusColor,
+  type CollaborationSession,
+  type CollaborationTab,
+  type Collaborator,
+  type Comment,
+} from './collaborationModel'
 
 interface RealTimeCollaborationProps {
   session: CollaborationSession
@@ -126,7 +65,7 @@ export function RealTimeCollaboration({
   onStartVideoChat,
   onEndVideoChat
 }: RealTimeCollaborationProps) {
-  const [activeTab, setActiveTab] = useState<'collaborators' | 'comments' | 'activity' | 'settings'>('collaborators')
+  const [activeTab, setActiveTab] = useState<CollaborationTab>('collaborators')
   const [newComment, setNewComment] = useState('')
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<Collaborator['role']>('viewer')
@@ -167,16 +106,6 @@ export function RealTimeCollaboration({
     onInviteCollaborator(inviteEmail.trim(), inviteRole)
     setInviteEmail('')
   }, [inviteEmail, inviteRole, onInviteCollaborator])
-
-  const getStatusColor = useCallback((status: Collaborator['status']) => {
-    switch (status) {
-      case 'online': return 'bg-primary'
-      case 'away': return 'bg-warning'
-      case 'busy': return 'bg-destructive'
-      case 'offline': return 'bg-muted'
-      default: return 'bg-muted'
-    }
-  }, [])
 
   const onlineCollaborators = session.collaborators.filter(c => c.status === 'online')
   const unreadComments = comments.filter(c => !c.resolved).length
@@ -245,94 +174,14 @@ export function RealTimeCollaboration({
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              <div>
-                <div className="text-2xl font-bold">{session.collaborators.length}</div>
-                <div className="text-sm text-muted-foreground">Total Collaborators</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-primary" />
-              <div>
-                <div className="text-2xl font-bold">{onlineCollaborators.length}</div>
-                <div className="text-sm text-muted-foreground">Online Now</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <MessageCircle className="h-5 w-5 text-primary" />
-              <div>
-                <div className="text-2xl font-bold">{comments.length}</div>
-                <div className="text-sm text-muted-foreground">Comments</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-warning" />
-              <div>
-                <div className="text-2xl font-bold">{unreadComments}</div>
-                <div className="text-sm text-muted-foreground">Unresolved</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex space-x-1 bg-muted rounded-lg p-1">
-        <Button
-          variant={activeTab === 'collaborators' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('collaborators')}
-        >
-          <Users className="h-4 w-4 mr-2" />
-          Collaborators
-        </Button>
-        <Button
-          variant={activeTab === 'comments' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('comments')}
-        >
-          <MessageCircle className="h-4 w-4 mr-2" />
-          Comments
-          {unreadComments > 0 && (
-            <Badge variant="destructive" className="ml-2 text-xs">
-              {unreadComments}
-            </Badge>
-          )}
-        </Button>
-        <Button
-          variant={activeTab === 'activity' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('activity')}
-        >
-          <Activity className="h-4 w-4 mr-2" />
-          Activity
-        </Button>
-        <Button
-          variant={activeTab === 'settings' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('settings')}
-        >
-          <Settings className="h-4 w-4 mr-2" />
-          Settings
-        </Button>
-      </div>
+      <CollaborationSummaryTabs
+        activeTab={activeTab}
+        commentsCount={comments.length}
+        onlineCount={onlineCollaborators.length}
+        totalCollaborators={session.collaborators.length}
+        unreadComments={unreadComments}
+        setActiveTab={setActiveTab}
+      />
 
       {/* Collaborators Tab */}
       {activeTab === 'collaborators' && (
@@ -384,7 +233,7 @@ export function RealTimeCollaboration({
                           <AvatarImage src={collaborator.avatar} />
                           <AvatarFallback>{collaborator.name[0]}</AvatarFallback>
                         </Avatar>
-                        <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${getStatusColor(collaborator.status)}`} />
+                        <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${getCollaboratorStatusColor(collaborator.status)}`} />
                       </div>
                       <div>
                         <div className="font-medium">{collaborator.name}</div>

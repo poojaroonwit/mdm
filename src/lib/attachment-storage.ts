@@ -5,110 +5,10 @@ import { Client as SftpClient } from 'ssh2-sftp-client'
 import { Client as FtpClient } from 'ftp'
 import { Readable } from 'stream'
 import { normalizeS3Endpoint } from './s3'
+import type { AttachmentStorageConfig, DownloadResult, UploadResult } from './attachment-storage-types'
 
-export interface AttachmentStorageConfig {
-  provider: 'minio' | 's3' | 'sftp' | 'ftp'
-  config: {
-    minio: {
-      endpoint: string
-      access_key: string
-      secret_key: string
-      bucket: string
-      region: string
-      use_ssl: boolean
-    }
-    s3: {
-      endpoint?: string
-      access_key_id: string
-      secret_access_key: string
-      bucket: string
-      region: string
-      force_path_style?: boolean
-      forcePathStyle?: boolean
-    }
-    sftp: {
-      host: string
-      port: number
-      username: string
-      password: string
-      path: string
-    }
-    ftp: {
-      host: string
-      port: number
-      username: string
-      password: string
-      path: string
-      passive: boolean
-    }
-  }
-}
-
-export interface UploadResult {
-  success: boolean
-  url?: string
-  path?: string
-  error?: string
-}
-
-export interface DownloadResult {
-  success: boolean
-  stream?: Readable
-  error?: string
-}
-
-/**
- * Wrapper function for uploading files - creates service instance and uploads
- */
-export async function uploadFile(
-  file: File | Buffer,
-  options: {
-    provider: AttachmentStorageConfig['provider']
-    config: AttachmentStorageConfig['config']
-    spaceId?: string
-    dataModelId?: string
-    attributeId?: string
-    recordId?: string
-  }
-): Promise<{
-  fileName: string
-  filePath: string
-  fileSize: number
-  mimeType: string
-}> {
-  const service = new AttachmentStorageService({
-    provider: options.provider,
-    config: options.config
-  })
-
-  // Convert File to Buffer if needed
-  let fileBuffer: Buffer
-  let fileName: string
-  let contentType: string | undefined
-
-  if (file instanceof File) {
-    fileName = file.name
-    contentType = file.type
-    const arrayBuffer = await file.arrayBuffer()
-    fileBuffer = Buffer.from(arrayBuffer)
-  } else {
-    fileBuffer = file
-    fileName = `file-${Date.now()}`
-  }
-
-  const result = await service.uploadFile(fileName, fileBuffer, contentType)
-
-  if (!result.success || !result.path) {
-    throw new Error(result.error || 'Upload failed')
-  }
-
-  return {
-    fileName,
-    filePath: result.path,
-    fileSize: fileBuffer.length,
-    mimeType: contentType || 'application/octet-stream'
-  }
-}
+export type { AttachmentStorageConfig, DownloadResult, UploadResult } from './attachment-storage-types'
+export { uploadFile } from './attachment-upload'
 
 export class AttachmentStorageService {
   private config: AttachmentStorageConfig
@@ -644,3 +544,4 @@ export class AttachmentStorageService {
     return { success: true, url }
   }
 }
+

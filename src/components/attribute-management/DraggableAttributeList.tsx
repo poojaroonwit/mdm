@@ -1,5 +1,4 @@
 'use client'
-
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,10 +16,7 @@ import {
   Upload, 
   GripVertical,
   Search,
-  Filter,
   MoreHorizontal,
-  AlertTriangle,
-  CheckCircle,
   X
 } from 'lucide-react'
 import {
@@ -43,12 +39,10 @@ import { CSS } from '@dnd-kit/utilities'
 import { EnhancedAttributeDetailDrawer } from './EnhancedAttributeDetailDrawer'
 import { AttributeManagementService, Attribute, AttributeFormData } from '@/lib/attribute-management'
 import toast from 'react-hot-toast'
-
 interface DraggableAttributeListProps {
   modelId: string
   onAttributesChange?: (attributes: Attribute[]) => void
 }
-
 function SortableAttributeItem({
   attr,
   selectedAttributes,
@@ -171,7 +165,6 @@ export function DraggableAttributeList({ modelId, onAttributesChange }: Draggabl
   const [selectedAttributes, setSelectedAttributes] = useState<string[]>([])
   const [showAttributeDrawer, setShowAttributeDrawer] = useState(false)
   const [selectedAttribute, setSelectedAttribute] = useState<Attribute | null>(null)
-  const [showBulkActions, setShowBulkActions] = useState(false)
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [importData, setImportData] = useState('')
 
@@ -313,7 +306,6 @@ export function DraggableAttributeList({ modelId, onAttributesChange }: Draggabl
         if (success) {
           setAttributes(prev => prev.filter(attr => !selectedAttributes.includes(attr.id)))
           setSelectedAttributes([])
-          setShowBulkActions(false)
         }
       } catch (error) {
         console.error('Failed to bulk delete attributes:', error)

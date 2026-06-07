@@ -12,33 +12,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Progress } from '@/components/ui/progress'
 import { 
   Activity, 
   Zap, 
-  Database, 
-  Server, 
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  TrendingUp,
-  TrendingDown,
   RefreshCw,
   Settings,
-  Play,
-  Pause,
-  Download,
-  Eye,
-  BarChart3,
-  LineChart,
-  PieChart,
   Plus,
   Trash2
 } from 'lucide-react'
-import { LineChart as RechartsLineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell } from 'recharts'
+import { LineChart as RechartsLineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { PerformanceMetric, DatabaseMetric, Alert, PerformanceSettings } from '../types'
+import { PerformanceMetricCards } from './PerformanceMetricCards'
+import { getSeverityIcon } from './performanceMonitoringUtils'
 
 export function PerformanceMonitoring() {
   const [metrics, setMetrics] = useState<PerformanceMetric[]>([])
@@ -177,40 +162,6 @@ export function PerformanceMonitoring() {
     }
   }
 
-  const getSeverityIcon = (severity: string) => {
-    switch (severity) {
-      case 'critical':
-        return <XCircle className="h-4 w-4 text-red-500" />
-      case 'high':
-        return <AlertTriangle className="h-4 w-4 text-orange-500" />
-      case 'medium':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />
-      case 'low':
-        return <CheckCircle className="h-4 w-4 text-green-500" />
-      default:
-        return <Activity className="h-4 w-4 text-gray-500" />
-    }
-  }
-
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
-
-  const formatPercentage = (value: number) => {
-    return `${value.toFixed(1)}%`
-  }
-
-  const formatDuration = (ms: number) => {
-    if (ms < 1000) return `${ms.toFixed(0)}ms`
-    return `${(ms / 1000).toFixed(1)}s`
-  }
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -242,74 +193,7 @@ export function PerformanceMonitoring() {
         </div>
       </div>
 
-      {/* Key Metrics */}
-      {metrics.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">CPU Usage</CardTitle>
-              <Server className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatPercentage(metrics[metrics.length - 1]?.cpuUsage || 0)}
-              </div>
-              <div className="flex items-center text-xs text-muted-foreground">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                <span>System load</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Memory Usage</CardTitle>
-              <Database className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatPercentage(metrics[metrics.length - 1]?.memoryUsage || 0)}
-              </div>
-              <div className="flex items-center text-xs text-muted-foreground">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                <span>RAM utilization</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Response Time</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatDuration(metrics[metrics.length - 1]?.responseTime || 0)}
-              </div>
-              <div className="flex items-center text-xs text-muted-foreground">
-                <TrendingDown className="h-3 w-3 mr-1" />
-                <span>Average latency</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Error Rate</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatPercentage(metrics[metrics.length - 1]?.errorRate || 0)}
-              </div>
-              <div className="flex items-center text-xs text-muted-foreground">
-                <TrendingDown className="h-3 w-3 mr-1" />
-                <span>Request failures</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <PerformanceMetricCards metrics={metrics} />
 
       <div className="w-full">
       <Tabs defaultValue="overview">

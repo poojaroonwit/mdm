@@ -12,11 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CrudDialog } from '@/components/ui/crud-dialog'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
 import { 
-  Download, 
-  Upload, 
   FileText, 
   Database, 
   Archive,
@@ -25,18 +22,13 @@ import {
   Clock,
   AlertTriangle,
   RefreshCw,
-  Settings,
   Plus,
-  Edit,
   Trash2,
-  Eye,
-  Play,
-  Pause,
-  Zap
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { ExportJob, ImportJob, DataSchema } from '../types'
 import { ExportProfiles } from './ExportProfiles'
+import { ExportJobsTab, type ExportDraft } from './ExportJobsTab'
 
 export function DataExportImport() {
   const [exportJobs, setExportJobs] = useState<ExportJob[]>([])
@@ -47,7 +39,7 @@ export function DataExportImport() {
   const [showCreateImport, setShowCreateImport] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
-  const [newExport, setNewExport] = useState({
+  const [newExport, setNewExport] = useState<ExportDraft>({
     name: '',
     type: 'full' as const,
     format: 'json' as const,
@@ -356,147 +348,19 @@ export function DataExportImport() {
              />
         </TabsContent>
 
-        <TabsContent value="export" className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Export Jobs</h3>
-            <CrudDialog
-              open={showCreateExport}
-              onOpenChange={setShowCreateExport}
-              title="Create Export Job"
-              description="Create a new data export with custom filters and format options"
-              contentClassName="max-w-2xl"
-              trigger={(
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Export
-                </Button>
-              )}
-              bodyClassName="space-y-4"
-              footer={(
-                <>
-                  <Button variant="outline" onClick={() => setShowCreateExport(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={createExportJob} disabled={!newExport.name}>
-                    Create Export
-                  </Button>
-                </>
-              )}
-            >
-                  <div>
-                    <Label htmlFor="export-name">Export Name</Label>
-                    <Input
-                      id="export-name"
-                      value={newExport.name}
-                      onChange={(e) => setNewExport({ ...newExport, name: e.target.value })}
-                      placeholder="Enter export name"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="export-type">Export Type</Label>
-                      <Select value={newExport.type} onValueChange={(value: any) => setNewExport({ ...newExport, type: value })}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="full">Full Export</SelectItem>
-                          <SelectItem value="incremental">Incremental</SelectItem>
-                          <SelectItem value="custom">Custom</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="export-format">Format</Label>
-                      <Select value={newExport.format} onValueChange={(value: any) => setNewExport({ ...newExport, format: value })}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="json">JSON</SelectItem>
-                          <SelectItem value="csv">CSV</SelectItem>
-                          <SelectItem value="xml">XML</SelectItem>
-                          <SelectItem value="sql">SQL</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Include Tables</Label>
-                    <div className="space-y-2 mt-2">
-                      {schemas.map(schema => (
-                        <div key={schema.table} className="flex items-center space-x-2">
-                          <Switch
-                            id={schema.table}
-                            checked={newExport.includes.includes(schema.table)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setNewExport({
-                                  ...newExport,
-                                  includes: [...newExport.includes, schema.table]
-                                })
-                              } else {
-                                setNewExport({
-                                  ...newExport,
-                                  includes: newExport.includes.filter(t => t !== schema.table)
-                                })
-                              }
-                            }}
-                          />
-                          <Label htmlFor={schema.table}>
-                            {schema.table} ({schema.rowCount.toLocaleString()} rows)
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-            </CrudDialog>
-          </div>
-
-          <div className="space-y-4">
-            {exportJobs.map(job => (
-              <Card key={job.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {getStatusIcon(job.status)}
-                      <div>
-                        <div className="font-medium">{job.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {job.type} • {job.format.toUpperCase()} • {job.includes.length} tables
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <StatusBadge status={job.status} />
-                      {job.status === 'running' && (
-                        <div className="w-24">
-                          <Progress value={job.progress} />
-                        </div>
-                      )}
-                      {job.status === 'completed' && job.downloadUrl && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => downloadExport(job)}
-                        >
-                          <Download className="h-3 w-3 mr-1" />
-                          Download
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => deleteExportJob(job.id)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        <TabsContent value="export">
+          <ExportJobsTab
+            exportJobs={exportJobs}
+            newExport={newExport}
+            schemas={schemas}
+            showCreateExport={showCreateExport}
+            createExportJob={createExportJob}
+            deleteExportJob={deleteExportJob}
+            downloadExport={downloadExport}
+            getStatusIcon={getStatusIcon}
+            setNewExport={setNewExport}
+            setShowCreateExport={setShowCreateExport}
+          />
         </TabsContent>
 
         <TabsContent value="import" className="space-y-6">

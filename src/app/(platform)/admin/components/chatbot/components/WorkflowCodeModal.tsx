@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { CheckCircle2, XCircle, AlertTriangle, Info, Code2, Save, Trash2, RefreshCw, Loader2 } from 'lucide-react'
+import { CheckCircle2, XCircle, AlertTriangle, Code2, Save, Trash2, RefreshCw, Loader2 } from 'lucide-react'
 import { useThemeSafe } from '@/hooks/use-theme-safe'
 import toast from 'react-hot-toast'
 import {
@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { detectVariables, validateWorkflowCode } from './workflowCodeValidation'
 
 interface WorkflowCodeModalProps {
   value: string
@@ -29,159 +30,6 @@ interface WorkflowCodeModalProps {
   chatbotId?: string
   open: boolean
   onOpenChange: (open: boolean) => void
-}
-
-interface DetectedVariable {
-  name: string
-  pattern: string
-  willBeReplaced: boolean
-  replacementValue?: string
-  lineNumber?: number
-}
-
-interface ValidationResult {
-  isValid: boolean
-  errors: string[]
-  warnings: string[]
-  detectedVariables: DetectedVariable[]
-  hasRunWorkflow: boolean
-  hasRequiredImports: boolean
-  missingImports: string[]
-}
-
-/**
- * Detect variables in workflow code that will be replaced
- * Only detects workflow ID and API key - everything else is used as-is
- */
-function detectVariables(code: string, apiKey?: string, workflowId?: string): DetectedVariable[] {
-  const variables: DetectedVariable[] = []
-  const lines = code.split('\n')
-  const detected = new Set<string>() // Track detected variables to avoid duplicates
-
-  lines.forEach((line, index) => {
-    // 1. Detect process.env.OPENAI_API_KEY (only this specific env var)
-    const envVarPatterns = [
-      /process\.env\.OPENAI_API_KEY/g,
-      /process\.env\['OPENAI_API_KEY'\]/g,
-      /process\.env\["OPENAI_API_KEY"\]/g,
-    ]
-    
-    envVarPatterns.forEach(pattern => {
-      if (pattern.test(line)) {
-        const key = `env_OPENAI_API_KEY_${index}`
-        if (!detected.has(key)) {
-          detected.add(key)
-          variables.push({
-            name: 'OPENAI_API_KEY',
-            pattern: 'process.env.OPENAI_API_KEY',
-            willBeReplaced: !!apiKey,
-            replacementValue: apiKey ? `"${apiKey.substring(0, 10)}..."` : undefined,
-            lineNumber: index + 1,
-          })
-        }
-      }
-    })
-
-    // 2. Detect workflow_id in traceMetadata
-    const workflowIdPatterns = [
-      /workflow_id:\s*"wf_[^"]*"/g,
-      /workflow_id:\s*'wf_[^']*'/g,
-      /workflow_id:\s*`wf_[^`]*`/g,
-    ]
-
-    workflowIdPatterns.forEach(pattern => {
-      if (pattern.test(line)) {
-        const key = `workflow_id_${index}`
-        if (!detected.has(key)) {
-          detected.add(key)
-          variables.push({
-            name: 'workflow_id',
-            pattern: 'workflow_id (in traceMetadata)',
-            willBeReplaced: !!workflowId,
-            replacementValue: workflowId || undefined,
-            lineNumber: index + 1,
-          })
-        }
-      }
-    })
-  })
-
-  // Remove duplicates based on name and line number
-  return variables.filter((v, i, self) => 
-    i === self.findIndex(t => t.name === v.name && t.lineNumber === v.lineNumber)
-  )
-}
-
-/**
- * Validate workflow code
- */
-function validateWorkflowCode(code: string): ValidationResult {
-  const errors: string[] = []
-  const warnings: string[] = []
-  const detectedVariables: DetectedVariable[] = []
-  
-  if (!code || !code.trim()) {
-    return {
-      isValid: true,
-      errors: [],
-      warnings: [],
-      detectedVariables: [],
-      hasRunWorkflow: false,
-      hasRequiredImports: false,
-      missingImports: [],
-    }
-  }
-
-  // Check for runWorkflow function
-  const hasRunWorkflow = /(?:export\s+)?(?:const|async\s+function|function)\s+runWorkflow\s*[=:]\s*async\s*\(/.test(code) ||
-                         /export\s+(?:const|async\s+function|function)\s+runWorkflow/.test(code)
-
-  if (!hasRunWorkflow) {
-    errors.push('Missing required function: runWorkflow. The code must export a runWorkflow function.')
-  }
-
-  // Check for required imports
-  const requiredImports = [
-    { name: '@openai/agents', pattern: /from\s+['"]@openai\/agents['"]|require\(['"]@openai\/agents['"]\)/ },
-    { name: 'openai', pattern: /from\s+['"]openai['"]|require\(['"]openai['"]\)/ },
-  ]
-
-  const missingImports: string[] = []
-  requiredImports.forEach(imp => {
-    if (!imp.pattern.test(code)) {
-      missingImports.push(imp.name)
-      warnings.push(`Missing import: ${imp.name}. This may be required for the workflow to function.`)
-    }
-  })
-
-  // Check for syntax errors (basic validation)
-  try {
-    // Try to parse as JavaScript (basic check)
-    // We'll use a simple check - if it has balanced braces
-    const openBraces = (code.match(/{/g) || []).length
-    const closeBraces = (code.match(/}/g) || []).length
-    if (openBraces !== closeBraces) {
-      errors.push('Unbalanced braces detected. Please check your code syntax.')
-    }
-
-    const openParens = (code.match(/\(/g) || []).length
-    const closeParens = (code.match(/\)/g) || []).length
-    if (openParens !== closeParens) {
-      errors.push('Unbalanced parentheses detected. Please check your code syntax.')
-    }
-  } catch (e) {
-    // Ignore parsing errors for now
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-    warnings,
-    detectedVariables,
-    hasRunWorkflow,
-    hasRequiredImports: missingImports.length === 0,
-    missingImports,
-  }
 }
 
 export function WorkflowCodeModal({ value, onChange, apiKey, workflowId, chatbotId, open, onOpenChange }: WorkflowCodeModalProps) {
@@ -607,4 +455,5 @@ export function WorkflowCodeModal({ value, onChange, apiKey, workflowId, chatbot
     </Dialog>
   )
 }
+
 

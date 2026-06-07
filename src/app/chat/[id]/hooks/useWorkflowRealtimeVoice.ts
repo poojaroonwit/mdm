@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import toast from 'react-hot-toast'
 import { ChatbotConfig } from '../types'
+import { createWorkflowRealtimeMessageHandler } from './workflowRealtimeMessageHandler'
 
 interface UseWorkflowRealtimeVoiceProps {
   chatbot: ChatbotConfig | null
@@ -273,188 +274,19 @@ export function useWorkflowRealtimeVoice({
           ;(ws as any)._pendingPromptVersion = hasValidPromptId ? ((chatbot as any).openaiAgentSdkRealtimePromptVersion || '1') : null
         }
         
-        ws.onmessage = async (event) => {
-          try {
-            const messageData = typeof event.data === 'string' 
-              ? event.data 
-              : new TextDecoder().decode(event.data as ArrayBuffer)
-            
-            const data = JSON.parse(messageData)
-            
-            // Handle auth confirmation
-            if (data.type === 'auth.success') {
-              console.log('Authenticated with OpenAI Realtime API - connection ready')
-              setIsConnected(true)
-              
-              // Send prompt ID via session.update event after authentication
-              // According to OpenAI Realtime API documentation:
-              // https://platform.openai.com/docs/guides/realtime-models-prompting
-              const pendingPromptId = (ws as any)._pendingPromptId
-              const pendingPromptVersion = (ws as any)._pendingPromptVersion
-              
-              if (pendingPromptId) {
-                console.log('📤 Sending prompt ID via session.update:', {
-                  id: pendingPromptId,
-                  version: pendingPromptVersion,
-                })
-                
-                // Send session.update event with prompt configuration
-                // Note: session.type is not needed in session.update - only the fields to update
-                ws.send(JSON.stringify({
-                  type: 'session.update',
-                  session: {
-                    prompt: {
-                      id: pendingPromptId,
-                      version: pendingPromptVersion || '1',
-                    },
-                  },
-                }))
-                
-                console.log('✅ Prompt ID sent to Realtime API:', {
-                  id: pendingPromptId,
-                  version: pendingPromptVersion || '1',
-                })
-              }
-              
-              // Wait a bit more to ensure OpenAI WebSocket is fully ready
-              await new Promise(resolve => setTimeout(resolve, 200))
-              resolve(true)
-              return
-            }
-            
-            // Handle session update confirmation
-            if (data.type === 'session.updated') {
-              console.log('✅ Session configuration updated - prompt ID applied')
-              // Clear pending prompt info after successful update
-              delete (ws as any)._pendingPromptId
-              delete (ws as any)._pendingPromptVersion
-            }
-            
-            // Handle connection closed
-            if (data.type === 'connection.closed') {
-              console.log('Connection to OpenAI Realtime API closed')
-              setIsConnected(false)
-              setIsRecording(false)
-              setIsSpeaking(false)
-              return
-            }
-            
-            // Handle OpenAI Realtime API messages
-            switch (data.type) {
-              // Handle input transcription (what the user said)
-              case 'conversation.item.input_audio_transcription.completed':
-                if (data.transcript) {
-                  console.log('User said:', data.transcript)
-                  onTranscript(data.transcript)
-                }
-                break
-              
-              case 'conversation.item.input_audio_transcription.delta':
-                // Real-time transcription updates as user speaks
-                if (data.delta) {
-                  onTranscript(data.delta)
-                }
-                break
-              
-              // Handle response transcription (what the assistant said)
-              case 'response.audio_transcript.delta':
-                // Handle transcript updates
-                if (data.delta) {
-                  onTranscript(data.delta)
-                }
-                break
-              
-              case 'response.audio_transcript.done':
-                // Final transcript
-                if (data.transcript) {
-                  onTranscript(data.transcript)
-                }
-                break
-              
-              // Handle text response
-              case 'response.text.delta':
-                // Handle text response updates
-                if (data.delta && onResponse) {
-                  onResponse(data.delta)
-                }
-                break
-              
-              case 'response.text.done':
-                // Final text response
-                if (data.text && onResponse) {
-                  onResponse(data.text)
-                }
-                break
-              
-              // Handle audio response
-              case 'response.audio.delta':
-                // Handle audio chunks - play immediately
-                if (data.delta) {
-                  // Convert base64 to ArrayBuffer
-                  try {
-                    const audioData = Uint8Array.from(atob(data.delta), c => c.charCodeAt(0))
-                    // Play audio immediately
-                    playAudioChunk(audioData.buffer)
-                    // Also call callback if provided
-                    if (onAudioChunk) {
-                      onAudioChunk(audioData.buffer)
-                    }
-                  } catch (error) {
-                    console.error('Error decoding audio:', error)
-                  }
-                }
-                break
-              
-              case 'response.audio.done':
-                // Audio response complete - wait for all queued audio to finish
-                console.log('Audio response done, waiting for playback to complete')
-                // Don't set isSpeaking to false yet - let the onended handlers do it
-                break
-              
-              case 'response.done':
-                // Response complete
-                console.log('Response completed')
-                // Wait a bit for any remaining audio to finish
-                setTimeout(() => {
-                  if (audioSourceQueueRef.current.length === 0) {
-                    setIsSpeaking(false)
-                    isPlayingAudioRef.current = false
-                  }
-                }, 500)
-                break
-              
-              // Handle conversation events
-              case 'conversation.item.created':
-                console.log('Conversation item created')
-                break
-              
-              case 'conversation.item.input_audio_buffer.speech_started':
-                console.log('Speech started')
-                break
-              
-              case 'conversation.item.input_audio_buffer.speech_stopped':
-                console.log('Speech stopped')
-                break
-              
-              case 'error':
-                console.error('OpenAI Realtime API error:', data.error)
-                toast.error(data.error?.message || 'Voice API error')
-                setIsRecording(false)
-                setIsSpeaking(false)
-                break
-              
-              default:
-                // Log unknown message types for debugging
-                if (data.type && !data.type.startsWith('ping') && !data.type.startsWith('pong')) {
-                  console.debug('Unhandled message type:', data.type, data)
-                }
-                break
-            }
-          } catch (error: any) {
-            console.error('Error processing WebSocket message:', error)
-          }
-        }
-
+        ws.onmessage = createWorkflowRealtimeMessageHandler({
+          ws,
+          onTranscript,
+          onAudioChunk,
+          onResponse,
+          playAudioChunk,
+          audioSourceQueueRef,
+          isPlayingAudioRef,
+          setIsConnected,
+          setIsRecording,
+          setIsSpeaking,
+          onReady: () => resolve(true),
+        })
       ws.onerror = (error) => {
         clearTimeout(connectionTimeout)
         console.error('WebSocket connection error:', error)

@@ -1,4 +1,5 @@
 'use client'
+import { DEFAULT_BREAKPOINTS, type LayoutConfig, type ResponsiveLayoutManagerProps } from './responsive-layout-types'
 
 import { useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,102 +8,18 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
 import { 
   Monitor,
   Tablet,
   Smartphone,
   Grid3X3,
-  Columns,
-  Rows,
-  Square,
-  Maximize,
-  Minimize,
   Settings,
   Eye,
   Edit,
   Trash2,
-  Plus,
-  Copy,
-  Move,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  AlignJustify,
-  Space,
-  CornerUpLeft,
-  CornerUpRight,
-  CornerDownLeft,
-  CornerDownRight
+  Plus
 } from 'lucide-react'
-
-interface Breakpoint {
-  id: string
-  name: string
-  width: number
-  height: number
-  minWidth?: number
-  maxWidth?: number
-  icon: string
-  color: string
-}
-
-interface LayoutConfig {
-  id: string
-  name: string
-  type: 'grid' | 'flexbox' | 'absolute' | 'flow'
-  columns?: number
-  rows?: number
-  gap?: number
-  padding?: number
-  margin?: number
-  justifyContent?: 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'
-  alignItems?: 'start' | 'center' | 'end' | 'stretch' | 'baseline'
-  flexDirection?: 'row' | 'column' | 'row-reverse' | 'column-reverse'
-  flexWrap?: 'nowrap' | 'wrap' | 'wrap-reverse'
-  breakpoints: Record<string, Partial<LayoutConfig>>
-}
-
-interface ResponsiveLayoutManagerProps {
-  layouts: LayoutConfig[]
-  currentBreakpoint: string
-  onUpdateLayout: (id: string, updates: Partial<LayoutConfig>) => void
-  onCreateLayout: (layout: Omit<LayoutConfig, 'id'>) => void
-  onDeleteLayout: (id: string) => void
-  onSelectBreakpoint: (breakpoint: string) => void
-}
-
-const DEFAULT_BREAKPOINTS: Breakpoint[] = [
-  {
-    id: 'desktop',
-    name: 'Desktop',
-    width: 1200,
-    height: 800,
-    minWidth: 1024,
-    icon: 'Monitor',
-    color: '#1e40af'
-  },
-  {
-    id: 'tablet',
-    name: 'Tablet',
-    width: 768,
-    height: 1024,
-    minWidth: 768,
-    maxWidth: 1023,
-    icon: 'Tablet',
-    color: '#10b981'
-  },
-  {
-    id: 'mobile',
-    name: 'Mobile',
-    width: 375,
-    height: 667,
-    maxWidth: 767,
-    icon: 'Smartphone',
-    color: '#f59e0b'
-  }
-]
 
 export function ResponsiveLayoutManager({
   layouts,
@@ -572,3 +489,4 @@ export function ResponsiveLayoutManager({
     </div>
   )
 }
+

@@ -3,103 +3,38 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
 import {
-    Plus,
     Database,
     Table,
     Columns,
     RefreshCw,
-    Server,
-    HardDrive,
     Search,
-    ChevronRight,
-    FileText,
-    Hash,
-    Calendar,
-    ToggleLeft,
-    Link as LinkIcon,
-    Type,
     Edit,
     Trash2,
-    ExternalLink,
-    Settings,
     Users
 } from 'lucide-react'
-import { DataModelDrawer } from '@/app/admin/features/system/components/DataModelDrawer'
-import { ExternalConnectionWizard } from '@/app/admin/features/system/components/ExternalConnectionWizard'
 import toast from 'react-hot-toast'
-
-interface ExternalConnection {
-    id: string
-    name: string
-    connection_type: string
-    db_type: string
-    host?: string
-    database?: string
-}
-
-interface DataModel {
-    id: string
-    name: string
-    display_name: string
-    slug: string
-    description?: string
-    source_type?: string
-    external_connection_id?: string
-    attributes?: Attribute[]
-}
-
-interface Attribute {
-    id: string
-    name: string
-    display_name: string
-    type: string
-    is_required?: boolean
-    is_unique?: boolean
-}
-
-interface TableInfo {
-    table_name: string
-    table_schema: string
-}
-
-interface ColumnInfo {
-    column_name: string
-    data_type: string
-    is_nullable: string
-    column_default?: string
-}
+import { DataModelConnectionHeader } from './DataModelConnectionHeader'
+import { DataModelBrowserDialogs } from './DataModelBrowserDialogs'
+import { getTypeIcon } from './dataModelTypeIcon'
+import {
+    BUILTIN_CONNECTION_ID,
+    SPACE_MEMBERS_ATTRIBUTES,
+    SPACE_MEMBERS_MODEL,
+    SPACE_MEMBERS_MODEL_ID,
+    type Attribute,
+    type ColumnInfo,
+    type DataModel,
+    type ExternalConnection,
+    type TableInfo,
+} from './dataModelBrowserModel'
 
 interface DataModelBrowserProps {
     spaceId: string
 }
-
-const BUILTIN_CONNECTION_ID = 'builtin'
-const SPACE_MEMBERS_MODEL_ID = 'system-space-members'
-
-// Virtual Space Members model definition
-const SPACE_MEMBERS_MODEL: DataModel = {
-    id: SPACE_MEMBERS_MODEL_ID,
-    name: 'space_members',
-    display_name: 'Space Members',
-    slug: 'space-members',
-    description: 'Members of this space',
-    source_type: 'SYSTEM'
-}
-
-const SPACE_MEMBERS_ATTRIBUTES: Attribute[] = [
-    { id: 'sm-1', name: 'id', display_name: 'ID', type: 'text', is_required: true, is_unique: true },
-    { id: 'sm-2', name: 'name', display_name: 'Name', type: 'text', is_required: true },
-    { id: 'sm-3', name: 'email', display_name: 'Email', type: 'text', is_required: true, is_unique: true },
-    { id: 'sm-4', name: 'role', display_name: 'Role', type: 'text', is_required: true },
-    { id: 'sm-5', name: 'joined_at', display_name: 'Joined At', type: 'datetime' },
-    { id: 'sm-6', name: 'avatar_url', display_name: 'Avatar URL', type: 'text' },
-    { id: 'sm-7', name: 'status', display_name: 'Status', type: 'text' }
-]
 
 export function DataModelBrowser({ spaceId }: DataModelBrowserProps) {
     // Connection state
@@ -129,7 +64,6 @@ export function DataModelBrowser({ spaceId }: DataModelBrowserProps) {
     const [editingModel, setEditingModel] = useState<DataModel | null>(null)
 
     const isBuiltIn = selectedConnectionId === BUILTIN_CONNECTION_ID
-    const selectedConnection = connections.find(c => c.id === selectedConnectionId)
 
     // Load connections on mount
     useEffect(() => {
@@ -336,33 +270,6 @@ export function DataModelBrowser({ spaceId }: DataModelBrowserProps) {
         }
     }
 
-    const getTypeIcon = (type: string) => {
-        switch (type?.toLowerCase()) {
-            case 'text':
-            case 'string':
-            case 'varchar':
-            case 'character varying':
-                return <Type className="h-4 w-4 text-blue-500" />
-            case 'integer':
-            case 'int':
-            case 'bigint':
-            case 'number':
-                return <Hash className="h-4 w-4 text-green-500" />
-            case 'boolean':
-            case 'bool':
-                return <ToggleLeft className="h-4 w-4 text-purple-500" />
-            case 'date':
-            case 'timestamp':
-            case 'datetime':
-                return <Calendar className="h-4 w-4 text-orange-500" />
-            case 'reference':
-            case 'relation':
-                return <LinkIcon className="h-4 w-4 text-pink-500" />
-            default:
-                return <FileText className="h-4 w-4 text-muted-foreground" />
-        }
-    }
-
     const filteredTables = tables.filter(t =>
         t.table_name.toLowerCase().includes(tableSearch.toLowerCase()) ||
         t.table_schema.toLowerCase().includes(tableSearch.toLowerCase())
@@ -375,54 +282,20 @@ export function DataModelBrowser({ spaceId }: DataModelBrowserProps) {
 
     return (
         <div className="space-y-4">
-            {/* Connection Selector Header */}
-            <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg border">
-                <div className="flex items-center gap-2">
-                    <Database className="h-5 w-5 text-muted-foreground" />
-                    <span className="font-medium">Database Connection:</span>
-                </div>
-                <div className="flex-1 max-w-md">
-                    <Select value={selectedConnectionId} onValueChange={handleConnectionChange}>
-                        <SelectTrigger>
-                            <SelectValue placeholder={isLoadingConnections ? 'Loading...' : 'Select a connection'} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {/* Built-in option */}
-                            <SelectItem value={BUILTIN_CONNECTION_ID}>
-                                <div className="flex items-center gap-2">
-                                    <HardDrive className="h-4 w-4" />
-                                    <span>Built-in Database</span>
-                                    <Badge variant="secondary" className="text-xs ml-2">Default</Badge>
-                                </div>
-                            </SelectItem>
-                            {/* External connections */}
-                            {connections.filter(c => c.connection_type === 'database').map(conn => (
-                                <SelectItem key={conn.id} value={conn.id}>
-                                    <div className="flex items-center gap-2">
-                                        <Server className="h-4 w-4" />
-                                        <span>{conn.name}</span>
-                                        <Badge variant="outline" className="text-xs ml-2">{conn.db_type}</Badge>
-                                    </div>
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                <Button variant="outline" size="sm" onClick={() => setShowExternalWizard(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Connection
-                </Button>
-                {isBuiltIn && (
-                    <Button size="sm" onClick={() => { setEditingModel(null); setShowNewModelDrawer(true) }}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        New Model
-                    </Button>
-                )}
-                <Button variant="ghost" size="sm" onClick={() => isBuiltIn ? loadDataModels() : loadTables()}>
-                    <RefreshCw className="h-4 w-4" />
-                </Button>
-            </div>
+            <DataModelConnectionHeader
+                connections={connections}
+                isBuiltIn={isBuiltIn}
+                isLoadingConnections={isLoadingConnections}
+                selectedConnectionId={selectedConnectionId}
+                handleConnectionChange={handleConnectionChange}
+                loadDataModels={loadDataModels}
+                loadTables={loadTables}
+                setEditingModel={setEditingModel}
+                setShowExternalWizard={setShowExternalWizard}
+                setShowNewModelDrawer={setShowNewModelDrawer}
+            />
 
+            {/* Split Panel Browser */}
             {/* Split Panel Browser */}
             <div className="grid grid-cols-12 gap-4 min-h-[500px]">
                 {/* Left Panel */}
@@ -643,19 +516,15 @@ export function DataModelBrowser({ spaceId }: DataModelBrowserProps) {
                 </Card>
             </div>
 
-            {/* Dialogs */}
-            <DataModelDrawer
-                open={showNewModelDrawer}
-                onOpenChange={setShowNewModelDrawer}
-                initialData={editingModel}
-                onSubmit={handleSaveModel}
-            />
-
-            <ExternalConnectionWizard
-                open={showExternalWizard}
-                onOpenChange={setShowExternalWizard}
-                onSubmit={handleSaveExternalConnection}
+            <DataModelBrowserDialogs
+                editingModel={editingModel}
+                showExternalWizard={showExternalWizard}
+                showNewModelDrawer={showNewModelDrawer}
                 spaceId={spaceId}
+                handleSaveExternalConnection={handleSaveExternalConnection}
+                handleSaveModel={handleSaveModel}
+                setShowExternalWizard={setShowExternalWizard}
+                setShowNewModelDrawer={setShowNewModelDrawer}
             />
         </div>
     )

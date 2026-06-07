@@ -13,11 +13,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Loader, Plus, ChevronDown, ChevronUp, CheckCircle2, FileCode, Sparkles } from 'lucide-react'
+import { Loader, Plus, Sparkles } from 'lucide-react'
 import { showSuccess, showError } from '@/lib/toast-utils'
 import { PluginCategory } from '../types'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import {
+  AdvancedPluginOptions,
+  CodeGenerationOptions,
+  PluginSourceOptions,
+  type PluginSource,
+  type UIComponentType
+} from './AddPluginDialogOptions'
 
 interface AddPluginDialogProps {
   open: boolean
@@ -28,7 +33,6 @@ interface AddPluginDialogProps {
 export function AddPluginDialog({ open, onOpenChange, onSuccess }: AddPluginDialogProps) {
   const [loading, setLoading] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
-  const [step, setStep] = useState<'basic' | 'options' | 'code'>('basic')
   
   // Basic required fields
   const [name, setName] = useState('')
@@ -48,11 +52,11 @@ export function AddPluginDialog({ open, onOpenChange, onSuccess }: AddPluginDial
   // Code generation options
   const [generateCodeFiles, setGenerateCodeFiles] = useState(true)
   const [generateUIComponent, setGenerateUIComponent] = useState(true)
-  const [uiComponentType, setUiComponentType] = useState<'basic' | 'management'>('basic')
+  const [uiComponentType, setUiComponentType] = useState<UIComponentType>('basic')
   const [generatedFiles, setGeneratedFiles] = useState<string[]>([])
   
   // External plugin options
-  const [pluginSource, setPluginSource] = useState<'built-in' | 'local-folder' | 'external'>('built-in')
+  const [pluginSource, setPluginSource] = useState<PluginSource>('built-in')
   const [externalSourcePath, setExternalSourcePath] = useState('')
   const [externalProjectFolder, setExternalProjectFolder] = useState('')
   const [externalSourceUrl, setExternalSourceUrl] = useState('')
@@ -244,7 +248,6 @@ export function AddPluginDialog({ open, onOpenChange, onSuccess }: AddPluginDial
       setApiBaseUrl('')
       setApiAuthType('none')
       setShowAdvanced(false)
-      setStep('basic')
       setGeneratedFiles([])
       
       onOpenChange(false)
@@ -364,225 +367,43 @@ export function AddPluginDialog({ open, onOpenChange, onSuccess }: AddPluginDial
             </div>
 
             {/* Plugin Source Selection */}
-            <div className="border-t pt-4 mt-4 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="pluginSource" className="font-medium">Plugin Source</Label>
-                <Select
-                  value={pluginSource}
-                  onValueChange={(value) => {
-                    setPluginSource(value as 'built-in' | 'local-folder' | 'external')
-                    if (value === 'built-in') {
-                      setGenerateCodeFiles(true)
-                    } else {
-                      setGenerateCodeFiles(false)
-                    }
-                  }}
-                >
-                  <SelectTrigger id="pluginSource">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="built-in">Built-in (Same Project)</SelectItem>
-                    <SelectItem value="local-folder">External Folder (Different Project)</SelectItem>
-                    <SelectItem value="external">External URL (CDN/Git/npm)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  {pluginSource === 'built-in' && 'Plugin will be created in this project'}
-                  {pluginSource === 'local-folder' && 'Plugin exists in a different project folder'}
-                  {pluginSource === 'external' && 'Plugin will be loaded from external source'}
-                </p>
-              </div>
-
-              {pluginSource === 'local-folder' && (
-                <div className="space-y-3 pl-4 border-l-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="externalProjectFolder">Project Folder Name</Label>
-                    <Input
-                      id="externalProjectFolder"
-                      value={externalProjectFolder}
-                      onChange={(e) => setExternalProjectFolder(e.target.value)}
-                      placeholder="e.g., my-plugin-project"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Name of the project folder containing the plugin (e.g., ../my-plugin-project)
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="externalSourcePath">Plugin Path (Alternative)</Label>
-                    <Input
-                      id="externalSourcePath"
-                      value={externalSourcePath}
-                      onChange={(e) => setExternalSourcePath(e.target.value)}
-                      placeholder="e.g., ../my-plugin-project/src/plugins/my-plugin"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Or specify full path to plugin folder (relative or absolute)
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {pluginSource === 'external' && (
-                <div className="space-y-3 pl-4 border-l-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="externalSourceUrl">Source URL</Label>
-                    <Input
-                      id="externalSourceUrl"
-                      type="url"
-                      value={externalSourceUrl}
-                      onChange={(e) => setExternalSourceUrl(e.target.value)}
-                      placeholder="https://github.com/user/plugin-repo or https://cdn.example.com/plugin"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Git repository URL, CDN URL, or npm package name
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
+            <PluginSourceOptions
+              pluginSource={pluginSource}
+              setPluginSource={setPluginSource}
+              setGenerateCodeFiles={setGenerateCodeFiles}
+              externalProjectFolder={externalProjectFolder}
+              setExternalProjectFolder={setExternalProjectFolder}
+              externalSourcePath={externalSourcePath}
+              setExternalSourcePath={setExternalSourcePath}
+              externalSourceUrl={externalSourceUrl}
+              setExternalSourceUrl={setExternalSourceUrl}
+            />
 
             {/* Code Generation Options (only for built-in) */}
-            {pluginSource === 'built-in' && (
-              <div className="border-t pt-4 mt-4 space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="generateCodeFiles"
-                    checked={generateCodeFiles}
-                    onCheckedChange={(checked) => setGenerateCodeFiles(checked === true)}
-                  />
-                  <Label htmlFor="generateCodeFiles" className="flex items-center gap-2 cursor-pointer">
-                    <FileCode className="h-4 w-4" />
-                    <span className="font-medium">Generate Code Files</span>
-                    <span className="text-xs text-muted-foreground">(Recommended)</span>
-                  </Label>
-                </div>
-              
-              {generateCodeFiles && (
-                <div className="ml-6 space-y-3 pl-4 border-l-2">
-                  <Alert>
-                    <Sparkles className="h-4 w-4" />
-                    <AlertDescription className="text-xs">
-                      We'll automatically create plugin.ts, UI component, and update index.ts for you!
-                    </AlertDescription>
-                  </Alert>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="generateUIComponent"
-                      checked={generateUIComponent}
-                      onCheckedChange={(checked) => setGenerateUIComponent(checked === true)}
-                    />
-                    <Label htmlFor="generateUIComponent" className="cursor-pointer">
-                      Generate UI Component
-                    </Label>
-                  </div>
-                  
-                  {generateUIComponent && (
-                    <div className="ml-6 space-y-2">
-                      <Label htmlFor="uiComponentType" className="text-sm">Component Type</Label>
-                      <Select
-                        value={uiComponentType}
-                        onValueChange={(value) => setUiComponentType(value as 'basic' | 'management')}
-                      >
-                        <SelectTrigger id="uiComponentType" className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="basic">Basic (Simple UI)</SelectItem>
-                          <SelectItem value="management">Management (With Controls)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                </div>
-              )}
-              </div>
-            )}
-
+            <CodeGenerationOptions
+              pluginSource={pluginSource}
+              generateCodeFiles={generateCodeFiles}
+              setGenerateCodeFiles={setGenerateCodeFiles}
+              generateUIComponent={generateUIComponent}
+              setGenerateUIComponent={setGenerateUIComponent}
+              uiComponentType={uiComponentType}
+              setUiComponentType={setUiComponentType}
+            />
             {/* Advanced Options */}
-            <div className="border-t pt-4 mt-4">
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full justify-between mb-4"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-              >
-                <span>Advanced Options (Optional)</span>
-                {showAdvanced ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </Button>
-
-              {showAdvanced && (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="providerUrl">Provider URL</Label>
-                    <Input
-                      id="providerUrl"
-                      type="url"
-                      value={providerUrl}
-                      onChange={(e) => setProviderUrl(e.target.value)}
-                      placeholder="https://yourcompany.com"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="iconUrl">Icon URL</Label>
-                    <Input
-                      id="iconUrl"
-                      type="url"
-                      value={iconUrl}
-                      onChange={(e) => setIconUrl(e.target.value)}
-                      placeholder="/icons/my-plugin.svg"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="documentationUrl">Documentation URL</Label>
-                    <Input
-                      id="documentationUrl"
-                      type="url"
-                      value={documentationUrl}
-                      onChange={(e) => setDocumentationUrl(e.target.value)}
-                      placeholder="https://docs.example.com"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="apiBaseUrl">API Base URL</Label>
-                    <Input
-                      id="apiBaseUrl"
-                      type="url"
-                      value={apiBaseUrl}
-                      onChange={(e) => setApiBaseUrl(e.target.value)}
-                      placeholder="https://api.example.com"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="apiAuthType">API Authentication Type</Label>
-                    <Select
-                      value={apiAuthType}
-                      onValueChange={(value) => setApiAuthType(value as typeof apiAuthType)}
-                    >
-                      <SelectTrigger id="apiAuthType">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        <SelectItem value="oauth2">OAuth 2.0</SelectItem>
-                        <SelectItem value="api_key">API Key</SelectItem>
-                        <SelectItem value="bearer">Bearer Token</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+            <AdvancedPluginOptions
+              showAdvanced={showAdvanced}
+              setShowAdvanced={setShowAdvanced}
+              providerUrl={providerUrl}
+              setProviderUrl={setProviderUrl}
+              iconUrl={iconUrl}
+              setIconUrl={setIconUrl}
+              documentationUrl={documentationUrl}
+              setDocumentationUrl={setDocumentationUrl}
+              apiBaseUrl={apiBaseUrl}
+              setApiBaseUrl={setApiBaseUrl}
+              apiAuthType={apiAuthType}
+              setApiAuthType={setApiAuthType}
+            />          </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
@@ -607,4 +428,6 @@ export function AddPluginDialog({ open, onOpenChange, onSuccess }: AddPluginDial
     </Dialog>
   )
 }
+
+
 

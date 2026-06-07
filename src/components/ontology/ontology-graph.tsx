@@ -1,13 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Slider } from '@/components/ui/slider'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -20,155 +17,22 @@ import {
   RefreshCw,
   Filter,
   Download,
-  Settings,
-  ChevronDown,
-  ChevronUp,
-  Info,
-  X,
-  Move,
-  MousePointer,
   Layers,
-  Eye,
-  EyeOff,
 } from 'lucide-react'
 import {
   OntologyGraph,
   OntologyNode,
-  OntologyEdge,
   OntologyNodeType,
   ONTOLOGY_NODE_COLORS,
-  ONTOLOGY_NODE_ICONS,
 } from '@/lib/project-types'
+import { OntologyNodeDetailsPanel } from './OntologyNodeDetailsPanel'
+import { useOntologyForceLayout } from './useOntologyForceLayout'
 
 interface OntologyGraphProps {
   initialQuery?: string
   spaceId?: string
   projectId?: string
   onNodeClick?: (node: OntologyNode) => void
-}
-
-// Simple force-directed layout simulation
-function useForceLayout(nodes: OntologyNode[], edges: OntologyEdge[], width: number, height: number) {
-  const [positions, setPositions] = useState<Map<string, { x: number; y: number }>>(new Map())
-  
-  useEffect(() => {
-    if (nodes.length === 0) return
-    
-    // Initialize positions
-    const newPositions = new Map<string, { x: number; y: number }>()
-    const centerX = width / 2
-    const centerY = height / 2
-    const radius = Math.min(width, height) * 0.35
-    
-    // Position nodes in a circle initially, grouped by type
-    const nodesByType = new Map<OntologyNodeType, OntologyNode[]>()
-    nodes.forEach(node => {
-      const list = nodesByType.get(node.type) || []
-      list.push(node)
-      nodesByType.set(node.type, list)
-    })
-    
-    let angleOffset = 0
-    const typeCount = nodesByType.size
-    const anglePerType = (2 * Math.PI) / typeCount
-    
-    nodesByType.forEach((typeNodes, type) => {
-      const typeRadius = radius * 0.8
-      const nodesInType = typeNodes.length
-      const anglePerNode = anglePerType / Math.max(nodesInType, 1)
-      
-      typeNodes.forEach((node, idx) => {
-        const angle = angleOffset + anglePerNode * idx
-        const jitter = (Math.random() - 0.5) * 50
-        newPositions.set(node.id, {
-          x: centerX + Math.cos(angle) * typeRadius + jitter,
-          y: centerY + Math.sin(angle) * typeRadius + jitter,
-        })
-      })
-      
-      angleOffset += anglePerType
-    })
-    
-    // Simple force simulation (a few iterations)
-    const iterations = 50
-    const k = Math.sqrt((width * height) / nodes.length) * 0.5
-    
-    for (let iter = 0; iter < iterations; iter++) {
-      const forces = new Map<string, { fx: number; fy: number }>()
-      
-      // Initialize forces
-      nodes.forEach(node => {
-        forces.set(node.id, { fx: 0, fy: 0 })
-      })
-      
-      // Repulsive forces between all nodes
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const pos1 = newPositions.get(nodes[i].id)!
-          const pos2 = newPositions.get(nodes[j].id)!
-          
-          const dx = pos1.x - pos2.x
-          const dy = pos1.y - pos2.y
-          const dist = Math.sqrt(dx * dx + dy * dy) || 1
-          
-          const force = (k * k) / dist
-          const fx = (dx / dist) * force * 0.5
-          const fy = (dy / dist) * force * 0.5
-          
-          const f1 = forces.get(nodes[i].id)!
-          const f2 = forces.get(nodes[j].id)!
-          f1.fx += fx
-          f1.fy += fy
-          f2.fx -= fx
-          f2.fy -= fy
-        }
-      }
-      
-      // Attractive forces along edges
-      edges.forEach(edge => {
-        const pos1 = newPositions.get(edge.source)
-        const pos2 = newPositions.get(edge.target)
-        
-        if (!pos1 || !pos2) return
-        
-        const dx = pos1.x - pos2.x
-        const dy = pos1.y - pos2.y
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1
-        
-        const force = dist / k
-        const fx = (dx / dist) * force * 0.3
-        const fy = (dy / dist) * force * 0.3
-        
-        const f1 = forces.get(edge.source)
-        const f2 = forces.get(edge.target)
-        
-        if (f1 && f2) {
-          f1.fx -= fx
-          f1.fy -= fy
-          f2.fx += fx
-          f2.fy += fy
-        }
-      })
-      
-      // Apply forces
-      const cooling = 1 - iter / iterations
-      nodes.forEach(node => {
-        const pos = newPositions.get(node.id)!
-        const force = forces.get(node.id)!
-        
-        pos.x += force.fx * cooling * 0.1
-        pos.y += force.fy * cooling * 0.1
-        
-        // Keep within bounds
-        pos.x = Math.max(50, Math.min(width - 50, pos.x))
-        pos.y = Math.max(50, Math.min(height - 50, pos.y))
-      })
-    }
-    
-    setPositions(newPositions)
-  }, [nodes, edges, width, height])
-  
-  return positions
 }
 
 export function OntologyGraphView({
@@ -197,7 +61,7 @@ export function OntologyGraphView({
   const [depth, setDepth] = useState(2)
   
   // Calculate positions using force layout
-  const positions = useForceLayout(
+  const positions = useOntologyForceLayout(
     graph?.nodes || [],
     graph?.edges || [],
     dimensions.width,
@@ -524,88 +388,13 @@ export function OntologyGraphView({
           )}
         </div>
         
-        {/* Node Details Panel */}
         {selectedNode && (
-          <div className="w-80 border-l bg-background">
-            <div className="p-4 border-b flex items-center justify-between">
-              <h3 className="font-medium">Node Details</h3>
-              <Button variant="ghost" size="icon" onClick={() => setSelectedNode(null)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <ScrollArea className="h-[calc(100%-60px)]">
-              <div className="p-4 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div 
-                    className="h-10 w-10 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: ONTOLOGY_NODE_COLORS[selectedNode.type] + '20' }}
-                  >
-                    <div 
-                      className="h-6 w-6 rounded-full"
-                      style={{ backgroundColor: ONTOLOGY_NODE_COLORS[selectedNode.type] }}
-                    />
-                  </div>
-                  <div>
-                    <p className="font-medium">{selectedNode.name}</p>
-                    <Badge variant="outline" className="capitalize">
-                      {selectedNode.type.replace('_', ' ')}
-                    </Badge>
-                  </div>
-                </div>
-                
-                {selectedNode.description && (
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Description</Label>
-                    <p className="text-sm mt-1">{selectedNode.description}</p>
-                  </div>
-                )}
-                
-                {/* Connections */}
-                <div>
-                  <Label className="text-xs text-muted-foreground">Connections</Label>
-                  <div className="space-y-2 mt-2">
-                    {graph?.edges
-                      .filter(e => e.source === selectedNode.id || e.target === selectedNode.id)
-                      .map(edge => {
-                        const otherId = edge.source === selectedNode.id ? edge.target : edge.source
-                        const otherNode = graph.nodes.find(n => n.id === otherId)
-                        if (!otherNode) return null
-                        
-                        return (
-                          <div 
-                            key={edge.id}
-                            className="flex items-center gap-2 p-2 rounded border cursor-pointer hover:bg-muted"
-                            onClick={() => setSelectedNode(otherNode)}
-                          >
-                            <div 
-                              className="h-3 w-3 rounded-full"
-                              style={{ backgroundColor: ONTOLOGY_NODE_COLORS[otherNode.type] }}
-                            />
-                            <span className="text-sm flex-1 truncate">{otherNode.name}</span>
-                            <span className="text-xs text-muted-foreground">{edge.label || edge.type}</span>
-                          </div>
-                        )
-                      })}
-                  </div>
-                </div>
-                
-                {/* Metadata */}
-                {selectedNode.metadata && Object.keys(selectedNode.metadata).length > 0 && (
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Properties</Label>
-                    <div className="space-y-1 mt-2">
-                      {Object.entries(selectedNode.metadata).map(([key, value]) => (
-                        <div key={key} className="flex justify-between text-sm">
-                          <span className="text-muted-foreground capitalize">{key.replace('_', ' ')}</span>
-                          <span>{String(value)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
+          <OntologyNodeDetailsPanel
+            graph={graph}
+            selectedNode={selectedNode}
+            onSelectNode={setSelectedNode}
+            onClose={() => setSelectedNode(null)}
+          />
         )}
       </div>
       

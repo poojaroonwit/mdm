@@ -1,91 +1,21 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { StatusBadge } from '@/components/ui/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { CrudDialog } from '@/components/ui/crud-dialog'
-import { Switch } from '@/components/ui/switch'
-import { Textarea } from '@/components/ui/textarea'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Progress } from '@/components/ui/progress'
-import { Skeleton } from '@/components/ui/skeleton'
 import { 
   Database, 
-  Server, 
-  Activity, 
-  Zap, 
-  Settings,
-  Play,
-  Pause,
   RefreshCw,
-  Download,
-  Upload,
-  Trash2,
-  Eye,
-  Edit,
-  Plus,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Clock,
-  TrendingUp,
-  TrendingDown,
-  BarChart3,
-  Table,
-  Key,
-  Link,
-  HardDrive,
-  Cpu,
-  MemoryStick
 } from 'lucide-react'
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { DatabaseConnection, QueryPerformance, DatabaseStats, TableInfo, IndexInfo } from '../types'
 import { getDatabaseTypes, type Asset } from '@/lib/assets'
-
-function DatabaseConnectionSkeleton({ count = 3 }: { count?: number }) {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {Array.from({ length: count }).map((_, i) => (
-        <Card key={i} className="animate-pulse">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-5 w-5 rounded-full" />
-                <Skeleton className="h-5 w-32" />
-              </div>
-              <Skeleton className="h-4 w-4 rounded-full" />
-            </div>
-            <div className="space-y-2 mt-2">
-              <Skeleton className="h-3 w-full" />
-              <Skeleton className="h-3 w-4/5" />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Skeleton className="h-4 w-12" />
-              <Skeleton className="h-5 w-16 rounded-full" />
-            </div>
-            <div className="space-y-2">
-              <Skeleton className="h-3 w-24" />
-              <Skeleton className="h-2 w-full" />
-            </div>
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-8 flex-1 rounded-md" />
-              <Skeleton className="h-8 flex-1 rounded-md" />
-              <Skeleton className="h-8 w-10 rounded-md" />
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  )
-}
+import { DatabaseConnectionsTab } from './DatabaseConnectionsTab'
+import { DatabaseIndexesTab } from './DatabaseIndexesTab'
+import { DatabasePerformanceTab } from './DatabasePerformanceTab'
+import { DatabaseQueryTab } from './DatabaseQueryTab'
+import { DatabaseStatsCards } from './DatabaseStatsCards'
+import { DatabaseTablesTab } from './DatabaseTablesTab'
+import type { NewDatabaseConnection } from './CreateDatabaseConnectionDialog'
 
 export function DatabaseManagement() {
   const [connections, setConnections] = useState<DatabaseConnection[]>([])
@@ -96,11 +26,9 @@ export function DatabaseManagement() {
   const [indexes, setIndexes] = useState<IndexInfo[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [showCreateConnection, setShowCreateConnection] = useState(false)
-  const [showQueryDialog, setShowQueryDialog] = useState(false)
-  const [selectedTable, setSelectedTable] = useState<TableInfo | null>(null)
 
   const [spaces, setSpaces] = useState<Array<{id: string, name: string}>>([])
-  const [newConnection, setNewConnection] = useState({
+  const [newConnection, setNewConnection] = useState<NewDatabaseConnection>({
     name: '',
     spaceId: '',
     type: 'postgresql' as const,
@@ -298,55 +226,6 @@ export function DatabaseManagement() {
     }
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'connected':
-        return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'disconnected':
-        return <XCircle className="h-4 w-4 text-gray-500" />
-      case 'error':
-        return <AlertTriangle className="h-4 w-4 text-red-500" />
-      default:
-        return <Clock className="h-4 w-4 text-gray-500" />
-    }
-  }
-
-  const getDatabaseIcon = (type: string) => {
-    // Try to find the asset and use its icon/color
-    const asset = databaseTypes.find(t => t.code === type)
-    if (asset?.icon) {
-      return <span className="text-lg">{asset.icon}</span>
-    }
-    // Fallback to Lucide icons if asset not found
-    switch (type) {
-      case 'postgresql':
-        return <Database className="h-4 w-4 text-blue-500" />
-      case 'mysql':
-        return <Database className="h-4 w-4 text-orange-500" />
-      case 'sqlite':
-        return <Database className="h-4 w-4 text-green-500" />
-      case 'mongodb':
-        return <Database className="h-4 w-4 text-green-600" />
-      case 'redis':
-        return <Database className="h-4 w-4 text-red-500" />
-      default:
-        return <Database className="h-4 w-4 text-gray-500" />
-    }
-  }
-
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
-
-  const formatDuration = (ms: number) => {
-    if (ms < 1000) return `${ms}ms`
-    return `${(ms / 1000).toFixed(2)}s`
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -367,62 +246,7 @@ export function DatabaseManagement() {
         </div>
       </div>
 
-      {/* Database Statistics */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Connections</CardTitle>
-              <Link className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.activeConnections}</div>
-              <div className="text-xs text-muted-foreground">
-                {stats.totalConnections} total
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg Query Time</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatDuration(stats.avgQueryTime)}</div>
-              <div className="text-xs text-muted-foreground">
-                {stats.slowQueries} slow queries
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cache Hit Rate</CardTitle>
-              <Zap className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.cacheHitRate.toFixed(1)}%</div>
-              <div className="text-xs text-muted-foreground">
-                Cache efficiency
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Database Size</CardTitle>
-              <HardDrive className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatBytes(stats.databaseSize)}</div>
-              <div className="text-xs text-muted-foreground">
-                {stats.tableCount} tables
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {stats && <DatabaseStatsCards stats={stats} />}
 
       <div className="w-full">
       <Tabs defaultValue="connections">
@@ -435,385 +259,42 @@ export function DatabaseManagement() {
         </TabsList>
 
         <TabsContent value="connections" className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Database Connections</h3>
-            <CrudDialog
-              open={showCreateConnection}
-              onOpenChange={setShowCreateConnection}
-              title="Add Database Connection"
-              description="Configure a new database connection"
-              trigger={(
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Connection
-                </Button>
-              )}
-              bodyClassName="space-y-4"
-              footer={(
-                <>
-                  <Button variant="outline" onClick={() => setShowCreateConnection(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={createConnection} disabled={!newConnection.name || !newConnection.host}>
-                    Create Connection
-                  </Button>
-                </>
-              )}
-            >
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="conn-name">Connection Name</Label>
-                      <Input
-                        id="conn-name"
-                        value={newConnection.name}
-                        onChange={(e) => setNewConnection({ ...newConnection, name: e.target.value })}
-                        placeholder="My Database"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="conn-space">Space</Label>
-                      <Select value={newConnection.spaceId} onValueChange={(value) => setNewConnection({ ...newConnection, spaceId: value })}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a space" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {spaces.map(space => (
-                            <SelectItem key={space.id} value={space.id}>
-                              {space.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="conn-type">Database Type</Label>
-                      <Select value={newConnection.type} onValueChange={(value: any) => {
-                        const selectedType = databaseTypes.find(t => t.code === value)
-                        setNewConnection({ 
-                          ...newConnection, 
-                          type: value,
-                          port: selectedType?.metadata?.defaultPort || newConnection.port
-                        })
-                      }}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {databaseTypes.map((type) => (
-                            <SelectItem key={type.id} value={type.code}>
-                              <div className="flex items-center gap-2">
-                                {type.icon && <span>{type.icon}</span>}
-                                <span>{type.name}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="conn-host">Host</Label>
-                      <Input
-                        id="conn-host"
-                        value={newConnection.host}
-                        onChange={(e) => setNewConnection({ ...newConnection, host: e.target.value })}
-                        placeholder="localhost"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="conn-port">Port</Label>
-                      <Input
-                        id="conn-port"
-                        type="number"
-                        value={newConnection.port}
-                        onChange={(e) => setNewConnection({ ...newConnection, port: parseInt(e.target.value) })}
-                        placeholder="5432"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="conn-database">Database</Label>
-                      <Input
-                        id="conn-database"
-                        value={newConnection.database}
-                        onChange={(e) => setNewConnection({ ...newConnection, database: e.target.value })}
-                        placeholder="mydb"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="conn-username">Username</Label>
-                      <Input
-                        id="conn-username"
-                        value={newConnection.username}
-                        onChange={(e) => setNewConnection({ ...newConnection, username: e.target.value })}
-                        placeholder="user"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="conn-password">Password</Label>
-                      <Input
-                        id="conn-password"
-                        type="password"
-                        value={newConnection.password}
-                        onChange={(e) => setNewConnection({ ...newConnection, password: e.target.value })}
-                        placeholder="password"
-                      />
-                    </div>
-                  </div>
-            </CrudDialog>
-          </div>
-
-          {isLoading && connections.length === 0 ? (
-            <DatabaseConnectionSkeleton />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {connections.map(connection => (
-              <Card key={connection.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      {getDatabaseIcon(connection.type)}
-                      {connection.name}
-                    </CardTitle>
-                    {getStatusIcon(connection.status)}
-                  </div>
-                  <CardDescription>
-                    {(() => {
-                      const asset = databaseTypes.find(t => t.code === connection.type)
-                      const typeName = asset?.name || connection.type
-                      return `${typeName} • ${connection.spaceName} • ${connection.host}:${connection.port} • ${connection.database}`
-                    })()}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Status</span>
-                    <StatusBadge status={connection.status} />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span>Active Connections</span>
-                      <span>{connection.connectionPool.current}/{connection.connectionPool.max}</span>
-                    </div>
-                    <Progress value={(connection.connectionPool.current / connection.connectionPool.max) * 100} />
-                  </div>
-
-                  {connection.lastConnected && (
-                    <div className="text-sm text-muted-foreground">
-                      Last connected: {connection.lastConnected.toLocaleString()}
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => testConnection(connection.id)}
-                    >
-                      <Play className="h-3 w-3 mr-1" />
-                      Test
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                    >
-                      <Settings className="h-3 w-3 mr-1" />
-                      Config
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => deleteConnection(connection.id)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            </div>
-          )}
+          <DatabaseConnectionsTab
+            connections={connections}
+            databaseTypes={databaseTypes}
+            isLoading={isLoading}
+            newConnection={newConnection}
+            open={showCreateConnection}
+            spaces={spaces}
+            onCreate={createConnection}
+            onDelete={deleteConnection}
+            onOpenChange={setShowCreateConnection}
+            onTest={testConnection}
+            setNewConnection={setNewConnection}
+          />
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-6">
-          <h3 className="text-lg font-semibold">Query Performance</h3>
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Queries</CardTitle>
-              <CardDescription>Query execution performance and slow queries</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[400px]">
-                <div className="space-y-2">
-                  {performance.map(query => (
-                    <div key={query.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm mb-1 truncate">
-                          {query.query.substring(0, 100)}...
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {query.timestamp.toLocaleString()} • {query.rowsAffected} rows
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-right">
-                          <div className="font-medium">{formatDuration(query.executionTime)}</div>
-                          {query.isSlow && (
-                            <Badge variant="destructive" className="text-xs">Slow</Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+          <DatabasePerformanceTab performance={performance} />
         </TabsContent>
 
         <TabsContent value="tables" className="space-y-6">
-          <h3 className="text-lg font-semibold">Database Tables</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tables.map(table => (
-              <Card key={table.name} className="cursor-pointer hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Table className="h-5 w-5" />
-                    {table.name}
-                  </CardTitle>
-                  <CardDescription>
-                    {table.rows.toLocaleString()} rows • {formatBytes(table.size)}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span>Indexes:</span>
-                      <span>{table.indexes}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Columns:</span>
-                      <span>{table.columns.length}</span>
-                    </div>
-                    {table.isPartitioned && (
-                      <Badge variant="outline" className="text-xs">Partitioned</Badge>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <DatabaseTablesTab tables={tables} />
         </TabsContent>
 
         <TabsContent value="indexes" className="space-y-6">
-          <h3 className="text-lg font-semibold">Database Indexes</h3>
-          <div className="space-y-4">
-            {indexes.map(index => (
-              <Card key={index.name}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{index.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {index.table} • {index.columns.join(', ')}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <StatusBadge status={index.isPrimary ? 'primary' : 'standard'} label={index.type} />
-                      <span className="text-sm text-muted-foreground">
-                        {formatBytes(index.size)}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <DatabaseIndexesTab indexes={indexes} />
         </TabsContent>
 
         <TabsContent value="query" className="space-y-6">
-          <h3 className="text-lg font-semibold">Query Editor</h3>
-          <Card>
-            <CardHeader>
-              <CardTitle>Execute SQL Query</CardTitle>
-              <CardDescription>Run custom SQL queries against your database</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="sql-query">SQL Query</Label>
-                <Textarea
-                  id="sql-query"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="SELECT * FROM users WHERE created_at > '2024-01-01';"
-                  rows={6}
-                  className="font-mono"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Button onClick={executeQuery} disabled={!query.trim() || isExecuting}>
-                  {isExecuting ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                      Executing...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="h-4 w-4 mr-2" />
-                      Execute
-                    </>
-                  )}
-                </Button>
-                <Button variant="outline" onClick={() => setQuery('')}>
-                  Clear
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {queryResult.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Query Results</CardTitle>
-                <CardDescription>
-                  {queryResult.length} rows returned
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[400px]">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          {Object.keys(queryResult[0] || {}).map(key => (
-                            <th key={key} className="text-left p-2 font-medium">
-                              {key}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {queryResult.slice(0, 100).map((row, index) => (
-                          <tr key={index} className="border-b">
-                            {Object.values(row).map((value, cellIndex) => (
-                              <td key={cellIndex} className="p-2">
-                                {String(value)}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          )}
+          <DatabaseQueryTab
+            isExecuting={isExecuting}
+            query={query}
+            queryResult={queryResult}
+            onClear={() => setQuery("")}
+            onExecute={executeQuery}
+            onQueryChange={setQuery}
+          />
         </TabsContent>
       </Tabs>
       </div>

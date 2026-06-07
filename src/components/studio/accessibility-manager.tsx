@@ -11,6 +11,9 @@ import { StatusBadge } from '@/components/ui/status-badge'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
+import { AccessibilityIssuesTab } from './AccessibilityIssuesTab'
+import { AccessibilitySettingsTab } from './AccessibilitySettingsTab'
+import type { AccessibilityIssue, AccessibilitySettings } from './accessibility-manager-types'
 import { 
   Accessibility,
   Eye,
@@ -44,38 +47,6 @@ import {
   Wifi,
   WifiOff
 } from 'lucide-react'
-
-interface AccessibilityIssue {
-  id: string
-  type: 'error' | 'warning' | 'info'
-  severity: 'high' | 'medium' | 'low'
-  category: 'color' | 'contrast' | 'keyboard' | 'screen-reader' | 'focus' | 'alt-text' | 'semantic'
-  title: string
-  description: string
-  element?: string
-  suggestion: string
-  automated: boolean
-  fixed: boolean
-}
-
-interface AccessibilitySettings {
-  highContrast: boolean
-  largeText: boolean
-  reducedMotion: boolean
-  screenReader: boolean
-  keyboardNavigation: boolean
-  focusIndicators: boolean
-  colorBlindSupport: boolean
-  fontSize: number
-  contrastRatio: number
-  animationSpeed: number
-  soundEffects: boolean
-  voiceNavigation: boolean
-  autoFocus: boolean
-  skipLinks: boolean
-  ariaLabels: boolean
-  semanticHTML: boolean
-}
 
 interface AccessibilityManagerProps {
   issues: AccessibilityIssue[]
@@ -375,286 +346,18 @@ export function AccessibilityManager({
 
       {/* Issues Tab */}
       {activeTab === 'issues' && (
-        <div className="space-y-4">
-          {/* Issue Filters */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-4">
-                <Select defaultValue="all">
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Issues</SelectItem>
-                    <SelectItem value="high">High Priority</SelectItem>
-                    <SelectItem value="medium">Medium Priority</SelectItem>
-                    <SelectItem value="low">Low Priority</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select defaultValue="all">
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="color">Color</SelectItem>
-                    <SelectItem value="contrast">Contrast</SelectItem>
-                    <SelectItem value="keyboard">Keyboard</SelectItem>
-                    <SelectItem value="screen-reader">Screen Reader</SelectItem>
-                    <SelectItem value="focus">Focus</SelectItem>
-                    <SelectItem value="alt-text">Alt Text</SelectItem>
-                    <SelectItem value="semantic">Semantic</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button onClick={onFixAllIssues} disabled={unfixedIssues.length === 0}>
-                  <Zap className="h-4 w-4 mr-2" />
-                  Fix All Issues
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Issues List */}
-          <div className="space-y-3">
-            {unfixedIssues.map(issue => (
-              <Card key={issue.id} className={issue.fixed ? 'opacity-60' : ''}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0">
-                      {getIssueIcon(issue.type)}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-medium">{issue.title}</h3>
-                        <StatusBadge status={issue.severity} />
-                        <Badge variant="outline">
-                          {issue.category}
-                        </Badge>
-                        {issue.automated && (
-                          <Badge variant="outline" className="text-primary">
-                            Automated
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {issue.description}
-                      </p>
-                      {issue.element && (
-                        <p className="text-xs text-muted-foreground mb-2">
-                          Element: <code className="bg-muted px-1 rounded">{issue.element}</code>
-                        </p>
-                      )}
-                      <div className="bg-primary/10 border border-primary/30 rounded p-3 mb-3">
-                        <div className="text-sm font-medium text-primary mb-1">Suggestion:</div>
-                        <div className="text-sm text-primary/80">{issue.suggestion}</div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => onFixIssue(issue.id)}
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Fix Issue
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedIssue(issue)}
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+        <AccessibilityIssuesTab
+          issues={unfixedIssues}
+          onFixIssue={onFixIssue}
+          onFixAllIssues={onFixAllIssues}
+          onSelectIssue={setSelectedIssue}
+          getIssueIcon={getIssueIcon}
+        />
       )}
 
       {/* Settings Tab */}
       {activeTab === 'settings' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Accessibility Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {/* Visual Settings */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Visual Settings</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">High Contrast Mode</div>
-                      <div className="text-sm text-muted-foreground">Increase contrast for better visibility</div>
-                    </div>
-                    <Switch
-                      checked={settings.highContrast}
-                      onCheckedChange={(checked) => onUpdateSettings({ highContrast: checked })}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Large Text</div>
-                      <div className="text-sm text-muted-foreground">Increase text size for better readability</div>
-                    </div>
-                    <Switch
-                      checked={settings.largeText}
-                      onCheckedChange={(checked) => onUpdateSettings({ largeText: checked })}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Reduced Motion</div>
-                      <div className="text-sm text-muted-foreground">Reduce animations and transitions</div>
-                    </div>
-                    <Switch
-                      checked={settings.reducedMotion}
-                      onCheckedChange={(checked) => onUpdateSettings({ reducedMotion: checked })}
-                    />
-                  </div>
-                  <div>
-                    <div className="font-medium mb-2">Font Size: {settings.fontSize}px</div>
-                    <Slider
-                      value={[settings.fontSize]}
-                      onValueChange={(value) => onUpdateSettings({ fontSize: value[0] })}
-                      min={12}
-                      max={24}
-                      step={1}
-                    />
-                  </div>
-                  <div>
-                    <div className="font-medium mb-2">Contrast Ratio: {settings.contrastRatio}:1</div>
-                    <Slider
-                      value={[settings.contrastRatio]}
-                      onValueChange={(value) => onUpdateSettings({ contrastRatio: value[0] })}
-                      min={3}
-                      max={21}
-                      step={1}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Navigation Settings */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Navigation Settings</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Keyboard Navigation</div>
-                      <div className="text-sm text-muted-foreground">Enable keyboard-only navigation</div>
-                    </div>
-                    <Switch
-                      checked={settings.keyboardNavigation}
-                      onCheckedChange={(checked) => onUpdateSettings({ keyboardNavigation: checked })}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Focus Indicators</div>
-                      <div className="text-sm text-muted-foreground">Show visible focus indicators</div>
-                    </div>
-                    <Switch
-                      checked={settings.focusIndicators}
-                      onCheckedChange={(checked) => onUpdateSettings({ focusIndicators: checked })}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Auto Focus</div>
-                      <div className="text-sm text-muted-foreground">Automatically focus on important elements</div>
-                    </div>
-                    <Switch
-                      checked={settings.autoFocus}
-                      onCheckedChange={(checked) => onUpdateSettings({ autoFocus: checked })}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Skip Links</div>
-                      <div className="text-sm text-muted-foreground">Provide skip links for main content</div>
-                    </div>
-                    <Switch
-                      checked={settings.skipLinks}
-                      onCheckedChange={(checked) => onUpdateSettings({ skipLinks: checked })}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Screen Reader Settings */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Screen Reader Settings</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Screen Reader Support</div>
-                      <div className="text-sm text-muted-foreground">Optimize for screen readers</div>
-                    </div>
-                    <Switch
-                      checked={settings.screenReader}
-                      onCheckedChange={(checked) => onUpdateSettings({ screenReader: checked })}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">ARIA Labels</div>
-                      <div className="text-sm text-muted-foreground">Add ARIA labels to interactive elements</div>
-                    </div>
-                    <Switch
-                      checked={settings.ariaLabels}
-                      onCheckedChange={(checked) => onUpdateSettings({ ariaLabels: checked })}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Semantic HTML</div>
-                      <div className="text-sm text-muted-foreground">Use semantic HTML elements</div>
-                    </div>
-                    <Switch
-                      checked={settings.semanticHTML}
-                      onCheckedChange={(checked) => onUpdateSettings({ semanticHTML: checked })}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Audio Settings */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Audio Settings</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Sound Effects</div>
-                      <div className="text-sm text-muted-foreground">Play sound effects for interactions</div>
-                    </div>
-                    <Switch
-                      checked={settings.soundEffects}
-                      onCheckedChange={(checked) => onUpdateSettings({ soundEffects: checked })}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Voice Navigation</div>
-                      <div className="text-sm text-muted-foreground">Enable voice commands</div>
-                    </div>
-                    <Switch
-                      checked={settings.voiceNavigation}
-                      onCheckedChange={(checked) => onUpdateSettings({ voiceNavigation: checked })}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <AccessibilitySettingsTab settings={settings} onUpdateSettings={onUpdateSettings} />
       )}
 
       {/* Testing Tab */}

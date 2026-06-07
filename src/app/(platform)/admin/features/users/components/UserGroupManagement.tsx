@@ -4,29 +4,15 @@ import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Textarea } from '@/components/ui/textarea'
-import { CrudDialog } from '@/components/ui/crud-dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import {
   Users,
   Plus,
   Search,
   Edit,
   Trash2,
-  MoreHorizontal,
-  ChevronRight,
-  ChevronDown,
   FolderTree,
   UserPlus,
   X,
@@ -34,128 +20,9 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { UserGroup, UserGroupMember, UserGroupFormData, User } from '../types'
-import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
-
-interface GroupTreeNodeProps {
-  group: UserGroup
-  level: number
-  selectedGroupId: string | null
-  expandedGroups: Set<string>
-  onSelect: (group: UserGroup) => void
-  onToggleExpand: (groupId: string) => void
-  onEdit: (group: UserGroup) => void
-  onDelete: (group: UserGroup) => void
-  onAddChild: (parentGroup: UserGroup) => void
-}
-
-function GroupTreeNode({
-  group,
-  level,
-  selectedGroupId,
-  expandedGroups,
-  onSelect,
-  onToggleExpand,
-  onEdit,
-  onDelete,
-  onAddChild
-}: GroupTreeNodeProps) {
-  const hasChildren = group.children && group.children.length > 0
-  const isExpanded = expandedGroups.has(group.id)
-  const isSelected = selectedGroupId === group.id
-
-  return (
-    <div>
-      <div
-        className={cn(
-          "flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-all duration-300 group/node",
-          isSelected 
-            ? "bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-zinc-900 shadow-lg" 
-            : "hover:bg-zinc-100/80 dark:hover:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400"
-        )}
-        style={{ paddingLeft: `${12 + level * 16}px` }}
-        onClick={() => onSelect(group)}
-      >
-        <button
-          className="p-0.5 hover:bg-muted rounded"
-          onClick={(e) => {
-            e.stopPropagation()
-            if (hasChildren) onToggleExpand(group.id)
-          }}
-        >
-          {hasChildren ? (
-            isExpanded ? (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            )
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </button>
-        <FolderTree className="h-4 w-4 text-muted-foreground" />
-        <span className={cn(
-          "flex-1 text-sm font-semibold truncate",
-          isSelected ? "text-white dark:text-zinc-950" : "text-zinc-700 dark:text-zinc-300"
-        )}>
-          {group.name}
-        </span>
-        <Badge 
-          variant={isSelected ? "outline" : "secondary"} 
-          className={cn(
-            "text-[10px] font-black h-5",
-            isSelected ? "border-white/20 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"
-          )}
-        >
-          {group.memberCount || 0}
-        </Badge>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(group) }}>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Group
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onAddChild(group) }}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Child Group
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={(e) => { e.stopPropagation(); onDelete(group) }}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete Group
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      {hasChildren && isExpanded && (
-        <div>
-          {group.children!.map((child) => (
-            <GroupTreeNode
-              key={child.id}
-              group={child}
-              level={level + 1}
-              selectedGroupId={selectedGroupId}
-              expandedGroups={expandedGroups}
-              onSelect={onSelect}
-              onToggleExpand={onToggleExpand}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onAddChild={onAddChild}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
+import { UserGroupDialogs } from './UserGroupDialogs'
+import { GroupTreeNode } from './UserGroupTreeNode'
 
 export function UserGroupManagement() {
   const [groups, setGroups] = useState<UserGroup[]>([])
@@ -164,23 +31,19 @@ export function UserGroupManagement() {
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   
-  // Selection and expansion
   const [selectedGroup, setSelectedGroup] = useState<UserGroup | null>(null)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   
-  // Group details and members
   const [groupDetails, setGroupDetails] = useState<UserGroup | null>(null)
   const [groupMembers, setGroupMembers] = useState<UserGroupMember[]>([])
   const [loadingMembers, setLoadingMembers] = useState(false)
   
-  // Dialogs
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showAddMemberDialog, setShowAddMemberDialog] = useState(false)
   const [editingGroup, setEditingGroup] = useState<UserGroup | null>(null)
   const [parentGroupId, setParentGroupId] = useState<string | null>(null)
   
-  // Form state
   const [formData, setFormData] = useState<UserGroupFormData>({
     name: '',
     description: '',
@@ -188,13 +51,11 @@ export function UserGroupManagement() {
     sortOrder: 0
   })
   
-  // Add member
   const [availableUsers, setAvailableUsers] = useState<User[]>([])
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([])
   const [userSearch, setUserSearch] = useState('')
   const [loadingUsers, setLoadingUsers] = useState(false)
 
-  // Load groups
   const loadGroups = useCallback(async () => {
     setLoading(true)
     try {
@@ -222,7 +83,6 @@ export function UserGroupManagement() {
     }
   }, [])
 
-  // Load group details
   const loadGroupDetails = useCallback(async (groupId: string) => {
     setLoadingMembers(true)
     try {
@@ -526,7 +386,7 @@ export function UserGroupManagement() {
                     onToggleExpand={handleToggleExpand}
                     onEdit={openEditDialog}
                     onDelete={handleDeleteGroup}
-                    onAddChild={(parent) => openCreateDialog(parent.id)}
+                    onAddChild={(parent: UserGroup) => openCreateDialog(parent.id)}
                   />
                 ))}
               </div>
@@ -641,199 +501,28 @@ export function UserGroupManagement() {
         )}
       </Card>
 
-      {/* Create Group Dialog */}
-      <CrudDialog
-        open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
-        title="Create User Group"
-        description={
-          parentGroupId
-            ? 'Create a new child group under the selected parent'
-            : 'Create a new root-level user group'
-        }
-        bodyClassName="space-y-4"
-        footer={(
-          <>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
-            <Button onClick={handleCreateGroup}>Create Group</Button>
-          </>
-        )}
-      >
-            <div className="space-y-2">
-              <Label>Group Name *</Label>
-              <Input
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., Engineering Team"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Description</Label>
-              <Textarea
-                value={formData.description || ''}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Optional description..."
-                rows={3}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Parent Group</Label>
-              <Select
-                value={formData.parentId || 'none'}
-                onValueChange={(value) => setFormData({ ...formData, parentId: value === 'none' ? null : value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="No parent (root level)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No parent (root level)</SelectItem>
-                  {flatGroups.map((g) => (
-                    <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-      </CrudDialog>
-
-      {/* Edit Group Dialog */}
-      <CrudDialog
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-        title="Edit Group"
-        description="Update the group details"
-        bodyClassName="space-y-4"
-        footer={(
-          <>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>Cancel</Button>
-            <Button onClick={handleUpdateGroup}>Save Changes</Button>
-          </>
-        )}
-      >
-            <div className="space-y-2">
-              <Label>Group Name *</Label>
-              <Input
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., Engineering Team"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Description</Label>
-              <Textarea
-                value={formData.description || ''}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Optional description..."
-                rows={3}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Parent Group</Label>
-              <Select
-                value={formData.parentId || 'none'}
-                onValueChange={(value) => setFormData({ ...formData, parentId: value === 'none' ? null : value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="No parent (root level)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No parent (root level)</SelectItem>
-                  {flatGroups
-                    .filter(g => g.id !== editingGroup?.id)
-                    .map((g) => (
-                      <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
-      </CrudDialog>
-
-      {/* Add Members Dialog */}
-      <CrudDialog
-        open={showAddMemberDialog}
-        onOpenChange={setShowAddMemberDialog}
-        title={`Add Members to ${selectedGroup?.name}`}
-        description="Select users to add to this group"
-        contentClassName="max-w-lg"
-        bodyClassName="space-y-4"
-        footer={(
-          <>
-            <Button variant="outline" onClick={() => setShowAddMemberDialog(false)}>Cancel</Button>
-            <Button onClick={handleAddMembers} disabled={selectedUserIds.length === 0}>
-              Add {selectedUserIds.length || ''} Member{selectedUserIds.length !== 1 ? 's' : ''}
-            </Button>
-          </>
-        )}
-      >
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                value={userSearch}
-                onChange={(e) => setUserSearch(e.target.value)}
-                placeholder="Search users..."
-                className="pl-9 h-10 rounded-xl"
-              />
-            </div>
-            <ScrollArea className="h-[300px] border rounded-xl p-2">
-              {loadingUsers ? (
-                <div className="w-full space-y-3 p-4">
-                  <Skeleton className="h-10 w-full rounded-xl" />
-                  <Skeleton className="h-12 w-full rounded-xl" />
-                  <Skeleton className="h-12 w-full rounded-xl" />
-                  <Skeleton className="h-12 w-full rounded-xl" />
-                </div>
-              ) : filteredUsers.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p className="text-sm font-medium">No users available to add</p>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {filteredUsers.map((user) => (
-                    <div
-                      key={user.id}
-                      className={cn(
-                        "flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-colors",
-                        selectedUserIds.includes(user.id)
-                          ? "bg-zinc-900/5 dark:bg-zinc-100/5 border border-zinc-900/10 dark:border-zinc-100/10"
-                          : "hover:bg-muted/50"
-                      )}
-                      onClick={() => {
-                        setSelectedUserIds(prev =>
-                          prev.includes(user.id)
-                            ? prev.filter(id => id !== user.id)
-                            : [...prev, user.id]
-                        )
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedUserIds.includes(user.id)}
-                        onChange={() => {}}
-                        className="rounded cursor-pointer"
-                      />
-                      <Avatar className="h-8 w-8 border border-zinc-100 dark:border-zinc-800">
-                        <AvatarImage src={user.avatar} />
-                        <AvatarFallback className="text-[10px] font-black">
-                          {(user.name || '').split(' ').map((n: string) => n[0]).join('').toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold truncate tracking-tight text-zinc-900 dark:text-zinc-100">{user.name}</p>
-                        <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 truncate tracking-tight">{user.email}</p>
-                      </div>
-                      <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest text-zinc-500 h-5">
-                        {user.role}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
-            {selectedUserIds.length > 0 && (
-              <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                {selectedUserIds.length} user{selectedUserIds.length !== 1 ? 's' : ''} selected
-              </p>
-            )}
-      </CrudDialog>
-    </div>
+      <UserGroupDialogs
+        editingGroup={editingGroup}
+        filteredUsers={filteredUsers}
+        flatGroups={flatGroups}
+        formData={formData}
+        handleAddMembers={handleAddMembers}
+        handleCreateGroup={handleCreateGroup}
+        handleUpdateGroup={handleUpdateGroup}
+        loadingUsers={loadingUsers}
+        parentGroupId={parentGroupId}
+        selectedGroup={selectedGroup}
+        selectedUserIds={selectedUserIds}
+        setFormData={setFormData}
+        setSelectedUserIds={setSelectedUserIds}
+        setShowAddMemberDialog={setShowAddMemberDialog}
+        setShowCreateDialog={setShowCreateDialog}
+        setShowEditDialog={setShowEditDialog}
+        setUserSearch={setUserSearch}
+        showAddMemberDialog={showAddMemberDialog}
+        showCreateDialog={showCreateDialog}
+        showEditDialog={showEditDialog}
+        userSearch={userSearch}
+      />    </div>
   )
 }

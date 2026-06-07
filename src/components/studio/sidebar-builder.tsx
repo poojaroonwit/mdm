@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { SidebarPreview } from './SidebarPreview'
 import { ColorInput } from './layout-config/ColorInput'
 import { IconPicker } from '@/components/ui/icon-picker'
 import { 
@@ -16,10 +17,6 @@ import {
   GripVertical, 
   Settings, 
   Palette, 
-  Type, 
-  Minus,
-  ChevronDown,
-  ChevronRight,
   Eye,
   EyeOff
 } from 'lucide-react'
@@ -41,7 +38,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
-interface SidebarItem {
+export interface SidebarItem {
   id: string
   type: 'page' | 'divider' | 'group' | 'text'
   label: string
@@ -52,7 +49,7 @@ interface SidebarItem {
   isVisible?: boolean
 }
 
-interface SidebarConfig {
+export interface SidebarConfig {
   backgroundColor: string
   textColor: string
   iconSize: 'small' | 'medium' | 'large'
@@ -103,7 +100,7 @@ function SortableSidebarItem({
         <div {...listeners}>
           <GripVertical className="h-4 w-4 text-muted-foreground" />
         </div>
-        
+
         <div className="flex-1 flex items-center gap-2">
           {item.icon && (
             <div 
@@ -126,8 +123,8 @@ function SortableSidebarItem({
             ) : (
               <EyeOff className="h-3 w-3" />
             )}
-          </Button>
-          
+        </Button>
+
           <Button
             size="sm"
             variant="ghost"
@@ -170,10 +167,8 @@ export function SidebarBuilder({ items, config, onUpdate, onConfigUpdate }: Side
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
-
     const oldIndex = items.findIndex((item) => item.id === active.id)
     const newIndex = items.findIndex((item) => item.id === over.id)
-
     if (oldIndex === -1 || newIndex === -1) return
 
     const newItems = arrayMove(items, oldIndex, newIndex)
@@ -223,35 +218,6 @@ export function SidebarBuilder({ items, config, onUpdate, onConfigUpdate }: Side
     onUpdate(updatedItems)
   }
 
-  const renderSidebarPreview = () => {
-    return (
-      <div 
-        className="w-full h-64 bg-background border rounded-lg p-4 space-y-2 overflow-auto"
-        style={{ backgroundColor: config.backgroundColor, color: config.textColor }}
-      >
-        {items.filter(item => item.isVisible !== false).map(item => (
-          <div key={item.id} className="flex items-center gap-2 p-2 rounded hover:bg-black/5">
-            {config.showIcons && item.icon && (
-              <div 
-                className="flex-shrink-0"
-                style={{ 
-                  width: config.iconSize === 'small' ? '16px' : config.iconSize === 'medium' ? '20px' : '24px',
-                  height: config.iconSize === 'small' ? '16px' : config.iconSize === 'medium' ? '20px' : '24px'
-                }}
-              >
-                <div 
-                  className="w-full h-full rounded"
-                  style={{ backgroundColor: item.color }}
-                />
-              </div>
-            )}
-            <span className="text-sm font-medium truncate">{item.label}</span>
-          </div>
-        ))}
-      </div>
-    )
-  }
-
   return (
     <div className="p-4 space-y-4">
       <div className="w-full">
@@ -262,7 +228,6 @@ export function SidebarBuilder({ items, config, onUpdate, onConfigUpdate }: Side
         </TabsList>
 
         <TabsContent value="items" className="space-y-4">
-          {/* Add New Item */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
@@ -360,8 +325,6 @@ export function SidebarBuilder({ items, config, onUpdate, onConfigUpdate }: Side
               )}
             </CardContent>
           </Card>
-
-          {/* Items List */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm">Sidebar Items</CardTitle>
@@ -392,9 +355,7 @@ export function SidebarBuilder({ items, config, onUpdate, onConfigUpdate }: Side
             </CardContent>
           </Card>
         </TabsContent>
-
         <TabsContent value="style" className="space-y-4">
-          {/* Sidebar Style Configuration */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
@@ -463,21 +424,18 @@ export function SidebarBuilder({ items, config, onUpdate, onConfigUpdate }: Side
               </div>
             </CardContent>
           </Card>
-
-          {/* Preview */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm">Preview</CardTitle>
             </CardHeader>
             <CardContent>
-              {renderSidebarPreview()}
+              <SidebarPreview items={items} config={config} />
             </CardContent>
           </Card>
         </TabsContent>
         </Tabs>
       </div>
 
-      {/* Edit Item Dialog */}
       {editingItem && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <Card className="w-96 max-h-[80vh] overflow-auto">

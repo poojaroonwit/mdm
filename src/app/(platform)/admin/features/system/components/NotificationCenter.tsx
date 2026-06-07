@@ -29,10 +29,6 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Users,
-  Database,
-  FileText,
-  Zap
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { NotificationTemplate, NotificationSettings } from '../types'
@@ -54,8 +50,6 @@ export function NotificationCenter() {
   const [history, setHistory] = useState<NotificationHistory[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [showCreateTemplate, setShowCreateTemplate] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
-  const [selectedTemplate, setSelectedTemplate] = useState<NotificationTemplate | null>(null)
 
   const [newTemplate, setNewTemplate] = useState({
     name: '',
@@ -143,27 +137,6 @@ export function NotificationCenter() {
     } catch (error) {
       console.error('Error creating template:', error)
       toast.error('Failed to create template')
-    }
-  }
-
-  const updateTemplate = async (templateId: string, updates: Partial<NotificationTemplate>) => {
-    try {
-      const response = await fetch(`/api/admin/notification-templates/${templateId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
-      })
-
-      if (response.ok) {
-        toast.success('Template updated successfully')
-        loadTemplates()
-      } else {
-        const error = await response.json()
-        toast.error(error.error || 'Failed to update template')
-      }
-    } catch (error) {
-      console.error('Error updating template:', error)
-      toast.error('Failed to update template')
     }
   }
 
@@ -391,7 +364,7 @@ export function NotificationCenter() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => setSelectedTemplate(template)}
+                      disabled
                     >
                       <Edit className="h-3 w-3 mr-1" />
                       Edit

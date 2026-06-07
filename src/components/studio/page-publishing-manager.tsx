@@ -22,15 +22,12 @@ import {
   AlertCircle,
   Play,
   Pause,
-  Archive,
-  Edit,
   Trash2,
   Plus,
   Copy,
   Download,
   Upload,
   BarChart3,
-  TrendingUp,
   Activity,
   Zap,
   Shield,
@@ -38,39 +35,9 @@ import {
   Unlock
 } from 'lucide-react'
 import { format } from 'date-fns'
-
-interface PagePublication {
-  id: string
-  pageId: string
-  pageName: string
-  status: 'draft' | 'scheduled' | 'published' | 'archived' | 'error'
-  version: string
-  publishedAt?: string
-  scheduledAt?: string
-  publishedBy: string
-  publishedTo: string[]
-  visibility: 'public' | 'private' | 'restricted'
-  seoTitle?: string
-  seoDescription?: string
-  seoKeywords?: string[]
-  analytics: {
-    views: number
-    uniqueViews: number
-    bounceRate: number
-    avgTimeOnPage: number
-    lastViewed?: string
-  }
-  performance: {
-    loadTime: number
-    score: number
-    issues: string[]
-  }
-  permissions: {
-    canView: string[]
-    canEdit: string[]
-    canPublish: string[]
-  }
-}
+import { PagePublishingSummaryTabs } from './PagePublishingSummaryTabs'
+import type { PagePublication, PublishingTab } from './pagePublishingModel'
+import { getPublishingStatusColor, getPublishingStatusIcon } from './pagePublishingStatus'
 
 interface PagePublishingManagerProps {
   publications: PagePublication[]
@@ -101,8 +68,7 @@ export function PagePublishingManager({
   onExport,
   onImport
 }: PagePublishingManagerProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'schedule' | 'analytics' | 'settings'>('overview')
-  const [selectedPublication, setSelectedPublication] = useState<PagePublication | null>(null)
+  const [activeTab, setActiveTab] = useState<PublishingTab>('overview')
   const [isCreatingPublication, setIsCreatingPublication] = useState(false)
   const [newPublication, setNewPublication] = useState({
     pageName: '',
@@ -113,28 +79,6 @@ export function PagePublishingManager({
     seoKeywords: [''],
     scheduledAt: undefined as Date | undefined
   })
-
-  const getStatusColor = useCallback((status: PagePublication['status']) => {
-    switch (status) {
-      case 'draft': return 'bg-muted text-muted-foreground'
-      case 'scheduled': return 'bg-primary/10 text-primary'
-      case 'published': return 'bg-primary/10 text-primary'
-      case 'archived': return 'bg-warning/20 text-warning'
-      case 'error': return 'bg-destructive/10 text-destructive'
-      default: return 'bg-muted text-muted-foreground'
-    }
-  }, [])
-
-  const getStatusIcon = useCallback((status: PagePublication['status']) => {
-    switch (status) {
-      case 'draft': return <Edit className="h-4 w-4" />
-      case 'scheduled': return <Clock className="h-4 w-4" />
-      case 'published': return <Globe className="h-4 w-4" />
-      case 'archived': return <Archive className="h-4 w-4" />
-      case 'error': return <AlertCircle className="h-4 w-4" />
-      default: return <Edit className="h-4 w-4" />
-    }
-  }, [])
 
   const handleCreatePublication = useCallback(() => {
     if (!newPublication.pageName) return
@@ -223,97 +167,7 @@ export function PagePublishingManager({
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Globe className="h-5 w-5 text-primary" />
-              <div>
-                <div className="text-2xl font-bold">
-                  {publications.filter(p => p.status === 'published').length}
-                </div>
-                <div className="text-sm text-muted-foreground">Published</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
-              <div>
-                <div className="text-2xl font-bold">
-                  {publications.filter(p => p.status === 'scheduled').length}
-                </div>
-                <div className="text-sm text-muted-foreground">Scheduled</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Edit className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <div className="text-2xl font-bold">
-                  {publications.filter(p => p.status === 'draft').length}
-                </div>
-                <div className="text-sm text-muted-foreground">Drafts</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              <div>
-                <div className="text-2xl font-bold">
-                  {publications.reduce((sum, p) => sum + p.analytics.views, 0)}
-                </div>
-                <div className="text-sm text-muted-foreground">Total Views</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex space-x-1 bg-muted rounded-lg p-1">
-        <Button
-          variant={activeTab === 'overview' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('overview')}
-        >
-          <Eye className="h-4 w-4 mr-2" />
-          Overview
-        </Button>
-        <Button
-          variant={activeTab === 'schedule' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('schedule')}
-        >
-          <CalendarIcon className="h-4 w-4 mr-2" />
-          Schedule
-        </Button>
-        <Button
-          variant={activeTab === 'analytics' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('analytics')}
-        >
-          <BarChart3 className="h-4 w-4 mr-2" />
-          Analytics
-        </Button>
-        <Button
-          variant={activeTab === 'settings' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('settings')}
-        >
-          <Settings className="h-4 w-4 mr-2" />
-          Settings
-        </Button>
-      </div>
+      <PagePublishingSummaryTabs activeTab={activeTab} publications={publications} setActiveTab={setActiveTab} />
 
       {/* Create Publication Dialog */}
       {isCreatingPublication && (
@@ -417,8 +271,8 @@ export function PagePublishingManager({
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${getStatusColor(publication.status)}`}>
-                      {getStatusIcon(publication.status)}
+                    <div className={`p-2 rounded-lg ${getPublishingStatusColor(publication.status)}`}>
+                      {getPublishingStatusIcon(publication.status)}
                     </div>
                     <div>
                       <CardTitle className="flex items-center gap-2">

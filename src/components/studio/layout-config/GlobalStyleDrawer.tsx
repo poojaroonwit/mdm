@@ -11,6 +11,7 @@ import { Upload, X, Search, LogIn, Save } from 'lucide-react'
 import { GlobalStyleConfig } from './types'
 import { GlobalComponentStyles } from './GlobalComponentStyles'
 import { ColorInput } from './ColorInput'
+import { GlobalLoginPageSection } from './GlobalLoginPageSection'
 import toast from 'react-hot-toast'
 import { Z_INDEX } from '@/lib/z-index'
 import { SpacesEditorManager, LoginPageConfig, SpacesEditorPage } from '@/lib/space-studio-manager'
@@ -24,6 +25,28 @@ interface GlobalStyleDrawerProps {
   componentConfigs: Record<string, any>
   handleComponentConfigUpdate: (type: string, updates: Partial<any>) => void
   pages?: SpacesEditorPage[]
+}
+
+const DEFAULT_LOGIN_PAGE_CONFIG: LoginPageConfig = {
+  backgroundType: 'gradient',
+  backgroundColor: '#1e40af',
+  gradient: {
+    from: '#1e40af',
+    to: '#1e40af',
+    angle: 135
+  },
+  leftPanelWidth: '70%',
+  rightPanelWidth: '30%',
+  cardStyle: {
+    backgroundColor: '#ffffff',
+    textColor: '#1f2937',
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    shadow: true
+  },
+  title: 'Sign in',
+  description: 'Access this workspace',
+  showLogo: false
 }
 
 export function GlobalStyleDrawer({
@@ -46,74 +69,14 @@ export function GlobalStyleDrawer({
       try {
         const config = await SpacesEditorManager.getSpacesEditorConfig(spaceId)
         if (config) {
-          setLoginPageConfig(config.loginPageConfig || {
-            backgroundType: 'gradient',
-            backgroundColor: '#1e40af',
-            gradient: {
-              from: '#1e40af',
-              to: '#1e40af',
-              angle: 135
-            },
-            leftPanelWidth: '70%',
-            rightPanelWidth: '30%',
-            cardStyle: {
-              backgroundColor: '#ffffff',
-              textColor: '#1f2937',
-              borderColor: '#e5e7eb',
-              borderRadius: 8,
-              shadow: true
-            },
-            title: 'Sign in',
-            description: 'Access this workspace',
-            showLogo: false
-          })
+          setLoginPageConfig(config.loginPageConfig || DEFAULT_LOGIN_PAGE_CONFIG)
           setPostAuthRedirectPageId(config.postAuthRedirectPageId || '')
         } else {
-          setLoginPageConfig({
-            backgroundType: 'gradient',
-            backgroundColor: '#1e40af',
-            gradient: {
-              from: '#1e40af',
-              to: '#1e40af',
-              angle: 135
-            },
-            leftPanelWidth: '70%',
-            rightPanelWidth: '30%',
-            cardStyle: {
-              backgroundColor: '#ffffff',
-              textColor: '#1f2937',
-              borderColor: '#e5e7eb',
-              borderRadius: 8,
-              shadow: true
-            },
-            title: 'Sign in',
-            description: 'Access this workspace',
-            showLogo: false
-          })
+          setLoginPageConfig(DEFAULT_LOGIN_PAGE_CONFIG)
         }
       } catch (error) {
         console.error('Error loading login config:', error)
-        setLoginPageConfig({
-          backgroundType: 'gradient',
-          backgroundColor: '#1e40af',
-          gradient: {
-            from: '#1e40af',
-            to: '#1e40af',
-            angle: 135
-          },
-          leftPanelWidth: '70%',
-          rightPanelWidth: '30%',
-          cardStyle: {
-            backgroundColor: '#ffffff',
-            textColor: '#1f2937',
-            borderColor: '#e5e7eb',
-            borderRadius: 8,
-            shadow: true
-          },
-          title: 'Sign in',
-          description: 'Access this workspace',
-          showLogo: false
-        })
+        setLoginPageConfig(DEFAULT_LOGIN_PAGE_CONFIG)
       }
     }
     if (open) {
@@ -126,27 +89,7 @@ export function GlobalStyleDrawer({
     try {
       const config = await SpacesEditorManager.getSpacesEditorConfig(spaceId) || await SpacesEditorManager.createDefaultConfig(spaceId)
 
-      const finalLoginConfig = loginPageConfig || {
-        backgroundType: 'gradient' as const,
-        backgroundColor: '#1e40af',
-        gradient: {
-          from: '#1e40af',
-          to: '#1e40af',
-          angle: 135
-        },
-        leftPanelWidth: '70%',
-        rightPanelWidth: '30%',
-        cardStyle: {
-          backgroundColor: '#ffffff',
-          textColor: '#1f2937',
-          borderColor: '#e5e7eb',
-          borderRadius: 8,
-          shadow: true
-        },
-        title: 'Sign in',
-        description: 'Access this workspace',
-        showLogo: false
-      }
+      const finalLoginConfig = loginPageConfig || DEFAULT_LOGIN_PAGE_CONFIG
 
       const updatedConfig = {
         ...config,
@@ -167,27 +110,7 @@ export function GlobalStyleDrawer({
 
   const availablePages = (pages || []).filter(p => p.isActive && !p.hidden)
 
-  const currentLoginConfig = loginPageConfig || {
-    backgroundType: 'gradient' as const,
-    backgroundColor: '#1e40af',
-    gradient: {
-      from: '#1e40af',
-      to: '#1e40af',
-      angle: 135
-    },
-    leftPanelWidth: '70%',
-    rightPanelWidth: '30%',
-    cardStyle: {
-      backgroundColor: '#ffffff',
-      textColor: '#1f2937',
-      borderColor: '#e5e7eb',
-      borderRadius: 8,
-      shadow: true
-    },
-    title: 'Sign in',
-    description: 'Access this workspace',
-    showLogo: false
-  }
+  const currentLoginConfig = loginPageConfig || DEFAULT_LOGIN_PAGE_CONFIG
 
   const handleGlobalStyleUpdate = (updates: Partial<GlobalStyleConfig>) => {
     handleComponentConfigUpdate('global' as any, updates as any)
@@ -528,262 +451,16 @@ export function GlobalStyleDrawer({
 
           {/* Login Page Configuration */}
           {showLoginPage && (
-            <>
-              <SeparatorComponent className="my-4" />
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <LogIn className="h-4 w-4" />
-                  <h3 className={`${isMobileViewport ? 'text-base' : 'text-sm'} font-semibold`}>Login Page Configuration</h3>
-                </div>
-
-                {/* Title */}
-                <div className="flex items-center justify-between">
-                  <Label className={isMobileViewport ? "text-sm" : "text-xs"}>Login Title</Label>
-                  <Input
-                    type="text"
-                    className={`${isMobileViewport ? "h-10" : "h-8"} text-xs w-32`}
-                    value={currentLoginConfig.title || 'Sign in'}
-                    onChange={(e) => setLoginPageConfig({ ...currentLoginConfig, title: e.target.value } as LoginPageConfig)}
-                    placeholder="Sign in"
-                  />
-                </div>
-
-                {/* Description */}
-                <div className="flex items-center justify-between">
-                  <Label className={isMobileViewport ? "text-sm" : "text-xs"}>Description</Label>
-                  <Input
-                    type="text"
-                    className={`${isMobileViewport ? "h-10" : "h-8"} text-xs w-32`}
-                    value={currentLoginConfig.description || 'Access this workspace'}
-                    onChange={(e) => setLoginPageConfig({ ...currentLoginConfig, description: e.target.value } as LoginPageConfig)}
-                    placeholder="Access this workspace"
-                  />
-                </div>
-
-                {/* Background Type */}
-                <div className="flex items-center justify-between">
-                  <Label className={isMobileViewport ? "text-sm" : "text-xs"}>Background Type</Label>
-                  <Select
-                    value={currentLoginConfig.backgroundType || 'gradient'}
-                    onValueChange={(value: string) => {
-                      setLoginPageConfig({ ...currentLoginConfig, backgroundType: value as 'color' | 'image' | 'gradient' } as LoginPageConfig)
-                    }}
-                  >
-                    <SelectTrigger className={`${isMobileViewport ? "h-10" : "h-8"} w-32`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="color">Solid Color</SelectItem>
-                      <SelectItem value="gradient">Gradient</SelectItem>
-                      <SelectItem value="image">Image</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Background Color */}
-                {currentLoginConfig.backgroundType === 'color' && (
-                  <div className="flex items-center justify-between">
-                    <Label className={isMobileViewport ? "text-sm" : "text-xs"}>Background Color</Label>
-                    <ColorInput
-                      value={currentLoginConfig.backgroundColor || '#1e40af'}
-                      onChange={(color) => setLoginPageConfig({ ...currentLoginConfig, backgroundColor: color } as LoginPageConfig)}
-                      allowImageVideo={false}
-                      className="relative w-32"
-                      placeholder="#1e40af"
-                      inputClassName={isMobileViewport ? "h-10 pl-7" : "h-8 text-xs pl-7"}
-                    />
-                  </div>
-                )}
-
-                {/* Gradient */}
-                {currentLoginConfig.backgroundType === 'gradient' && (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <Label className={isMobileViewport ? "text-sm" : "text-xs"}>Gradient From</Label>
-                      <ColorInput
-                        value={currentLoginConfig.gradient?.from || '#1e40af'}
-                        onChange={(color) => setLoginPageConfig({
-                          ...currentLoginConfig,
-                          gradient: { ...currentLoginConfig.gradient, from: color, to: currentLoginConfig.gradient?.to || '#1e40af', angle: currentLoginConfig.gradient?.angle || 135 }
-                        } as LoginPageConfig)}
-                        allowImageVideo={false}
-                        className="relative w-32"
-                        placeholder="#1e40af"
-                        inputClassName={isMobileViewport ? "h-10 pl-7" : "h-8 text-xs pl-7"}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label className={isMobileViewport ? "text-sm" : "text-xs"}>Gradient To</Label>
-                      <ColorInput
-                        value={currentLoginConfig.gradient?.to || '#1e40af'}
-                        onChange={(color) => setLoginPageConfig({
-                          ...currentLoginConfig,
-                          gradient: { ...currentLoginConfig.gradient, from: currentLoginConfig.gradient?.from || '#1e40af', to: color, angle: currentLoginConfig.gradient?.angle || 135 }
-                        } as LoginPageConfig)}
-                        allowImageVideo={false}
-                        className="relative w-32"
-                        placeholder="#1e40af"
-                        inputClassName={isMobileViewport ? "h-10 pl-7" : "h-8 text-xs pl-7"}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label className={isMobileViewport ? "text-sm" : "text-xs"}>Gradient Angle</Label>
-                      <Input
-                        type="number"
-                        className={`${isMobileViewport ? "h-10" : "h-8"} text-xs w-32`}
-                        value={currentLoginConfig.gradient?.angle || 135}
-                        onChange={(e) => setLoginPageConfig({
-                          ...currentLoginConfig,
-                          gradient: { ...currentLoginConfig.gradient, from: currentLoginConfig.gradient?.from || '#1e40af', to: currentLoginConfig.gradient?.to || '#1e40af', angle: parseInt(e.target.value) || 135 }
-                        } as LoginPageConfig)}
-                        placeholder="135"
-                        min="0"
-                        max="360"
-                      />
-                    </div>
-                  </>
-                )}
-
-                {/* Background Image */}
-                {currentLoginConfig.backgroundType === 'image' && (
-                  <div className="flex items-center justify-between">
-                    <Label className={isMobileViewport ? "text-sm" : "text-xs"}>Background Image URL</Label>
-                    <Input
-                      type="text"
-                      className={`${isMobileViewport ? "h-10" : "h-8"} text-xs w-32`}
-                      value={currentLoginConfig.backgroundImage || ''}
-                      onChange={(e) => setLoginPageConfig({ ...currentLoginConfig, backgroundImage: e.target.value } as LoginPageConfig)}
-                      placeholder="https://example.com/image.jpg"
-                    />
-                  </div>
-                )}
-
-                {/* Panel Widths */}
-                <div className="flex items-center justify-between">
-                  <Label className={isMobileViewport ? "text-sm" : "text-xs"}>Left Panel Width</Label>
-                  <Input
-                    type="text"
-                    className={`${isMobileViewport ? "h-10" : "h-8"} text-xs w-32`}
-                    value={currentLoginConfig.leftPanelWidth || '70%'}
-                    onChange={(e) => setLoginPageConfig({ ...currentLoginConfig, leftPanelWidth: e.target.value } as LoginPageConfig)}
-                    placeholder="70%"
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label className={isMobileViewport ? "text-sm" : "text-xs"}>Right Panel Width</Label>
-                  <Input
-                    type="text"
-                    className={`${isMobileViewport ? "h-10" : "h-8"} text-xs w-32`}
-                    value={currentLoginConfig.rightPanelWidth || '30%'}
-                    onChange={(e) => setLoginPageConfig({ ...currentLoginConfig, rightPanelWidth: e.target.value } as LoginPageConfig)}
-                    placeholder="30%"
-                  />
-                </div>
-
-                {/* Card Style */}
-                <div className="space-y-2 pt-2 border-t">
-                  <Label className={isMobileViewport ? "text-sm" : "text-xs"}>Card Style</Label>
-                  <div className="flex items-center justify-between">
-                    <Label className={isMobileViewport ? "text-xs" : "text-[10px]"}>Card Background</Label>
-                    <ColorInput
-                      value={currentLoginConfig.cardStyle?.backgroundColor || '#ffffff'}
-                      onChange={(color) => setLoginPageConfig({
-                        ...currentLoginConfig,
-                        cardStyle: { ...currentLoginConfig.cardStyle, backgroundColor: color }
-                      } as LoginPageConfig)}
-                      allowImageVideo={false}
-                      className="relative w-32"
-                      placeholder="#ffffff"
-                      inputClassName={isMobileViewport ? "h-10 text-xs pl-7" : "h-8 text-xs pl-7"}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label className={isMobileViewport ? "text-xs" : "text-[10px]"}>Card Text</Label>
-                    <ColorInput
-                      value={currentLoginConfig.cardStyle?.textColor || '#1f2937'}
-                      onChange={(color) => setLoginPageConfig({
-                        ...currentLoginConfig,
-                        cardStyle: { ...currentLoginConfig.cardStyle, textColor: color }
-                      } as LoginPageConfig)}
-                      allowImageVideo={false}
-                      className="relative w-32"
-                      placeholder="#1f2937"
-                      inputClassName={isMobileViewport ? "h-10 text-xs pl-7" : "h-8 text-xs pl-7"}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label className={isMobileViewport ? "text-xs" : "text-[10px]"}>Border Radius</Label>
-                    <Input
-                      type="number"
-                      className={`${isMobileViewport ? "h-10" : "h-8"} text-xs w-32`}
-                      value={currentLoginConfig.cardStyle?.borderRadius || 8}
-                      onChange={(e) => setLoginPageConfig({
-                        ...currentLoginConfig,
-                        cardStyle: { ...currentLoginConfig.cardStyle, borderRadius: parseInt(e.target.value) || 8 }
-                      } as LoginPageConfig)}
-                      placeholder="8"
-                      min="0"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="card-shadow" className={isMobileViewport ? "text-xs" : "text-[10px]"}>Enable Shadow</Label>
-                    <Switch
-                      id="card-shadow"
-                      checked={currentLoginConfig.cardStyle?.shadow !== false}
-                      onCheckedChange={(checked) => setLoginPageConfig({
-                        ...currentLoginConfig,
-                        cardStyle: { ...currentLoginConfig.cardStyle, shadow: checked }
-                      } as LoginPageConfig)}
-                    />
-                  </div>
-                </div>
-
-                {/* Post-Auth Redirect Page */}
-                <div className="pt-2 border-t">
-                  <div className="flex items-center justify-between">
-                    <Label className={isMobileViewport ? "text-sm" : "text-xs"}>Post-Authentication Redirect Page</Label>
-                    <Select
-                      value={postAuthRedirectPageId || ''}
-                      onValueChange={setPostAuthRedirectPageId}
-                    >
-                      <SelectTrigger className={`${isMobileViewport ? "h-10" : "h-8"} w-32`}>
-                        <SelectValue placeholder="Select page (default: first page)" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">Use First Page (Default)</SelectItem>
-                        {availablePages.map(page => (
-                          <SelectItem key={page.id} value={page.id}>
-                            {page.displayName || page.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <p className={`${isMobileViewport ? 'text-xs' : 'text-[10px]'} text-muted-foreground mt-1`}>
-                    Select which page users should be redirected to after successful login
-                  </p>
-                </div>
-
-                {/* Save Button */}
-                <Button
-                  onClick={handleSaveLoginConfig}
-                  disabled={isSavingLoginConfig}
-                  className={`w-full ${isMobileViewport ? 'h-10' : 'h-8'}`}
-                >
-                  {isSavingLoginConfig ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Login Page Config
-                    </>
-                  )}
-                </Button>
-              </div>
-            </>
+            <GlobalLoginPageSection
+              currentLoginConfig={currentLoginConfig}
+              postAuthRedirectPageId={postAuthRedirectPageId}
+              availablePages={availablePages}
+              isMobileViewport={isMobileViewport}
+              isSavingLoginConfig={isSavingLoginConfig}
+              setLoginPageConfig={setLoginPageConfig}
+              setPostAuthRedirectPageId={setPostAuthRedirectPageId}
+              onSaveLoginConfig={handleSaveLoginConfig}
+            />
           )}
         </div>
       </div>

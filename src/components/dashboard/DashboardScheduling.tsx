@@ -11,6 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { formatDateTime } from '@/lib/date-formatters'
+import {
+  calculateNextRun,
+  getFormatLabel,
+  getFrequencyLabel,
+  mockSchedules,
+  type Schedule
+} from './dashboardSchedulingModel'
 import { 
   Clock, 
   Calendar, 
@@ -28,23 +35,6 @@ import {
   X
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-
-interface Schedule {
-  id: string
-  name: string
-  description: string
-  frequency: 'daily' | 'weekly' | 'monthly' | 'custom'
-  time: string
-  dayOfWeek?: number
-  dayOfMonth?: number
-  recipients: string[]
-  format: 'pdf' | 'excel' | 'csv' | 'image'
-  enabled: boolean
-  lastRun?: string
-  nextRun: string
-  created_at: string
-  created_by: string
-}
 
 interface DashboardSchedulingProps {
   dashboardId: string
@@ -77,53 +67,6 @@ export function DashboardScheduling({
     format: 'pdf' as const,
     enabled: true
   })
-
-  // Mock schedules data
-  const mockSchedules: Schedule[] = [
-    {
-      id: '1',
-      name: 'Daily Sales Report',
-      description: 'Daily sales performance report',
-      frequency: 'daily',
-      time: '08:00',
-      recipients: ['sales@company.com', 'manager@company.com'],
-      format: 'pdf',
-      enabled: true,
-      lastRun: '2024-01-17T08:00:00Z',
-      nextRun: '2024-01-18T08:00:00Z',
-      created_at: '2024-01-15T10:00:00Z',
-      created_by: 'John Doe'
-    },
-    {
-      id: '2',
-      name: 'Weekly Marketing Summary',
-      description: 'Weekly marketing metrics and insights',
-      frequency: 'weekly',
-      time: '09:00',
-      dayOfWeek: 1, // Monday
-      recipients: ['marketing@company.com'],
-      format: 'excel',
-      enabled: true,
-      lastRun: '2024-01-15T09:00:00Z',
-      nextRun: '2024-01-22T09:00:00Z',
-      created_at: '2024-01-10T14:30:00Z',
-      created_by: 'Jane Smith'
-    },
-    {
-      id: '3',
-      name: 'Monthly Financial Report',
-      description: 'Monthly financial dashboard export',
-      frequency: 'monthly',
-      time: '10:00',
-      dayOfMonth: 1,
-      recipients: ['finance@company.com', 'ceo@company.com'],
-      format: 'pdf',
-      enabled: false,
-      nextRun: '2024-02-01T10:00:00Z',
-      created_at: '2024-01-01T12:00:00Z',
-      created_by: 'Bob Johnson'
-    }
-  ]
 
   useEffect(() => {
     loadSchedules()
@@ -207,58 +150,6 @@ export function DashboardScheduling({
   const handleRunSchedule = (scheduleId: string) => {
     onScheduleRun(scheduleId)
     toast.success('Schedule executed successfully')
-  }
-
-  const calculateNextRun = (frequency: string, time: string, dayOfWeek?: number, dayOfMonth?: number): string => {
-    const now = new Date()
-    const [hours, minutes] = time.split(':').map(Number)
-    
-    let nextRun = new Date()
-    nextRun.setHours(hours, minutes, 0, 0)
-
-    switch (frequency) {
-      case 'daily':
-        if (nextRun <= now) {
-          nextRun.setDate(nextRun.getDate() + 1)
-        }
-        break
-      case 'weekly':
-        const targetDay = dayOfWeek || 1
-        const currentDay = now.getDay()
-        const daysUntilTarget = (targetDay - currentDay + 7) % 7
-        nextRun.setDate(now.getDate() + (daysUntilTarget === 0 ? 7 : daysUntilTarget))
-        break
-      case 'monthly':
-        const targetDate = dayOfMonth || 1
-        nextRun.setDate(targetDate)
-        if (nextRun <= now) {
-          nextRun.setMonth(nextRun.getMonth() + 1)
-        }
-        break
-    }
-
-    return nextRun.toISOString()
-  }
-
-
-  const getFrequencyLabel = (frequency: string) => {
-    switch (frequency) {
-      case 'daily': return 'Daily'
-      case 'weekly': return 'Weekly'
-      case 'monthly': return 'Monthly'
-      case 'custom': return 'Custom'
-      default: return frequency
-    }
-  }
-
-  const getFormatLabel = (format: string) => {
-    switch (format) {
-      case 'pdf': return 'PDF'
-      case 'excel': return 'Excel'
-      case 'csv': return 'CSV'
-      case 'image': return 'Image'
-      default: return format
-    }
   }
 
   const getStatusIcon = (enabled: boolean) => {
@@ -610,3 +501,4 @@ export function DashboardScheduling({
     </div>
   )
 }
+

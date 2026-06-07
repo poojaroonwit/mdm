@@ -7,25 +7,6 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogBody,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -46,10 +27,11 @@ import {
   PlayCircle
 } from 'lucide-react'
 import { ModuleDetail } from './ModuleDetail'
+import { ModuleFormDialog } from './ModuleFormDialog'
 import { showError, showSuccess } from '@/lib/toast-utils'
 import { format } from 'date-fns'
 
-interface Module {
+export interface Module {
   id: string
   name: string
   description?: string | null
@@ -83,6 +65,15 @@ interface ModuleListProps {
   projectId: string
   spaceId: string
   onModuleClick?: (module: Module) => void
+}
+
+export interface ModuleFormData {
+  name: string
+  description: string
+  status: 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  startDate: string
+  targetDate: string
+  leadId: string
 }
 
 const statusConfig = {
@@ -124,14 +115,7 @@ export function ModuleList({ projectId, spaceId, onModuleClick }: ModuleListProp
   const [selectedModule, setSelectedModule] = useState<Module | null>(null)
   const [users, setUsers] = useState<Array<{ id: string; name: string | null; email: string; avatar?: string | null }>>([])
 
-  const [formData, setFormData] = useState<{
-    name: string
-    description: string
-    status: 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
-    startDate: string
-    targetDate: string
-    leadId: string
-  }>({
+  const [formData, setFormData] = useState<ModuleFormData>({
     name: '',
     description: '',
     status: 'PLANNED',
@@ -440,123 +424,18 @@ export function ModuleList({ projectId, spaceId, onModuleClick }: ModuleListProp
         </div>
       )}
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={isCreateDialogOpen || editingModule !== null} onOpenChange={(open) => {
-        if (!open) {
-          setIsCreateDialogOpen(false)
-          setEditingModule(null)
-          resetForm()
-        }
-      }}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {editingModule ? 'Edit Module' : 'Create New Module'}
-            </DialogTitle>
-            <DialogDescription>
-              {editingModule
-                ? 'Update module details and settings'
-                : 'Create a new module to organize your project work'}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Module name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Module description"
-                  rows={3}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value: any) => setFormData({ ...formData, status: value })}
-                  >
-                    <SelectTrigger id="status">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PLANNED">Planned</SelectItem>
-                      <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                      <SelectItem value="COMPLETED">Completed</SelectItem>
-                      <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="leadId">Module Lead</Label>
-                  <Select
-                    value={formData.leadId}
-                    onValueChange={(value) => setFormData({ ...formData, leadId: value })}
-                  >
-                    <SelectTrigger id="leadId">
-                      <SelectValue placeholder="Select lead" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">None</SelectItem>
-                      {users.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.name || user.email}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="startDate">Start Date</Label>
-                  <Input
-                    id="startDate"
-                    type="datetime-local"
-                    value={formData.startDate}
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="targetDate">Target Date</Label>
-                  <Input
-                    id="targetDate"
-                    type="datetime-local"
-                    value={formData.targetDate}
-                    onChange={(e) => setFormData({ ...formData, targetDate: e.target.value })}
-                  />
-                </div>
-              </div>
-            </div>
-          </DialogBody>
-          <DialogFooter className="justify-end">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsCreateDialogOpen(false)
-                setEditingModule(null)
-                resetForm()
-              }}
-            >
-              Cancel
-            </Button>
-            <Button onClick={editingModule ? handleUpdate : handleCreate}>
-              {editingModule ? 'Update' : 'Create'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ModuleFormDialog
+        open={isCreateDialogOpen || editingModule !== null}
+        editingModule={editingModule}
+        formData={formData}
+        users={users}
+        onOpenChange={setIsCreateDialogOpen}
+        onFormDataChange={setFormData}
+        onReset={resetForm}
+        onCreate={handleCreate}
+        onUpdate={handleUpdate}
+        onClearEditingModule={() => setEditingModule(null)}
+      />
     </div>
   )
 }

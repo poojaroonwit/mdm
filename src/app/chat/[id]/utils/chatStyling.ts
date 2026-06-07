@@ -1,6 +1,16 @@
 import { ChatbotConfig } from '../types'
 import React from 'react'
 import { Z_INDEX } from '@/lib/z-index'
+import {
+  BUTTON_SHADOW_BUFFER,
+  SHADOW_BUFFER,
+  ensureUnits,
+  extractNumericValue,
+  hexToRgb
+} from './chatStyleUtils'
+
+export { BUTTON_SHADOW_BUFFER, SHADOW_BUFFER, ensureUnits } from './chatStyleUtils'
+export { getWidgetButtonStyle } from './widgetButtonStyle'
 
 interface EmulatorConfig {
   backgroundColor?: string
@@ -10,26 +20,8 @@ interface EmulatorConfig {
 }
 
 // Helper function to convert hex color to RGB
-function hexToRgb(hex: string): string {
-  // Remove # if present
-  hex = hex.replace('#', '')
-
-  // Handle 3-digit hex
-  if (hex.length === 3) {
-    hex = hex.split('').map(char => char + char).join('')
-  }
-
-  const r = parseInt(hex.substring(0, 2), 16)
-  const g = parseInt(hex.substring(2, 4), 16)
-  const b = parseInt(hex.substring(4, 6), 16)
-
-  return `${r}, ${g}, ${b}`
-}
-
 // Buffer to prevent shadow clipping in iframes
-export const SHADOW_BUFFER = 40
 // Smaller buffer used for the button-only (closed) state — reduces the transparent iframe area
-export const BUTTON_SHADOW_BUFFER = 12
 
 export function getChatStyle(chatbot: ChatbotConfig, chatkitOptions?: any): React.CSSProperties {
   const options = chatkitOptions || (chatbot as any).chatkitOptions
@@ -45,12 +37,6 @@ export function getChatStyle(chatbot: ChatbotConfig, chatkitOptions?: any): Reac
 }
 
 // Helper to ensure units
-export const ensureUnits = (val: string | number | undefined, defaultVal: string) => {
-  if (!val) return defaultVal
-  const strVal = String(val)
-  return /^\d+$/.test(strVal) ? `${strVal}px` : strVal
-}
-
 export function getPopoverPositionStyle(chatbot: ChatbotConfig, isEmbed: boolean = false, isOpen: boolean = true): React.CSSProperties {
   if (!chatbot) return { position: 'fixed' }
   const x = chatbot as any
@@ -79,12 +65,6 @@ export function getPopoverPositionStyle(chatbot: ChatbotConfig, isEmbed: boolean
 
 
 // Helper to determine if ChatKit styles should be applied (border removal)
-const isChatKit = (chatbot: ChatbotConfig) => {
-  return chatbot.engineType === 'chatkit' || 
-         chatbot.engineType === 'openai-agent-sdk' || 
-         (chatbot as any).useChatKitInRegularStyle === true
-}
-
 export function getContainerStyle(
   chatbot: ChatbotConfig,
   previewDeploymentType: 'popover' | 'fullpage' | 'popup-center',
@@ -94,9 +74,6 @@ export function getContainerStyle(
   isPreview: boolean = false,
   chatkitOptions?: any
 ): React.CSSProperties {
-  const options = (chatbot as any).chatkitOptions || {}
-  const theme = options.theme || {}
-
   const shadowX = extractNumericValue((chatbot as any).chatWindowShadowX || chatbot.shadowX || '0px')
   const shadowY = extractNumericValue((chatbot as any).chatWindowShadowY || chatbot.shadowY || '0px')
   const shadowBlur = extractNumericValue((chatbot as any).chatWindowShadowBlur || chatbot.shadowBlur || '4px')
@@ -106,21 +83,6 @@ export function getContainerStyle(
   const fullBoxShadow = (shadowBlur !== '0' || shadowX !== '0' || shadowY !== '0' || shadowSpread !== '0')
     ? `${shadowX}px ${shadowY}px ${shadowBlur}px ${shadowSpread}px ${shadowColor}`
     : `0px 4px 12px 0px ${shadowColor}`
-
-  // Base background style from emulator config
-  const backgroundStyle: React.CSSProperties = {}
-  if (emulatorConfig.backgroundColor) {
-    backgroundStyle.backgroundColor = emulatorConfig.backgroundColor
-  }
-  if (emulatorConfig.backgroundImage) {
-    backgroundStyle.backgroundImage = `url(${emulatorConfig.backgroundImage})`
-    backgroundStyle.backgroundSize = 'cover'
-    backgroundStyle.backgroundPosition = 'center'
-    backgroundStyle.backgroundRepeat = 'no-repeat'
-  }
-
-
-
 
     // Common background logic helper
     const getBackgroundStyle = () => {
@@ -480,138 +442,5 @@ export function getOverlayStyle(
   }
 
   return undefined
-}
-
-// Helper to extract numeric value from string like "8px" -> "8"
-function extractNumericValue(value: string | undefined): string {
-  if (!value) return '0'
-  const match = value.toString().match(/(\d+(?:\.\d+)?)/)
-  return match ? match[1] : '0'
-}
-
-export function getWidgetButtonStyle(chatbot: ChatbotConfig, chatkitOptions?: any): React.CSSProperties {
-  if (!chatbot) return {}
-  const options = chatkitOptions || (chatbot as any).chatkitOptions || {}
-  const theme = options.theme || {}
-
-  // Get widget background color with proper fallback
-  // Fallback order: widget background > theme background > theme accent > theme primary > default blue
-  let widgetBgValue = (chatbot as any).widgetBackgroundColor || 
-                     (chatbot as any).widgetBackground ||
-                     theme.color?.background || 
-                     theme.backgroundColor || 
-                     theme.color?.accent?.primary || 
-                     theme.primaryColor || 
-                     chatbot.primaryColor || 
-                     '#1e40af'
-                     
-  // Ensure we have a valid color value (not empty string)
-  if (!widgetBgValue || (typeof widgetBgValue === 'string' && widgetBgValue.trim() === '')) {
-    widgetBgValue = '#1e40af'
-  }
-  
-  const blurAmount = (chatbot as any).widgetBackgroundBlur || 0
-  const opacity = (chatbot as any).widgetBackgroundOpacity !== undefined ? (chatbot as any).widgetBackgroundOpacity : 100
-
-  // Build box-shadow with all properties (offsetX offsetY blur spread color)
-  const shadowX = extractNumericValue((chatbot as any).widgetShadowX || '0px')
-  const shadowY = extractNumericValue((chatbot as any).widgetShadowY || '0px')
-  const shadowBlur = extractNumericValue((chatbot as any).widgetShadowBlur || '0px')
-  const shadowSpread = extractNumericValue((chatbot as any).widgetShadowSpread || '0px')
-  const shadowColor = (chatbot as any).widgetShadowColor || 'rgba(0,0,0,0.2)'
-
-  const boxShadow = (shadowBlur !== '0' || shadowX !== '0' || shadowY !== '0' || shadowSpread !== '0')
-    ? `${shadowX}px ${shadowY}px ${shadowBlur}px ${shadowSpread}px ${shadowColor}`
-    : undefined
-
-  // Determine border radius based on avatar style - CRITICAL: must respect widgetAvatarStyle
-  const widgetAvatarStyle = (chatbot as any).widgetAvatarStyle || 'circle'
-  let borderRadius: string
-  
-  if (widgetAvatarStyle === 'circle') {
-    borderRadius = '50%' // Always circular for circle style, ignore widgetBorderRadius and corners
-  } else if (widgetAvatarStyle === 'rounded-diagonal') {
-    borderRadius = '30px 0px 30px 0px' // top-left and bottom-right rounded
-  } else {
-    // Check for individual corner properties which are saved by the admin UI
-    const tl = (chatbot as any).widgetBorderRadiusTopLeft
-    const tr = (chatbot as any).widgetBorderRadiusTopRight
-    const br = (chatbot as any).widgetBorderRadiusBottomRight
-    const bl = (chatbot as any).widgetBorderRadiusBottomLeft
-
-    if (tl || tr || br || bl) {
-      borderRadius = `${tl || '0px'} ${tr || '0px'} ${br || '0px'} ${bl || '0px'}`
-    } else {
-      borderRadius = (chatbot as any).widgetBorderRadius || (widgetAvatarStyle === 'square' ? '8px' : '50%')
-    }
-  }
-
-  const baseStyle: React.CSSProperties = {
-    width: (chatbot as any).widgetSize || '60px',
-    height: (chatbot as any).widgetSize || '60px',
-    borderRadius: borderRadius,
-    border: widgetAvatarStyle === 'custom' ? 'none' : `${(chatbot as any).widgetBorderWidth || '0px'} solid ${(chatbot as any).widgetBorderColor || 'transparent'}`,
-    boxShadow: widgetAvatarStyle === 'custom' ? 'none' : boxShadow,
-    zIndex: ((chatbot as any).widgetZIndex || Z_INDEX.chatWidget) >= Z_INDEX.chatWidget
-      ? ((chatbot as any).widgetZIndex || Z_INDEX.chatWidget) + 1
-      : Z_INDEX.chatWidgetWindow, // Higher than popover to stay on top
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    overflow: 'hidden',
-  }
-
-  // Apply glassmorphism effect - hide for custom
-  if (blurAmount > 0 && widgetAvatarStyle !== 'custom') {
-    baseStyle.backdropFilter = `blur(${blurAmount}px)`
-    baseStyle.WebkitBackdropFilter = `blur(${blurAmount}px)`
-  }
-
-  // Skip background for custom style
-  if (widgetAvatarStyle === 'custom') {
-    baseStyle.backgroundColor = 'transparent'
-    baseStyle.backgroundImage = 'none'
-    return baseStyle
-  }
-
-  // Check if it's an image URL (starts with url(, http://, https://, or /)
-  if (widgetBgValue && (widgetBgValue.startsWith('url(') || widgetBgValue.startsWith('http://') || widgetBgValue.startsWith('https://') || widgetBgValue.startsWith('/'))) {
-    const imageUrl = widgetBgValue.startsWith('url(') ? widgetBgValue : `url(${widgetBgValue})`
-    baseStyle.backgroundImage = imageUrl
-    baseStyle.backgroundSize = 'cover'
-    baseStyle.backgroundPosition = 'center'
-    baseStyle.backgroundRepeat = 'no-repeat'
-    // Apply opacity to background image
-    if (opacity < 100) {
-      baseStyle.backgroundColor = `rgba(255, 255, 255, ${opacity / 100})` // Fallback color with opacity
-    }
-  } else if (widgetBgValue && widgetBgValue.toLowerCase().includes('gradient')) {
-    // Apply gradient to backgroundImage property to ensure it's picked up by ChatWidgetButton as a graphic
-    baseStyle.backgroundImage = widgetBgValue
-    baseStyle.backgroundSize = 'cover'
-    baseStyle.backgroundPosition = 'center'
-    baseStyle.backgroundRepeat = 'no-repeat'
-    // Gradients don't support simple opacity modifiers easily without parsing
-  } else {
-    // It's a color value - ensure we always set a background color
-    if (opacity < 100) {
-      if (widgetBgValue && (widgetBgValue.startsWith('rgba') || widgetBgValue.startsWith('rgb'))) {
-        const rgbMatch = widgetBgValue.match(/(\d+),\s*(\d+),\s*(\d+)/)
-        if (rgbMatch) {
-          baseStyle.backgroundColor = `rgba(${rgbMatch[1]}, ${rgbMatch[2]}, ${rgbMatch[3]}, ${opacity / 100})`
-        } else {
-          baseStyle.backgroundColor = widgetBgValue || '#1e40af'
-        }
-      } else {
-        baseStyle.backgroundColor = widgetBgValue ? `rgba(${hexToRgb(widgetBgValue)}, ${opacity / 100})` : '#1e40af'
-      }
-    } else {
-      // Always set background color, even if opacity is 100%
-      baseStyle.backgroundColor = widgetBgValue || '#1e40af'
-    }
-  }
-
-  return baseStyle
 }
 

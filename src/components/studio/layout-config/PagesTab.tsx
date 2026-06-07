@@ -9,22 +9,10 @@ import { SpacesEditorManager, SpacesEditorPage } from '@/lib/space-studio-manage
 import { UnifiedPage } from './types'
 import { ComponentSettingsDialog } from './ComponentSettingsDialog'
 import { ComponentConfig } from './types'
-import { SeparatorItem } from './SeparatorItem'
-import { LabelItem } from './LabelItem'
-import { TextItem } from './TextItem'
-import { HeaderItem } from './HeaderItem'
-import { ImageItem } from './ImageItem'
-import { BadgeItem } from './BadgeItem'
-import { PageListItem } from './PageListItem'
-import { SortablePageItem } from './SortablePageItem'
-import { GroupItem } from './GroupItem'
 import { LoginPageItem } from './LoginPageItem'
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, useDroppable } from '@dnd-kit/core'
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
+import { PageAlignmentSection } from './PageAlignmentSection'
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 
 interface PagesTabProps {
   spaceId: string
@@ -83,10 +71,6 @@ export function PagesTab({
       throw err // Let IconPicker handle the error toast
     }
   }, [spaceId, setPages])
-
-  // Droppable zones for top/bottom alignment switching
-  const { setNodeRef: setTopZoneRef, isOver: isOverTop } = useDroppable({ id: 'zone-top' })
-  const { setNodeRef: setBottomZoneRef, isOver: isOverBottom } = useDroppable({ id: 'zone-bottom' })
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -268,401 +252,77 @@ export function PagesTab({
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          {/* Split into two alignment zones */}
           {(() => {
-            const topItems = allPages.filter(p => (p as any).sidebarPosition !== 'bottom' && p.type !== 'login')
-            const bottomItems = allPages.filter(p => (p as any).sidebarPosition === 'bottom' && p.type !== 'login')
+            const topItems = allPages.filter((page) => (page as any).sidebarPosition !== 'bottom' && page.type !== 'login')
+            const bottomItems = allPages.filter((page) => (page as any).sidebarPosition === 'bottom' && page.type !== 'login')
+
             return (
               <div className="space-y-4">
-                {/* Top alignment */}
-                <div>
-                  {/* Drop here to move to Top alignment */}
-                  <div
-                    ref={setTopZoneRef}
-                    className={`min-h-[48px] mb-2 rounded-md flex items-center justify-center transition-colors ${isOverTop ? 'bg-primary/20 border-2 border-primary' : 'border-2 border-dashed border-transparent hover:border-muted-foreground/50 bg-muted/30'}`}
-                    title="Drop here to move to Top alignment"
-                  >
-                    <span className={`text-xs text-muted-foreground ${isOverTop ? 'text-primary font-medium' : ''}`}>
-                      {isOverTop ? 'Drop to move to top' : 'Drop here for top alignment'}
-                    </span>
-                  </div>
-                  <div className={`${isMobileViewport ? 'text-xs' : 'text-[11px]'} font-semibold text-muted-foreground mb-1`}>Top alignment</div>
-                  <SortableContext items={topItems.map(p => p.id)} strategy={verticalListSortingStrategy}>
-                    <div className={`${isMobileViewport ? 'space-y-2' : 'space-y-1'}`}>
-                      {topItems.map((page) => {
-                        const idx = allPages.findIndex(ap => ap.id === page.id)
-                const isSeparator = page.type === 'separator'
-                const isLabel = page.type === 'label'
-                const isText = page.type === 'text'
-                const isHeader = page.type === 'header'
-                const isImage = page.type === 'image'
-                const isBadge = page.type === 'badge'
-                const isGroup = (page as any).type === 'group'
-                if (isGroup) {
-                  return (
-                    <GroupItem
-                      key={page.id}
-                      page={page as UnifiedPage & { type: 'group'; children?: UnifiedPage[] }}
-                      index={idx}
-                      isMobileViewport={isMobileViewport}
-                      allPages={allPages}
-                      pages={pages}
-                      setAllPages={setAllPages}
-                      setPages={setPages}
-                      spaceId={spaceId}
-                      selectedPageId={selectedPageId}
-                      allIcons={allIcons}
-                      reactIcons={reactIcons}
-                      iconPickerOpen={iconPickerOpen}
-                      colorPickerOpen={colorPickerOpen}
-                      sidebarPositionOpen={sidebarPositionOpen}
-                      handlePageReorder={handlePageReorder}
-                      handleIconUpdate={handleIconUpdate}
-                      // Sidebar visibility props removed - pages now use secondary platform sidebar
-                      setSelectedPageId={setSelectedPageId}
-                      setSelectedComponent={setSelectedComponent}
-                      setSelectedPageForPermissions={setSelectedPageForPermissions}
-                      setPermissionsRoles={setPermissionsRoles}
-                      setPermissionsUserIds={setPermissionsUserIds}
-                      setPermissionsGroupIds={setPermissionsGroupIds}
-                      setPermissionsDialogOpen={setPermissionsDialogOpen}
-                      setComponentSettingsOpen={setComponentSettingsOpen}
-                      setIconPickerOpen={setIconPickerOpen}
-                      setColorPickerOpen={setColorPickerOpen}
-                      setSidebarPositionOpen={setSidebarPositionOpen}
-                    />
-                  )
-                }
-                
-                // Render separator
-                if (isSeparator) {
-                  return (
-                    <SortablePageItem key={page.id} page={page} index={idx}>
-                      <SeparatorItem
-                        page={page}
-                        index={idx}
-                        isMobileViewport={isMobileViewport}
-                        allPages={allPages}
-                        pages={pages}
-                        handlePageReorder={handlePageReorder}
-                        setAllPages={setAllPages}
-                      />
-                    </SortablePageItem>
-                  )
-                }
-                
-                // Render label
-                if (isLabel) {
-                  return (
-                    <SortablePageItem key={page.id} page={page} index={idx}>
-                      <LabelItem
-                        page={page}
-                        index={idx}
-                        isMobileViewport={isMobileViewport}
-                        allPages={allPages}
-                        pages={pages}
-                        handlePageReorder={handlePageReorder}
-                        setAllPages={setAllPages}
-                      />
-                    </SortablePageItem>
-                  )
-                }
-                
-                // Render text
-                if (isText) {
-                  return (
-                    <SortablePageItem key={page.id} page={page} index={idx}>
-                      <TextItem
-                        page={page}
-                        index={idx}
-                        isMobileViewport={isMobileViewport}
-                        allPages={allPages}
-                        pages={pages}
-                        handlePageReorder={handlePageReorder}
-                        setAllPages={setAllPages}
-                      />
-                    </SortablePageItem>
-                  )
-                }
-                
-                // Render header
-                if (isHeader) {
-                  return (
-                    <SortablePageItem key={page.id} page={page} index={idx}>
-                      <HeaderItem
-                        page={page}
-                        index={idx}
-                        isMobileViewport={isMobileViewport}
-                        allPages={allPages}
-                        pages={pages}
-                        handlePageReorder={handlePageReorder}
-                        setAllPages={setAllPages}
-                      />
-                    </SortablePageItem>
-                  )
-                }
-                
-                // Render image
-                if (isImage) {
-                  return (
-                    <SortablePageItem key={page.id} page={page} index={idx}>
-                      <ImageItem
-                        page={page}
-                        index={idx}
-                        isMobileViewport={isMobileViewport}
-                        allPages={allPages}
-                        pages={pages}
-                        handlePageReorder={handlePageReorder}
-                        setAllPages={setAllPages}
-                      />
-                    </SortablePageItem>
-                  )
-                }
-                
-                // Render badge
-                if (isBadge) {
-                  return (
-                    <SortablePageItem key={page.id} page={page} index={idx}>
-                      <BadgeItem
-                        page={page}
-                        index={idx}
-                        isMobileViewport={isMobileViewport}
-                        allPages={allPages}
-                        pages={pages}
-                        handlePageReorder={handlePageReorder}
-                        setAllPages={setAllPages}
-                      />
-                    </SortablePageItem>
-                  )
-                }
-                
-                // Render regular pages (built-in or custom)
-                return (
-                  <SortablePageItem key={page.id} page={page} index={idx}>
-                    <PageListItem
-                      page={page}
-                      index={idx}
-                      isMobileViewport={isMobileViewport}
-                      spaceId={spaceId}
-                      selectedPageId={selectedPageId}
-                      allPages={allPages}
-                      pages={pages}
-                      allIcons={allIcons}
-                      reactIcons={reactIcons}
-                      iconPickerOpen={iconPickerOpen}
-                      colorPickerOpen={colorPickerOpen}
-                      sidebarPositionOpen={sidebarPositionOpen}
-                      handlePageReorder={handlePageReorder}
-                      handleIconUpdate={handleIconUpdate}
-                      // Sidebar visibility props removed - pages now use secondary platform sidebar
-                      setPages={setPages}
-                      setAllPages={setAllPages}
-                      setSelectedPageId={setSelectedPageId}
-                      setSelectedComponent={setSelectedComponent}
-                      setSelectedPageForPermissions={setSelectedPageForPermissions}
-                      setPermissionsRoles={setPermissionsRoles}
-                      setPermissionsUserIds={setPermissionsUserIds}
-                      setPermissionsGroupIds={setPermissionsGroupIds}
-                      setPermissionsDialogOpen={setPermissionsDialogOpen}
-                      setComponentSettingsOpen={setComponentSettingsOpen}
-                      setIconPickerOpen={setIconPickerOpen}
-                      setColorPickerOpen={setColorPickerOpen}
-                      setSidebarPositionOpen={setSidebarPositionOpen}
-                    />
-                  </SortablePageItem>
-                )
-                      })}
-                    </div>
-                  </SortableContext>
-                </div>
+                <PageAlignmentSection
+                  zoneId="zone-top"
+                  title="Top alignment"
+                  activeDropText="Drop to move to top"
+                  idleDropText="Drop here for top alignment"
+                  items={topItems}
+                  allPages={allPages}
+                  pages={pages}
+                  isMobileViewport={isMobileViewport}
+                  spaceId={spaceId}
+                  selectedPageId={selectedPageId}
+                  allIcons={allIcons}
+                  reactIcons={reactIcons}
+                  iconPickerOpen={iconPickerOpen}
+                  colorPickerOpen={colorPickerOpen}
+                  sidebarPositionOpen={sidebarPositionOpen}
+                  handlePageReorder={handlePageReorder}
+                  handleIconUpdate={handleIconUpdate}
+                  setPages={setPages}
+                  setAllPages={setAllPages}
+                  setSelectedPageId={setSelectedPageId}
+                  setSelectedComponent={setSelectedComponent}
+                  setSelectedPageForPermissions={setSelectedPageForPermissions}
+                  setPermissionsRoles={setPermissionsRoles}
+                  setPermissionsUserIds={setPermissionsUserIds}
+                  setPermissionsGroupIds={setPermissionsGroupIds}
+                  setPermissionsDialogOpen={setPermissionsDialogOpen}
+                  setComponentSettingsOpen={setComponentSettingsOpen}
+                  setIconPickerOpen={setIconPickerOpen}
+                  setColorPickerOpen={setColorPickerOpen}
+                  setSidebarPositionOpen={setSidebarPositionOpen}
+                />
 
-                {/* Bottom alignment */}
-                <div>
-                  {/* Drop here to move to Bottom alignment */}
-                  <div
-                    ref={setBottomZoneRef}
-                    className={`min-h-[48px] mb-2 rounded-md flex items-center justify-center transition-colors ${isOverBottom ? 'bg-primary/20 border-2 border-primary' : 'border-2 border-dashed border-transparent hover:border-muted-foreground/50 bg-muted/30'}`}
-                    title="Drop here to move to Bottom alignment"
-                  >
-                    <span className={`text-xs text-muted-foreground ${isOverBottom ? 'text-primary font-medium' : ''}`}>
-                      {isOverBottom ? 'Drop to move to bottom' : 'Drop here for bottom alignment'}
-                    </span>
-                  </div>
-                  <div className={`${isMobileViewport ? 'text-xs' : 'text-[11px]'} font-semibold text-muted-foreground mb-1`}>Bottom alignment</div>
-                  <SortableContext items={bottomItems.map(p => p.id)} strategy={verticalListSortingStrategy}>
-                    <div className={`${isMobileViewport ? 'space-y-2' : 'space-y-1'}`}>
-                      {bottomItems.map((page) => {
-                        const idx = allPages.findIndex(ap => ap.id === page.id)
-                        const isSeparator = page.type === 'separator'
-                        const isLabel = page.type === 'label'
-                        const isText = page.type === 'text'
-                        const isHeader = page.type === 'header'
-                        const isImage = page.type === 'image'
-                        const isBadge = page.type === 'badge'
-                        const isGroup = (page as any).type === 'group'
-                        
-                        if (isGroup) {
-                          return (
-                            <GroupItem
-                              key={page.id}
-                              page={page as UnifiedPage & { type: 'group'; children?: UnifiedPage[] }}
-                              index={idx}
-                              isMobileViewport={isMobileViewport}
-                              allPages={allPages}
-                              pages={pages}
-                              setAllPages={setAllPages}
-                              setPages={setPages}
-                              spaceId={spaceId}
-                              selectedPageId={selectedPageId}
-                              allIcons={allIcons}
-                              reactIcons={reactIcons}
-                              iconPickerOpen={iconPickerOpen}
-                              colorPickerOpen={colorPickerOpen}
-                              sidebarPositionOpen={sidebarPositionOpen}
-                              handlePageReorder={handlePageReorder}
-                              handleIconUpdate={handleIconUpdate}
-                              setSelectedPageId={setSelectedPageId}
-                              setSelectedComponent={setSelectedComponent}
-                              setSelectedPageForPermissions={setSelectedPageForPermissions}
-                              setPermissionsRoles={setPermissionsRoles}
-                              setPermissionsUserIds={setPermissionsUserIds}
-                              setPermissionsGroupIds={setPermissionsGroupIds}
-                              setPermissionsDialogOpen={setPermissionsDialogOpen}
-                              setComponentSettingsOpen={setComponentSettingsOpen}
-                              setIconPickerOpen={setIconPickerOpen}
-                              setColorPickerOpen={setColorPickerOpen}
-                              setSidebarPositionOpen={setSidebarPositionOpen}
-                            />
-                          )
-                        }
-                        
-                        if (isSeparator) {
-                          return (
-                            <SortablePageItem key={page.id} page={page} index={idx}>
-                              <SeparatorItem
-                                page={page}
-                                index={idx}
-                                isMobileViewport={isMobileViewport}
-                                allPages={allPages}
-                                pages={pages}
-                                handlePageReorder={handlePageReorder}
-                                setAllPages={setAllPages}
-                              />
-                            </SortablePageItem>
-                          )
-                        }
-                        if (isLabel) {
-                          return (
-                            <SortablePageItem key={page.id} page={page} index={idx}>
-                              <LabelItem
-                                page={page}
-                                index={idx}
-                                isMobileViewport={isMobileViewport}
-                                allPages={allPages}
-                                pages={pages}
-                                handlePageReorder={handlePageReorder}
-                                setAllPages={setAllPages}
-                              />
-                            </SortablePageItem>
-                          )
-                        }
-                        if (isText) {
-                          return (
-                            <SortablePageItem key={page.id} page={page} index={idx}>
-                              <TextItem
-                                page={page}
-                                index={idx}
-                                isMobileViewport={isMobileViewport}
-                                allPages={allPages}
-                                pages={pages}
-                                handlePageReorder={handlePageReorder}
-                                setAllPages={setAllPages}
-                              />
-                            </SortablePageItem>
-                          )
-                        }
-                        if (isHeader) {
-                          return (
-                            <SortablePageItem key={page.id} page={page} index={idx}>
-                              <HeaderItem
-                                page={page}
-                                index={idx}
-                                isMobileViewport={isMobileViewport}
-                                allPages={allPages}
-                                pages={pages}
-                                handlePageReorder={handlePageReorder}
-                                setAllPages={setAllPages}
-                              />
-                            </SortablePageItem>
-                          )
-                        }
-                        if (isImage) {
-                          return (
-                            <SortablePageItem key={page.id} page={page} index={idx}>
-                              <ImageItem
-                                page={page}
-                                index={idx}
-                                isMobileViewport={isMobileViewport}
-                                allPages={allPages}
-                                pages={pages}
-                                handlePageReorder={handlePageReorder}
-                                setAllPages={setAllPages}
-                              />
-                            </SortablePageItem>
-                          )
-                        }
-                        if (isBadge) {
-                          return (
-                            <SortablePageItem key={page.id} page={page} index={idx}>
-                              <BadgeItem
-                                page={page}
-                                index={idx}
-                                isMobileViewport={isMobileViewport}
-                                allPages={allPages}
-                                pages={pages}
-                                handlePageReorder={handlePageReorder}
-                                setAllPages={setAllPages}
-                              />
-                            </SortablePageItem>
-                          )
-                        }
-                        return (
-                          <SortablePageItem key={page.id} page={page} index={idx}>
-                            <PageListItem
-                              page={page}
-                              index={idx}
-                              isMobileViewport={isMobileViewport}
-                              spaceId={spaceId}
-                              selectedPageId={selectedPageId}
-                              allPages={allPages}
-                              pages={pages}
-                              allIcons={allIcons}
-                              reactIcons={reactIcons}
-                              iconPickerOpen={iconPickerOpen}
-                              colorPickerOpen={colorPickerOpen}
-                              sidebarPositionOpen={sidebarPositionOpen}
-                              handlePageReorder={handlePageReorder}
-                              handleIconUpdate={handleIconUpdate}
-                              setPages={setPages}
-                              setAllPages={setAllPages}
-                              setSelectedPageId={setSelectedPageId}
-                              setSelectedComponent={setSelectedComponent}
-                              setSelectedPageForPermissions={setSelectedPageForPermissions}
-                              setPermissionsRoles={setPermissionsRoles}
-                              setPermissionsUserIds={setPermissionsUserIds}
-                              setPermissionsGroupIds={setPermissionsGroupIds}
-                              setPermissionsDialogOpen={setPermissionsDialogOpen}
-                              setComponentSettingsOpen={setComponentSettingsOpen}
-                              setIconPickerOpen={setIconPickerOpen}
-                              setColorPickerOpen={setColorPickerOpen}
-                              setSidebarPositionOpen={setSidebarPositionOpen}
-                            />
-                          </SortablePageItem>
-                        )
-                      })}
-                    </div>
-                  </SortableContext>
-                </div>
+                <PageAlignmentSection
+                  zoneId="zone-bottom"
+                  title="Bottom alignment"
+                  activeDropText="Drop to move to bottom"
+                  idleDropText="Drop here for bottom alignment"
+                  items={bottomItems}
+                  allPages={allPages}
+                  pages={pages}
+                  isMobileViewport={isMobileViewport}
+                  spaceId={spaceId}
+                  selectedPageId={selectedPageId}
+                  allIcons={allIcons}
+                  reactIcons={reactIcons}
+                  iconPickerOpen={iconPickerOpen}
+                  colorPickerOpen={colorPickerOpen}
+                  sidebarPositionOpen={sidebarPositionOpen}
+                  handlePageReorder={handlePageReorder}
+                  handleIconUpdate={handleIconUpdate}
+                  setPages={setPages}
+                  setAllPages={setAllPages}
+                  setSelectedPageId={setSelectedPageId}
+                  setSelectedComponent={setSelectedComponent}
+                  setSelectedPageForPermissions={setSelectedPageForPermissions}
+                  setPermissionsRoles={setPermissionsRoles}
+                  setPermissionsUserIds={setPermissionsUserIds}
+                  setPermissionsGroupIds={setPermissionsGroupIds}
+                  setPermissionsDialogOpen={setPermissionsDialogOpen}
+                  setComponentSettingsOpen={setComponentSettingsOpen}
+                  setIconPickerOpen={setIconPickerOpen}
+                  setColorPickerOpen={setColorPickerOpen}
+                  setSidebarPositionOpen={setSidebarPositionOpen}
+                />
               </div>
             )
           })()}

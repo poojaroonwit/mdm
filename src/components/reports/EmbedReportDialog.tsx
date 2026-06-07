@@ -60,23 +60,19 @@ export function EmbedReportDialog({
     onSuccess,
     spaceId
 }: EmbedReportDialogProps) {
-    // Form state
     const [name, setName] = useState('')
     const [embedUrl, setEmbedUrl] = useState('')
     const [description, setDescription] = useState('')
     const [categoryId, setCategoryId] = useState('')
     const [folderId, setFolderId] = useState('')
 
-    // Permission state
     const [isPublic, setIsPublic] = useState(false)
     const [selectedUsers, setSelectedUsers] = useState<string[]>([])
     const [selectedRoles, setSelectedRoles] = useState<string[]>([])
 
-    // Search state
     const [userSearch, setUserSearch] = useState('')
     const [roleSearch, setRoleSearch] = useState('')
 
-    // Data loading state
     const [loading, setLoading] = useState(false)
     const [categories, setCategories] = useState<Category[]>([])
     const [folders, setFolders] = useState<Folder[]>([])
@@ -119,7 +115,6 @@ export function EmbedReportDialog({
         }
     }
 
-    // Filter users based on search
     const filteredUsers = useMemo(() => {
         if (!userSearch.trim()) return users
         const query = userSearch.toLowerCase()
@@ -129,7 +124,6 @@ export function EmbedReportDialog({
         )
     }, [users, userSearch])
 
-    // Filter roles based on search
     const filteredRoles = useMemo(() => {
         if (!roleSearch.trim()) return roles
         const query = roleSearch.toLowerCase()
@@ -255,7 +249,6 @@ export function EmbedReportDialog({
                 </DialogHeader>
 
                 <div className="space-y-6 py-4">
-                    {/* Basic Information */}
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="name">Report Name <span className="text-destructive">*</span></Label>
@@ -324,7 +317,6 @@ export function EmbedReportDialog({
                         </div>
                     </div>
 
-                    {/* Permissions */}
                     <div className="space-y-4 border-t pt-4">
                         <h3 className="font-medium">Permissions</h3>
 
@@ -359,7 +351,6 @@ export function EmbedReportDialog({
                                     <div className="space-y-3">
                                         <Label>Grant access to users</Label>
 
-                                        {/* Selected users */}
                                         {selectedUsers.length > 0 && (
                                             <div className="flex flex-wrap gap-2">
                                                 {selectedUsers.map(userId => {
@@ -390,7 +381,6 @@ export function EmbedReportDialog({
                                             </div>
                                         )}
 
-                                        {/* User search input */}
                                         <div className="relative">
                                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                             <Input
@@ -401,7 +391,6 @@ export function EmbedReportDialog({
                                             />
                                         </div>
 
-                                        {/* User list */}
                                         <ScrollArea className="h-[200px] border rounded-md">
                                             <div className="p-2 space-y-1">
                                                 {filteredUsers.length === 0 ? (
@@ -451,7 +440,6 @@ export function EmbedReportDialog({
                                     <div className="space-y-3">
                                         <Label>Grant access to roles</Label>
 
-                                        {/* Selected roles */}
                                         {selectedRoles.length > 0 && (
                                             <div className="flex flex-wrap gap-2">
                                                 {selectedRoles.map(roleId => {
@@ -477,7 +465,6 @@ export function EmbedReportDialog({
                                             </div>
                                         )}
 
-                                        {/* Role search input */}
                                         <div className="relative">
                                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                             <Input
@@ -488,7 +475,6 @@ export function EmbedReportDialog({
                                             />
                                         </div>
 
-                                        {/* Role list */}
                                         <ScrollArea className="h-[200px] border rounded-md">
                                             <div className="p-2 space-y-1">
                                                 {filteredRoles.length === 0 ? (

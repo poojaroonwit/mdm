@@ -1,6 +1,6 @@
 'use client'
 
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
@@ -45,8 +45,9 @@ import {
   CheckCircle2,
   XCircle
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { RichMarkdownBody } from './RichMarkdownBody'
+import { RichMarkdownToolbar } from './RichMarkdownToolbar'
 
 interface RichMarkdownEditorProps {
   content: string
@@ -501,241 +502,19 @@ export function RichMarkdownEditor({
 
   return (
     <div className={cn("relative", className)}>
-      {editable && showToolbar && (
-        <div className="border-b bg-gray-50 dark:bg-gray-800 p-2 flex items-center gap-1 flex-wrap">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            className={cn(
-              "h-8 w-8 p-0",
-              editor.isActive('bold') && "bg-gray-200 dark:bg-gray-700"
-            )}
-          >
-            <Bold className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={cn(
-              "h-8 w-8 p-0",
-              editor.isActive('italic') && "bg-gray-200 dark:bg-gray-700"
-            )}
-          >
-            <Italic className="h-4 w-4" />
-          </Button>
-          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-            className={cn(
-              "h-8 w-8 p-0",
-              editor.isActive('heading', { level: 1 }) && "bg-gray-200 dark:bg-gray-700"
-            )}
-          >
-            <Heading1 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            className={cn(
-              "h-8 w-8 p-0",
-              editor.isActive('heading', { level: 2 }) && "bg-gray-200 dark:bg-gray-700"
-            )}
-          >
-            <Heading2 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-            className={cn(
-              "h-8 w-8 p-0",
-              editor.isActive('heading', { level: 3 }) && "bg-gray-200 dark:bg-gray-700"
-            )}
-          >
-            <Heading3 className="h-4 w-4" />
-          </Button>
-          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={cn(
-              "h-8 w-8 p-0",
-              editor.isActive('bulletList') && "bg-gray-200 dark:bg-gray-700"
-            )}
-          >
-            <List className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={cn(
-              "h-8 w-8 p-0",
-              editor.isActive('orderedList') && "bg-gray-200 dark:bg-gray-700"
-            )}
-          >
-            <ListOrdered className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className={cn(
-              "h-8 w-8 p-0",
-              editor.isActive('blockquote') && "bg-gray-200 dark:bg-gray-700"
-            )}
-          >
-            <Quote className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            className={cn(
-              "h-8 w-8 p-0",
-              editor.isActive('codeBlock') && "bg-gray-200 dark:bg-gray-700"
-            )}
-          >
-            <Code className="h-4 w-4" />
-          </Button>
-          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              const url = window.prompt('Enter URL:')
-              if (url) {
-                editor.chain().focus().setLink({ href: url }).run()
-              }
-            }}
-            className={cn(
-              "h-8 w-8 p-0",
-              editor.isActive('link') && "bg-gray-200 dark:bg-gray-700"
-            )}
-          >
-            <LinkIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              const url = window.prompt('Enter image URL:')
-              if (url) {
-                editor.chain().focus().setImage({ src: url }).run()
-              }
-            }}
-          >
-            <ImageIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
-          >
-            <TableIcon className="h-4 w-4" />
-          </Button>
-          <div className="flex-1" />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().undo().run()}
-            disabled={!editor.can().undo()}
-          >
-            <Undo className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().redo().run()}
-            disabled={!editor.can().redo()}
-          >
-            <Redo className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-      
-      <div 
-        className="relative"
-        onClick={() => {
-          if (editable && editor) {
-            editor.commands.focus()
-          }
-        }}
-      >
-        {/* Inline menus can be re-enabled when supported in current TipTap build */}
-        <EditorContent 
-          editor={editor}
-          className={cn(
-            "prose prose-sm max-w-none dark:prose-invert",
-            "focus:outline-none",
-            editable && "cursor-text",
-            "[&_.ProseMirror]:outline-none [&_.ProseMirror]:p-6 [&_.ProseMirror]:min-h-[400px]",
-            editable && "[&_.ProseMirror]:cursor-text",
-            "[&_.ProseMirror_heading]:font-semibold [&_.ProseMirror_heading]:mt-6 [&_.ProseMirror_heading]:mb-4",
-            "[&_.ProseMirror_h1]:text-3xl [&_.ProseMirror_h2]:text-2xl [&_.ProseMirror_h3]:text-xl",
-            "[&_.ProseMirror_p]:my-4 [&_.ProseMirror_p]:leading-relaxed",
-            "[&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:ml-6 [&_.ProseMirror_ul]:my-4",
-            "[&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:ml-6 [&_.ProseMirror_ol]:my-4",
-            "[&_.ProseMirror_code]:bg-gray-100 [&_.ProseMirror_code]:dark:bg-gray-800 [&_.ProseMirror_code]:px-1.5 [&_.ProseMirror_code]:py-0.5 [&_.ProseMirror_code]:rounded [&_.ProseMirror_code]:text-sm [&_.ProseMirror_code]:font-mono",
-            "[&_.ProseMirror_pre]:bg-gray-100 [&_.ProseMirror_pre]:dark:bg-gray-800 [&_.ProseMirror_pre]:p-4 [&_.ProseMirror_pre]:rounded-lg [&_.ProseMirror_pre]:overflow-x-auto [&_.ProseMirror_pre]:my-4",
-            "[&_.ProseMirror_blockquote]:border-l-4 [&_.ProseMirror_blockquote]:border-gray-300 [&_.ProseMirror_blockquote]:dark:border-gray-600 [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:italic [&_.ProseMirror_blockquote]:my-4",
-            "[&_.ProseMirror_table]:border-collapse [&_.ProseMirror_table]:w-full [&_.ProseMirror_table]:my-4",
-            "[&_.ProseMirror_th]:border [&_.ProseMirror_th]:border-gray-300 [&_.ProseMirror_th]:dark:border-gray-600 [&_.ProseMirror_th]:px-4 [&_.ProseMirror_th]:py-2 [&_.ProseMirror_th]:bg-gray-50 [&_.ProseMirror_th]:dark:bg-gray-800 [&_.ProseMirror_th]:font-semibold [&_.ProseMirror_th]:text-left",
-            "[&_.ProseMirror_td]:border [&_.ProseMirror_td]:border-gray-300 [&_.ProseMirror_td]:dark:border-gray-600 [&_.ProseMirror_td]:px-4 [&_.ProseMirror_td]:py-2",
-            "[&_.ProseMirror_placeholder]:text-gray-400 [&_.ProseMirror_placeholder]:dark:text-gray-500",
-            "[&_.ProseMirror_img]:max-w-full [&_.ProseMirror_img]:h-auto [&_.ProseMirror_img]:rounded-lg [&_.ProseMirror_img]:my-4",
-            "[&_.ProseMirror_hr]:border-t [&_.ProseMirror_hr]:border-gray-300 [&_.ProseMirror_hr]:dark:border-gray-600 [&_.ProseMirror_hr]:my-8",
-            "[&_.callout]:border-l-4 [&_.callout]:p-4 [&_.callout]:my-4 [&_.callout]:rounded-r-lg",
-            "[&_.callout-info]:bg-blue-50 [&_.callout-info]:dark:bg-blue-900/20 [&_.callout-info]:border-blue-500",
-            "[&_.callout-warning]:bg-yellow-50 [&_.callout-warning]:dark:bg-yellow-900/20 [&_.callout-warning]:border-yellow-500",
-            "[&_.callout-success]:bg-green-50 [&_.callout-success]:dark:bg-green-900/20 [&_.callout-success]:border-green-500",
-            "[&_.callout-error]:bg-red-50 [&_.callout-error]:dark:bg-red-900/20 [&_.callout-error]:border-red-500",
-            "[&_.ProseMirror_video]:max-w-full [&_.ProseMirror_video]:h-auto [&_.ProseMirror_video]:rounded-lg [&_.ProseMirror_video]:my-4",
-            "[&_.ProseMirror_iframe]:max-w-full [&_.ProseMirror_iframe]:rounded-lg [&_.ProseMirror_iframe]:my-4"
-          )}
-        />
-        
-        {showSlashMenu && editable && filteredCommands.length > 0 && (
-          <div
-            ref={slashMenuRef}
-            className="absolute z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl max-h-64 overflow-y-auto min-w-[280px]"
-            style={{
-              top: `${slashMenuPosition.top}px`,
-              left: `${slashMenuPosition.left}px`,
-            }}
-          >
-            {filteredCommands.map((cmd, index) => {
-              const Icon = cmd.icon
-              const isSelected = index === selectedIndex
-              return (
-                <button
-                  key={cmd.id}
-                  onClick={() => insertSlashCommand(editor, cmd.id)}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors",
-                    isSelected 
-                      ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" 
-                      : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  )}
-                  onMouseEnter={() => setSelectedIndex(index)}
-                >
-                  <Icon className={cn(
-                    "h-4 w-4 flex-shrink-0",
-                    isSelected ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"
-                  )} />
-                  <span className="text-sm font-medium">{cmd.label}</span>
-                </button>
-              )
-            })}
-          </div>
-        )}
-      </div>
+      {editable && showToolbar && <RichMarkdownToolbar editor={editor} />}
+
+      <RichMarkdownBody
+        editor={editor}
+        editable={editable}
+        showSlashMenu={showSlashMenu}
+        filteredCommands={filteredCommands}
+        selectedIndex={selectedIndex}
+        slashMenuPosition={slashMenuPosition}
+        slashMenuRef={slashMenuRef}
+        insertSlashCommand={insertSlashCommand}
+        setSelectedIndex={setSelectedIndex}
+      />
     </div>
   )
 }

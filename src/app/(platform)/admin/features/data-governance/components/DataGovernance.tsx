@@ -46,6 +46,8 @@ import {
   GovernanceMetrics 
 } from '../types'
 import { PlatformGovernanceConfig as PlatformConfig } from './PlatformGovernanceConfig'
+import { OpenMetadataConfigDialog } from './OpenMetadataConfigDialog'
+import { GovernanceMetricsGrid } from './GovernanceMetricsGrid'
 import { DataProfiling } from './DataProfiling'
 import { TestSuites } from './TestSuites'
 import { Collaboration } from './Collaboration'
@@ -246,125 +248,7 @@ export function DataGovernance() {
           </CardContent>
         </Card>
 
-        <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
-          <DialogContent className="max-w-2xl p-0 overflow-hidden">
-            <DialogHeader>
-              <DialogTitle>OpenMetadata Configuration</DialogTitle>
-              <DialogDescription>
-                Configure connection to your OpenMetadata instance
-              </DialogDescription>
-            </DialogHeader>
-            <DialogBody className="space-y-4 p-6 pt-2 pb-4">
-              <div className="space-y-2">
-                <Label htmlFor="host">OpenMetadata Host</Label>
-                <Input
-                  id="host"
-                  value={newConfig.host || ''}
-                  onChange={(e) => setNewConfig({ ...newConfig, host: e.target.value })}
-                  placeholder="https://openmetadata.example.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="apiVersion">API Version</Label>
-                <Select
-                  value={newConfig.apiVersion || 'v1'}
-                  onValueChange={(value) => setNewConfig({ ...newConfig, apiVersion: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="v1">v1</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="authProvider">Authentication Provider</Label>
-                <Select
-                  value={newConfig.authProvider || 'basic'}
-                  onValueChange={(value: any) => setNewConfig({ ...newConfig, authProvider: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="basic">Basic Auth</SelectItem>
-                    <SelectItem value="jwt">JWT Token</SelectItem>
-                    <SelectItem value="oauth">OAuth</SelectItem>
-                    <SelectItem value="saml">SAML</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {newConfig.authProvider === 'basic' && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
-                    <Input
-                      id="username"
-                      value={newConfig.authConfig?.username || ''}
-                      onChange={(e) => setNewConfig({
-                        ...newConfig,
-                        authConfig: { ...newConfig.authConfig, username: e.target.value }
-                      })}
-                      placeholder="admin"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={newConfig.authConfig?.password || ''}
-                      onChange={(e) => setNewConfig({
-                        ...newConfig,
-                        authConfig: { ...newConfig.authConfig, password: e.target.value }
-                      })}
-                      placeholder="••••••••"
-                    />
-                  </div>
-                </>
-              )}
-              {newConfig.authProvider === 'jwt' && (
-                <div className="space-y-2">
-                  <Label htmlFor="jwtToken">JWT Token</Label>
-                  <Textarea
-                    id="jwtToken"
-                    value={newConfig.authConfig?.jwtToken || ''}
-                    onChange={(e) => setNewConfig({
-                      ...newConfig,
-                      authConfig: { ...newConfig.authConfig, jwtToken: e.target.value }
-                    })}
-                    placeholder="Enter JWT token"
-                    rows={3}
-                  />
-                </div>
-              )}
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="enabled"
-                  checked={newConfig.isEnabled || false}
-                  onCheckedChange={(checked) => setNewConfig({ ...newConfig, isEnabled: checked })}
-                />
-                <Label htmlFor="enabled">Enable Integration</Label>
-              </div>
-            </DialogBody>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowConfigDialog(false)}>
-                Cancel
-              </Button>
-              <Button onClick={saveConfig} disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  'Save Configuration'
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <OpenMetadataConfigDialog           open={showConfigDialog}           isLoading={isLoading}           newConfig={newConfig}           onOpenChange={setShowConfigDialog}           onSave={saveConfig}           setNewConfig={setNewConfig}         />
       </div>
     )
   }
@@ -382,58 +266,7 @@ export function DataGovernance() {
         </Button>
       </div>
 
-      {metrics && (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Assets</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{metrics.totalAssets}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">With Policies</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{metrics.assetsWithPolicies}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Quality Checks</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{metrics.assetsWithQualityChecks}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Avg Quality Score</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{metrics.averageQualityScore.toFixed(1)}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Policy Compliance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{metrics.policyComplianceRate.toFixed(1)}%</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Classification Coverage</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{metrics.dataClassificationCoverage.toFixed(1)}%</div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {metrics && <GovernanceMetricsGrid metrics={metrics} />}
 
       <div className="w-full">
       <Tabs defaultValue="assets">
@@ -660,125 +493,7 @@ export function DataGovernance() {
       </Tabs>
       </div>
 
-      <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>OpenMetadata Configuration</DialogTitle>
-            <DialogDescription>
-              Configure connection to your OpenMetadata instance
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody className="space-y-4 p-6 pt-2 pb-4">
-            <div className="space-y-2">
-              <Label htmlFor="host">OpenMetadata Host</Label>
-              <Input
-                id="host"
-                value={newConfig.host || ''}
-                onChange={(e) => setNewConfig({ ...newConfig, host: e.target.value })}
-                placeholder="https://openmetadata.example.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="apiVersion">API Version</Label>
-              <Select
-                value={newConfig.apiVersion || 'v1'}
-                onValueChange={(value) => setNewConfig({ ...newConfig, apiVersion: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="v1">v1</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="authProvider">Authentication Provider</Label>
-              <Select
-                value={newConfig.authProvider || 'basic'}
-                onValueChange={(value: any) => setNewConfig({ ...newConfig, authProvider: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="basic">Basic Auth</SelectItem>
-                  <SelectItem value="jwt">JWT Token</SelectItem>
-                  <SelectItem value="oauth">OAuth</SelectItem>
-                  <SelectItem value="saml">SAML</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {newConfig.authProvider === 'basic' && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    value={newConfig.authConfig?.username || ''}
-                    onChange={(e) => setNewConfig({
-                      ...newConfig,
-                      authConfig: { ...newConfig.authConfig, username: e.target.value }
-                    })}
-                    placeholder="admin"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={newConfig.authConfig?.password || ''}
-                    onChange={(e) => setNewConfig({
-                      ...newConfig,
-                      authConfig: { ...newConfig.authConfig, password: e.target.value }
-                    })}
-                    placeholder="••••••••"
-                  />
-                </div>
-              </>
-            )}
-            {newConfig.authProvider === 'jwt' && (
-              <div className="space-y-2">
-                <Label htmlFor="jwtToken">JWT Token</Label>
-                <Textarea
-                  id="jwtToken"
-                  value={newConfig.authConfig?.jwtToken || ''}
-                  onChange={(e) => setNewConfig({
-                    ...newConfig,
-                    authConfig: { ...newConfig.authConfig, jwtToken: e.target.value }
-                  })}
-                  placeholder="Enter JWT token"
-                  rows={3}
-                />
-              </div>
-            )}
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="enabled"
-                checked={newConfig.isEnabled || false}
-                onCheckedChange={(checked) => setNewConfig({ ...newConfig, isEnabled: checked })}
-              />
-              <Label htmlFor="enabled">Enable Integration</Label>
-            </div>
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfigDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={saveConfig} disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Save Configuration'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <OpenMetadataConfigDialog         open={showConfigDialog}         isLoading={isLoading}         newConfig={newConfig}         onOpenChange={setShowConfigDialog}         onSave={saveConfig}         setNewConfig={setNewConfig}       />
     </div>
   )
 }

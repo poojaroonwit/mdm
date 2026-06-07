@@ -4,51 +4,19 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { randomUUID } from 'crypto'
 import { performanceMonitor } from '@/shared/lib/performance/performance-monitor'
 import { metricsCollector } from '@/shared/lib/monitoring/metrics'
-
-// Trace context storage (using AsyncLocalStorage for request-scoped context)
-const traceContext = new Map<string, {
-  traceId: string
-  spanId: string
-  parentSpanId?: string
-  startTime: number
-}>()
-
-// Active spans storage for nested operations
-const activeSpans = new Map<string, {
-  traceId: string
-  spanId: string
-  parentSpanId?: string
-  startTime: number
-  name: string
-}>()
-
-// Configuration for span cleanup
-const SPAN_TTL_MS = 300000 // 5 minutes - spans older than this are considered stale
-const CLEANUP_INTERVAL_MS = 60000 // 1 minute cleanup interval
-
-// Periodic cleanup of stale spans to prevent memory leaks
-if (typeof window === 'undefined') {
-  setInterval(() => {
-    const now = Date.now()
-    
-    // Clean up stale trace contexts
-    for (const [key, context] of traceContext.entries()) {
-      if (now - context.startTime > SPAN_TTL_MS) {
-        traceContext.delete(key)
-      }
-    }
-    
-    // Clean up stale active spans
-    for (const [key, span] of activeSpans.entries()) {
-      if (now - span.startTime > SPAN_TTL_MS) {
-        activeSpans.delete(key)
-      }
-    }
-  }, CLEANUP_INTERVAL_MS)
-}
+import {
+  clearTraceContext,
+  extractTraceContext,
+  generateSpanId,
+  generateTraceId,
+  getCurrentTraceContext,
+  injectTraceContext,
+  registerActiveSpan,
+  setTraceContext,
+  traceContext,
+} from './tracing-context'
 
 // Sampling configuration
 interface SamplingConfig {
@@ -101,57 +69,6 @@ function shouldTrace(request: NextRequest, willBeError: boolean = false): boolea
   
   // Random sampling
   return Math.random() < rate
-}
-
-/**
- * Generate a 16-byte hex string for trace/span IDs (OpenTelemetry format)
- */
-function generateTraceId(): string {
-  return randomUUID().replace(/-/g, '').substring(0, 32)
-}
-
-function generateSpanId(): string {
-  return randomUUID().replace(/-/g, '').substring(0, 16)
-}
-
-/**
- * Extract trace context from request headers (for distributed tracing)
- */
-function extractTraceContext(request: NextRequest): {
-  traceId: string
-  parentSpanId?: string
-} {
-  // Check for W3C Trace Context headers
-  const traceParent = request.headers.get('traceparent')
-  if (traceParent) {
-    // Format: 00-{trace-id}-{parent-id}-{flags}
-    const parts = traceParent.split('-')
-    if (parts.length >= 3) {
-      return {
-        traceId: parts[1] || generateTraceId(),
-        parentSpanId: parts[2] || undefined
-      }
-    }
-  }
-
-  // Check for custom headers
-  const traceId = request.headers.get('x-trace-id')
-  const parentSpanId = request.headers.get('x-parent-span-id')
-
-  return {
-    traceId: traceId || generateTraceId(),
-    parentSpanId: parentSpanId || undefined
-  }
-}
-
-/**
- * Inject trace context into response headers
- */
-function injectTraceContext(response: NextResponse, traceId: string, spanId: string): void {
-  // W3C Trace Context format
-  response.headers.set('traceparent', `00-${traceId}-${spanId}-01`)
-  response.headers.set('x-trace-id', traceId)
-  response.headers.set('x-span-id', spanId)
 }
 
 /**
@@ -223,7 +140,7 @@ export function withTracing<T = {}>(
     const spanId = generateSpanId()
     
     // Store trace context
-    const requestId = randomUUID()
+    const requestId = generateTraceId()
     traceContext.set(requestId, {
       traceId,
       spanId,
@@ -356,55 +273,6 @@ export function withTracing<T = {}>(
 }
 
 /**
- * Get current trace context (for nested spans)
- * Uses the most recent active span as parent
- */
-export function getCurrentTraceContext(): {
-  traceId: string
-  spanId: string
-  parentSpanId?: string
-} | null {
-  // Get the most recent active span
-  const spans = Array.from(activeSpans.values())
-  if (spans.length === 0) {
-    return null
-  }
-  
-  // Return the most recently started span (last in map)
-  const latestSpan = spans[spans.length - 1]
-  return {
-    traceId: latestSpan.traceId,
-    spanId: latestSpan.spanId,
-    parentSpanId: latestSpan.parentSpanId
-  }
-}
-
-/**
- * Set current trace context (for request-scoped tracing)
- */
-export function setTraceContext(context: {
-  traceId: string
-  spanId: string
-  parentSpanId?: string
-}): void {
-  // Store in active spans
-  const spanKey = `${context.traceId}-${context.spanId}`
-  activeSpans.set(spanKey, {
-    ...context,
-    startTime: Date.now(),
-    name: 'root'
-  })
-}
-
-/**
- * Clear trace context
- */
-export function clearTraceContext(traceId: string, spanId: string): void {
-  const spanKey = `${traceId}-${spanId}`
-  activeSpans.delete(spanKey)
-}
-
-/**
  * Create a child span for nested operations
  * Enhanced with performance monitoring integration
  */
@@ -425,8 +293,7 @@ export async function createChildSpan<T>(
   
   // Track span
   if (context) {
-    const spanKey = `${context.traceId}-${spanId}`
-    activeSpans.set(spanKey, {
+    registerActiveSpan({
       traceId: context.traceId,
       spanId,
       parentSpanId: context.spanId,

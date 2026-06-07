@@ -5,14 +5,10 @@ import { useSession } from 'next-auth/react'
 import toast from 'react-hot-toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Switch } from '@/components/ui/switch'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { AvatarUpload } from '@/components/ui/avatar-upload'
 import { X, Plus, Edit, Trash2, Key } from 'lucide-react'
+import { UserDialogs } from './UserDialogs'
 
 export function UsersSection() {
   const { data: session } = useSession()
@@ -475,222 +471,25 @@ export function UsersSection() {
         </div>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editing ? 'Edit User' : 'Create User'}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            {/* Avatar Upload */}
-            <div className="space-y-2">
-              <Label>Profile Picture</Label>
-              <AvatarUpload
-                userId={editing?.id || 'new'}
-                currentAvatar={form.avatar}
-                userName={form.name}
-                userEmail={form.email}
-                onAvatarChange={(avatarUrl) => setForm({ ...form, avatar: avatarUrl || '' })}
-                size="lg"
-                disabled={!editing} // Only allow avatar upload for existing users
-              />
-            </div>
-            
-            <div className="space-y-1">
-              <Label>Email</Label>
-              <Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="email@example.com" />
-            </div>
-            <div className="space-y-1">
-              <Label>Name</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Full name" />
-            </div>
-            <div className="space-y-1">
-              <Label>Role</Label>
-              <RadioGroup value={form.role} onValueChange={(value: string) => setForm({ ...form, role: value })} className="flex flex-col space-y-2">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="USER" id="user" />
-                  <label htmlFor="user" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    User
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="MANAGER" id="manager" />
-                  <label htmlFor="manager" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Manager
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="ADMIN" id="admin" />
-                  <label htmlFor="admin" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Admin
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="SUPER_ADMIN" id="super_admin" />
-                  <label htmlFor="super_admin" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Super Admin
-                  </label>
-                </div>
-              </RadioGroup>
-            </div>
-            
-            {/* Default Space Selection */}
-            <div className="space-y-1">
-              <Label>Default Space</Label>
-              <Select value={form.default_space_id} onValueChange={(value) => setForm({ ...form, default_space_id: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select default space" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">No default space</SelectItem>
-                  {availableSpaces.map(space => (
-                    <SelectItem key={space.id} value={space.id}>
-                      {space.name} {space.is_default && '(Default)'}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Space Access Multi-Select */}
-            <div className="space-y-1">
-              <Label>Space Access</Label>
-              <div className="space-y-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                {loadingSpaces ? (
-                  <div className="text-sm text-muted-foreground">Loading spaces...</div>
-                ) : availableSpaces.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">No spaces available</div>
-                ) : (
-                  availableSpaces.map(space => {
-                    const userSpace = form.spaces.find((s: any) => s.id === space.id)
-                    return (
-                      <div key={space.id} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id={`space-${space.id}`}
-                            checked={!!userSpace}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setForm({
-                                  ...form,
-                                  spaces: [...form.spaces, { id: space.id, name: space.name, role: 'member' }]
-                                })
-                              } else {
-                                setForm({
-                                  ...form,
-                                  spaces: form.spaces.filter((s: any) => s.id !== space.id)
-                                })
-                              }
-                            }}
-                            className="rounded"
-                          />
-                          <label htmlFor={`space-${space.id}`} className="text-sm">
-                            {space.name} {space.is_default && '(Default)'}
-                          </label>
-                        </div>
-                        {userSpace && (
-                          <Select
-                            value={userSpace.role}
-                            onValueChange={(role) => {
-                              setForm({
-                                ...form,
-                                spaces: form.spaces.map((s: any) => 
-                                  s.id === space.id ? { ...s, role } : s
-                                )
-                              })
-                            }}
-                          >
-                            <SelectTrigger className="w-24 h-6 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="member">Member</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                              <SelectItem value="owner">Owner</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <Label>Active</Label>
-              <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
-            </div>
-            {!editing && (
-              <div className="space-y-1">
-                <Label>Password</Label>
-                <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Set a password" />
-              </div>
-            )}
-            {editing && (
-              <div className="space-y-1">
-                <Label>New Password (optional)</Label>
-                <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Leave blank to keep current" />
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={submit}>{editing ? 'Save Changes' : 'Create'}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Reset Password Dialog */}
-      <Dialog open={resetPasswordOpen} onOpenChange={setResetPasswordOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reset Password</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="p-3 bg-muted rounded-md">
-              <p className="text-sm text-muted-foreground">
-                Resetting password for: <span className="font-medium">{resetPasswordUser?.email}</span>
-              </p>
-            </div>
-            <div className="space-y-1">
-              <Label>New Password</Label>
-              <Input 
-                type="password" 
-                value={newPassword} 
-                onChange={(e) => setNewPassword(e.target.value)} 
-                placeholder="Enter new password (min 6 characters)" 
-              />
-            </div>
-            <div className="space-y-1">
-              <Label>Confirm Password</Label>
-              <Input 
-                type="password" 
-                value={confirmPassword} 
-                onChange={(e) => setConfirmPassword(e.target.value)} 
-                placeholder="Confirm new password" 
-              />
-            </div>
-            {newPassword && confirmPassword && newPassword !== confirmPassword && (
-              <p className="text-sm text-red-600">Passwords do not match</p>
-            )}
-            {newPassword && newPassword.length < 6 && (
-              <p className="text-sm text-red-600">Password must be at least 6 characters long</p>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setResetPasswordOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={resetPassword} 
-              disabled={resettingPassword || newPassword.length < 6 || newPassword !== confirmPassword}
-            >
-              {resettingPassword ? 'Resetting...' : 'Reset Password'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <UserDialogs
+        open={open}
+        setOpen={setOpen}
+        editing={editing}
+        form={form}
+        setForm={setForm}
+        availableSpaces={availableSpaces}
+        loadingSpaces={loadingSpaces}
+        submit={submit}
+        resetPasswordOpen={resetPasswordOpen}
+        setResetPasswordOpen={setResetPasswordOpen}
+        resetPasswordUser={resetPasswordUser}
+        newPassword={newPassword}
+        setNewPassword={setNewPassword}
+        confirmPassword={confirmPassword}
+        setConfirmPassword={setConfirmPassword}
+        resettingPassword={resettingPassword}
+        resetPassword={resetPassword}
+      />
     </div>
   )
 }

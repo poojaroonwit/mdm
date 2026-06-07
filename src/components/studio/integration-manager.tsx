@@ -13,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Plug,
   Database,
-  Globe,
   Zap,
   Settings,
   Plus,
@@ -21,123 +20,27 @@ import {
   Trash2,
   Play,
   Pause,
-  RotateCcw,
   CheckCircle,
   AlertCircle,
   XCircle,
-  ExternalLink,
   Key,
   Lock,
-  Unlock,
   RefreshCw,
-  Download,
-  Upload,
   Code,
   Webhook,
   Cloud,
-  Server,
-  Smartphone,
-  Monitor,
-  Tablet,
-  Mail,
   MessageSquare,
   Calendar,
-  FileText,
-  Image,
-  Video,
-  Music,
   Archive,
-  Folder,
-  Search,
-  Filter,
-  SortAsc,
-  SortDesc,
-  Eye,
-  EyeOff,
-  Copy,
-  Share,
-  Link,
-  Unlink,
-  ArrowRight,
-  ArrowLeft,
-  ArrowUp,
-  ArrowDown,
-  Maximize,
-  Minimize,
-  RotateCw,
-  Save,
   Loader,
   Activity,
   CreditCard,
   Users
 } from 'lucide-react'
-
-interface Integration {
-  id: string
-  name: string
-  type: 'api' | 'database' | 'webhook' | 'oauth' | 'sso' | 'widget' | 'service'
-  category: 'data' | 'communication' | 'analytics' | 'storage' | 'payment' | 'social' | 'productivity'
-  description: string
-  icon: string
-  status: 'active' | 'inactive' | 'error' | 'pending'
-  configured: boolean
-  lastSync?: string
-  error?: string
-  settings: Record<string, any>
-  endpoints: IntegrationEndpoint[]
-  webhooks: Webhook[]
-  permissions: string[]
-  rateLimit?: {
-    requests: number
-    period: string
-  }
-}
-
-interface IntegrationEndpoint {
-  id: string
-  name: string
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
-  url: string
-  description: string
-  parameters: EndpointParameter[]
-  response: any
-  authenticated: boolean
-  rateLimited: boolean
-}
-
-interface EndpointParameter {
-  name: string
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array'
-  required: boolean
-  description: string
-  defaultValue?: any
-}
-
-interface Webhook {
-  id: string
-  name: string
-  url: string
-  events: string[]
-  secret?: string
-  active: boolean
-  lastTriggered?: string
-  successCount: number
-  errorCount: number
-}
-
-interface IntegrationManagerProps {
-  integrations: Integration[]
-  onCreateIntegration: (integration: Omit<Integration, 'id'>) => void
-  onUpdateIntegration: (id: string, updates: Partial<Integration>) => void
-  onDeleteIntegration: (id: string) => void
-  onTestIntegration: (id: string) => Promise<boolean>
-  onSyncIntegration: (id: string) => Promise<void>
-  onConfigureIntegration: (id: string, settings: Record<string, any>) => void
-  onCreateWebhook: (integrationId: string, webhook: Omit<Webhook, 'id'>) => void
-  onUpdateWebhook: (integrationId: string, webhookId: string, updates: Partial<Webhook>) => void
-  onDeleteWebhook: (integrationId: string, webhookId: string) => void
-  onTestWebhook: (integrationId: string, webhookId: string) => Promise<boolean>
-}
+import { IntegrationOverviewTab } from './IntegrationOverviewTab'
+import { IntegrationSettingsTab } from './IntegrationSettingsTab'
+import { IntegrationStatsCards } from './IntegrationStatsCards'
+import type { Integration, IntegrationManagerProps } from './integration-manager-types'
 
 export function IntegrationManager({
   integrations,
@@ -163,23 +66,6 @@ export function IntegrationManager({
     description: '',
     settings: {}
   })
-  const [newWebhook, setNewWebhook] = useState({
-    name: '',
-    url: '',
-    events: [''],
-    secret: '',
-    active: true
-  })
-
-  const getStatusIcon = useCallback((status: Integration['status']) => {
-    switch (status) {
-      case 'active': return <CheckCircle className="h-4 w-4 text-primary" />
-      case 'inactive': return <Pause className="h-4 w-4 text-muted-foreground" />
-      case 'error': return <XCircle className="h-4 w-4 text-destructive" />
-      case 'pending': return <Loader className="h-4 w-4 text-warning animate-spin" />
-    }
-  }, [])
-
   const getTypeIcon = useCallback((type: Integration['type']) => {
     switch (type) {
       case 'api': return <Code className="h-4 w-4" />
@@ -243,10 +129,6 @@ export function IntegrationManager({
     }
   }, [onTestIntegration])
 
-  const activeIntegrations = integrations.filter(i => i.status === 'active')
-  const errorIntegrations = integrations.filter(i => i.status === 'error')
-  const pendingIntegrations = integrations.filter(i => i.status === 'pending')
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -282,55 +164,7 @@ export function IntegrationManager({
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-primary" />
-              <div>
-                <div className="text-2xl font-bold">{activeIntegrations.length}</div>
-                <div className="text-sm text-muted-foreground">Active</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-destructive" />
-              <div>
-                <div className="text-2xl font-bold">{errorIntegrations.length}</div>
-                <div className="text-sm text-muted-foreground">Errors</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Loader className="h-5 w-5 text-warning" />
-              <div>
-                <div className="text-2xl font-bold">{pendingIntegrations.length}</div>
-                <div className="text-sm text-muted-foreground">Pending</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Webhook className="h-5 w-5 text-primary" />
-              <div>
-                <div className="text-2xl font-bold">
-                  {integrations.reduce((sum, i) => sum + i.webhooks.length, 0)}
-                </div>
-                <div className="text-sm text-muted-foreground">Webhooks</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <IntegrationStatsCards integrations={integrations} />
 
       {/* Tabs */}
       <div className="flex space-x-1 bg-muted rounded-lg p-1">
@@ -451,66 +285,12 @@ export function IntegrationManager({
 
       {/* Overview Tab */}
       {activeTab === 'overview' && (
-        <div className="space-y-6">
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setActiveTab('integrations')}
-                  className="h-20 flex flex-col items-center justify-center"
-                >
-                  <Code className="h-6 w-6 mb-2" />
-                  Manage Integrations
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setActiveTab('webhooks')}
-                  className="h-20 flex flex-col items-center justify-center"
-                >
-                  <Webhook className="h-6 w-6 mb-2" />
-                  Configure Webhooks
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsCreatingIntegration(true)}
-                  className="h-20 flex flex-col items-center justify-center"
-                >
-                  <Plus className="h-6 w-6 mb-2" />
-                  Add Integration
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Integration Categories */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Integration Categories</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {['data', 'communication', 'analytics', 'storage', 'payment', 'social', 'productivity'].map(category => {
-                  const categoryIntegrations = integrations.filter(i => i.category === category)
-                  return (
-                    <div key={category} className="p-4 border rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        {getCategoryIcon(category as any)}
-                        <span className="font-medium capitalize">{category}</span>
-                      </div>
-                      <div className="text-2xl font-bold">{categoryIntegrations.length}</div>
-                      <div className="text-sm text-muted-foreground">Integrations</div>
-                    </div>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <IntegrationOverviewTab
+          integrations={integrations}
+          getCategoryIcon={getCategoryIcon}
+          onAddIntegration={() => setIsCreatingIntegration(true)}
+          onSelectTab={setActiveTab}
+        />
       )}
 
       {/* Integrations Tab */}
@@ -698,100 +478,7 @@ export function IntegrationManager({
       )}
 
       {/* Settings Tab */}
-      {activeTab === 'settings' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Integration Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Global Settings</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Auto-sync Integrations</div>
-                      <div className="text-sm text-muted-foreground">Automatically sync data from integrations</div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Error Notifications</div>
-                      <div className="text-sm text-muted-foreground">Send notifications when integrations fail</div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Rate Limit Monitoring</div>
-                      <div className="text-sm text-muted-foreground">Monitor and alert on rate limit usage</div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Security Settings</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">API Key Encryption</div>
-                      <div className="text-sm text-muted-foreground">Encrypt stored API keys</div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Webhook Signature Validation</div>
-                      <div className="text-sm text-muted-foreground">Validate webhook signatures</div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">IP Whitelisting</div>
-                      <div className="text-sm text-muted-foreground">Restrict access by IP address</div>
-                    </div>
-                    <Switch />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Monitoring</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Performance Monitoring</div>
-                      <div className="text-sm text-muted-foreground">Monitor integration performance</div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Usage Analytics</div>
-                      <div className="text-sm text-muted-foreground">Track integration usage</div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">Health Checks</div>
-                      <div className="text-sm text-muted-foreground">Regular health checks for integrations</div>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {activeTab === 'settings' && <IntegrationSettingsTab />}
     </div>
   )
 }

@@ -3,59 +3,7 @@
  * Supports both Redis and in-memory storage for development/production flexibility
  */
 
-// Early build-time detection at module level
-// This is evaluated immediately when the module loads
-// Uses conservative logic: only return false (not build) if we have CLEAR runtime indicators
-const IS_BUILD_TIME = (() => {
-  if (typeof process === 'undefined') return false
-  
-  // Check for Next.js build phases (most reliable indicator)
-  const nextPhase = process.env?.NEXT_PHASE
-  if (nextPhase === 'phase-production-build' || 
-      nextPhase === 'phase-production-compile' ||
-      nextPhase === 'phase-export' ||
-      nextPhase?.includes('build') ||
-      nextPhase?.includes('compile')) {
-    return true
-  }
-  
-  // Check if we're running a build command
-  const args = process.argv || []
-  const hasBuildCommand = args.some(arg => {
-    if (typeof arg !== 'string') return false
-    const lowerArg = arg.toLowerCase()
-    return lowerArg.includes('build') || 
-           lowerArg.includes('next-build') ||
-           lowerArg.includes('next build')
-  })
-  
-  if (hasBuildCommand) {
-    return true
-  }
-  
-  // INVERTED LOGIC: Only return false (not build) if we have CLEAR runtime indicators
-  // If we can't definitively say we're in runtime, assume we're in build (return true)
-  const hasClearRuntime = process.env?.NEXT_RUNTIME || 
-                         process.env?.VERCEL || 
-                         process.env?.NETLIFY ||
-                         process.env?.PORT ||
-                         process.env?.HOSTNAME ||
-                         (process.env?.NODE_ENV === 'development' && process.env?.PORT)
-  
-  // If we have clear runtime indicators, we're NOT in build
-  if (hasClearRuntime) {
-    return false
-  }
-  
-  // If we're in production without clear runtime indicators, assume build
-  if (process.env?.NODE_ENV === 'production') {
-    return true
-  }
-  
-  // If we can't determine, be conservative and assume build (suppress logs)
-  // This prevents errors during build when detection is uncertain
-  return true
-})()
+import { IS_BUILD_TIME, checkBuildTimeAtRuntime } from './redis-client/build-time'
 
 let redisClient: any = null
 let redisAvailable = false
@@ -151,66 +99,6 @@ if (!IS_BUILD_TIME && typeof process !== 'undefined') {
 /**
  * Initialize Redis client if available
  */
-// Helper to check if we're in build mode
-// Use the module-level constant for fast checks
-function isBuildTime(): boolean {
-  return IS_BUILD_TIME
-}
-
-// Helper function to check if we're in build time at execution time (for use in callbacks)
-// Uses inverted logic: only return false (not build) if we have CLEAR runtime indicators
-// This is more conservative and prevents false negatives during build
-function checkBuildTimeAtRuntime(): boolean {
-  if (typeof process === 'undefined') return false
-  
-  // Check for Next.js build phases (most reliable indicator)
-  const nextPhase = process.env?.NEXT_PHASE
-  if (nextPhase === 'phase-production-build' || 
-      nextPhase === 'phase-production-compile' ||
-      nextPhase === 'phase-export' ||
-      nextPhase?.includes('build') ||
-      nextPhase?.includes('compile')) {
-    return true
-  }
-  
-  // Check if we're running a build command
-  const args = process.argv || []
-  const hasBuildCommand = args.some(arg => {
-    if (typeof arg !== 'string') return false
-    const lowerArg = arg.toLowerCase()
-    return lowerArg.includes('build') || 
-           lowerArg.includes('next-build') ||
-           lowerArg.includes('next build')
-  })
-  
-  if (hasBuildCommand) {
-    return true
-  }
-  
-  // INVERTED LOGIC: Only return false (not build) if we have CLEAR runtime indicators
-  // If we can't definitively say we're in runtime, assume we're in build (return true)
-  const hasClearRuntime = process.env?.NEXT_RUNTIME || 
-                         process.env?.VERCEL || 
-                         process.env?.NETLIFY ||
-                         process.env?.PORT ||
-                         process.env?.HOSTNAME ||
-                         (process.env?.NODE_ENV === 'development' && process.env?.PORT)
-  
-  // If we have clear runtime indicators, we're NOT in build
-  if (hasClearRuntime) {
-    return false
-  }
-  
-  // If we're in production without clear runtime indicators, assume build
-  if (process.env?.NODE_ENV === 'production') {
-    return true
-  }
-  
-  // If we can't determine, be conservative and assume build (suppress logs)
-  // This prevents errors during build when detection is uncertain
-  return true
-}
-
 export async function initRedis(): Promise<void> {
   // CRITICAL: Skip Redis initialization during build time
   // Check at the very beginning and return immediately

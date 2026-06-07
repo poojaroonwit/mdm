@@ -3,30 +3,13 @@
 import { useState, useEffect } from 'react'
 import { MainLayout } from '@/components/layout/main-layout'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { StatusBadge } from '@/components/ui/status-badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { UserCombobox } from '@/components/ui/user-combobox'
 import { 
   Plus, 
-  Edit, 
-  Trash2, 
-  Settings, 
-  Users, 
-  User, 
-  Globe,
-  Download,
-  ArrowLeft,
-  Share2
+  ArrowLeft
 } from 'lucide-react'
+import { ExportProfileFormFields } from './components/ExportProfileFormFields'
+import { ExportProfilesList } from './components/ExportProfilesList'
 
 interface ExportProfile {
   id: string
@@ -311,24 +294,6 @@ export default function ExportProfilesPage() {
     }))
   }
 
-  const getSharingIcon = (type: string) => {
-    switch (type) {
-      case 'all_users': return <Globe className="h-4 w-4" />
-      case 'group': return <Users className="h-4 w-4" />
-      case 'specific_users': return <User className="h-4 w-4" />
-      default: return <Share2 className="h-4 w-4" />
-    }
-  }
-
-  const getSharingLabel = (type: string) => {
-    switch (type) {
-      case 'all_users': return 'All Users'
-      case 'group': return 'Group'
-      case 'specific_users': return 'Specific Users'
-      default: return type
-    }
-  }
-
   const handleExport = async (profileId: string) => {
     setExporting(profileId)
     try {
@@ -414,226 +379,24 @@ export default function ExportProfilesPage() {
                   Create a new export profile with custom columns, filters, and sharing settings
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Profile Name</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="Enter profile name"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="dataModel">Data Model</Label>
-                    <Select value={formData.dataModel} onValueChange={(value) => setFormData(prev => ({ ...prev, dataModel: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select data model" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {dataModels.map(model => (
-                          <SelectItem key={model.id} value={model.id}>{model.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Enter profile description"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Format</Label>
-                    <RadioGroup value={formData.format} onValueChange={(value) => setFormData(prev => ({ ...prev, format: value }))}>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="xlsx" id="xlsx" />
-                        <Label htmlFor="xlsx">Excel (.xlsx)</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="csv" id="csv" />
-                        <Label htmlFor="csv">CSV (.csv)</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="isPublic"
-                        checked={formData.isPublic}
-                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPublic: !!checked }))}
-                      />
-                      <Label htmlFor="isPublic">Make this profile public</Label>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between gap-3">
-                      <Label>Columns</Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          placeholder="Search column..."
-                          value={columnSearch}
-                          onChange={(e) => setColumnSearch(e.target.value)}
-                          className="h-8 w-56"
-                        />
-                        <Checkbox
-                          id="selectAllColumns"
-                          checked={modelAttributes.length > 0 && formData.columns.length === modelAttributes.length}
-                          onCheckedChange={(c) => toggleSelectAllColumns(!!c)}
-                        />
-                        <Label htmlFor="selectAllColumns" className="text-sm">Select All</Label>
-                      </div>
-                    </div>
-                    <div className="border rounded-md p-3 max-h-40 overflow-y-auto">
-                      {loadingAttributes ? (
-                        <div className="text-sm text-muted-foreground">Loading attributes...</div>
-                      ) : modelAttributes.length === 0 ? (
-                        <div className="text-sm text-muted-foreground">Select a data model to load columns.</div>
-                      ) : (
-                        <div className="grid grid-cols-2 gap-2">
-                          {modelAttributes
-                            .filter(attr => {
-                              const q = columnSearch.trim().toLowerCase()
-                              if (!q) return true
-                              const name = (attr.display_name || attr.name || '').toLowerCase()
-                              return name.includes(q)
-                            })
-                            .map(attr => (
-                              <div key={attr.id} className="flex items-center space-x-2">
-                                <Checkbox
-                                  id={attr.id}
-                                  checked={formData.columns.includes(attr.name)}
-                                  onCheckedChange={() => toggleColumn(attr.name)}
-                                />
-                                <Label htmlFor={attr.id} className="text-sm">
-                                  {attr.display_name || attr.name}
-                                </Label>
-                              </div>
-                            ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label>Filters</Label>
-                    <div className="space-y-2">
-                      {formData.filters.map((filter, index) => (
-                        <div key={index} className="grid grid-cols-12 gap-2">
-                          <Select
-                            value={filter.attribute}
-                            onValueChange={(value) => updateFilter(index, 'attribute', value)}
-                          >
-                            <SelectTrigger className="col-span-4">
-                              <SelectValue placeholder="Attribute" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {modelAttributes.map(attr => (
-                                <SelectItem key={attr.id} value={attr.name}>
-                                  {attr.display_name || attr.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <Select
-                            value={filter.operator}
-                            onValueChange={(value) => updateFilter(index, 'operator', value)}
-                          >
-                            <SelectTrigger className="col-span-3">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {operatorOptions.map(op => (
-                                <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <Input
-                            className="col-span-4"
-                            placeholder="Value"
-                            value={filter.value}
-                            onChange={(e) => updateFilter(index, 'value', e.target.value)}
-                          />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeFilter(index)}
-                            className="col-span-1"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                      <Button variant="outline" size="sm" onClick={addFilter}>
-                        Add Filter
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label>Sharing Configuration</Label>
-                    <div className="space-y-2">
-                      {formData.sharing.map((share, index) => (
-                        <div key={index} className="grid grid-cols-12 gap-2">
-                          <Select
-                            value={share.type}
-                            onValueChange={(value) => updateSharing(index, 'type', value)}
-                          >
-                            <SelectTrigger className="col-span-4">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all_users">All Users</SelectItem>
-                              <SelectItem value="group">Group</SelectItem>
-                              <SelectItem value="specific_users">Specific Users</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          {share.type === 'group' && (
-                            <Input
-                              className="col-span-4"
-                              placeholder="Group name"
-                              value={share.targetGroup || ''}
-                              onChange={(e) => updateSharing(index, 'targetGroup', e.target.value)}
-                            />
-                          )}
-                          {share.type === 'specific_users' && (
-                            <div className="col-span-4">
-                              <UserCombobox
-                                value={share.targetId}
-                                onValueChange={(val) => updateSharing(index, 'targetId', val)}
-                                placeholder="Search user..."
-                              />
-                            </div>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeSharing(index)}
-                            className="col-span-1"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                      <Button variant="outline" size="sm" onClick={addSharing}>
-                        Add Sharing Rule
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <ExportProfileFormFields
+                columnSearch={columnSearch}
+                dataModels={dataModels}
+                formData={formData}
+                loadingAttributes={loadingAttributes}
+                modelAttributes={modelAttributes}
+                operatorOptions={operatorOptions}
+                addFilter={addFilter}
+                addSharing={addSharing}
+                removeFilter={removeFilter}
+                removeSharing={removeSharing}
+                setColumnSearch={setColumnSearch}
+                setFormData={setFormData}
+                toggleColumn={toggleColumn}
+                toggleSelectAllColumns={toggleSelectAllColumns}
+                updateFilter={updateFilter}
+                updateSharing={updateSharing}
+              />
               <DialogFooter>
                 <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
                   Cancel
@@ -646,105 +409,15 @@ export default function ExportProfilesPage() {
           </Dialog>
         </div>
 
-        {/* Profiles List */}
         <div className="space-y-4">
-          {profiles.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Settings className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No export profiles found</h3>
-                <p className="text-muted-foreground text-center mb-4">
-                  Create your first export profile to get started with automated data exports.
-                </p>
-                <Button onClick={() => setCreateDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" /> Create Profile
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Data Model</TableHead>
-                  <TableHead>Format</TableHead>
-                  <TableHead>Columns</TableHead>
-                  <TableHead>Sharing</TableHead>
-                  <TableHead>Public</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {profiles.map((profile) => (
-                  <TableRow key={profile.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{profile.name}</div>
-                        {profile.description && (
-                          <div className="text-sm text-muted-foreground">{profile.description}</div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{profile.data_model}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{profile.format.toUpperCase()}</Badge>
-                    </TableCell>
-                    <TableCell>{profile.columns.length}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {profile.export_profile_sharing.map((share, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {getSharingIcon(share.sharing_type)}
-                            <span className="ml-1">{getSharingLabel(share.sharing_type)}</span>
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={profile.is_public ? 'public' : 'private'} label={profile.is_public ? 'Yes' : 'No'} />
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-muted-foreground">
-                        {new Date(profile.created_at).toLocaleDateString()}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleExport(profile.id)}
-                          disabled={exporting === profile.id}
-                        >
-                          {exporting === profile.id ? (
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                          ) : (
-                            <Download className="h-4 w-4" />
-                          )}
-                          {exporting === profile.id ? 'Exporting...' : 'Export'}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditDialog(profile)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openDeleteDialog(profile)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <ExportProfilesList
+            exporting={exporting}
+            profiles={profiles}
+            onCreateProfile={() => setCreateDialogOpen(true)}
+            onDeleteProfile={openDeleteDialog}
+            onEditProfile={openEditDialog}
+            onExportProfile={handleExport}
+          />
         </div>
 
         {/* Edit Dialog */}
@@ -756,226 +429,25 @@ export default function ExportProfilesPage() {
                 Update the export profile settings and sharing configuration
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-name">Profile Name</Label>
-                  <Input
-                    id="edit-name"
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Enter profile name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-dataModel">Data Model</Label>
-                  <Select value={formData.dataModel} onValueChange={(value) => setFormData(prev => ({ ...prev, dataModel: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select data model" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {dataModels.map(model => (
-                        <SelectItem key={model.id} value={model.id}>{model.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-description">Description</Label>
-                <Textarea
-                  id="edit-description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Enter profile description"
-                  rows={3}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Format</Label>
-                  <RadioGroup value={formData.format} onValueChange={(value) => setFormData(prev => ({ ...prev, format: value }))}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="xlsx" id="edit-xlsx" />
-                      <Label htmlFor="edit-xlsx">Excel (.xlsx)</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="csv" id="edit-csv" />
-                      <Label htmlFor="edit-csv">CSV (.csv)</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="edit-isPublic"
-                      checked={formData.isPublic}
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPublic: !!checked }))}
-                    />
-                    <Label htmlFor="edit-isPublic">Make this profile public</Label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between gap-3">
-                    <Label>Columns</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        placeholder="Search column..."
-                        value={columnSearch}
-                        onChange={(e) => setColumnSearch(e.target.value)}
-                        className="h-8 w-56"
-                      />
-                      <Checkbox
-                        id="edit-selectAllColumns"
-                        checked={modelAttributes.length > 0 && formData.columns.length === modelAttributes.length}
-                        onCheckedChange={(c) => toggleSelectAllColumns(!!c)}
-                      />
-                      <Label htmlFor="edit-selectAllColumns" className="text-sm">Select All</Label>
-                    </div>
-                  </div>
-                  <div className="border rounded-md p-3 max-h-40 overflow-y-auto">
-                    {loadingAttributes ? (
-                      <div className="text-sm text-muted-foreground">Loading attributes...</div>
-                    ) : modelAttributes.length === 0 ? (
-                      <div className="text-sm text-muted-foreground">Select a data model to load columns.</div>
-                    ) : (
-                      <div className="grid grid-cols-2 gap-2">
-                        {modelAttributes
-                          .filter(attr => {
-                            const q = columnSearch.trim().toLowerCase()
-                            if (!q) return true
-                            const name = (attr.display_name || attr.name || '').toLowerCase()
-                            return name.includes(q)
-                          })
-                          .map(attr => (
-                            <div key={attr.id} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`edit-${attr.id}`}
-                                checked={formData.columns.includes(attr.name)}
-                                onCheckedChange={() => toggleColumn(attr.name)}
-                              />
-                              <Label htmlFor={`edit-${attr.id}`} className="text-sm">
-                                {attr.display_name || attr.name}
-                              </Label>
-                            </div>
-                          ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <Label>Filters</Label>
-                  <div className="space-y-2">
-                    {formData.filters.map((filter, index) => (
-                      <div key={index} className="grid grid-cols-12 gap-2">
-                        <Select
-                          value={filter.attribute}
-                          onValueChange={(value) => updateFilter(index, 'attribute', value)}
-                        >
-                          <SelectTrigger className="col-span-4">
-                            <SelectValue placeholder="Attribute" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {modelAttributes.map(attr => (
-                              <SelectItem key={attr.id} value={attr.name}>
-                                {attr.display_name || attr.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Select
-                          value={filter.operator}
-                          onValueChange={(value) => updateFilter(index, 'operator', value)}
-                        >
-                          <SelectTrigger className="col-span-3">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {operatorOptions.map(op => (
-                              <SelectItem key={op.value} value={op.value}>{op.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Input
-                          className="col-span-4"
-                          placeholder="Value"
-                          value={filter.value}
-                          onChange={(e) => updateFilter(index, 'value', e.target.value)}
-                        />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeFilter(index)}
-                          className="col-span-1"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button variant="outline" size="sm" onClick={addFilter}>
-                      Add Filter
-                    </Button>
-                  </div>
-                </div>
-
-                <div>
-                  <Label>Sharing Configuration</Label>
-                  <div className="space-y-2">
-                    {formData.sharing.map((share, index) => (
-                      <div key={index} className="grid grid-cols-12 gap-2">
-                        <Select
-                          value={share.type}
-                          onValueChange={(value) => updateSharing(index, 'type', value)}
-                        >
-                          <SelectTrigger className="col-span-4">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all_users">All Users</SelectItem>
-                            <SelectItem value="group">Group</SelectItem>
-                            <SelectItem value="specific_users">Specific Users</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {share.type === 'group' && (
-                          <Input
-                            className="col-span-4"
-                            placeholder="Group name"
-                            value={share.targetGroup || ''}
-                            onChange={(e) => updateSharing(index, 'targetGroup', e.target.value)}
-                          />
-                        )}
-                        {share.type === 'specific_users' && (
-                          <div className="col-span-4">
-                            <UserCombobox
-                              value={share.targetId}
-                              onValueChange={(val) => updateSharing(index, 'targetId', val)}
-                              placeholder="Search user..."
-                            />
-                          </div>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeSharing(index)}
-                          className="col-span-1"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button variant="outline" size="sm" onClick={addSharing}>
-                      Add Sharing Rule
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ExportProfileFormFields
+              columnSearch={columnSearch}
+              dataModels={dataModels}
+              formData={formData}
+              idPrefix="edit-"
+              loadingAttributes={loadingAttributes}
+              modelAttributes={modelAttributes}
+              operatorOptions={operatorOptions}
+              addFilter={addFilter}
+              addSharing={addSharing}
+              removeFilter={removeFilter}
+              removeSharing={removeSharing}
+              setColumnSearch={setColumnSearch}
+              setFormData={setFormData}
+              toggleColumn={toggleColumn}
+              toggleSelectAllColumns={toggleSelectAllColumns}
+              updateFilter={updateFilter}
+              updateSharing={updateSharing}
+            />
             <DialogFooter>
               <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
                 Cancel

@@ -1,9 +1,8 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React from 'react'
 import { DefaultCanvasContent } from './DefaultCanvasContent'
 import { CanvasWidget } from './CanvasWidget'
-import { FloatingToolbar } from './FloatingToolbar'
 import { useCanvasDrag } from './useCanvasDrag'
 import { useCanvasResize } from './useCanvasResize'
 import { PlacedWidget, WidgetType, getDefaultWidgetProperties, widgetsPalette } from './widgets'
@@ -97,122 +96,6 @@ export function Canvas({
       }
     }
   }, [isDraggingWidget, isResizing, handleMouseMove, handleMouseUp])
-
-  // Calculate selected rectangle for floating toolbar
-  const selectedRect = useMemo(() => {
-    const selected = selectedWidgetId ? placedWidgets.find(w => w.id === selectedWidgetId) : null
-    const multiSelected = selectedWidgetIds ? Array.from(selectedWidgetIds).map(id => placedWidgets.find(w => w.id === id)).filter(Boolean) as PlacedWidget[] : []
-    const widgetsToShow = multiSelected.length > 1 ? multiSelected : (selected ? [selected] : [])
-    
-    if (widgetsToShow.length === 0 || !canvasRef.current) return undefined
-    
-    if (widgetsToShow.length === 1) {
-      const w = widgetsToShow[0]
-      return {
-        x: w.x,
-        y: w.y,
-        width: w.width || 200,
-        height: w.height || 150,
-      }
-    } else {
-      // Calculate bounding box for multi-select
-      const minX = Math.min(...widgetsToShow.map(w => w.x))
-      const minY = Math.min(...widgetsToShow.map(w => w.y))
-      const maxX = Math.max(...widgetsToShow.map(w => w.x + (w.width || 200)))
-      const maxY = Math.max(...widgetsToShow.map(w => w.y + (w.height || 150)))
-      
-      return {
-        x: minX,
-        y: minY,
-        width: maxX - minX,
-        height: maxY - minY,
-      }
-    }
-  }, [selectedWidgetId, selectedWidgetIds, placedWidgets, canvasRef])
-
-  // Get selected widgets for toolbar
-  const selectedWidgets = useMemo(() => {
-    if (selectedWidgetIds && selectedWidgetIds.size > 1) {
-      return Array.from(selectedWidgetIds)
-        .map(id => placedWidgets.find(w => w.id === id))
-        .filter(Boolean) as PlacedWidget[]
-    }
-    return selectedWidgetId ? [placedWidgets.find(w => w.id === selectedWidgetId)].filter(Boolean) as PlacedWidget[] : []
-  }, [selectedWidgetId, selectedWidgetIds, placedWidgets])
-
-  // Get selected widget for floating toolbar (non-null check)
-  const selectedWidgetNonNull = selectedWidgets.length > 0 ? selectedWidgets[0] : null
-
-  const handleUpdateWidget = React.useCallback((widgetId: string, updates: Partial<PlacedWidget>) => {
-    setPlacedWidgets(prev => prev.map(w => 
-      w.id === widgetId ? { ...w, ...updates } : w
-    ))
-  }, [setPlacedWidgets])
-
-  const handleBulkUpdate = React.useCallback((updates: Partial<PlacedWidget>) => {
-    if (!selectedWidgetIds || selectedWidgetIds.size === 0) return
-    setPlacedWidgets(prev => prev.map(w => 
-      selectedWidgetIds.has(w.id) ? { ...w, ...updates } : w
-    ))
-  }, [selectedWidgetIds, setPlacedWidgets])
-
-  const handleDelete = React.useCallback(() => {
-    if (selectedWidgetIds && selectedWidgetIds.size > 1) {
-      setPlacedWidgets(prev => prev.filter(w => !selectedWidgetIds.has(w.id)))
-    } else if (selectedWidgetId) {
-      setPlacedWidgets(prev => prev.filter(w => w.id !== selectedWidgetId))
-    }
-    setSelectedWidgetId(null)
-    if (setSelectedWidgetIds) {
-      setSelectedWidgetIds(new Set())
-    }
-  }, [selectedWidgetId, selectedWidgetIds, setPlacedWidgets, setSelectedWidgetId, setSelectedWidgetIds])
-
-  const handleDuplicate = React.useCallback(() => {
-    if (selectedWidgetIds && selectedWidgetIds.size > 1) {
-      const widgetsToDuplicate = placedWidgets.filter(w => selectedWidgetIds.has(w.id))
-      const offset = { x: 20, y: 20 }
-      const minX = Math.min(...widgetsToDuplicate.map(w => w.x))
-      const minY = Math.min(...widgetsToDuplicate.map(w => w.y))
-      
-      const newWidgets: PlacedWidget[] = widgetsToDuplicate.map((widget, index) => ({
-        ...widget,
-        id: `widget_${Date.now()}_${index}_${Math.random().toString(36).slice(2, 6)}`,
-        x: widget.x - minX + offset.x,
-        y: widget.y - minY + offset.y,
-      }))
-      
-      setPlacedWidgets(prev => [...prev, ...newWidgets])
-      setSelectedWidgetIds?.(new Set(newWidgets.map(w => w.id)))
-      setSelectedWidgetId(newWidgets[0]?.id || null)
-    } else if (selectedWidgetId) {
-      const widgetToDuplicate = placedWidgets.find(w => w.id === selectedWidgetId)
-      if (widgetToDuplicate) {
-        const offset = { x: 20, y: 20 }
-        const newWidget: PlacedWidget = {
-          ...widgetToDuplicate,
-          id: `widget_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-          x: widgetToDuplicate.x + offset.x,
-          y: widgetToDuplicate.y + offset.y,
-        }
-        setPlacedWidgets(prev => [...prev, newWidget])
-        setSelectedWidgetId(newWidget.id)
-      }
-    }
-  }, [selectedWidgetId, selectedWidgetIds, placedWidgets, setPlacedWidgets, setSelectedWidgetId, setSelectedWidgetIds])
-
-  const handleOpenProperties = React.useCallback(() => {
-    // Scroll to properties panel and ensure it's visible
-    const propsPanel = document.querySelector('[data-properties-panel]')
-    if (propsPanel) {
-      propsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-      // Focus the properties section
-      const selectionTab = document.querySelector('[data-selection-tab]')
-      if (selectionTab) {
-        ;(selectionTab as HTMLElement).focus()
-      }
-    }
-  }, [])
 
   return (
     <div

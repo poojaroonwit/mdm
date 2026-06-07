@@ -1,45 +1,21 @@
-export interface JiraConfig {
-  baseUrl: string // e.g., https://yourcompany.atlassian.net
-  email: string // Jira account email
-  apiToken: string // Jira API token
-  projectKey?: string // Default project key
-}
+import type {
+  JiraComment,
+  JiraConfig,
+  JiraIssue,
+  JiraResponse,
+  TicketToJiraInput,
+} from './jira-service/types'
+import { mapJiraStatusToTicketStatus, mapTicketToJiraIssue } from './jira-service/mappers'
+import * as projectMetadata from './jira-service/project-metadata'
 
-export interface JiraIssue {
-  summary: string
-  description?: string
-  projectKey?: string
-  issueType?: string // Bug, Task, Story, Epic, etc.
-  priority?: 'Lowest' | 'Low' | 'Medium' | 'High' | 'Highest'
-  assignee?: string // Account ID or email
-  labels?: string[]
-  dueDate?: string // ISO 8601 date
-  customFields?: Record<string, any>
-}
-
-export interface JiraResponse {
-  success: boolean
-  issueKey?: string // e.g., "PROJ-123"
-  issueId?: string
-  issueUrl?: string
-  message?: string
-  error?: string
-  data?: any
-}
-
-export interface JiraComment {
-  body: string
-  visibility?: {
-    type: 'role' | 'group'
-    value: string
-  }
-}
-
-export interface JiraAttachment {
-  file: File | Blob
-  fileName: string
-}
-
+export type {
+  JiraAttachment,
+  JiraComment,
+  JiraConfig,
+  JiraIssue,
+  JiraResponse,
+  TicketToJiraInput,
+} from './jira-service/types'
 export class JiraService {
   private config: JiraConfig
   private enableRetry: boolean = true
@@ -126,78 +102,14 @@ export class JiraService {
    * Get all projects
    */
   async getProjects(): Promise<JiraResponse> {
-    try {
-      const url = `${this.config.baseUrl}/rest/api/3/project`
-      const response = await this.executeFetch(url, {
-        method: 'GET',
-        headers: {
-          'Authorization': this.authHeader,
-          'Accept': 'application/json'
-        }
-      })
-
-      if (response.ok) {
-        const projects = await response.json()
-        return {
-          success: true,
-          data: projects
-        }
-      } else {
-        const errorText = await response.text()
-        return {
-          success: false,
-          error: `Failed to get projects: ${response.status} ${errorText}`
-        }
-      }
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to get projects'
-      }
-    }
+    return projectMetadata.getProjects(this.config, this.authHeader, this.executeFetch.bind(this))
   }
 
   /**
    * Get issue types for a project
    */
   async getIssueTypes(projectKey?: string): Promise<JiraResponse> {
-    try {
-      const project = projectKey || this.config.projectKey
-      if (!project) {
-        return {
-          success: false,
-          error: 'Project key is required'
-        }
-      }
-
-      const url = `${this.config.baseUrl}/rest/api/3/project/${project}`
-      const response = await this.executeFetch(url, {
-        method: 'GET',
-        headers: {
-          'Authorization': this.authHeader,
-          'Accept': 'application/json'
-        }
-      })
-
-      if (response.ok) {
-        const projectData = await response.json()
-        return {
-          success: true,
-          data: projectData.issueTypes || []
-        }
-      } else {
-        const errorText = await response.text()
-        return {
-          success: false,
-          error: `Failed to get issue types: ${response.status} ${errorText}`
-        }
-      }
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to get issue types'
-      }
-    }
+    return projectMetadata.getIssueTypes(this.config, this.authHeader, this.executeFetch.bind(this), projectKey)
   }
 
   /**
@@ -581,65 +493,15 @@ export class JiraService {
   /**
    * Map ticket data to Jira issue format
    */
-  mapTicketToJiraIssue(ticket: {
-    title: string
-    description?: string | null
-    priority?: string
-    status?: string
-    assignees?: Array<{ user?: { email?: string } }>
-    tags?: Array<{ name?: string }>
-    projectKey?: string
-    issueType?: string
-  }): JiraIssue {
-    const labels: string[] = []
-    
-    if (ticket.tags) {
-      ticket.tags.forEach(tag => {
-        if (tag.name) labels.push(tag.name)
-      })
-    }
-
-    // Map status to Jira issue type if needed
-    let issueType = ticket.issueType || 'Task'
-    if (ticket.status === 'DONE' || ticket.status === 'CANCELLED') {
-      // Could map to different types based on status
-    }
-
-    return {
-      summary: ticket.title,
-      description: ticket.description || undefined,
-      projectKey: ticket.projectKey,
-      issueType,
-      priority: this.mapPriorityToJira(ticket.priority),
-      labels: labels.length > 0 ? labels : undefined
-    }
-  }
-
-  /**
-   * Map our priority to Jira priority
-   */
-  private mapPriorityToJira(priority?: string): 'Lowest' | 'Low' | 'Medium' | 'High' | 'Highest' | undefined {
-    const map: Record<string, 'Lowest' | 'Low' | 'Medium' | 'High' | 'Highest'> = {
-      'LOW': 'Low',
-      'MEDIUM': 'Medium',
-      'HIGH': 'High',
-      'URGENT': 'Highest'
-    }
-    return priority ? map[priority] || 'Medium' : undefined
+  mapTicketToJiraIssue(ticket: TicketToJiraInput): JiraIssue {
+    return mapTicketToJiraIssue(ticket)
   }
 
   /**
    * Map Jira status to our status
    */
   mapJiraStatusToTicketStatus(jiraStatus: string): string {
-    const statusMap: Record<string, string> = {
-      'To Do': 'BACKLOG',
-      'In Progress': 'IN_PROGRESS',
-      'Done': 'DONE',
-      'Closed': 'CANCELLED',
-      'Resolved': 'DONE'
-    }
-    return statusMap[jiraStatus] || 'BACKLOG'
+    return mapJiraStatusToTicketStatus(jiraStatus)
   }
 }
 

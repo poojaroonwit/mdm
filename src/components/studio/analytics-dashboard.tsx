@@ -41,71 +41,18 @@ import {
   Monitor,
   Tablet
 } from 'lucide-react'
-
-interface AnalyticsMetric {
-  id: string
-  name: string
-  value: number
-  previousValue: number
-  unit: string
-  trend: 'up' | 'down' | 'stable'
-  change: number
-  target?: number
-  status: 'good' | 'warning' | 'critical'
-}
-
-interface PerformanceMetric {
-  id: string
-  name: string
-  value: number
-  unit: string
-  threshold: {
-    warning: number
-    critical: number
-  }
-  status: 'good' | 'warning' | 'critical'
-  description: string
-}
-
-interface UserAnalytics {
-  totalUsers: number
-  activeUsers: number
-  newUsers: number
-  returningUsers: number
-  userRetention: number
-  averageSessionDuration: number
-  bounceRate: number
-  conversionRate: number
-  deviceBreakdown: {
-    desktop: number
-    mobile: number
-    tablet: number
-  }
-  browserBreakdown: {
-    chrome: number
-    firefox: number
-    safari: number
-    edge: number
-    other: number
-  }
-  geographicBreakdown: {
-    [country: string]: number
-  }
-}
-
-interface PageAnalytics {
-  pageId: string
-  pageName: string
-  views: number
-  uniqueViews: number
-  averageTimeOnPage: number
-  bounceRate: number
-  exitRate: number
-  conversionRate: number
-  loadTime: number
-  performanceScore: number
-  lastUpdated: string
-}
+import { AnalyticsMetricCards } from './AnalyticsMetricCards'
+import {
+  formatNumber,
+  formatPercentage,
+  getPerformanceStatusSurfaceColor,
+  getStatusColor,
+  type AnalyticsMetric,
+  type PageAnalytics,
+  type PerformanceMetric,
+  type UserAnalytics,
+} from './analyticsDashboardModel'
+import { AnalyticsDashboardTabs, type AnalyticsDashboardTab } from './AnalyticsDashboardTabs'
 
 interface AnalyticsDashboardProps {
   metrics: AnalyticsMetric[]
@@ -128,7 +75,7 @@ export function AnalyticsDashboard({
   onSetAlert,
   onUpdateSettings
 }: AnalyticsDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'performance' | 'users' | 'pages' | 'settings'>('overview')
+  const [activeTab, setActiveTab] = useState<AnalyticsDashboardTab>('overview')
   const [timeRange, setTimeRange] = useState('7d')
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null)
   const [alertThreshold, setAlertThreshold] = useState(80)
@@ -139,32 +86,6 @@ export function AnalyticsDashboard({
       case 'down': return <TrendingDown className="h-4 w-4 text-destructive" />
       case 'stable': return <Activity className="h-4 w-4 text-muted-foreground" />
     }
-  }, [])
-
-  const getStatusColor = useCallback((status: AnalyticsMetric['status']) => {
-    switch (status) {
-      case 'good': return 'text-primary'
-      case 'warning': return 'text-warning'
-      case 'critical': return 'text-destructive'
-    }
-  }, [])
-
-  const getPerformanceStatusSurfaceColor = useCallback((status: PerformanceMetric['status']) => {
-    switch (status) {
-      case 'good': return 'bg-primary/10 text-primary'
-      case 'warning': return 'bg-warning/20 text-warning'
-      case 'critical': return 'bg-destructive/10 text-destructive'
-    }
-  }, [])
-
-  const formatNumber = useCallback((num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
-    return num.toString()
-  }, [])
-
-  const formatPercentage = useCallback((num: number) => {
-    return `${num.toFixed(1)}%`
   }, [])
 
   return (
@@ -203,76 +124,9 @@ export function AnalyticsDashboard({
         </div>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {metrics.slice(0, 4).map(metric => (
-          <Card key={metric.id}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-sm text-muted-foreground">{metric.name}</div>
-                <div className="flex items-center gap-1">
-                  {getTrendIcon(metric.trend)}
-                  <span className={`text-sm ${getStatusColor(metric.status)}`}>
-                    {metric.change > 0 ? '+' : ''}{formatPercentage(metric.change)}
-                  </span>
-                </div>
-              </div>
-              <div className="text-2xl font-bold mb-1">
-                {formatNumber(metric.value)} {metric.unit}
-              </div>
-              {metric.target && (
-                <div className="text-xs text-muted-foreground">
-                  Target: {formatNumber(metric.target)} {metric.unit}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <AnalyticsMetricCards metrics={metrics} />
 
-      {/* Tabs */}
-      <div className="flex space-x-1 bg-muted rounded-lg p-1">
-        <Button
-          variant={activeTab === 'overview' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('overview')}
-        >
-          <BarChart3 className="h-4 w-4 mr-2" />
-          Overview
-        </Button>
-        <Button
-          variant={activeTab === 'performance' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('performance')}
-        >
-          <Zap className="h-4 w-4 mr-2" />
-          Performance
-        </Button>
-        <Button
-          variant={activeTab === 'users' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('users')}
-        >
-          <Users className="h-4 w-4 mr-2" />
-          Users
-        </Button>
-        <Button
-          variant={activeTab === 'pages' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('pages')}
-        >
-          <Eye className="h-4 w-4 mr-2" />
-          Pages
-        </Button>
-        <Button
-          variant={activeTab === 'settings' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => setActiveTab('settings')}
-        >
-          <Settings className="h-4 w-4 mr-2" />
-          Settings
-        </Button>
-      </div>
+      <AnalyticsDashboardTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Overview Tab */}
       {activeTab === 'overview' && (

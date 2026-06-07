@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { 
   Copy,
   Trash2,
@@ -13,14 +13,10 @@ import {
   RotateCcw,
   FlipHorizontal,
   FlipVertical,
-  Type,
-  Palette,
-  Expand,
   SlidersHorizontal,
   Square,
   ArrowUp,
   ArrowDown,
-  ChevronDown,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -31,9 +27,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel
 } from '@/components/ui/dropdown-menu'
-import { EnhancedColorPicker } from '@/components/ui/EnhancedColorPicker'
 import { PlacedWidget } from './widgets'
 import { Z_INDEX } from '@/lib/z-index'
+import { EffectsMenu, PaddingMenu, StyleMenu, TypographyMenu } from './FloatingToolbarStyleMenus'
 
 interface FloatingToolbarProps {
   selectedWidget: PlacedWidget | null
@@ -157,249 +153,23 @@ export function FloatingToolbar({
 
       {/* Typography Group */}
       <div className="flex items-center border-r border-border pr-2 mr-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 px-2" title="Typography">
-              <Type className="w-4 h-4" />
-              <span className="ml-1 text-xs">Text</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-80">
-            <DropdownMenuLabel>Text</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {(() => {
-              const props = widget.properties || {}
-              const style = props.style || {}
-              
-              return (
-                <div className="p-3 space-y-3">
-                  <div>
-                    <div className="text-[11px] text-muted-foreground mb-1">Font Size</div>
-                    <input 
-                      className="w-full h-7 border border-border rounded px-1 text-xs bg-background text-foreground" 
-                      type="number" 
-                      value={Number(style.fontSize ?? props.fontSize ?? 14)} 
-                      onChange={(e) => handleUpdateProperty(['properties', 'style', 'fontSize'], Number(e.target.value) || 14)} 
-                    />
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-muted-foreground mb-1">Font Weight</div>
-                    <select 
-                      className="w-full h-7 border border-border rounded px-1 text-xs bg-background text-foreground" 
-                      value={String(style.fontWeight ?? props.fontWeight ?? 'normal')} 
-                      onChange={(e) => handleUpdateProperty(['properties', 'style', 'fontWeight'], e.target.value)}
-                    >
-                      <option value="lighter">Light</option>
-                      <option value="normal">Normal</option>
-                      <option value="bold">Bold</option>
-                    </select>
-                  </div>
-                  <div>
-                    <EnhancedColorPicker
-                      value={style.color || props.textColor || '#111827'}
-                      onChange={(color) => handleUpdateProperty(['properties', 'style', 'color'], color)}
-                      label="Font Color"
-                      className="text-xs"
-                    />
-                  </div>
-                </div>
-              )
-            })()}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <TypographyMenu widget={widget} onUpdateProperty={handleUpdateProperty} />
       </div>
 
       {/* Style Group */}
       <div className="flex items-center border-r border-border pr-2 mr-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 px-2" title="Style">
-              <Palette className="w-4 h-4" />
-              <span className="ml-1 text-xs">Style</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-80">
-            <DropdownMenuLabel>Style Settings</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            
-            {/* Background Color */}
-            <div className="p-3">
-              <EnhancedColorPicker
-                value={widget.properties?.backgroundColor || widget.properties?.fillColor || '#ffffff'}
-                onChange={(color) => handleUpdateProperty(['properties', 'backgroundColor'], color)}
-                label="Background Color"
-                className="text-xs"
-              />
-            </div>
-
-            <DropdownMenuSeparator />
-
-            {/* Border Settings */}
-            <div className="p-3">
-              <div className="text-xs font-medium text-foreground mb-2">Border</div>
-              <div className="space-y-2">
-                <div>
-                  <div className="text-[11px] text-muted-foreground mb-1">Width</div>
-                  <input 
-                    className="w-full h-7 border border-border rounded px-1 text-xs bg-background text-foreground" 
-                    type="number" 
-                    value={Number(widget.properties?.borderWidth ?? 0)} 
-                    onChange={(e) => handleUpdateProperty(['properties', 'borderWidth'], Number(e.target.value) || 0)} 
-                  />
-                </div>
-                <div>
-                  <div className="text-[11px] text-muted-foreground mb-1">Radius</div>
-                  <input 
-                    className="w-full h-7 border border-border rounded px-1 text-xs bg-background text-foreground" 
-                    type="number" 
-                    value={Number(widget.properties?.borderRadius ?? 0)} 
-                    onChange={(e) => handleUpdateProperty(['properties', 'borderRadius'], Number(e.target.value) || 0)} 
-                  />
-                </div>
-                <div>
-                  <EnhancedColorPicker
-                    value={widget.properties?.borderColor || '#000000'}
-                    onChange={(color) => handleUpdateProperty(['properties', 'borderColor'], color)}
-                    label="Border Color"
-                    className="text-xs"
-                  />
-                </div>
-              </div>
-            </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <StyleMenu widget={widget} onUpdateProperty={handleUpdateProperty} />
       </div>
 
       {/* Padding Group */}
       <div className="flex items-center border-r border-border pr-2 mr-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 px-2" title="Padding">
-              <Expand className="w-4 h-4" />
-              <span className="ml-1 text-xs">Padding</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-80">
-            <DropdownMenuLabel>Padding</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {(() => {
-              const pad = widget.properties?.padding || {}
-              const toSides = (p: any) => typeof p === 'object' ? p : { top: Number(p || 0), right: Number(p || 0), bottom: Number(p || 0), left: Number(p || 0) }
-              const current = toSides(pad)
-              
-              return (
-                <div className="p-3 grid grid-cols-2 gap-2">
-                  <div>
-                    <div className="text-[11px] text-muted-foreground mb-1">Top</div>
-                    <input 
-                      className="w-full h-7 border border-border rounded px-1 text-xs bg-background text-foreground" 
-                      type="number" 
-                      value={Number(current.top || 0)} 
-                      onChange={(e) => handleUpdateProperty(['properties', 'padding'], { ...current, top: Number(e.target.value) || 0 })} 
-                    />
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-muted-foreground mb-1">Right</div>
-                    <input 
-                      className="w-full h-7 border border-border rounded px-1 text-xs bg-background text-foreground" 
-                      type="number" 
-                      value={Number(current.right || 0)} 
-                      onChange={(e) => handleUpdateProperty(['properties', 'padding'], { ...current, right: Number(e.target.value) || 0 })} 
-                    />
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-muted-foreground mb-1">Bottom</div>
-                    <input 
-                      className="w-full h-7 border border-border rounded px-1 text-xs bg-background text-foreground" 
-                      type="number" 
-                      value={Number(current.bottom || 0)} 
-                      onChange={(e) => handleUpdateProperty(['properties', 'padding'], { ...current, bottom: Number(e.target.value) || 0 })} 
-                    />
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-muted-foreground mb-1">Left</div>
-                    <input 
-                      className="w-full h-7 border border-border rounded px-1 text-xs bg-background text-foreground" 
-                      type="number" 
-                      value={Number(current.left || 0)} 
-                      onChange={(e) => handleUpdateProperty(['properties', 'padding'], { ...current, left: Number(e.target.value) || 0 })} 
-                    />
-                  </div>
-                </div>
-              )
-            })()}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <PaddingMenu widget={widget} onUpdateProperty={handleUpdateProperty} />
       </div>
 
       {/* Effects Group */}
       <div className="flex items-center border-r border-border pr-2 mr-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 px-2" title="Effects">
-              <SlidersHorizontal className="w-4 h-4" />
-              <span className="ml-1 text-xs">Effects</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-80">
-            <DropdownMenuLabel>Shadow & Effects</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {(() => {
-              const shadow = widget.properties?.shadow || {}
-              
-              return (
-                <div className="p-3 grid grid-cols-2 gap-2">
-                  <div>
-                    <div className="text-[11px] text-muted-foreground mb-1">Offset X</div>
-                    <input 
-                      className="w-full h-7 border border-border rounded px-1 text-xs bg-background text-foreground" 
-                      type="number" 
-                      value={Number(shadow.offsetX ?? 0)} 
-                      onChange={(e) => handleUpdateProperty(['properties', 'shadow'], { ...shadow, offsetX: Number(e.target.value) || 0 })} 
-                    />
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-muted-foreground mb-1">Offset Y</div>
-                    <input 
-                      className="w-full h-7 border border-border rounded px-1 text-xs bg-background text-foreground" 
-                      type="number" 
-                      value={Number(shadow.offsetY ?? 0)} 
-                      onChange={(e) => handleUpdateProperty(['properties', 'shadow'], { ...shadow, offsetY: Number(e.target.value) || 0 })} 
-                    />
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-muted-foreground mb-1">Blur</div>
-                    <input 
-                      className="w-full h-7 border border-border rounded px-1 text-xs bg-background text-foreground" 
-                      type="number" 
-                      value={Number(shadow.blur ?? 0)} 
-                      onChange={(e) => handleUpdateProperty(['properties', 'shadow'], { ...shadow, blur: Number(e.target.value) || 0 })} 
-                    />
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-muted-foreground mb-1">Spread</div>
-                    <input 
-                      className="w-full h-7 border border-border rounded px-1 text-xs bg-background text-foreground" 
-                      type="number" 
-                      value={Number(shadow.spread ?? 0)} 
-                      onChange={(e) => handleUpdateProperty(['properties', 'shadow'], { ...shadow, spread: Number(e.target.value) || 0 })} 
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <EnhancedColorPicker
-                      value={shadow.color || '#000000'}
-                      onChange={(color) => handleUpdateProperty(['properties', 'shadow'], { ...shadow, color })}
-                      label="Shadow Color"
-                      className="text-xs"
-                    />
-                  </div>
-                </div>
-              )
-            })()}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <EffectsMenu widget={widget} onUpdateProperty={handleUpdateProperty} />
       </div>
-
       {/* Transform Group */}
       <div className="flex items-center border-r border-border pr-2 mr-2">
         <DropdownMenu>
@@ -573,4 +343,5 @@ export function FloatingToolbar({
     </div>
   )
 }
+
 

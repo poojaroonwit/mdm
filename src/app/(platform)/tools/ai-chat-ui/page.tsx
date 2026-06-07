@@ -3,28 +3,16 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { ChatbotList, ChatbotListSkeleton } from '@/app/admin/components/chatbot/ChatbotList'
-import { ChatbotEditor } from '@/app/admin/components/chatbot/ChatbotEditor'
 import { Chatbot, ChatbotFolder } from '@/app/admin/components/chatbot/types'
-import { ChatbotEmulator } from '@/app/admin/components/chatbot/ChatbotEmulator'
-import { DeploymentDrawer } from '@/app/admin/components/chatbot/components/DeploymentDrawer'
-import { VersionDrawer } from '@/app/admin/components/chatbot/components/VersionDrawer'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
-import { Input } from '@/components/ui/input'
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogBody,
-} from '@/components/ui/dialog'
-import { Plus, ArrowLeft, Rocket, History, Folder as FolderIcon } from 'lucide-react'
+import { Plus, Folder as FolderIcon } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useSpace } from '@/contexts/space-context'
+import { ChatbotEditingWorkspace } from './ChatbotEditingWorkspace'
+import { ChatbotFolderDialog } from './ChatbotFolderDialog'
+import { createDefaultChatbotDraft } from './chatbotDraftDefaults'
 
 export default function ChatEmbedUIPage() {
     const router = useRouter()
@@ -99,96 +87,7 @@ export default function ChatEmbedUIPage() {
 
     const handleCreate = () => {
         setSelectedChatbot(null)
-        setEditorFormData({
-            name: 'New Chatbot',
-            folder_id: null,
-            website: 'https://example.com',
-            description: 'A new AI assistant',
-            engineType: 'custom',
-            apiEndpoint: 'https://api.openai.com/v1/chat/completions',
-            apiAuthType: 'none',
-            apiAuthValue: '',
-            conversationOpener: 'Hello! How can I help you today?',
-            openaiAgentSdkModel: 'gpt-4o',
-            deploymentType: 'popover',
-            customEmbedDomain: '',
-
-            // ===== Default Style Settings =====
-            // Primary colors
-            primaryColor: '#1e40af',
-            fontFamily: 'Inter',
-
-            // Header settings
-            headerTitle: 'New Chatbot',
-            headerDescription: 'How can I help you today?',
-            headerShowTitle: true,
-            headerShowLogo: false,
-            headerBgColor: '#1e40af',
-            headerFontColor: '#ffffff',
-            headerBorderEnabled: true,
-            headerBorderColor: '#e5e7eb',
-            headerShowClearSession: true,
-
-            // Widget settings
-            widgetPosition: 'bottom-right',
-            widgetOffsetX: '20px',
-            widgetOffsetY: '20px',
-            widgetSize: '60px',
-            widgetAvatarStyle: 'circle',
-            widgetBackgroundColor: '#1e40af',
-            widgetBorderRadius: '50%',
-            widgetBorderWidth: '0px',
-            widgetBorderColor: 'transparent',
-            widgetShadowBlur: '8px',
-            widgetShadowColor: 'rgba(0,0,0,0.2)',
-            widgetAutoShow: false,
-            widgetAutoShowDelay: 3,
-
-            // Chat container settings
-            chatBackgroundColor: '#ffffff',
-            chatFontColor: '#1f2937',
-            chatBorderRadius: '12px',
-
-            // Message bubble settings
-            userBubbleColor: '#1e40af',
-            userBubbleFontColor: '#ffffff',
-            botBubbleColor: '#f3f4f6',
-            botBubbleFontColor: '#1f2937',
-
-            // Composer settings
-            composerBackgroundColor: '#ffffff',
-            composerFontColor: '#1f2937',
-            composerPlaceholder: 'Type a message...',
-
-            // Popover settings
-            popoverWidth: '400px',
-            popoverHeight: '600px',
-            popoverBorderRadius: '16px',
-
-            // Avatar settings
-            avatarType: 'icon',
-            avatarIcon: 'Bot',
-            avatarIconColor: '#ffffff',
-
-            // Conversation settings
-            showStartConversation: true,
-            enableConversationRenaming: true,
-
-            // Required arrays/booleans
-            followUpQuestions: [],
-            enableFileUpload: false,
-            showCitations: true,
-            isPublished: false,
-
-            // ChatKit options with defaults
-            chatkitOptions: {
-                history: {
-                    enabled: true,
-                    showDelete: true,
-                    showRename: true
-                }
-            }
-        } as any)
+        setEditorFormData(createDefaultChatbotDraft())
         setIsEditing(true)
         setActiveTab('engine')
     }
@@ -543,116 +442,23 @@ export default function ChatEmbedUIPage() {
 
     if (isEditing) {
         return (
-            <div className="flex flex-col h-full bg-background overflow-hidden">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 shrink-0">
-                    <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => setIsEditing(false)}>
-                            <ArrowLeft className="h-4 w-4" />
-                        </Button>
-                        <div>
-                            <h1 className="text-xl font-semibold">
-                                {selectedChatbot ? `Edit ${selectedChatbot.name}` : 'Create New Chatbot'}
-                            </h1>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        {/* Version indicator */}
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span className="font-mono bg-muted px-2 py-0.5 rounded text-xs">
-                                v{editorFormData.currentVersion || selectedChatbot?.currentVersion || '1.0.0'}
-                            </span>
-                            {editorFormData.isPublished ? (
-                                <span className="text-green-600 text-xs font-medium">Published</span>
-                            ) : (
-                                <span className="text-amber-600 text-xs font-medium">Draft</span>
-                            )}
-                            {/* Version History button - icon only */}
-                            <VersionDrawer
-                                versions={selectedChatbot?.versions || editorFormData.versions || []}
-                                currentVersion={editorFormData.currentVersion || selectedChatbot?.currentVersion}
-                                onRestore={(version) => {
-                                    setEditorFormData(prev => ({
-                                        ...prev,
-                                        ...version.config,
-                                        currentVersion: version.version,
-                                        isPublished: false
-                                    }))
-                                    toast.success(`Loaded configuration from v${version.version}`)
-                                }}
-                                chatbot={editorFormData}
-                                iconOnly={true}
-                            />
-                        </div>
-                        <div className="w-px h-6 bg-border" />
-                        {/* Enable/Disable Toggle */}
-                        <div className="flex items-center gap-2">
-                            <Switch
-                                id="chatbot-enabled-header"
-                                checked={editorFormData.chatbotEnabled !== false}
-                                onCheckedChange={(checked) => setEditorFormData(prev => ({ ...prev, chatbotEnabled: checked }))}
-                            />
-                            <span className={`text-xs font-medium ${editorFormData.chatbotEnabled !== false ? 'text-green-600' : 'text-muted-foreground'}`}>
-                                {editorFormData.chatbotEnabled !== false ? 'Enabled' : 'Disabled'}
-                            </span>
-                        </div>
-                        <div className="w-px h-6 bg-border" />
-                        {/* Deployment button */}
-                        <Button variant="outline" onClick={() => setDeploymentDrawerOpen(true)}>
-                            <Rocket className="h-4 w-4 mr-2" />
-                            Deployment
-                        </Button>
-                        {/* Save Draft - always saves as draft with incremented version */}
-                        <Button variant="outline" onClick={() => handleSave()}>
-                            Save Draft
-                        </Button>
-                        {/* Publish - saves then publishes */}
-                        <Button 
-                            onClick={() => handlePublishFromEditor()}
-                            className="bg-green-600 hover:bg-green-700"
-                        >
-                            Publish
-                        </Button>
-                    </div>
-                </div>
-
-                <div className="flex-1 flex overflow-hidden">
-                    <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 min-w-[500px] border-r border-border/50">
-                        <ChatbotEditor
-                            formData={editorFormData}
-                            setFormData={setEditorFormData}
-                            selectedChatbot={selectedChatbot}
-                            activeTab={activeTab}
-                            onTabChange={setActiveTab}
-                            onGenerateEmbedCode={generateEmbedCode}
-                            onSave={handleSave}
-                        />
-                    </div>
-
-                    <div className="w-[450px] lg:w-[600px] xl:w-[700px] bg-muted/10 h-full overflow-hidden shrink-0">
-                        <ChatbotEmulator
-                            selectedChatbot={selectedChatbot}
-                            formData={editorFormData}
-                            onFormDataChange={setEditorFormData}
-                            previewMode={previewMode}
-                            onPreviewModeChange={setPreviewMode}
-                        />
-                    </div>
-                </div>
-
-                {/* Deployment Drawer */}
-                <DeploymentDrawer
-                    open={deploymentDrawerOpen}
-                    onOpenChange={setDeploymentDrawerOpen}
-                    formData={editorFormData}
-                    setFormData={setEditorFormData}
-                    selectedChatbot={selectedChatbot}
-                    onGenerateEmbedCode={generateEmbedCode}
-                    onSave={handleSave}
-                />
-            </div>
+            <ChatbotEditingWorkspace
+                selectedChatbot={selectedChatbot}
+                editorFormData={editorFormData}
+                setEditorFormData={setEditorFormData}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                previewMode={previewMode}
+                setPreviewMode={setPreviewMode}
+                deploymentDrawerOpen={deploymentDrawerOpen}
+                setDeploymentDrawerOpen={setDeploymentDrawerOpen}
+                setIsEditing={setIsEditing}
+                handleSave={handleSave}
+                handlePublishFromEditor={handlePublishFromEditor}
+                generateEmbedCode={generateEmbedCode}
+            />
         )
     }
-
     return (
         <div className="flex flex-col h-full bg-background p-8">
             <div className="flex items-center justify-between mb-8">
@@ -705,38 +511,14 @@ export default function ChatEmbedUIPage() {
                         onMoveChatbot={handleMoveChatbot}
                     />
 
-                    <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>{folderDialogMode === 'create' ? 'Create Folder' : 'Rename Folder'}</DialogTitle>
-                                <DialogDescription>
-                                    {folderDialogMode === 'create'
-                                        ? 'Create a folder to organize chatbot configurations.'
-                                        : 'Update the folder name for this chatbot group.'}
-                                </DialogDescription>
-                            </DialogHeader>
-                             <DialogBody>
-                                <Input
-                                    value={folderName}
-                                    onChange={(e) => setFolderName(e.target.value)}
-                                    placeholder="Folder name"
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            void handleSaveFolder()
-                                        }
-                                    }}
-                                />
-                            </DialogBody>
-                            <DialogFooter>
-                                <Button variant="outline" onClick={() => setFolderDialogOpen(false)}>
-                                    Cancel
-                                </Button>
-                                <Button onClick={() => void handleSaveFolder()}>
-                                    {folderDialogMode === 'create' ? 'Create Folder' : 'Save Changes'}
-                                </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
+                    <ChatbotFolderDialog
+                        open={folderDialogOpen}
+                        onOpenChange={setFolderDialogOpen}
+                        mode={folderDialogMode}
+                        folderName={folderName}
+                        setFolderName={setFolderName}
+                        handleSaveFolder={handleSaveFolder}
+                    />
                 </>
             )}
         </div>
