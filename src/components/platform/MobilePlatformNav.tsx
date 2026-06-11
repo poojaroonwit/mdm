@@ -203,7 +203,7 @@ export function MobilePlatformNav({
                 variant="ghost"
                 onClick={() => setOpenGroupId(group.id)}
                 className={cn(
-                  'h-16 min-w-[78px] flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-3 text-[11px] font-semibold',
+                  'h-16 min-w-[78px] flex-1 flex-col items-center justify-center gap-1 rounded-lg px-3 text-[11px] font-semibold',
                   isActive
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:bg-muted/80 hover:text-foreground'
@@ -220,7 +220,7 @@ export function MobilePlatformNav({
       <Sheet open={!!openGroupId} onOpenChange={(open) => !open && setOpenGroupId(null)}>
         <SheetContent
           side="bottom"
-          className="h-[78vh] rounded-t-[32px] border-x-0 border-b-0 bg-background/95 px-0 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-0 md:hidden"
+          className="h-[78vh] rounded-t-lg border-x-0 border-b-0 bg-background/95 px-0 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-0 md:hidden"
         >
           <div className="mx-auto mt-3 h-1.5 w-16 rounded-full bg-border" />
           <SheetHeader className="border-b border-border px-5 pb-4 pt-5">
@@ -248,13 +248,13 @@ export function MobilePlatformNav({
                           type="button"
                           onClick={() => navigateToItem(item)}
                           className={cn(
-                            "flex w-full items-start gap-3 rounded-2xl border px-4 py-4 text-left transition hover:border-primary/30 hover:bg-primary/5",
+                            "flex w-full items-start gap-3 rounded-lg border px-4 py-4 text-left transition hover:border-primary/30 hover:bg-primary/5",
                             isActive
                               ? "border-primary/40 bg-primary/5"
                               : "border-border/70 bg-card/80"
                           )}
                         >
-                          <div className="mt-0.5 rounded-2xl bg-background p-2 text-primary shadow-lg">
+                          <div className="mt-0.5 rounded-lg bg-background p-2 text-primary shadow-sm">
                             <Icon className="h-5 w-5" />
                           </div>
                           <div className="min-w-0 flex-1">

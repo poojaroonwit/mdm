@@ -19,7 +19,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="mb-2 block text-sm font-semibold tracking-[-0.01em] text-foreground/85"
+            className="mb-2 block text-sm font-semibold text-foreground"
           >
             {label}
           </label>
@@ -28,8 +28,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={clsx(
-            'flex h-9 w-full min-w-0 rounded-md border-none bg-muted/65 px-3 text-sm text-foreground shadow-none ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground transition-[background-color,color,box-shadow] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-40',
-            error && 'bg-red-500/5 focus-visible:ring-red-500/20',
+            'flex h-10 w-full min-w-0 rounded-lg border border-input bg-background px-3 text-sm text-foreground shadow-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground transition-[background-color,border-color,color,box-shadow] duration-200 ease-out focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:cursor-not-allowed disabled:bg-muted/70 disabled:opacity-60 max-md:min-h-11',
+            error && 'border-destructive bg-destructive/5 focus-visible:border-destructive focus-visible:ring-destructive/20',
             className
           )}
           aria-invalid={error ? 'true' : undefined}
@@ -37,7 +37,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {error && (
-          <p id={`${inputId}-error`} className="mt-2 text-sm font-medium text-red-600 dark:text-red-400" role="alert">
+          <p id={`${inputId}-error`} className="mt-2 text-sm font-medium text-destructive" role="alert">
             {error}
           </p>
         )}

@@ -105,7 +105,7 @@ const DialogOverlay = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "fixed inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-sm animate-in fade-in-0 duration-300",
+        "fixed inset-0 bg-background/55 backdrop-blur-sm animate-in fade-in-0 duration-200",
         className
       )}
       style={{ zIndex: Z_INDEX.overlay }}
@@ -158,14 +158,14 @@ const DialogContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border border-zinc-200/70 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl shadow-2xl duration-300 animate-in fade-in-0 zoom-in-95 sm:rounded-2xl overflow-hidden",
+          "fixed left-[50%] top-[50%] grid max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-[var(--shadow-floating)] duration-200 animate-in fade-in-0 zoom-in-95",
           className
         )}
         style={{ zIndex: Z_INDEX.dialog }}
         {...props}
       >
         {children}
-        <DialogClose className="absolute right-4 top-4 rounded-xl p-2 opacity-70 ring-offset-background transition-all hover:opacity-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-2 disabled:pointer-events-none">
+        <DialogClose className="absolute right-4 top-4 rounded-lg p-2 opacity-70 ring-offset-background transition-all hover:bg-muted hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-primary/25 focus:ring-offset-2 disabled:pointer-events-none">
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </DialogClose>
@@ -183,7 +183,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-1.5 border-b border-zinc-100/60 px-6 py-5 text-left dark:border-zinc-800/60",
+      "flex flex-col gap-1.5 border-b border-border px-6 py-5 text-left",
       className
     )}
     {...props}
@@ -197,7 +197,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col gap-3 px-6 py-5 pt-0 sm:flex-row sm:justify-center sm:space-x-4 sm:gap-0",
+      "flex flex-col-reverse gap-3 border-t border-border bg-muted/25 px-6 py-5 sm:flex-row sm:justify-end",
       className
     )}
     {...props}
@@ -210,7 +210,7 @@ const DialogBody = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("px-6 py-5", className)}
+    className={cn("overflow-y-auto px-6 py-5", className)}
     {...props}
   />
 )
@@ -223,7 +223,7 @@ const DialogTitle = React.forwardRef<
   <h2
     ref={ref}
     className={cn(
-      "text-lg font-bold uppercase tracking-tight text-zinc-900 dark:text-zinc-50 leading-none",
+      "text-lg font-semibold leading-7 text-foreground",
       className
     )}
     {...props}
@@ -237,7 +237,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-xs text-zinc-400 dark:text-zinc-500 font-medium", className)}
+    className={cn("text-sm leading-5 text-muted-foreground", className)}
     {...props}
   />
 ))

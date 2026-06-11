@@ -5,6 +5,8 @@ const isCiBuild = process.env.CI === 'true' || process.env.DOCKER_BUILD === 'tru
 const isBuildDiagnosticsEnabled = process.env.NEXT_BUILD_DEBUG === 'true'
 
 const nextConfig = {
+  distDir: process.env.NEXT_DIST_DIR || '.next',
+
   images: {
     remotePatterns: [
       {

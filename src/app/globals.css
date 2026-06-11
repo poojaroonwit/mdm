@@ -44,15 +44,33 @@
     --border-active: #9ca3af; /* gray-400 */
 
     --primary-blue: #3b82f6;
-    --primary-blue-hover: #1e3a8a;
+    --primary-blue-hover: #2563eb;
     --primary-blue-light: #dbeafe;
     --primary-blue-soft: rgba(30, 64, 175, 0.08);
     --primary-navy: #172554;
     --primary-light: #4f46e5;
 
+    --accent-teal: #0d9488;
+    --accent-violet: #6d5dfc;
+    --neutral-50: #f8fafc;
+    --neutral-100: #f1f5f9;
+    --neutral-200: #e2e8f0;
+    --neutral-500: #64748b;
+    --neutral-800: #1e293b;
 
-    --shadow-blue-glow: 2px 5px 10px rgba(148, 186, 255, 0.959);
-    --shadow-blue-glow-hover: 2px 6px 16px rgba(123, 154, 255, 0.856);
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-12: 3rem;
+
+    --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 28px rgba(15, 23, 42, 0.05);
+    --shadow-card-hover: 0 1px 2px rgba(15, 23, 42, 0.05), 0 14px 36px rgba(15, 23, 42, 0.08);
+    --shadow-floating: 0 18px 50px rgba(15, 23, 42, 0.16);
+    --shadow-blue-glow: 0 1px 2px rgba(30, 64, 175, 0.18), 0 8px 18px rgba(30, 64, 175, 0.14);
+    --shadow-blue-glow-hover: 0 1px 2px rgba(30, 64, 175, 0.22), 0 12px 26px rgba(30, 64, 175, 0.18);
 
     --sidebar-bg: #ffffff;
     --sidebar-border: #e5e7eb;
@@ -162,6 +180,17 @@
     --primary-blue-hover: #60a5fa;
     --primary-blue-light: #1e40af;
     --primary-blue-soft: rgba(59, 130, 246, 0.15);
+    --accent-teal: #2dd4bf;
+    --accent-violet: #8b7cff;
+    --neutral-50: #09090b;
+    --neutral-100: #111113;
+    --neutral-200: #27272a;
+    --neutral-500: #a1a1aa;
+    --neutral-800: #f4f4f5;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.32), 0 12px 28px rgba(0, 0, 0, 0.24);
+    --shadow-card-hover: 0 1px 2px rgba(0, 0, 0, 0.34), 0 18px 42px rgba(0, 0, 0, 0.3);
+    --shadow-floating: 0 24px 64px rgba(0, 0, 0, 0.44);
 
     --sidebar-bg: #000000;
     --sidebar-border: #262626;

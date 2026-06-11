@@ -11,16 +11,16 @@ function cn(...inputs: ClassValue[]) {
 }
 
 export const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap font-medium transition-[background-color,border-color,box-shadow,color,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none select-none [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0',
+  'inline-flex items-center justify-center whitespace-nowrap font-medium transition-[background-color,border-color,box-shadow,color,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-45 disabled:cursor-not-allowed disabled:pointer-events-none select-none active:translate-y-px [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
         primary:
-          'bg-gradient-to-br from-[var(--primary-light)] to-[var(--primary-blue)]  text-primary-foreground border border-transparent shadow-[var(--shadow-blue-glow)] hover:-translate-y-px hover:shadow-[var(--shadow-blue-glow-hover)]',
+          'bg-[var(--primary-blue)] text-white border border-transparent shadow-[var(--shadow-blue-glow)] hover:bg-[var(--primary-blue-hover)] hover:-translate-y-px hover:shadow-[var(--shadow-blue-glow-hover)]',
         default:
-          'bg-gradient-to-br from-[var(--primary-light)] to-[var(--primary-blue)] text-primary-foreground border border-transparent shadow-[var(--shadow-blue-glow)] hover:-translate-y-px hover:shadow-[var(--shadow-blue-glow-hover)]',
+          'bg-[var(--primary-blue)] text-white border border-transparent shadow-[var(--shadow-blue-glow)] hover:bg-[var(--primary-blue-hover)] hover:-translate-y-px hover:shadow-[var(--shadow-blue-glow-hover)]',
         luxury:
-          'bg-gradient-to-b from-[#1e40af] to-[#172554] text-white border border-white/10 shadow-[var(--shadow-blue-glow)] hover:shadow-[var(--shadow-blue-glow-hover)] hover:scale-[1.02] active:scale-[0.98]',
+          'bg-[var(--primary-navy)] text-white border border-white/10 shadow-[var(--shadow-blue-glow)] hover:bg-[var(--primary-blue-hover)] hover:shadow-[var(--shadow-blue-glow-hover)]',
         gradient:
           'bg-gradient-to-r from-[#3b82f6] to-[#4f46e5] text-white border border-transparent hover:opacity-90 hover:shadow-lg',
         glass:
@@ -30,11 +30,11 @@ export const buttonVariants = cva(
         'soft-blue':
           'bg-[color:color-mix(in_srgb,var(--primary-blue)_10%,transparent)] text-[var(--primary-blue)] border border-transparent hover:bg-[color:color-mix(in_srgb,var(--primary-blue)_16%,transparent)]',
         secondary:
-          'bg-secondary text-secondary-foreground border border-border shadow-md hover:bg-secondary/80',
+          'bg-card text-foreground border border-border shadow-sm hover:bg-muted/70 hover:border-border',
         danger:
-          'bg-[color:color-mix(in_srgb,var(--destructive)_12%,transparent)] text-[color:var(--destructive)] border border-[color:color-mix(in_srgb,var(--destructive)_24%,transparent)] hover:bg-[color:var(--destructive)] hover:text-white',
+          'bg-destructive/10 text-destructive border border-destructive/25 hover:bg-destructive hover:text-destructive-foreground',
         destructive:
-          'bg-[color:color-mix(in_srgb,var(--destructive)_12%,transparent)] text-[color:var(--destructive)] border border-[color:color-mix(in_srgb,var(--destructive)_24%,transparent)] hover:bg-[color:var(--destructive)] hover:text-white',
+          'bg-destructive/10 text-destructive border border-destructive/25 hover:bg-destructive hover:text-destructive-foreground',
         warning:
           'bg-[color:color-mix(in_srgb,var(--warning)_14%,transparent)] text-[color:var(--warning)] border border-[color:color-mix(in_srgb,var(--warning)_26%,transparent)] hover:bg-[color:var(--warning)] hover:text-[color:var(--text-primary)]',
         success:
@@ -47,11 +47,11 @@ export const buttonVariants = cva(
           'h-auto bg-transparent p-0 text-primary underline-offset-4 shadow-none hover:underline',
       },
       size: {
-        sm: 'h-8 px-3 text-xs rounded-md gap-1.5',
-        md: 'h-9 px-4 text-sm rounded-md gap-2',
-        default: 'h-9 px-4 text-sm rounded-md gap-2',
-        lg: 'h-11 px-8 text-base rounded-md gap-2',
-        icon: 'h-9 w-9 rounded-md',
+        sm: 'h-8 px-3 text-xs rounded-lg gap-1.5',
+        md: 'h-10 px-4 text-sm rounded-lg gap-2 max-md:min-h-11',
+        default: 'h-10 px-4 text-sm rounded-lg gap-2 max-md:min-h-11',
+        lg: 'h-11 px-6 text-base rounded-lg gap-2 max-md:min-h-11',
+        icon: 'h-10 w-10 rounded-lg max-md:h-11 max-md:w-11',
       },
     },
     defaultVariants: {

@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { useRouter, usePathname } from 'next/navigation'
 import { PlatformSidebar } from './PlatformSidebar'
 import { TopMenuBar } from './TopMenuBar'
+import { MobilePlatformNav } from './MobilePlatformNav'
 import { Z_INDEX } from '@/lib/z-index'
 import type { InfrastructureInstance } from '@/features/infrastructure/types'
 import { useInfrastructureContext } from '@/contexts/infrastructure-context'
@@ -437,6 +438,14 @@ export function PlatformLayout({
           </main>
         </div>
       </div>
+
+      {!showSpaceSettingsSidebar && !showSpaceSidebar && !showProjectManagementSidebar && (
+        <MobilePlatformNav
+          activeTab={activeTab}
+          selectedSpace={selectedSpace}
+          onTabChange={onTabChange}
+        />
+      )}
 
       {/* Edit VM Dialog */}
       <EditVMDialog

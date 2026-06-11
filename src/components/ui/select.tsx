@@ -110,13 +110,13 @@ const SelectTrigger = React.forwardRef<
       onClick={handleClick}
       data-component="select-trigger"
       className={cn(
-        "flex h-9 w-full items-center justify-between rounded-md border-none bg-zinc-100/65 dark:bg-zinc-900/65 px-4 text-sm ring-offset-background transition-all duration-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-40 [&>span]:line-clamp-1 group shadow-none",
+        "group flex h-10 w-full items-center justify-between rounded-lg border border-input bg-background px-3 text-sm text-foreground shadow-sm ring-offset-background transition-[background-color,border-color,box-shadow,color] duration-200 placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:bg-muted/70 disabled:opacity-60 max-md:min-h-11 [&>span]:line-clamp-1",
         className
       )}
       {...props}
     >
       {children}
-      <ChevronDown className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors duration-300" />
+      <ChevronDown className="h-4 w-4 text-muted-foreground transition-colors duration-200 group-hover:text-foreground" />
     </button>
   )
 })
@@ -213,7 +213,7 @@ const SelectContent = React.forwardRef<
       ref={contentRef}
       data-component="select-content"
       className={cn(
-        "fixed rounded-md border border-zinc-200/70 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-2xl outline-none flex flex-col overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200",
+        "fixed flex flex-col overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-[var(--shadow-floating)] outline-none animate-in fade-in-0 zoom-in-95 duration-200",
         className
       )}
       style={{
@@ -317,8 +317,8 @@ const SelectItem = React.forwardRef<
       aria-selected={isSelected}
       onClick={handleClick}
       className={cn(
-        "relative flex h-9 w-full cursor-default select-none items-center rounded-lg pr-3 text-sm outline-none transition-colors duration-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-40",
-        isSelected && "bg-zinc-100/80 dark:bg-zinc-800/80 font-black text-zinc-900 dark:text-white",
+        "relative flex min-h-10 w-full cursor-default select-none items-center rounded-md py-2 pr-3 text-sm outline-none transition-colors duration-200 hover:bg-muted disabled:pointer-events-none disabled:opacity-40",
+        isSelected && "bg-primary/10 font-semibold text-primary",
         className
       )}
       {...props}
@@ -338,7 +338,7 @@ const SelectLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("py-1.5 pl-8 pr-2 text-sm font-semibold", className)}
+    className={cn("px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground", className)}
     {...props}
   />
 ))
@@ -350,7 +350,7 @@ const SelectSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-zinc-100 dark:bg-zinc-800", className)}
+    className={cn("-mx-1 my-1 h-px bg-border", className)}
     {...props}
   />
 ))
