@@ -191,7 +191,7 @@ export async function proxy(req: NextRequest) {
   return addSecurityHeaders(response, pathname)
 }
 
-export const proxyConfig = {
+export const config = {
   matcher: [
     '/((?!api/auth|api/debug|auth/signin|[^/]+/auth/signin|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html|js)$).*)',
   ],

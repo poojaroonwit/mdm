@@ -84,7 +84,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   )
 
   return (
-    <SessionProvider refetchInterval={0} refetchOnWindowFocus={false}>
+    <SessionProvider refetchInterval={60} refetchOnWindowFocus={true}>
       <NextThemeProvider
         attribute="class"
         defaultTheme="system"
