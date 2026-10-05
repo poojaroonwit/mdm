@@ -91,15 +91,7 @@ export function buildEmbedPopoverBehaviorScript() {
     var chatWindowShadowBlur = formatDim(chatbot.chatWindowShadowBlur || chatbot.shadowBlur || '4px');
     var chatWindowShadowSpread = formatDim(chatbot.chatWindowShadowSpread || chatbot.shadowSpread || '0px');
     var chatBgColor = chatbot.messageBoxColor || chatKitBgColor || '#ffffff';
-    var chatBgStyle = '';
-    if (widgetConfig.chatBlur > 0) {
-      chatBgStyle += 'backdrop-filter: blur(' + widgetConfig.chatBlur + 'px); -webkit-backdrop-filter: blur(' + widgetConfig.chatBlur + 'px); ';
-    }
-    if (widgetConfig.chatOpacity < 100) {
-      chatBgStyle += 'background-color: rgba(' + hexToRgb(chatBgColor) + ', ' + (widgetConfig.chatOpacity / 100) + '); ';
-    } else {
-      chatBgStyle += 'background-color: ' + chatBgColor + '; ';
-    }
+    var chatBgStyle = getWidgetBackgroundStyle(chatBgColor, widgetConfig.chatBlur, widgetConfig.chatOpacity);
     
     var borderWidth = formatDim(chatbot.chatWindowBorderWidth || chatbot.borderWidth || '1px');
     var borderTopWidth = formatDim(chatbot.chatWindowBorderWidthTop || borderWidth);
