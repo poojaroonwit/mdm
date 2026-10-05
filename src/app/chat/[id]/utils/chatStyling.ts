@@ -19,6 +19,38 @@ interface EmulatorConfig {
   description?: string
 }
 
+function normalizeRadiusValue(value: unknown, fallback: string): string {
+  if (value === undefined || value === null || value === '') return fallback
+  const text = String(value)
+  return /^-?\d+(?:\.\d+)?$/.test(text) ? `${text}px` : text
+}
+
+function getChatWindowBorderRadius(chatbot: ChatbotConfig, defaultRadius = '12px'): string {
+  const config = chatbot as any
+  const baseRadius = normalizeRadiusValue(
+    config.chatWindowBorderRadius ?? config.borderRadius,
+    defaultRadius
+  )
+
+  const cornerKeys = [
+    'chatWindowBorderRadiusTopLeft',
+    'chatWindowBorderRadiusTopRight',
+    'chatWindowBorderRadiusBottomRight',
+    'chatWindowBorderRadiusBottomLeft',
+  ] as const
+
+  const hasGranularRadius = cornerKeys.some((key) => {
+    const value = config[key]
+    return value !== undefined && value !== null && value !== ''
+  })
+
+  if (!hasGranularRadius) return baseRadius
+
+  return cornerKeys
+    .map((key) => normalizeRadiusValue(config[key], baseRadius))
+    .join(' ')
+}
+
 // Helper function to convert hex color to RGB
 // Buffer to prevent shadow clipping in iframes
 // Smaller buffer used for the button-only (closed) state — reduces the transparent iframe area
@@ -220,7 +252,7 @@ export function getContainerStyle(
       height: ensureUnits((chatbot as any).chatWindowHeight, '600px'),
       // Remove duplicate height check
       border: `${chatbot.chatWindowBorderWidth || chatbot.borderWidth || '1px'} solid ${chatbot.chatWindowBorderColor || chatbot.borderColor || '#e2e8f0'}`,
-      borderRadius: ensureUnits(chatbot.chatWindowBorderRadius || chatbot.borderRadius, '12px'),
+      borderRadius: getChatWindowBorderRadius(chatbot),
       boxShadow: isMobile ? 'none' : fullBoxShadow,
       outline: undefined,
       zIndex: (chatbot as any).widgetZIndex || Z_INDEX.chatWidget,
@@ -341,7 +373,7 @@ export function getContainerStyle(
       height: ensureUnits((chatbot as any).chatWindowHeight, '700px'),
       // Remove duplicate height check
       border: `${chatbot.chatWindowBorderWidth || chatbot.borderWidth || '1px'} solid ${chatbot.chatWindowBorderColor || chatbot.borderColor || '#e2e8f0'}`,
-      borderRadius: ensureUnits(chatbot.chatWindowBorderRadius || chatbot.borderRadius, '12px'),
+      borderRadius: getChatWindowBorderRadius(chatbot),
       boxShadow: fullBoxShadow,
       outline: undefined,
       zIndex: Z_INDEX.chatWidgetWindow,
