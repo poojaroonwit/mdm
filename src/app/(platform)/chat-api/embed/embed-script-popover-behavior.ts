@@ -86,8 +86,11 @@ export function buildEmbedPopoverBehaviorScript() {
     
     // Styling variables for the chat window
     var chatWindowShadowColor = chatbot.chatWindowShadowColor || chatbot.shadowColor || '#000000';
-    var chatWindowShadowBlur = chatbot.chatWindowShadowBlur || chatbot.shadowBlur || '4px';
-    var chatBgColor = chatKitBgColor || chatbot.messageBoxColor || '#ffffff';
+    var chatWindowShadowX = formatDim(chatbot.chatWindowShadowX || chatbot.shadowX || '0px');
+    var chatWindowShadowY = formatDim(chatbot.chatWindowShadowY || chatbot.shadowY || '0px');
+    var chatWindowShadowBlur = formatDim(chatbot.chatWindowShadowBlur || chatbot.shadowBlur || '4px');
+    var chatWindowShadowSpread = formatDim(chatbot.chatWindowShadowSpread || chatbot.shadowSpread || '0px');
+    var chatBgColor = chatbot.messageBoxColor || chatKitBgColor || '#ffffff';
     var chatBgStyle = '';
     if (widgetConfig.chatBlur > 0) {
       chatBgStyle += 'backdrop-filter: blur(' + widgetConfig.chatBlur + 'px); -webkit-backdrop-filter: blur(' + widgetConfig.chatBlur + 'px); ';
@@ -98,14 +101,25 @@ export function buildEmbedPopoverBehaviorScript() {
       chatBgStyle += 'background-color: ' + chatBgColor + '; ';
     }
     
-    var borderWidth = chatbot.chatWindowBorderWidth || chatbot.borderWidth || '1px';
+    var borderWidth = formatDim(chatbot.chatWindowBorderWidth || chatbot.borderWidth || '1px');
+    var borderTopWidth = formatDim(chatbot.chatWindowBorderWidthTop || borderWidth);
+    var borderRightWidth = formatDim(chatbot.chatWindowBorderWidthRight || borderWidth);
+    var borderBottomWidth = formatDim(chatbot.chatWindowBorderWidthBottom || borderWidth);
+    var borderLeftWidth = formatDim(chatbot.chatWindowBorderWidthLeft || borderWidth);
     var borderColor = chatbot.chatWindowBorderColor || chatbot.borderColor || '#e5e7eb';
+    var borderStyle = 'border-style: solid; border-color: ' + borderColor +
+      '; border-top-width: ' + borderTopWidth +
+      '; border-right-width: ' + borderRightWidth +
+      '; border-bottom-width: ' + borderBottomWidth +
+      '; border-left-width: ' + borderLeftWidth + '; ';
+    var chatPaddingX = formatDim(widgetConfig.chatPaddingX || '0px');
+    var chatPaddingY = formatDim(widgetConfig.chatPaddingY || '0px');
     
     // Create chat window
     var chatWindow = document.createElement('div');
     chatWindow.id = 'chatbot-window-' + chatbotId;
     // Fix: Add pointer-events: auto
-    chatWindow.style.cssText = 'position: fixed; ' + chatWindowPositionMobile + ' width: ' + chatWindowWidth + '; height: ' + chatWindowHeight + '; ' + chatBgStyle + 'border-radius: ' + chatWindowBorderRadius + '; box-shadow: 0 0 ' + chatWindowShadowBlur + ' ' + chatWindowShadowColor + '; border: ' + borderWidth + ' solid ' + borderColor + '; font-family: ' + (chatKitFontFamily || chatbot.fontFamily || 'Inter') + '; font-size: ' + (chatKitFontSize || chatbot.fontSize || '14px') + '; color: ' + (chatKitTextColor || chatbot.fontColor || '#000000') + '; display: none; flex-direction: column; z-index: ' + (widgetConfig.zIndex >= ${Z_INDEX.chatWidget} ? widgetConfig.zIndex + 1 : ${Z_INDEX.chatWidgetWindow}) + '; transition: opacity 0.3s ease, transform 0.3s ease; opacity: 0; transform: ' + (currentBaseChatTransform !== 'none' ? currentBaseChatTransform + ' scale(0.9)' : (isMobile ? 'translateY(20px)' : 'scale(0.9)')) + '; pointer-events: auto;';
+    chatWindow.style.cssText = 'position: fixed; ' + chatWindowPositionMobile + ' width: ' + chatWindowWidth + '; height: ' + chatWindowHeight + '; ' + chatBgStyle + 'border-radius: ' + chatWindowBorderRadius + '; box-shadow: ' + chatWindowShadowX + ' ' + chatWindowShadowY + ' ' + chatWindowShadowBlur + ' ' + chatWindowShadowSpread + ' ' + chatWindowShadowColor + '; ' + borderStyle + 'padding: ' + chatPaddingY + ' ' + chatPaddingX + '; box-sizing: border-box; font-family: ' + (chatKitFontFamily || chatbot.fontFamily || 'Inter') + '; font-size: ' + (chatKitFontSize || chatbot.fontSize || '14px') + '; color: ' + (chatKitTextColor || chatbot.fontColor || '#000000') + '; display: none; flex-direction: column; z-index: ' + (widgetConfig.zIndex >= ${Z_INDEX.chatWidget} ? widgetConfig.zIndex + 1 : ${Z_INDEX.chatWidgetWindow}) + '; transition: opacity 0.3s ease, transform 0.3s ease; opacity: 0; transform: ' + (currentBaseChatTransform !== 'none' ? currentBaseChatTransform + ' scale(0.9)' : (isMobile ? 'translateY(20px)' : 'scale(0.9)')) + '; pointer-events: auto;';
     
     // Event listener for closing the chat via postMessage from the iframe
     window.addEventListener('message', function(event) {
@@ -117,7 +131,7 @@ export function buildEmbedPopoverBehaviorScript() {
     // Create iframe for chat
     var iframe = document.createElement('iframe');
     iframe.src = serverOrigin + '/chat/' + chatbotId + '?mode=embed&type=' + type;
-    iframe.style.cssText = 'width: 100%; flex: 1; border: none; border-radius: ' + chatWindowBorderRadius + '; background: transparent;';
+    iframe.style.cssText = 'width: 100%; min-width: 0; min-height: 0; flex: 1; border: none; border-radius: ' + chatWindowBorderRadius + '; background: transparent;';
     iframe.style.border = 'none';
     iframe.setAttribute('allowTransparency', 'true');
     iframe.allow = 'microphone; clipboard-write';
