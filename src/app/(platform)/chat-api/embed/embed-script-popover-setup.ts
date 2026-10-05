@@ -98,6 +98,8 @@ export function buildEmbedPopoverSetupScript() {
       widgetOpacity: chatbot.widgetBackgroundOpacity !== undefined ? chatbot.widgetBackgroundOpacity : 100,
       chatBlur: chatbot.chatWindowBackgroundBlur || 0,
       chatOpacity: chatbot.chatWindowBackgroundOpacity !== undefined ? chatbot.chatWindowBackgroundOpacity : 100,
+      chatPaddingX: chatbot.chatWindowPaddingX || '0px',
+      chatPaddingY: chatbot.chatWindowPaddingY || '0px',
       overlayEnabled: chatbot.overlayEnabled || false,
       overlayColor: chatbot.overlayColor || '#000000',
       overlayOpacity: chatbot.overlayOpacity !== undefined ? chatbot.overlayOpacity : 50,
