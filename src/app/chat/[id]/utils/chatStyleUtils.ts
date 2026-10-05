@@ -23,6 +23,6 @@ export const ensureUnits = (val: string | number | undefined, defaultVal: string
 
 export function extractNumericValue(value: string | undefined): string {
   if (!value) return '0'
-  const match = value.toString().match(/(\d+(?:\.\d+)?)/)
+  const match = value.toString().match(/(-?\d+(?:\.\d+)?)/)
   return match ? match[1] : '0'
 }
