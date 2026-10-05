@@ -98,7 +98,17 @@ export function PopoverSection({ formData, setFormData, chatkitOptions }: Sectio
                 <Input
                   type="number"
                   value={extractNumericValue(formData.chatWindowBorderRadius || formData.borderRadius || '12px')}
-                  onChange={(e) => setFormData({ ...formData, chatWindowBorderRadius: ensurePx(e.target.value) })}
+                  onChange={(e) => {
+                    const radius = ensurePx(e.target.value)
+                    setFormData({
+                      ...formData,
+                      chatWindowBorderRadius: radius,
+                      chatWindowBorderRadiusTopLeft: radius,
+                      chatWindowBorderRadiusTopRight: radius,
+                      chatWindowBorderRadiusBottomRight: radius,
+                      chatWindowBorderRadiusBottomLeft: radius,
+                    })
+                  }}
                   placeholder="12"
                   className="pr-8 h-8 text-xs"
                 />
