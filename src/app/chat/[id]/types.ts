@@ -319,7 +319,15 @@ export interface ChatbotConfig {
   overlayBlur?: number // Overlay blur percentage (0-100) for glassmorphism effect
   chatWindowBorderColor?: string
   chatWindowBorderWidth?: string
+  chatWindowBorderWidthTop?: string
+  chatWindowBorderWidthRight?: string
+  chatWindowBorderWidthBottom?: string
+  chatWindowBorderWidthLeft?: string
   chatWindowBorderRadius?: string
+  chatWindowBorderRadiusTopLeft?: string
+  chatWindowBorderRadiusTopRight?: string
+  chatWindowBorderRadiusBottomRight?: string
+  chatWindowBorderRadiusBottomLeft?: string
   chatWindowShadowColor?: string
   chatWindowShadowBlur?: string
   chatWindowShadowX?: string
