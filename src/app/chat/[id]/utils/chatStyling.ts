@@ -80,7 +80,7 @@ export function getChatStyle(chatbot: ChatbotConfig, chatkitOptions?: any): Reac
     fontFamily: typography.fontFamily || chatbot.fontFamily,
     fontSize: typography.fontSize ? `${typography.fontSize}px` : chatbot.fontSize,
     color: theme.color?.text || theme.textColor || chatbot.fontColor,
-    backgroundColor: theme.color?.background || theme.backgroundColor || chatbot.openaiAgentSdkBackgroundColor || chatbot.messageBoxColor,
+    backgroundColor: chatbot.messageBoxColor || chatbot.openaiAgentSdkBackgroundColor || theme.color?.background || theme.backgroundColor,
   }
 }
 
