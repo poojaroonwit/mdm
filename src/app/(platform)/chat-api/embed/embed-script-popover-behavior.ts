@@ -76,7 +76,7 @@ export function buildEmbedPopoverBehaviorScript() {
     }
 
     var chatWindowBorderRadius = isMobile ? '0' : getGranularRadius(
-      chatKitBorderRadius || chatbot.chatWindowBorderRadius || chatbot.borderRadius,
+      chatbot.chatWindowBorderRadius || chatKitBorderRadius || chatbot.borderRadius,
       chatbot.chatWindowBorderRadiusTopLeft,
       chatbot.chatWindowBorderRadiusTopRight,
       chatbot.chatWindowBorderRadiusBottomRight,
