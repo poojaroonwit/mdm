@@ -51,6 +51,22 @@ function getChatWindowBorderRadius(chatbot: ChatbotConfig, defaultRadius = '12px
     .join(' ')
 }
 
+function getChatWindowBorderWidths(chatbot: ChatbotConfig, defaultWidth = '1px') {
+  const config = chatbot as any
+  const baseWidth = normalizeRadiusValue(
+    config.chatWindowBorderWidth ?? config.borderWidth,
+    defaultWidth
+  )
+
+  return {
+    base: baseWidth,
+    top: normalizeRadiusValue(config.chatWindowBorderWidthTop, baseWidth),
+    right: normalizeRadiusValue(config.chatWindowBorderWidthRight, baseWidth),
+    bottom: normalizeRadiusValue(config.chatWindowBorderWidthBottom, baseWidth),
+    left: normalizeRadiusValue(config.chatWindowBorderWidthLeft, baseWidth),
+  }
+}
+
 // Helper function to convert hex color to RGB
 // Buffer to prevent shadow clipping in iframes
 // Smaller buffer used for the button-only (closed) state — reduces the transparent iframe area
@@ -143,12 +159,11 @@ export function getContainerStyle(
     // 4. User configured page/message-box background
     // 5. Default white
     const theme = chatkitOptions?.theme || {}
-    let bgValue = theme.color?.background || 
-                 theme.backgroundColor || 
-                 theme.color?.surface?.background || 
-                 chatbot.openaiAgentSdkBackgroundColor || 
-                 chatbot.pageBackgroundColor || 
-                 chatbot.messageBoxColor || 
+    let bgValue = chatbot.messageBoxColor ||
+                 chatbot.openaiAgentSdkBackgroundColor ||
+                 theme.color?.background ||
+                 theme.backgroundColor ||
+                 theme.color?.surface?.background ||
                  '#ffffff'
                  
     if (!bgValue || (typeof bgValue === 'string' && bgValue.trim() === '')) {
@@ -246,12 +261,19 @@ export function getContainerStyle(
     // - No shadow (full width)
     // UNLESS it's a "floating" mobile window? Typically mobile chat is full screen.
     
+    const popoverBorderWidths = getChatWindowBorderWidths(chatbot)
+    const popoverBorderColor = chatbot.chatWindowBorderColor || chatbot.borderColor || '#e2e8f0'
     const popoverStyle: React.CSSProperties = {
       position: 'fixed',
       width: ensureUnits((chatbot as any).chatWindowWidth, '380px'),
       height: ensureUnits((chatbot as any).chatWindowHeight, '600px'),
-      // Remove duplicate height check
-      border: `${chatbot.chatWindowBorderWidth || chatbot.borderWidth || '1px'} solid ${chatbot.chatWindowBorderColor || chatbot.borderColor || '#e2e8f0'}`,
+      borderStyle: 'solid',
+      borderColor: popoverBorderColor,
+      borderWidth: popoverBorderWidths.base,
+      borderTopWidth: popoverBorderWidths.top,
+      borderRightWidth: popoverBorderWidths.right,
+      borderBottomWidth: popoverBorderWidths.bottom,
+      borderLeftWidth: popoverBorderWidths.left,
       borderRadius: getChatWindowBorderRadius(chatbot),
       boxShadow: isMobile ? 'none' : fullBoxShadow,
       outline: undefined,
@@ -364,6 +386,8 @@ export function getContainerStyle(
       }
     }
 
+    const popupBorderWidths = getChatWindowBorderWidths(chatbot)
+    const popupBorderColor = chatbot.chatWindowBorderColor || chatbot.borderColor || '#e2e8f0'
     return {
       width: ensureUnits((chatbot as any).chatWindowWidth, '90%'),
       // If user sets a custom width, that should be the max-width (or unconstrained). 
@@ -371,8 +395,13 @@ export function getContainerStyle(
       maxWidth: (chatbot as any).chatWindowWidth ? '100vw' : '640px',
       maxHeight: ensureUnits((chatbot as any).chatWindowHeight, '700px'),
       height: ensureUnits((chatbot as any).chatWindowHeight, '700px'),
-      // Remove duplicate height check
-      border: `${chatbot.chatWindowBorderWidth || chatbot.borderWidth || '1px'} solid ${chatbot.chatWindowBorderColor || chatbot.borderColor || '#e2e8f0'}`,
+      borderStyle: 'solid',
+      borderColor: popupBorderColor,
+      borderWidth: popupBorderWidths.base,
+      borderTopWidth: popupBorderWidths.top,
+      borderRightWidth: popupBorderWidths.right,
+      borderBottomWidth: popupBorderWidths.bottom,
+      borderLeftWidth: popupBorderWidths.left,
       borderRadius: getChatWindowBorderRadius(chatbot),
       boxShadow: fullBoxShadow,
       outline: undefined,
@@ -419,20 +448,19 @@ export function getOverlayStyle(
   isOpen?: boolean,
   chatkitOptions?: any
 ): React.CSSProperties | undefined {
-  // For popup-center, always show overlay (legacy behavior)
-  if (previewDeploymentType === 'popup-center') {
-    return { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: Z_INDEX.chatWidgetOverlay }
-  }
+  if (!chatbot) return undefined
 
-  // For popover mode, check if overlay is enabled and chat is open
-  if (previewDeploymentType === 'popover' && chatbot && isOpen) {
-    const overlayEnabled = (chatbot as any).overlayEnabled !== undefined
-      ? (chatbot as any).overlayEnabled
-      : false
+  const isPopupCenter = previewDeploymentType === 'popup-center'
+  const isPopover = previewDeploymentType === 'popover'
+  if (!isPopupCenter && !isPopover) return undefined
+  if (isPopover && !isOpen) return undefined
 
-    if (!overlayEnabled) {
-      return undefined
-    }
+  const overlayEnabled = (chatbot as any).overlayEnabled !== undefined
+    ? (chatbot as any).overlayEnabled
+    : false
+
+  // Popup-center keeps its backdrop by default; popover follows the explicit toggle.
+  if (isPopover && !overlayEnabled) return undefined
 
     const overlayColor = (chatbot as any).overlayColor || '#000000'
     const overlayOpacity = (chatbot as any).overlayOpacity !== undefined
@@ -471,8 +499,5 @@ export function getOverlayStyle(
     }
 
     return overlayStyle
-  }
-
-  return undefined
 }
 
