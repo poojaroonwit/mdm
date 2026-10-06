@@ -67,22 +67,9 @@ export function buildEmbedPopoverBehaviorScript() {
     var chatWindowPositionMobile = isMobile ? 'top: 0; left: 0; right: 0; bottom: 0;' : chatWindowPosition;
     var currentBaseChatTransform = isMobile ? 'none' : baseChatTransform;
     
-    // Helper for granular border radius
-    function getGranularRadius(all, tl, tr, br, bl, defaultVal) {
-      if (tl || tr || br || bl) {
-        return (tl || all || defaultVal || '0') + ' ' + (tr || all || defaultVal || '0') + ' ' + (br || all || defaultVal || '0') + ' ' + (bl || all || defaultVal || '0');
-      }
-      return all || defaultVal;
-    }
-
-    var chatWindowBorderRadius = isMobile ? '0' : getGranularRadius(
-      chatbot.chatWindowBorderRadius || chatKitBorderRadius || chatbot.borderRadius,
-      chatbot.chatWindowBorderRadiusTopLeft,
-      chatbot.chatWindowBorderRadiusTopRight,
-      chatbot.chatWindowBorderRadiusBottomRight,
-      chatbot.chatWindowBorderRadiusBottomLeft,
-      '8px'
-    );
+    // widgetConfig already resolves legacy aliases, linked radius and granular corners.
+    // Reuse the exact same value for the host window and on responsive transitions.
+    var chatWindowBorderRadius = isMobile ? '0' : (widgetConfig.chatWindowBorderRadius || chatKitBorderRadius || '8px');
     
     // Styling variables for the chat window
     var chatWindowShadowColor = chatbot.chatWindowShadowColor || chatbot.shadowColor || '#000000';
@@ -348,7 +335,7 @@ export function buildEmbedPopoverBehaviorScript() {
           // Update chat window size on resize
           chatWindow.style.width = isMobile ? '100vw' : widgetConfig.chatWidth;
           chatWindow.style.height = isMobile ? '100vh' : widgetConfig.chatHeight;
-          chatWindow.style.borderRadius = isMobile ? '0' : (chatbot.borderRadius || '8px');
+          chatWindow.style.borderRadius = isMobile ? '0' : chatWindowBorderRadius;
           if (isMobile) {
             chatWindow.style.top = '0';
             chatWindow.style.left = '0';
