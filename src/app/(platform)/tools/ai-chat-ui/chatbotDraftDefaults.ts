@@ -48,9 +48,18 @@ export function createDefaultChatbotDraft(): Partial<Chatbot> {
     composerBackgroundColor: '#ffffff',
     composerFontColor: '#1f2937',
     composerPlaceholder: 'Type a message...',
+    // Keep compact-editor aliases for compatibility, while seeding the canonical
+    // chat-window fields used by preview, persistence and the published embed.
     popoverWidth: '400px',
     popoverHeight: '600px',
     popoverBorderRadius: '16px',
+    chatWindowWidth: '400px',
+    chatWindowHeight: '600px',
+    chatWindowBorderRadius: '16px',
+    chatWindowBorderRadiusTopLeft: '16px',
+    chatWindowBorderRadiusTopRight: '16px',
+    chatWindowBorderRadiusBottomRight: '16px',
+    chatWindowBorderRadiusBottomLeft: '16px',
     avatarType: 'icon',
     avatarIcon: 'Bot',
     avatarIconColor: '#ffffff',

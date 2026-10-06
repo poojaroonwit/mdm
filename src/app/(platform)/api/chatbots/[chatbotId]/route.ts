@@ -4,6 +4,7 @@ import { db } from '@/lib/db'
 import { mergeVersionConfig, sanitizeChatbotConfig } from '@/lib/chatbot-helper'
 import { requireSpaceAccess } from '@/lib/space-access'
 import { canAccessChatbot } from '@/lib/chatbot-access'
+import { normalizePopoverAppearanceConfig } from '@/lib/chatbot-popover-config'
 import {
   assignResourceFolder,
   clearResourceFolderAssignments,
@@ -96,7 +97,7 @@ async function putHandler(
     if (!rawBody) {
       return NextResponse.json({ error: 'Empty request body' }, { status: 400 })
     }
-    body = JSON.parse(rawBody)
+    body = normalizePopoverAppearanceConfig(JSON.parse(rawBody))
   } catch (parseError: any) {
     return NextResponse.json({
       error: 'Invalid JSON body',

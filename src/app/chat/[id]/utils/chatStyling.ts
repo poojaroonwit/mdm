@@ -1,6 +1,7 @@
 import { ChatbotConfig } from '../types'
 import React from 'react'
 import { Z_INDEX } from '@/lib/z-index'
+import { resolveChatWindowBorderRadius } from '@/lib/chatbot-popover-config'
 import {
   BUTTON_SHADOW_BUFFER,
   SHADOW_BUFFER,
@@ -26,29 +27,7 @@ function normalizeRadiusValue(value: unknown, fallback: string): string {
 }
 
 function getChatWindowBorderRadius(chatbot: ChatbotConfig, defaultRadius = '12px'): string {
-  const config = chatbot as any
-  const baseRadius = normalizeRadiusValue(
-    config.chatWindowBorderRadius ?? config.borderRadius,
-    defaultRadius
-  )
-
-  const cornerKeys = [
-    'chatWindowBorderRadiusTopLeft',
-    'chatWindowBorderRadiusTopRight',
-    'chatWindowBorderRadiusBottomRight',
-    'chatWindowBorderRadiusBottomLeft',
-  ] as const
-
-  const hasGranularRadius = cornerKeys.some((key) => {
-    const value = config[key]
-    return value !== undefined && value !== null && value !== ''
-  })
-
-  if (!hasGranularRadius) return baseRadius
-
-  return cornerKeys
-    .map((key) => normalizeRadiusValue(config[key], baseRadius))
-    .join(' ')
+  return resolveChatWindowBorderRadius(chatbot as any, defaultRadius)
 }
 
 function getChatWindowBorderWidths(chatbot: ChatbotConfig, defaultWidth = '1px') {
