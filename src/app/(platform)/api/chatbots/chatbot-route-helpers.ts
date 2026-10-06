@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { encryptApiKey } from '@/lib/encryption'
 import { getSecretsManager } from '@/lib/secrets-manager'
 import { createAuditContext } from '@/lib/audit-context-helper'
+import { normalizePopoverAppearanceConfig } from '@/lib/chatbot-popover-config'
 
 const prisma = db
 
@@ -64,6 +65,7 @@ export async function syncOpenAIApiKey(apiKey: string | null | undefined, reques
 }
 
 export function buildChatbotVersionConfig(body: any, engine: string) {
+  body = normalizePopoverAppearanceConfig(body || {})
   const {
       name,
       website,
