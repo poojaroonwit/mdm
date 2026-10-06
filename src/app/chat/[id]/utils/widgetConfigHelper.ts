@@ -1,5 +1,6 @@
 import { ChatbotConfig } from '../types'
 import { Z_INDEX } from '@/lib/z-index'
+import { resolveChatWindowBorderRadius } from '@/lib/chatbot-popover-config'
 
 export interface WidgetConfig {
     // Appearance
@@ -208,7 +209,7 @@ export function getWidgetConfig(chatbot: ChatbotConfig, theme?: any, baseUrl?: s
     const chatWindowBorderWidth = c.chatWindowBorderWidth || c.borderWidth || '1px'
     const chatWindowBorderColor = c.chatWindowBorderColor || c.borderColor || '#e5e7eb'
     const chatWindowBorder = `${chatWindowBorderWidth} solid ${chatWindowBorderColor}`
-    const chatWindowBorderRadius = c.chatWindowBorderRadius || c.borderRadius || '8px'
+    const chatWindowBorderRadius = resolveChatWindowBorderRadius(c, '8px')
 
     // Background (Complex Logic)
     const chatWindowBackground = resolveUrl(c.messageBoxColor || '#ffffff');
