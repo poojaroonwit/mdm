@@ -3,6 +3,7 @@ import { ChatbotConfig } from '../types'
 import toast from 'react-hot-toast'
 import { isUuid } from '@/lib/validation'
 import { DEFAULT_CHATBOT_CONFIG } from '@/app/admin/components/chatbot/constants'
+import { normalizePopoverAppearanceConfig } from '@/lib/chatbot-popover-config'
 
 interface UseChatbotLoaderOptions {
   chatbotId: string
@@ -47,8 +48,10 @@ export function useChatbotLoader({
         cleanDefaults[key] = value
       }
     }
-    // Merge: clean defaults first, then loaded chatbot values take precedence
-    const merged = { ...cleanDefaults, ...loadedChatbot } as ChatbotConfig
+    // Merge: clean defaults first, then loaded chatbot values take precedence.
+    // Normalize legacy compact-editor popover fields before rendering.
+    const normalizedLoadedChatbot = normalizePopoverAppearanceConfig(loadedChatbot || {})
+    const merged = { ...cleanDefaults, ...normalizedLoadedChatbot } as ChatbotConfig
 
     // Apply URL locale override if provided
     if (locale) {
@@ -148,7 +151,7 @@ export function useChatbotLoader({
       const data = event.data
       if (!data || typeof data !== 'object') return
       if (data.type === 'chatbot-config-update' && data.id === chatbotId) {
-        const cfg = data.config || {}
+        const cfg = normalizePopoverAppearanceConfig(data.config || {})
         // Mark that we've received config from the editor
         // This prevents API loads from overwriting this config
         hasEditorConfigRef.current = true
